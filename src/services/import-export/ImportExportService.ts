@@ -78,7 +78,23 @@ export class ImportExportService {
   }
 
   /**
-   * Import files from file input - returns nodes to merge
+   * Check if a node with similar properties already exists
+   */
+  private findExistingNode(
+    nodes: GraphNode[], 
+    name: string, 
+    type: string, 
+    parentId: string | null
+  ): GraphNode | undefined {
+    return nodes.find(n => 
+      n.name === name && 
+      n.type === type && 
+      n.parentId === parentId
+    );
+  }
+
+  /**
+   * Import files from file input - returns NEW nodes to merge (accumulative)
    */
   async importFiles(files: FileList, existingNodes: GraphNode[] = []): Promise<ImportResult> {
     const result: ImportResult = {
@@ -93,6 +109,17 @@ export class ImportExportService {
     let totalSize = 0;
     const folderMap = new Map<string, string>();
     const importedNodes: GraphNode[] = [];
+
+    // Build a map of existing folders for reuse (prevents duplicates)
+    const existingFolderMap = new Map<string, string>();
+    existingNodes.forEach(n => {
+      if (n.type === 'folder') {
+        // Build path key for the folder
+        const pathKey = this.buildNodePathKey(n, existingNodes);
+        existingFolderMap.set(pathKey, n.id);
+        folderMap.set(pathKey, n.id);
+      }
+    });
 
     // Find a root folder to attach imports to, or create one
     let importRootId: string | null = null;
@@ -171,6 +198,15 @@ export class ImportExportService {
         const fileName = pathParts[pathParts.length - 1];
         const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
 
+        // Check if file already exists (skip duplicates)
+        const allNodes = [...existingNodes, ...importedNodes];
+        const existingFile = this.findExistingNode(allNodes, fileNameWithoutExt, fileType === 'markdown' ? 'file' : 'media', parentId);
+        
+        if (existingFile) {
+          // Skip duplicate - file already exists
+          continue;
+        }
+
         if (fileType === 'markdown') {
           const content = await file.text();
           const parsed = this.parser.parse(content);
@@ -218,7 +254,27 @@ export class ImportExportService {
   }
 
   /**
-   * Import from ZIP file
+   * Build a path key for a node based on its hierarchy
+   */
+  private buildNodePathKey(node: GraphNode, allNodes: GraphNode[]): string {
+    const parts: string[] = [node.name];
+    let current = node;
+    
+    while (current.parentId) {
+      const parent = allNodes.find(n => n.id === current.parentId);
+      if (parent) {
+        parts.unshift(parent.name);
+        current = parent;
+      } else {
+        break;
+      }
+    }
+    
+    return parts.join('/');
+  }
+
+  /**
+   * Import from ZIP file - accumulative import that prevents duplicates
    */
   async importZip(
     file: File, 
@@ -246,6 +302,14 @@ export class ImportExportService {
     const folderMap = new Map(existingFolderMap);
     const importedNodes: GraphNode[] = [];
     const allFolderPaths = new Set<string>();
+
+    // Build map of existing folders by path for reuse
+    existingNodes.forEach(n => {
+      if (n.type === 'folder') {
+        const pathKey = this.buildNodePathKey(n, existingNodes);
+        folderMap.set(pathKey, n.id);
+      }
+    });
 
     // Find root to attach to
     let importRootId: string | null = null;
@@ -322,6 +386,16 @@ export class ImportExportService {
             
             const parentNode = parentId ? [...existingNodes, ...importedNodes].find(n => n.id === parentId) : null;
             const nodeDepth = parentNode ? parentNode.depth + 1 : 0;
+
+            // Check for duplicate files - skip if already exists
+            const allNodes = [...existingNodes, ...importedNodes];
+            const nodeType = fileType === 'markdown' ? 'file' : 'media';
+            const existingFile = this.findExistingNode(allNodes, fileNameWithoutExt, nodeType, parentId);
+            
+            if (existingFile) {
+              // Skip duplicate
+              return;
+            }
 
             if (fileType === 'markdown') {
               const content = await zipEntry.async('string');
