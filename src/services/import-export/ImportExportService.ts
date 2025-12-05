@@ -78,19 +78,30 @@ export class ImportExportService {
   }
 
   /**
-   * Check if a node with similar properties already exists
+   * Generate a unique name by appending (1), (2), etc. if name already exists
    */
-  private findExistingNode(
+  private generateUniqueName(
     nodes: GraphNode[], 
-    name: string, 
-    type: string, 
+    baseName: string, 
     parentId: string | null
-  ): GraphNode | undefined {
-    return nodes.find(n => 
-      n.name === name && 
-      n.type === type && 
-      n.parentId === parentId
+  ): string {
+    const existingNames = new Set(
+      nodes
+        .filter(n => n.parentId === parentId)
+        .map(n => n.name)
     );
+    
+    if (!existingNames.has(baseName)) {
+      return baseName;
+    }
+    
+    let counter = 1;
+    let uniqueName = `${baseName} (${counter})`;
+    while (existingNames.has(uniqueName)) {
+      counter++;
+      uniqueName = `${baseName} (${counter})`;
+    }
+    return uniqueName;
   }
 
   /**
@@ -198,14 +209,9 @@ export class ImportExportService {
         const fileName = pathParts[pathParts.length - 1];
         const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
 
-        // Check if file already exists (skip duplicates)
+        // Generate unique name if duplicate exists (allows accumulative imports)
         const allNodes = [...existingNodes, ...importedNodes];
-        const existingFile = this.findExistingNode(allNodes, fileNameWithoutExt, fileType === 'markdown' ? 'file' : 'media', parentId);
-        
-        if (existingFile) {
-          // Skip duplicate - file already exists
-          continue;
-        }
+        const uniqueName = this.generateUniqueName(allNodes, fileNameWithoutExt, parentId);
 
         if (fileType === 'markdown') {
           const content = await file.text();
@@ -213,7 +219,7 @@ export class ImportExportService {
           
           const fileNode: GraphNode = {
             id: this.generateId('file'),
-            name: fileNameWithoutExt,
+            name: uniqueName,
             content,
             type: 'file',
             parentId,
@@ -229,7 +235,7 @@ export class ImportExportService {
           
           const mediaNode: GraphNode = {
             id: this.generateId('media'),
-            name: fileNameWithoutExt,
+            name: uniqueName,
             content: `![${fileName}](${dataUrl})`,
             type: 'media',
             parentId,
@@ -387,15 +393,9 @@ export class ImportExportService {
             const parentNode = parentId ? [...existingNodes, ...importedNodes].find(n => n.id === parentId) : null;
             const nodeDepth = parentNode ? parentNode.depth + 1 : 0;
 
-            // Check for duplicate files - skip if already exists
+            // Generate unique name if duplicate exists (allows accumulative imports)
             const allNodes = [...existingNodes, ...importedNodes];
-            const nodeType = fileType === 'markdown' ? 'file' : 'media';
-            const existingFile = this.findExistingNode(allNodes, fileNameWithoutExt, nodeType, parentId);
-            
-            if (existingFile) {
-              // Skip duplicate
-              return;
-            }
+            const uniqueName = this.generateUniqueName(allNodes, fileNameWithoutExt, parentId);
 
             if (fileType === 'markdown') {
               const content = await zipEntry.async('string');
@@ -403,7 +403,7 @@ export class ImportExportService {
               
               const fileNode: GraphNode = {
                 id: this.generateId('file'),
-                name: fileNameWithoutExt,
+                name: uniqueName,
                 content,
                 type: 'file',
                 parentId,
@@ -420,7 +420,7 @@ export class ImportExportService {
               
               const mediaNode: GraphNode = {
                 id: this.generateId('media'),
-                name: fileNameWithoutExt,
+                name: uniqueName,
                 content: `![${fileName}](${dataUrl})`,
                 type: 'media',
                 parentId,

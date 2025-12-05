@@ -66,6 +66,10 @@ export const ImportExportPanel = ({ nodes, onImportComplete }: ImportExportPanel
   const folderInputRef = useRef<HTMLInputElement>(null);
   const zipInputRef = useRef<HTMLInputElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
+  
+  // Use ref to always have latest nodes (fixes stale closure issue)
+  const nodesRef = useRef<Node[]>(nodes);
+  nodesRef.current = nodes;
 
   const handleFileImport = async (files: FileList | null, type: string) => {
     if (!files || files.length === 0) return;
@@ -75,7 +79,8 @@ export const ImportExportPanel = ({ nodes, onImportComplete }: ImportExportPanel
 
     try {
       setImportProgress(30);
-      const result = await importExportService.importFiles(files, nodes as GraphNode[]);
+      // Use nodesRef.current to get the LATEST nodes, not stale closure
+      const result = await importExportService.importFiles(files, nodesRef.current as GraphNode[]);
       setImportProgress(100);
       setLastResult(result);
 
@@ -102,6 +107,7 @@ export const ImportExportPanel = ({ nodes, onImportComplete }: ImportExportPanel
       if (mediaInputRef.current) mediaInputRef.current.value = '';
     }
   };
+
 
   const handleExport = async (type: ExportOptions["type"]) => {
     const options: ExportOptions = {
