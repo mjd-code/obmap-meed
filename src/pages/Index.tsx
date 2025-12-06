@@ -482,9 +482,37 @@ const Index = () => {
 					}
 					onCloseVault={handleCloseVault}
 					graphConfigTrigger={graphConfigTrigger}
-					onImportComplete={(importedNodes) =>
-						setNodes((prev) => [...prev, ...importedNodes])
-					}
+					onImportComplete={(importedNodes, updatedNodes) => {
+						setNodes((prev) => {
+							// First add new nodes
+							let result = [...prev, ...importedNodes];
+							// Then update existing nodes that were overwritten/merged
+							if (updatedNodes && updatedNodes.length > 0) {
+								const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
+								result = result.map(node => updateMap.get(node.id) || node);
+							}
+							return result;
+						});
+						// Save to vault if active
+						if (currentVaultId) {
+							const vault = vaultManager.getVault(currentVaultId);
+							if (vault) {
+								const allNodes = [...nodes, ...importedNodes];
+								if (updatedNodes) {
+									const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
+									allNodes.forEach((node, i) => {
+										if (updateMap.has(node.id)) {
+											allNodes[i] = updateMap.get(node.id)!;
+										}
+									});
+								}
+								allNodes.forEach(n => vault.graphService.setNode(n));
+								vault.history.addState(allNodes, []);
+								vaultManager.saveCurrentVault();
+								vaultManager.recordVaultChange(currentVaultId);
+							}
+						}
+					}}
 				/>
 			</div>
 
@@ -502,9 +530,34 @@ const Index = () => {
 				}
 				onCloseVault={handleCloseVault}
 				graphConfigTrigger={graphConfigTrigger}
-				onImportComplete={(importedNodes) =>
-					setNodes((prev) => [...prev, ...importedNodes])
-				}
+				onImportComplete={(importedNodes, updatedNodes) => {
+					setNodes((prev) => {
+						let result = [...prev, ...importedNodes];
+						if (updatedNodes && updatedNodes.length > 0) {
+							const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
+							result = result.map(node => updateMap.get(node.id) || node);
+						}
+						return result;
+					});
+					if (currentVaultId) {
+						const vault = vaultManager.getVault(currentVaultId);
+						if (vault) {
+							const allNodes = [...nodes, ...importedNodes];
+							if (updatedNodes) {
+								const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
+								allNodes.forEach((node, i) => {
+									if (updateMap.has(node.id)) {
+										allNodes[i] = updateMap.get(node.id)!;
+									}
+								});
+							}
+							allNodes.forEach(n => vault.graphService.setNode(n));
+							vault.history.addState(allNodes, []);
+							vaultManager.saveCurrentVault();
+							vaultManager.recordVaultChange(currentVaultId);
+						}
+					}
+				}}
 			/>
 
 			<div className='flex-1 relative'>

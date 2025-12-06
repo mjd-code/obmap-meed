@@ -8,6 +8,8 @@
 import JSZip from 'jszip';
 import { ContentParser } from '../graph/ContentParser';
 
+export type DuplicateStrategy = 'rename' | 'overwrite' | 'skip' | 'merge';
+
 export interface GraphNode {
   id: string;
   name: string;
@@ -25,9 +27,13 @@ export interface GraphNode {
 export interface ImportResult {
   success: boolean;
   nodes: GraphNode[];
+  updatedNodes: GraphNode[];
   folders: number;
   files: number;
   media: number;
+  skipped: number;
+  merged: number;
+  overwritten: number;
   errors: string[];
 }
 
@@ -47,7 +53,6 @@ const SUPPORTED_EXTENSIONS = {
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB per file
 const MAX_TOTAL_SIZE = 200 * 1024 * 1024; // 200MB total
-const MAX_FILES = 10000;
 
 export class ImportExportService {
   private parser: ContentParser;
@@ -56,9 +61,6 @@ export class ImportExportService {
     this.parser = new ContentParser();
   }
 
-  /**
-   * Get file type from extension
-   */
   private getFileType(filename: string): 'markdown' | 'image' | 'audio' | 'video' | 'unknown' {
     const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
     
@@ -70,16 +72,10 @@ export class ImportExportService {
     return 'unknown';
   }
 
-  /**
-   * Generate unique ID
-   */
   private generateId(prefix: string): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  /**
-   * Generate a unique name by appending (1), (2), etc. if name already exists
-   */
   private generateUniqueName(
     nodes: GraphNode[], 
     baseName: string, 
@@ -104,43 +100,77 @@ export class ImportExportService {
     return uniqueName;
   }
 
+  private findExistingNode(
+    nodes: GraphNode[], 
+    name: string, 
+    parentId: string | null,
+    type: 'folder' | 'file' | 'media'
+  ): GraphNode | undefined {
+    return nodes.find(n => 
+      n.name === name && 
+      n.parentId === parentId && 
+      n.type === type
+    );
+  }
+
+  private buildNodePathKey(node: GraphNode, allNodes: GraphNode[]): string {
+    const parts: string[] = [node.name];
+    let current = node;
+    
+    while (current.parentId) {
+      const parent = allNodes.find(n => n.id === current.parentId);
+      if (parent) {
+        parts.unshift(parent.name);
+        current = parent;
+      } else {
+        break;
+      }
+    }
+    
+    return parts.join('/');
+  }
+
   /**
-   * Import files from file input - returns NEW nodes to merge (accumulative)
+   * Import files from file input with duplicate handling strategy
    */
-  async importFiles(files: FileList, existingNodes: GraphNode[] = []): Promise<ImportResult> {
+  async importFiles(
+    files: FileList, 
+    existingNodes: GraphNode[] = [],
+    duplicateStrategy: DuplicateStrategy = 'rename'
+  ): Promise<ImportResult> {
     const result: ImportResult = {
       success: true,
       nodes: [],
+      updatedNodes: [],
       folders: 0,
       files: 0,
       media: 0,
+      skipped: 0,
+      merged: 0,
+      overwritten: 0,
       errors: [],
     };
 
     let totalSize = 0;
     const folderMap = new Map<string, string>();
     const importedNodes: GraphNode[] = [];
+    const updatedNodes: GraphNode[] = [];
 
-    // Build a map of existing folders for reuse (prevents duplicates)
-    const existingFolderMap = new Map<string, string>();
+    // Build a map of existing folders for reuse
     existingNodes.forEach(n => {
       if (n.type === 'folder') {
-        // Build path key for the folder
         const pathKey = this.buildNodePathKey(n, existingNodes);
-        existingFolderMap.set(pathKey, n.id);
         folderMap.set(pathKey, n.id);
       }
     });
 
-    // Find a root folder to attach imports to, or create one
+    // Find a root folder to attach imports to
     let importRootId: string | null = null;
     const existingRoot = existingNodes.find(n => n.parentId === null && n.type === 'folder');
-    
     if (existingRoot) {
       importRootId = existingRoot.id;
     }
 
-    // Process each file
     for (const file of Array.from(files)) {
       try {
         if (file.size > MAX_FILE_SIZE) {
@@ -158,16 +188,19 @@ export class ImportExportService {
         
         // Handle ZIP files
         if (file.name.endsWith('.zip')) {
-          const zipResult = await this.importZip(file, existingNodes, folderMap);
+          const zipResult = await this.importZip(file, [...existingNodes, ...importedNodes], folderMap, duplicateStrategy);
           importedNodes.push(...zipResult.nodes);
+          updatedNodes.push(...zipResult.updatedNodes);
           result.folders += zipResult.folders;
           result.files += zipResult.files;
           result.media += zipResult.media;
+          result.skipped += zipResult.skipped;
+          result.merged += zipResult.merged;
+          result.overwritten += zipResult.overwritten;
           result.errors.push(...zipResult.errors);
           continue;
         }
 
-        // Get path from webkitRelativePath or just use filename
         const relativePath = (file as any).webkitRelativePath || file.name;
         const pathParts = relativePath.split('/').filter(Boolean);
         
@@ -177,8 +210,9 @@ export class ImportExportService {
           const folderPath = pathParts.slice(0, i + 1).join('/');
           if (!folderMap.has(folderPath)) {
             const folderId = this.generateId('folder');
+            const allCurrentNodes = [...existingNodes, ...importedNodes];
             const folderDepth = currentParentId 
-              ? (existingNodes.find(n => n.id === currentParentId)?.depth ?? -1) + 1 
+              ? (allCurrentNodes.find(n => n.id === currentParentId)?.depth ?? -1) + 1 
               : 0;
 
             const folderNode: GraphNode = {
@@ -200,22 +234,57 @@ export class ImportExportService {
           }
         }
 
-        // Get parent folder ID
         const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
         const parentId = parentPath ? folderMap.get(parentPath) || importRootId : importRootId;
-        const parentNode = parentId ? [...existingNodes, ...importedNodes].find(n => n.id === parentId) : null;
+        const allNodes = [...existingNodes, ...importedNodes];
+        const parentNode = parentId ? allNodes.find(n => n.id === parentId) : null;
         const nodeDepth = parentNode ? parentNode.depth + 1 : 0;
         
         const fileName = pathParts[pathParts.length - 1];
         const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
 
-        // Generate unique name if duplicate exists (allows accumulative imports)
-        const allNodes = [...existingNodes, ...importedNodes];
-        const uniqueName = this.generateUniqueName(allNodes, fileNameWithoutExt, parentId);
-
         if (fileType === 'markdown') {
           const content = await file.text();
           const parsed = this.parser.parse(content);
+          
+          // Check for existing file with same name
+          const existingFile = this.findExistingNode(allNodes, fileNameWithoutExt, parentId, 'file');
+          
+          if (existingFile) {
+            switch (duplicateStrategy) {
+              case 'skip':
+                result.skipped++;
+                continue;
+              case 'overwrite':
+                const overwrittenNode: GraphNode = {
+                  ...existingFile,
+                  content,
+                  tags: parsed.tags,
+                  wikilinks: parsed.wikilinks,
+                };
+                updatedNodes.push(overwrittenNode);
+                result.overwritten++;
+                continue;
+              case 'merge':
+                const mergedNode: GraphNode = {
+                  ...existingFile,
+                  content: existingFile.content + '\n\n---\n\n' + content,
+                  tags: [...new Set([...existingFile.tags, ...parsed.tags])],
+                  wikilinks: [...new Set([...(existingFile.wikilinks || []), ...parsed.wikilinks])],
+                };
+                updatedNodes.push(mergedNode);
+                result.merged++;
+                continue;
+              case 'rename':
+              default:
+                // Fall through to create with unique name
+                break;
+            }
+          }
+          
+          const uniqueName = existingFile && duplicateStrategy === 'rename'
+            ? this.generateUniqueName(allNodes, fileNameWithoutExt, parentId)
+            : fileNameWithoutExt;
           
           const fileNode: GraphNode = {
             id: this.generateId('file'),
@@ -232,6 +301,37 @@ export class ImportExportService {
           result.files++;
         } else if (fileType !== 'unknown') {
           const dataUrl = await this.fileToDataUrl(file);
+          
+          const existingMedia = this.findExistingNode(allNodes, fileNameWithoutExt, parentId, 'media');
+          
+          if (existingMedia) {
+            switch (duplicateStrategy) {
+              case 'skip':
+                result.skipped++;
+                continue;
+              case 'overwrite':
+                const overwrittenMedia: GraphNode = {
+                  ...existingMedia,
+                  content: `![${fileName}](${dataUrl})`,
+                  mimeType: file.type,
+                  dataUrl,
+                };
+                updatedNodes.push(overwrittenMedia);
+                result.overwritten++;
+                continue;
+              case 'merge':
+                // For media, merge doesn't make sense, so skip
+                result.skipped++;
+                continue;
+              case 'rename':
+              default:
+                break;
+            }
+          }
+          
+          const uniqueName = existingMedia && duplicateStrategy === 'rename'
+            ? this.generateUniqueName(allNodes, fileNameWithoutExt, parentId)
+            : fileNameWithoutExt;
           
           const mediaNode: GraphNode = {
             id: this.generateId('media'),
@@ -255,44 +355,30 @@ export class ImportExportService {
     }
 
     result.nodes = importedNodes;
+    result.updatedNodes = updatedNodes;
     result.success = result.errors.length === 0;
     return result;
   }
 
   /**
-   * Build a path key for a node based on its hierarchy
-   */
-  private buildNodePathKey(node: GraphNode, allNodes: GraphNode[]): string {
-    const parts: string[] = [node.name];
-    let current = node;
-    
-    while (current.parentId) {
-      const parent = allNodes.find(n => n.id === current.parentId);
-      if (parent) {
-        parts.unshift(parent.name);
-        current = parent;
-      } else {
-        break;
-      }
-    }
-    
-    return parts.join('/');
-  }
-
-  /**
-   * Import from ZIP file - accumulative import that prevents duplicates
+   * Import from ZIP file with duplicate handling
    */
   async importZip(
     file: File, 
     existingNodes: GraphNode[] = [],
-    existingFolderMap: Map<string, string> = new Map()
+    existingFolderMap: Map<string, string> = new Map(),
+    duplicateStrategy: DuplicateStrategy = 'rename'
   ): Promise<ImportResult> {
     const result: ImportResult = {
       success: true,
       nodes: [],
+      updatedNodes: [],
       folders: 0,
       files: 0,
       media: 0,
+      skipped: 0,
+      merged: 0,
+      overwritten: 0,
       errors: [],
     };
 
@@ -307,9 +393,9 @@ export class ImportExportService {
 
     const folderMap = new Map(existingFolderMap);
     const importedNodes: GraphNode[] = [];
+    const updatedNodes: GraphNode[] = [];
     const allFolderPaths = new Set<string>();
 
-    // Build map of existing folders by path for reuse
     existingNodes.forEach(n => {
       if (n.type === 'folder') {
         const pathKey = this.buildNodePathKey(n, existingNodes);
@@ -317,14 +403,12 @@ export class ImportExportService {
       }
     });
 
-    // Find root to attach to
     let importRootId: string | null = null;
     const existingRoot = existingNodes.find(n => n.parentId === null && n.type === 'folder');
     if (existingRoot) {
       importRootId = existingRoot.id;
     }
 
-    // First pass: collect all folder paths
     zip.forEach((relativePath, zipEntry) => {
       if (relativePath.startsWith('.') || relativePath === '_graph_metadata.json') return;
 
@@ -340,7 +424,6 @@ export class ImportExportService {
       }
     });
 
-    // Create folders in order
     const sortedFolders = Array.from(allFolderPaths).sort((a, b) => 
       a.split('/').length - b.split('/').length
     );
@@ -353,7 +436,8 @@ export class ImportExportService {
       const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
       const parentId = parentPath ? folderMap.get(parentPath) || importRootId : importRootId;
       
-      const parentNode = parentId ? [...existingNodes, ...importedNodes].find(n => n.id === parentId) : null;
+      const allNodes = [...existingNodes, ...importedNodes];
+      const parentNode = parentId ? allNodes.find(n => n.id === parentId) : null;
       const folderDepth = parentNode ? parentNode.depth + 1 : 0;
 
       const folderId = this.generateId('folder');
@@ -372,7 +456,6 @@ export class ImportExportService {
       result.folders++;
     }
 
-    // Second pass: process files
     const filePromises: Promise<void>[] = [];
 
     zip.forEach((relativePath, zipEntry) => {
@@ -390,16 +473,45 @@ export class ImportExportService {
             const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : null;
             const parentId = parentPath ? folderMap.get(parentPath) || importRootId : importRootId;
             
-            const parentNode = parentId ? [...existingNodes, ...importedNodes].find(n => n.id === parentId) : null;
-            const nodeDepth = parentNode ? parentNode.depth + 1 : 0;
-
-            // Generate unique name if duplicate exists (allows accumulative imports)
             const allNodes = [...existingNodes, ...importedNodes];
-            const uniqueName = this.generateUniqueName(allNodes, fileNameWithoutExt, parentId);
+            const parentNode = parentId ? allNodes.find(n => n.id === parentId) : null;
+            const nodeDepth = parentNode ? parentNode.depth + 1 : 0;
 
             if (fileType === 'markdown') {
               const content = await zipEntry.async('string');
               const parsed = this.parser.parse(content);
+              
+              const existingFile = this.findExistingNode(allNodes, fileNameWithoutExt, parentId, 'file');
+              
+              if (existingFile) {
+                switch (duplicateStrategy) {
+                  case 'skip':
+                    result.skipped++;
+                    return;
+                  case 'overwrite':
+                    updatedNodes.push({
+                      ...existingFile,
+                      content,
+                      tags: parsed.tags,
+                      wikilinks: parsed.wikilinks,
+                    });
+                    result.overwritten++;
+                    return;
+                  case 'merge':
+                    updatedNodes.push({
+                      ...existingFile,
+                      content: existingFile.content + '\n\n---\n\n' + content,
+                      tags: [...new Set([...existingFile.tags, ...parsed.tags])],
+                      wikilinks: [...new Set([...(existingFile.wikilinks || []), ...parsed.wikilinks])],
+                    });
+                    result.merged++;
+                    return;
+                }
+              }
+
+              const uniqueName = existingFile && duplicateStrategy === 'rename'
+                ? this.generateUniqueName(allNodes, fileNameWithoutExt, parentId)
+                : fileNameWithoutExt;
               
               const fileNode: GraphNode = {
                 id: this.generateId('file'),
@@ -417,6 +529,30 @@ export class ImportExportService {
             } else {
               const blob = await zipEntry.async('blob');
               const dataUrl = await this.blobToDataUrl(blob);
+              
+              const existingMedia = this.findExistingNode(allNodes, fileNameWithoutExt, parentId, 'media');
+              
+              if (existingMedia) {
+                switch (duplicateStrategy) {
+                  case 'skip':
+                  case 'merge':
+                    result.skipped++;
+                    return;
+                  case 'overwrite':
+                    updatedNodes.push({
+                      ...existingMedia,
+                      content: `![${fileName}](${dataUrl})`,
+                      mimeType: this.getMimeType(fileName),
+                      dataUrl,
+                    });
+                    result.overwritten++;
+                    return;
+                }
+              }
+
+              const uniqueName = existingMedia && duplicateStrategy === 'rename'
+                ? this.generateUniqueName(allNodes, fileNameWithoutExt, parentId)
+                : fileNameWithoutExt;
               
               const mediaNode: GraphNode = {
                 id: this.generateId('media'),
@@ -443,6 +579,7 @@ export class ImportExportService {
 
     await Promise.all(filePromises);
     result.nodes = importedNodes;
+    result.updatedNodes = updatedNodes;
     result.success = result.errors.length === 0;
     return result;
   }
@@ -457,7 +594,6 @@ export class ImportExportService {
     const zip = new JSZip();
     const nodeMap = new Map(nodes.map(n => [n.id, n]));
 
-    // Get nodes to export based on options
     let nodesToExport: GraphNode[] = [];
 
     switch (options.type) {
@@ -490,12 +626,10 @@ export class ImportExportService {
         break;
     }
 
-    // Filter by media if needed
     if (options.type !== 'media' && !options.includeMedia) {
       nodesToExport = nodesToExport.filter(n => n.type !== 'media' && !n.mediaType);
     }
 
-    // Build path for each node
     const getNodePath = (node: GraphNode): string => {
       const parts: string[] = [];
       let current: GraphNode | undefined = node;
@@ -506,19 +640,16 @@ export class ImportExportService {
       return parts.join('/');
     };
 
-    // Process nodes
     for (const node of nodesToExport) {
       const path = getNodePath(node);
 
       if (node.type === 'folder') {
         zip.folder(path);
       } else if (node.type === 'media' && node.dataUrl) {
-        // Export media file
         const ext = this.getExtensionFromMimeType(node.mimeType || '');
         const blob = await this.dataUrlToBlob(node.dataUrl);
         zip.file(`${path}${ext}`, blob);
       } else {
-        // Export markdown file
         const frontmatter = [
           '---',
           `id: ${node.id}`,
@@ -532,7 +663,6 @@ export class ImportExportService {
       }
     }
 
-    // Add metadata
     zip.file('_graph_metadata.json', JSON.stringify({
       exportDate: new Date().toISOString(),
       nodeCount: nodesToExport.length,
@@ -542,7 +672,6 @@ export class ImportExportService {
     return await zip.generateAsync({ type: 'blob' });
   }
 
-  // Helper methods
   private async fileToDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
