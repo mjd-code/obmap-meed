@@ -11,6 +11,7 @@ import {
 } from '@/components/PWAInstallPrompt';
 import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { AutoSaveIndicator, SaveStatus } from '@/components/AutoSaveIndicator';
 import { Button } from '@/components/ui/button';
 import { Undo2, Redo2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -56,6 +57,24 @@ const Index = () => {
 	const [currentVaultId, setCurrentVaultId] = useState<string | null>(null);
 	const [canUndo, setCanUndo] = useState(false);
 	const [canRedo, setCanRedo] = useState(false);
+	const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+	const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+	// Helper to save with status indicator
+	const saveVault = useCallback(async () => {
+		if (!currentVaultId) return;
+		
+		setSaveStatus('saving');
+		try {
+			await vaultManager.saveCurrentVault();
+			await vaultManager.recordVaultChange(currentVaultId);
+			setSaveStatus('saved');
+			setLastSaved(new Date());
+		} catch (error) {
+			setSaveStatus('error');
+			console.error('Save failed:', error);
+		}
+	}, [currentVaultId, vaultManager]);
 
 	const getDemoData = (): { nodes: Node[] } => ({
 		nodes: [
@@ -252,8 +271,7 @@ const Index = () => {
 				vault.graphService.setNode(updatedNode);
 				// Links are auto-generated, pass empty links - they'll be rebuilt from nodes
 				vault.history.addState(updatedNodes, []);
-				await vaultManager.saveCurrentVault();
-				await vaultManager.recordVaultChange(currentVaultId);
+				await saveVault();
 				updateUndoRedoState(currentVaultId);
 			}
 		}
@@ -313,8 +331,7 @@ const Index = () => {
 				});
 
 				vault.history.addState(updatedNodes, []);
-				await vaultManager.saveCurrentVault();
-				await vaultManager.recordVaultChange(currentVaultId);
+				await saveVault();
 				updateUndoRedoState(currentVaultId);
 			}
 		}
@@ -385,8 +402,7 @@ const Index = () => {
 				});
 
 				vault.history.addState(updatedNodes, []);
-				await vaultManager.saveCurrentVault();
-				await vaultManager.recordVaultChange(currentVaultId);
+				await saveVault();
 				updateUndoRedoState(currentVaultId);
 			}
 		}
@@ -482,7 +498,7 @@ const Index = () => {
 					}
 					onCloseVault={handleCloseVault}
 					graphConfigTrigger={graphConfigTrigger}
-					onImportComplete={(importedNodes, updatedNodes) => {
+					onImportComplete={async (importedNodes, updatedNodes) => {
 						setNodes((prev) => {
 							// First add new nodes
 							let result = [...prev, ...importedNodes];
@@ -508,8 +524,7 @@ const Index = () => {
 								}
 								allNodes.forEach(n => vault.graphService.setNode(n));
 								vault.history.addState(allNodes, []);
-								vaultManager.saveCurrentVault();
-								vaultManager.recordVaultChange(currentVaultId);
+								await saveVault();
 							}
 						}
 					}}
@@ -530,7 +545,7 @@ const Index = () => {
 				}
 				onCloseVault={handleCloseVault}
 				graphConfigTrigger={graphConfigTrigger}
-				onImportComplete={(importedNodes, updatedNodes) => {
+				onImportComplete={async (importedNodes, updatedNodes) => {
 					setNodes((prev) => {
 						let result = [...prev, ...importedNodes];
 						if (updatedNodes && updatedNodes.length > 0) {
@@ -553,8 +568,7 @@ const Index = () => {
 							}
 							allNodes.forEach(n => vault.graphService.setNode(n));
 							vault.history.addState(allNodes, []);
-							vaultManager.saveCurrentVault();
-							vaultManager.recordVaultChange(currentVaultId);
+							await saveVault();
 						}
 					}
 				}}
@@ -607,6 +621,9 @@ const Index = () => {
 
 				{/* Status indicators */}
 				<div className='absolute top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3'>
+					{currentVaultId && (
+						<AutoSaveIndicator status={saveStatus} lastSaved={lastSaved} />
+					)}
 					<SyncStatusIndicator />
 					<PWAStatusBadge />
 				</div>
