@@ -25,6 +25,14 @@ interface BackupSnapshot {
   description: string;
 }
 
+// Graph configuration types for per-vault storage
+export interface VaultGraphConfig {
+  nodes?: any;
+  links?: any;
+  topology?: any;
+  forces?: any;
+}
+
 interface VaultData {
   metadata: VaultMetadata;
   graphData: {
@@ -35,6 +43,7 @@ interface VaultData {
     past: any[];
     future: any[];
   };
+  graphConfig?: VaultGraphConfig;
 }
 
 const DB_NAME = 'VaultManagerDB';

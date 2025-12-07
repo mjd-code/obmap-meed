@@ -22,6 +22,7 @@ interface Vault {
   directoryHandle?: FileSystemDirectoryHandle;
   createdAt: number;
   lastModified: number;
+  graphConfig?: any; // Per-vault graph configuration
 }
 
 export class VaultManager {
@@ -105,6 +106,7 @@ export class VaultManager {
       type: vaultData.metadata.type,
       graphService,
       history,
+      graphConfig: vaultData.graphConfig || null,
       createdAt: vaultData.metadata.createdAt,
       lastModified: vaultData.metadata.lastModified,
     };
@@ -349,7 +351,23 @@ export class VaultManager {
       },
       graphData,
       history: vault.history.getState(),
+      graphConfig: vault.graphConfig || undefined,
     });
+  }
+
+  // Graph config management
+  getGraphConfig(vaultId: string): any | null {
+    const vault = this.vaults.get(vaultId);
+    return vault?.graphConfig || null;
+  }
+
+  async setGraphConfig(vaultId: string, config: any): Promise<void> {
+    const vault = this.vaults.get(vaultId);
+    if (!vault) return;
+    
+    vault.graphConfig = config;
+    vault.lastModified = Date.now();
+    await this.persistVault(vault);
   }
 
   async saveCurrentVault(): Promise<void> {
