@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-// Per-vault config feature enabled
 import { NetworkGraph } from '@/components/NetworkGraph';
 import { NodePanel } from '@/components/NodePanel';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -61,14 +60,6 @@ const Index = () => {
 	const [canRedo, setCanRedo] = useState(false);
 	const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 	const [lastSaved, setLastSaved] = useState<Date | null>(null);
-	const [vaultGraphConfig, setVaultGraphConfig] = useState<any>(null);
-
-	// Handler for graph config changes - save to vault
-	const handleGraphConfigChange = useCallback(async (config: any) => {
-		if (currentVaultId) {
-			await vaultManager.setGraphConfig(currentVaultId, config);
-		}
-	}, [currentVaultId, vaultManager]);
 
 	// Helper to save with status indicator
 	const saveVault = useCallback(async () => {
@@ -152,7 +143,7 @@ const Index = () => {
 		tagThreshold: 1,
 	});
 
-	// Graph configuration with stats - per-vault config
+	// Graph configuration with stats
 	const {
 		config: graphConfig,
 		stats: graphStats,
@@ -162,11 +153,7 @@ const Index = () => {
 		updateTopologyStyle,
 		updateForceConfig,
 		resetConfig,
-	} = useGraphConfig(nodes, tempAutoLinks, {
-		vaultId: currentVaultId,
-		onConfigChange: handleGraphConfigChange,
-		initialConfig: vaultGraphConfig,
-	});
+	} = useGraphConfig(nodes, tempAutoLinks);
 
 	// Auto-generate links with actual config
 	const autoLinks = useAutoLinks(nodes, {
@@ -208,14 +195,10 @@ const Index = () => {
 			setCurrentVaultId(activeVault.id);
 			const vaultGraphData = activeVault.graphService.getGraphData();
 			setNodes(vaultGraphData.nodes);
-			// Load vault-specific graph config
-			const savedConfig = vaultManager.getGraphConfig(activeVault.id);
-			setVaultGraphConfig(savedConfig);
 			updateUndoRedoState(activeVault.id);
 		} else {
 			setCurrentVaultId(null);
 			setNodes([]);
-			setVaultGraphConfig(null);
 			setCanUndo(false);
 			setCanRedo(false);
 		}
@@ -227,9 +210,6 @@ const Index = () => {
 		if (vault) {
 			const vaultGraphData = vault.graphService.getGraphData();
 			setNodes(vaultGraphData.nodes);
-			// Load or initialize vault-specific graph config
-			const savedConfig = vaultManager.getGraphConfig(vaultId);
-			setVaultGraphConfig(savedConfig);
 			updateUndoRedoState(vaultId);
 		}
 		toast.success('Vault created and activated');
