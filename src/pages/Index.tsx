@@ -20,6 +20,8 @@ import { extractMentions } from '@/lib/markdownParser';
 import { getVaultManager } from '@/services/vault/VaultManagerSingleton';
 import { useAutoLinks } from '@/hooks/useAutoLinks';
 import { useGraphConfig, GraphConfigState } from '@/hooks/useGraphConfig';
+import { useAuth } from '@/hooks/useAuth';
+import { vaultSyncService } from '@/services/vault/VaultSyncService';
 
 interface Node {
 	id: string;
@@ -61,8 +63,11 @@ const Index = () => {
 	const [canRedo, setCanRedo] = useState(false);
 	const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 	const [lastSaved, setLastSaved] = useState<Date | null>(null);
+	
+	const { user, session } = useAuth();
+	const isAuthenticated = !!user && !!session;
 
-	// Helper to save with status indicator
+	// Helper to save with status indicator and cloud sync
 	const saveVault = useCallback(async () => {
 		if (!currentVaultId) return;
 		
@@ -70,13 +75,19 @@ const Index = () => {
 		try {
 			await vaultManager.saveCurrentVault();
 			await vaultManager.recordVaultChange(currentVaultId);
+			
+			// If authenticated, sync to cloud
+			if (isAuthenticated) {
+				await vaultSyncService.syncVaultToCloud(vaultManager, currentVaultId);
+			}
+			
 			setSaveStatus('saved');
 			setLastSaved(new Date());
 		} catch (error) {
 			setSaveStatus('error');
 			console.error('Save failed:', error);
 		}
-	}, [currentVaultId, vaultManager]);
+	}, [currentVaultId, vaultManager, isAuthenticated]);
 
 	const getDemoData = (): { nodes: Node[] } => ({
 		nodes: [
@@ -246,7 +257,26 @@ const Index = () => {
 		};
 		window.addEventListener('focus', handleFocus);
 		return () => window.removeEventListener('focus', handleFocus);
-	}, []);
+	}, [loadActiveVault]);
+
+	// Reload vaults when authentication state changes
+	useEffect(() => {
+		const reloadVaults = async () => {
+			if (isAuthenticated) {
+				// User logged in - sync from cloud
+				await vaultManager.initialize();
+				await vaultSyncService.syncFromCloud(vaultManager);
+				loadActiveVault();
+			} else {
+				// User logged out - clear state (IndexedDB already cleared in signOut)
+				setCurrentVaultId(null);
+				setNodes([]);
+				setVaultGraphConfig(null);
+				setSelectedNode(null);
+			}
+		};
+		reloadVaults();
+	}, [isAuthenticated]);
 
 	// Calculate backlinks for the selected node
 	const backlinks = useMemo((): Backlink[] => {
