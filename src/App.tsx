@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AuthProvider } from "./hooks/useAuth";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Suspense, lazy } from "react";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,16 @@ const VaultDashboard = lazy(() => import("./pages/VaultDashboard").catch(err => 
 const Install = lazy(() => import("./pages/Install").catch(err => {
   console.error("Failed to load Install:", err);
   return { default: () => <div className="p-8 text-destructive">Failed to load Install: {err.message}</div> };
+}));
+
+const Auth = lazy(() => import("./pages/Auth").catch(err => {
+  console.error("Failed to load Auth:", err);
+  return { default: () => <div className="p-8 text-destructive">Failed to load Auth: {err.message}</div> };
+}));
+
+const Profile = lazy(() => import("./pages/Profile").catch(err => {
+  console.error("Failed to load Profile:", err);
+  return { default: () => <div className="p-8 text-destructive">Failed to load Profile: {err.message}</div> };
 }));
 
 const NotFound = lazy(() => import("./pages/NotFound").catch(err => {
@@ -45,15 +57,19 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Suspense fallback={<LoadingFallback />}>
+          <AuthProvider>
+            <Suspense fallback={<LoadingFallback />}>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/vaults" element={<VaultDashboard />} />
-              <Route path="/install" element={<Install />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/vaults" element={<ProtectedRoute><VaultDashboard /></ProtectedRoute>} />
+                <Route path="/install" element={<Install />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

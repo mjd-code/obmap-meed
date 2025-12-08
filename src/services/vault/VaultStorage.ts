@@ -33,6 +33,13 @@ export interface VaultGraphConfig {
   forces?: any;
 }
 
+// Backup configuration for per-vault storage
+export interface VaultBackupConfig {
+  timeIntervalMinutes: number;
+  changeThreshold: number;
+  maxSnapshots: number;
+}
+
 interface VaultData {
   metadata: VaultMetadata;
   graphData: {
@@ -44,6 +51,7 @@ interface VaultData {
     future: any[];
   };
   graphConfig?: VaultGraphConfig;
+  backupConfig?: VaultBackupConfig;
 }
 
 const DB_NAME = 'VaultManagerDB';
