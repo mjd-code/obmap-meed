@@ -11,6 +11,11 @@ import { Suspense, lazy } from "react";
 const queryClient = new QueryClient();
 
 // Lazy load pages to catch import errors
+const Landing = lazy(() => import("./pages/Landing").catch(err => {
+  console.error("Failed to load Landing:", err);
+  return { default: () => <div className="p-8 text-destructive">Failed to load Landing: {err.message}</div> };
+}));
+
 const Index = lazy(() => import("./pages/Index").catch(err => {
   console.error("Failed to load Index:", err);
   return { default: () => <div className="p-8 text-destructive">Failed to load Index: {err.message}</div> };
@@ -60,11 +65,16 @@ const App = () => (
           <AuthProvider>
             <Suspense fallback={<LoadingFallback />}>
             <Routes>
+                {/* Public landing page */}
+                <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/install" element={<Install />} />
+                
+                {/* Protected routes */}
+                <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/vaults" element={<ProtectedRoute><VaultDashboard /></ProtectedRoute>} />
-                <Route path="/install" element={<Install />} />
+                
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

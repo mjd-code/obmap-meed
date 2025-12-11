@@ -47,6 +47,7 @@ export default function VaultDashboard() {
   const [backups, setBackups] = useState<Record<string, any[]>>({});
   const [backupConfigs, setBackupConfigs] = useState<Record<string, any>>({});
   const [settingsVaultId, setSettingsVaultId] = useState<string | null>(null);
+  const [backupVaultId, setBackupVaultId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("profile");
   
   // Comparison mode state
@@ -471,7 +472,7 @@ export default function VaultDashboard() {
                 {/* Vault Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {vaults.map((vault) => (
-                    <div key={vault.id} className="space-y-3 relative">
+                    <div key={vault.id} className="relative">
                       {isCompareMode && (
                         <div 
                           className="absolute -top-2 -left-2 z-10"
@@ -513,22 +514,25 @@ export default function VaultDashboard() {
                           onDelete={() => handleDeleteVault(vault.id)}
                           onRename={(newName) => handleRenameVault(vault.id, newName)}
                           onStorageStrategyChange={(strategy) => handleStorageStrategyChange(vault.id, strategy)}
+                          backupCount={(backups[vault.id] || []).length}
+                          onOpenBackups={vault.type === 'in-memory' && !isCompareMode ? () => {
+                            setBackupVaultId(vault.id);
+                          } : undefined}
+                          onExportToFileSystem={vault.type === 'in-memory' && !isCompareMode ? () => {
+                            // We need to open the export dialog - using a ref approach
+                            const exportBtn = document.getElementById(`export-btn-${vault.id}`);
+                            exportBtn?.click();
+                          } : undefined}
                         />
                       </div>
-
+                      
+                      {/* Hidden export trigger */}
                       {vault.type === 'in-memory' && !isCompareMode && (
-                        <div className="flex gap-2">
-                          <VaultBackupPanel
-                            vaultId={vault.id}
-                            backups={backups[vault.id] || []}
-                            onRestore={(backupId) => handleRestoreBackup(vault.id, backupId)}
-                            onDelete={(backupId) => handleDeleteBackup(vault.id, backupId)}
-                            onManualBackup={() => handleManualBackup(vault.id)}
-                            onOpenSettings={() => setSettingsVaultId(vault.id)}
-                          />
+                        <div className="hidden">
                           <ExportToFileSystem
                             vaultName={vault.name}
                             nodes={getVaultNodes(vault.id)}
+                            trigger={<button id={`export-btn-${vault.id}`} />}
                           />
                         </div>
                       )}
@@ -550,6 +554,28 @@ export default function VaultDashboard() {
         onCreateInMemoryVault={handleCreateInMemoryVault}
         onVaultCreated={handleVaultCreated}
       />
+
+      {/* Backup Panel Dialog */}
+      <Dialog open={!!backupVaultId} onOpenChange={() => setBackupVaultId(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Vault Backups</DialogTitle>
+          </DialogHeader>
+          {backupVaultId && (
+            <VaultBackupPanel
+              vaultId={backupVaultId}
+              backups={backups[backupVaultId] || []}
+              onRestore={(backupId) => handleRestoreBackup(backupVaultId, backupId)}
+              onDelete={(backupId) => handleDeleteBackup(backupVaultId, backupId)}
+              onManualBackup={() => handleManualBackup(backupVaultId)}
+              onOpenSettings={() => {
+                setBackupVaultId(null);
+                setSettingsVaultId(backupVaultId);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Vault Settings Dialog */}
       <Dialog open={!!settingsVaultId} onOpenChange={() => setSettingsVaultId(null)}>

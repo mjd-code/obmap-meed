@@ -194,7 +194,7 @@ export function SidebarPanel({
         });
     };
 
-    const renderNode = (node: Node, level: number = 0): JSX.Element => {
+    const renderNode = (node: Node, level: number = 0, isLastChild: boolean = true, parentLines: boolean[] = []): JSX.Element => {
       const children = getChildren(node.id);
       const hasChildren = children.length > 0;
       const isFolder = node.type === "folder";
@@ -202,7 +202,47 @@ export function SidebarPanel({
       const isDragOver = dragOverNode === node.id;
 
       return (
-        <div key={node.id}>
+        <div key={node.id} className="relative">
+          {/* Tree lines */}
+          {level > 0 && (
+            <div className="absolute left-0 top-0 bottom-0 pointer-events-none">
+              {parentLines.map((showLine, idx) => (
+                showLine && (
+                  <div
+                    key={idx}
+                    className="absolute w-px bg-gradient-to-b from-border/60 to-border/20"
+                    style={{
+                      left: `${idx * 12 + 12}px`,
+                      top: 0,
+                      bottom: 0,
+                    }}
+                  />
+                )
+              ))}
+              {/* Horizontal connector */}
+              <div
+                className="absolute h-px bg-gradient-to-r from-border/60 to-border/30"
+                style={{
+                  left: `${(level - 1) * 12 + 12}px`,
+                  width: '10px',
+                  top: '14px',
+                }}
+              />
+              {/* Vertical connector to this node */}
+              <div
+                className={cn(
+                  "absolute w-px bg-gradient-to-b from-border/60 to-border/20",
+                  isLastChild && "to-transparent"
+                )}
+                style={{
+                  left: `${(level - 1) * 12 + 12}px`,
+                  top: 0,
+                  height: isLastChild ? '14px' : '100%',
+                }}
+              />
+            </div>
+          )}
+
           <div
             className={cn("relative group", isDragOver && isFolder && "bg-accent/30 rounded-md")}
             draggable
@@ -235,12 +275,24 @@ export function SidebarPanel({
               )}
             </div>
           </div>
-          {hasChildren && isExpanded && <div>{children.map((child) => renderNode(child, level + 1))}</div>}
+
+          {hasChildren && isExpanded && (
+            <div className="relative">
+              {children.map((child, idx) => 
+                renderNode(
+                  child, 
+                  level + 1, 
+                  idx === children.length - 1,
+                  [...parentLines, !isLastChild]
+                )
+              )}
+            </div>
+          )}
         </div>
       );
     };
 
-    return rootNodes.map((node) => renderNode(node, 0));
+    return rootNodes.map((node, idx) => renderNode(node, 0, idx === rootNodes.length - 1, []));
   };
 
   const folderCount = nodes.filter((n) => n.type === "folder").length;
