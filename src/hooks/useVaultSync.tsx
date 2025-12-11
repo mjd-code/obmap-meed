@@ -8,19 +8,35 @@ import { vaultSyncService, SyncStatus } from '@/services/vault/VaultSyncService'
 import { getVaultManager } from '@/services/vault/VaultManagerSingleton';
 import { toast } from 'sonner';
 
+interface SyncProgress {
+  total: number;
+  current: number;
+  message: string;
+}
+
+interface SyncResult {
+  success: boolean;
+  error?: string;
+  syncedVaults?: number;
+}
+
 interface UseVaultSyncReturn {
   syncStatus: SyncStatus;
+  syncProgress: SyncProgress | null;
   lastSyncTime: Date | null;
   isAuthenticated: boolean;
   syncToCloud: () => Promise<void>;
   syncFromCloud: () => Promise<void>;
   fullSync: () => Promise<void>;
   syncCurrentVault: () => Promise<void>;
+  syncVaultToCloud: (vaultId: string) => Promise<SyncResult>;
+  deleteCloudVault: (cloudId: string) => Promise<SyncResult>;
 }
 
 export function useVaultSync(): UseVaultSyncReturn {
   const { user, session } = useAuth();
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+  const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const vaultManager = getVaultManager();
 
@@ -28,8 +44,12 @@ export function useVaultSync(): UseVaultSyncReturn {
 
   // Subscribe to sync status changes
   useEffect(() => {
-    const unsubscribe = vaultSyncService.onStatusChange(setSyncStatus);
-    return unsubscribe;
+    const unsubscribeStatus = vaultSyncService.onStatusChange(setSyncStatus);
+    const unsubscribeProgress = vaultSyncService.onProgressChange(setSyncProgress);
+    return () => {
+      unsubscribeStatus();
+      unsubscribeProgress();
+    };
   }, []);
 
   // Update last sync time periodically
@@ -116,13 +136,30 @@ export function useVaultSync(): UseVaultSyncReturn {
     }
   }, [isAuthenticated, vaultManager]);
 
+  const syncVaultToCloud = useCallback(async (vaultId: string): Promise<SyncResult> => {
+    if (!isAuthenticated) {
+      return { success: false, error: 'Not authenticated' };
+    }
+    return await vaultSyncService.syncVaultToCloud(vaultManager, vaultId);
+  }, [isAuthenticated, vaultManager]);
+
+  const deleteCloudVault = useCallback(async (cloudId: string): Promise<SyncResult> => {
+    if (!isAuthenticated) {
+      return { success: false, error: 'Not authenticated' };
+    }
+    return await vaultSyncService.deleteCloudVault(cloudId);
+  }, [isAuthenticated]);
+
   return {
     syncStatus,
+    syncProgress,
     lastSyncTime,
     isAuthenticated,
     syncToCloud,
     syncFromCloud,
     fullSync,
     syncCurrentVault,
+    syncVaultToCloud,
+    deleteCloudVault,
   };
 }

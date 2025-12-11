@@ -1,18 +1,17 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { NetworkGraph } from '@/components/NetworkGraph';
-import { NodePanel } from '@/components/NodePanel';
-import { AppSidebar } from '@/components/AppSidebar';
-import { MobileSidebar } from '@/components/MobileSidebar';
-import { ThemeCustomizer } from '@/components/ThemeCustomizer';
+import { NetworkGraph } from '@/components/graph/NetworkGraph';
+import { NodePanel } from '@/components/graph/NodePanel';
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
+import { ThemeCustomizer } from '@/components/common/ThemeCustomizer';
 import { GraphConfigPanel } from '@/components/GraphConfigPanel';
-import { VaultRequiredGate } from '@/components/VaultRequiredGate';
+import { VaultRequiredGate } from '@/components/vault/VaultRequiredGate';
 import {
 	PWAInstallPrompt,
 	PWAStatusBadge,
-} from '@/components/PWAInstallPrompt';
-import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
-import { OfflineIndicator } from '@/components/OfflineIndicator';
-import { AutoSaveIndicator, SaveStatus } from '@/components/AutoSaveIndicator';
+} from '@/components/common/PWAInstallPrompt';
+import { SyncStatusIndicator } from '@/components/sync/SyncStatusIndicator';
+import { OfflineIndicator } from '@/components/sync/OfflineIndicator';
+import { AutoSaveIndicator, SaveStatus } from '@/components/sync/AutoSaveIndicator';
 import { Button } from '@/components/ui/button';
 import { Undo2, Redo2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -473,6 +472,47 @@ const Index = () => {
 		);
 	};
 
+	const handleAddNode = useCallback(async (type: "folder" | "file") => {
+		// Only folders can have children - enforce this rule
+		const parentNode = selectedNode && selectedNode.type === "folder" ? selectedNode : null;
+
+		if (selectedNode && selectedNode.type === "file") {
+			toast.error('Files cannot contain children. Please select a folder or create at root level.');
+			return;
+		}
+
+		const depth = parentNode ? parentNode.depth + 1 : 0;
+
+		const newNode: Node = {
+			id: `node-${Date.now()}`,
+			name: type === "folder"
+				? `New Folder ${nodes.filter((n) => n.type === "folder").length + 1}`
+				: `New File ${nodes.filter((n) => n.type === "file").length + 1}`,
+			content: "",
+			type,
+			parentId: parentNode?.id || null,
+			depth,
+			tags: [],
+		};
+
+		const updatedNodes = [...nodes, newNode];
+		setNodes(updatedNodes);
+		setSelectedNode(newNode);
+
+		// Update vault if active
+		if (currentVaultId) {
+			const vault = vaultManager.getVault(currentVaultId);
+			if (vault) {
+				vault.graphService.setNode(newNode);
+				vault.history.addState(updatedNodes, []);
+				await saveVault();
+				updateUndoRedoState(currentVaultId);
+			}
+		}
+
+		toast.success(`${type === "folder" ? "Folder" : "File"} created!`);
+	}, [currentVaultId, nodes, saveVault, selectedNode, vaultManager]);
+
 	const handleWikilinkClick = (target: string) => {
 		// Find the node by name
 		const targetNode = graphData.nodes.find(
@@ -537,72 +577,113 @@ const Index = () => {
 		/>
 	);
 
+	const handleImportComplete = useCallback(async (importedNodes: Node[], updatedNodes?: Node[]) => {
+		setNodes((prev) => {
+			let result = [...prev, ...importedNodes];
+			if (updatedNodes && updatedNodes.length > 0) {
+				const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
+				result = result.map(node => updateMap.get(node.id) || node);
+			}
+			return result;
+		});
+		if (currentVaultId) {
+			const vault = vaultManager.getVault(currentVaultId);
+			if (vault) {
+				const allNodes = [...nodes, ...importedNodes];
+				if (updatedNodes) {
+					const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
+					allNodes.forEach((node, i) => {
+						if (updateMap.has(node.id)) {
+							allNodes[i] = updateMap.get(node.id)!;
+						}
+					});
+				}
+				allNodes.forEach(n => vault.graphService.setNode(n));
+				vault.history.addState(allNodes, []);
+				await saveVault();
+			}
+		}
+	}, [currentVaultId, nodes, saveVault, vaultManager]);
+
+	// Graph content for the workspace
+	const graphContent = (
+		<div className="relative w-full h-full">
+			{/* Undo/Redo Controls */}
+			{currentVaultId && (
+				<div className='absolute top-4 right-4 z-30 flex gap-2'>
+					<Button
+						variant='outline'
+						size='icon'
+						onClick={handleUndo}
+						disabled={!canUndo}
+						title='Undo (Ctrl+Z)'
+						className='shadow-md bg-background/95 backdrop-blur-sm'>
+						<Undo2 className='w-4 h-4' />
+					</Button>
+					<Button
+						variant='outline'
+						size='icon'
+						onClick={handleRedo}
+						disabled={!canRedo}
+						title='Redo (Ctrl+Y)'
+						className='shadow-md bg-background/95 backdrop-blur-sm'>
+						<Redo2 className='w-4 h-4' />
+					</Button>
+				</div>
+			)}
+
+			<NetworkGraph
+				onNodeSelect={setSelectedNode}
+				selectedNode={selectedNode}
+				graphData={graphData}
+				setGraphData={setGraphData}
+				linkStyles={graphConfig.topology.styles}
+				graphConfig={graphConfig}
+			/>
+
+			{/* Status indicators */}
+			<div className='absolute top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3'>
+				{currentVaultId && (
+					<AutoSaveIndicator status={saveStatus} lastSaved={lastSaved} />
+				)}
+				<SyncStatusIndicator />
+				<PWAStatusBadge />
+			</div>
+		</div>
+	);
+
+	// Editor content (NodePanel) for the workspace
+	const editorContent = selectedNode ? (
+		<div className="w-full h-full">
+			<NodePanel
+				node={selectedNode}
+				onClose={() => setSelectedNode(null)}
+				onUpdate={handleNodeUpdate}
+				onDelete={handleNodeDelete}
+				backlinks={backlinks}
+				onWikilinkClick={handleWikilinkClick}
+				onBacklinkClick={handleBacklinkClick}
+				onTagClick={handleTagClick}
+			/>
+		</div>
+	) : null;
+
 	return (
 		<VaultRequiredGate
 			isVaultActive={!!currentVaultId}
 			onVaultCreated={handleVaultCreated}
 		>
-		<div className='flex h-screen overflow-hidden bg-background w-full'>
 			{/* Offline Status Alert */}
 			<div className='fixed top-16 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md'>
 				<OfflineIndicator />
 			</div>
 
-			{/* Desktop Sidebar */}
-			<div className='hidden lg:block'>
-				<AppSidebar
-					nodes={graphData.nodes}
-					onNodeSelect={setSelectedNode}
-					selectedNode={selectedNode}
-					onNodeMove={handleNodeMove}
-					isVaultMode={!!currentVaultId}
-					vaultName={
-						currentVaultId
-							? vaultManager.getVault(currentVaultId)?.name || null
-							: null
-					}
-					vaultType={currentVaultId ? vaultManager.getVault(currentVaultId)?.type : undefined}
-					onCloseVault={handleCloseVault}
-					graphConfigTrigger={graphConfigTrigger}
-					onImportComplete={async (importedNodes, updatedNodes) => {
-						setNodes((prev) => {
-							// First add new nodes
-							let result = [...prev, ...importedNodes];
-							// Then update existing nodes that were overwritten/merged
-							if (updatedNodes && updatedNodes.length > 0) {
-								const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
-								result = result.map(node => updateMap.get(node.id) || node);
-							}
-							return result;
-						});
-						// Save to vault if active
-						if (currentVaultId) {
-							const vault = vaultManager.getVault(currentVaultId);
-							if (vault) {
-								const allNodes = [...nodes, ...importedNodes];
-								if (updatedNodes) {
-									const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
-									allNodes.forEach((node, i) => {
-										if (updateMap.has(node.id)) {
-											allNodes[i] = updateMap.get(node.id)!;
-										}
-									});
-								}
-								allNodes.forEach(n => vault.graphService.setNode(n));
-								vault.history.addState(allNodes, []);
-								await saveVault();
-							}
-						}
-					}}
-				/>
-			</div>
-
-			{/* Mobile Sidebar */}
-			<MobileSidebar
+			<UnifiedLayout
 				nodes={graphData.nodes}
-				onNodeSelect={setSelectedNode}
 				selectedNode={selectedNode}
+				onNodeSelect={setSelectedNode}
 				onNodeMove={handleNodeMove}
+				onAddNode={handleAddNode}
 				isVaultMode={!!currentVaultId}
 				vaultName={
 					currentVaultId
@@ -612,60 +693,11 @@ const Index = () => {
 				vaultType={currentVaultId ? vaultManager.getVault(currentVaultId)?.type : undefined}
 				onCloseVault={handleCloseVault}
 				graphConfigTrigger={graphConfigTrigger}
-				onImportComplete={async (importedNodes, updatedNodes) => {
-					setNodes((prev) => {
-						let result = [...prev, ...importedNodes];
-						if (updatedNodes && updatedNodes.length > 0) {
-							const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
-							result = result.map(node => updateMap.get(node.id) || node);
-						}
-						return result;
-					});
-					if (currentVaultId) {
-						const vault = vaultManager.getVault(currentVaultId);
-						if (vault) {
-							const allNodes = [...nodes, ...importedNodes];
-							if (updatedNodes) {
-								const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
-								allNodes.forEach((node, i) => {
-									if (updateMap.has(node.id)) {
-										allNodes[i] = updateMap.get(node.id)!;
-									}
-								});
-							}
-							allNodes.forEach(n => vault.graphService.setNode(n));
-							vault.history.addState(allNodes, []);
-							await saveVault();
-						}
-					}
-				}}
-			/>
-
-			<div className='flex-1 relative'>
-				{/* Undo/Redo Controls */}
-				{currentVaultId && (
-					<div className='absolute top-4 right-4 z-30 flex gap-2'>
-						<Button
-							variant='outline'
-							size='icon'
-							onClick={handleUndo}
-							disabled={!canUndo}
-							title='Undo (Ctrl+Z)'
-							className='shadow-md bg-background/95 backdrop-blur-sm'>
-							<Undo2 className='w-4 h-4' />
-						</Button>
-						<Button
-							variant='outline'
-							size='icon'
-							onClick={handleRedo}
-							disabled={!canRedo}
-							title='Redo (Ctrl+Y)'
-							className='shadow-md bg-background/95 backdrop-blur-sm'>
-							<Redo2 className='w-4 h-4' />
-						</Button>
-					</div>
-				)}
-
+				onImportComplete={handleImportComplete}
+				graphContent={graphContent}
+				editorContent={editorContent}
+			>
+				{/* Fallback content */}
 				<NetworkGraph
 					onNodeSelect={setSelectedNode}
 					selectedNode={selectedNode}
@@ -674,34 +706,11 @@ const Index = () => {
 					linkStyles={graphConfig.topology.styles}
 					graphConfig={graphConfig}
 				/>
-				<NodePanel
-					node={selectedNode}
-					onClose={() => setSelectedNode(null)}
-					onUpdate={handleNodeUpdate}
-					onDelete={handleNodeDelete}
-					backlinks={backlinks}
-					onWikilinkClick={handleWikilinkClick}
-					onBacklinkClick={handleBacklinkClick}
-					onTagClick={handleTagClick}
-				/>
-				<ThemeCustomizer />
+			</UnifiedLayout>
 
-				{/* Status indicators */}
-				<div className='absolute top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3'>
-					{currentVaultId && (
-						<AutoSaveIndicator status={saveStatus} lastSaved={lastSaved} />
-					)}
-					<SyncStatusIndicator />
-					<PWAStatusBadge />
-				</div>
-			</div>
-
-			{/* PWA Install Prompt */}
-			<PWAInstallPrompt
-				variant='banner'
-				showOfflineStatus={true}
-			/>
-		</div>
+			{/* Floating panels */}
+			<ThemeCustomizer />
+			<PWAInstallPrompt variant='banner' showOfflineStatus={true} />
 		</VaultRequiredGate>
 	);
 };

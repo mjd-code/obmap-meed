@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import { BacklinksPanel } from "@/components/BacklinksPanel";
+import { MarkdownRenderer } from "@/components/graph/MarkdownRenderer";
+import { BacklinksPanel } from "@/components/graph/BacklinksPanel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 
@@ -319,7 +319,7 @@ export const NodePanel = ({
   };
 
   return (
-    <div className="fixed top-4 right-4 w-[95vw] max-w-[800px] h-[calc(100vh-2rem)] bg-card border border-border rounded-lg shadow-2xl z-40 flex flex-col md:w-[600px] lg:w-[700px] xl:w-[800px]">
+    <div className="w-full h-full bg-card flex flex-col overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center gap-2">
           {getNodeIcon(node)}
