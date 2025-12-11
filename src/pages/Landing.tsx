@@ -24,10 +24,10 @@ export default function Landing() {
   const { user, loading } = useAuth();
   const { canInstall, installApp, isInstalled } = usePWA();
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to main app
   useEffect(() => {
     if (!loading && user) {
-      navigate('/vaults');
+      navigate('/app');
     }
   }, [user, loading, navigate]);
 

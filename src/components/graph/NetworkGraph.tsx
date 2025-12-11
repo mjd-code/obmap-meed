@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 // @ts-ignore - react-force-graph-2d types
 import ForceGraph2D from 'react-force-graph-2d';
 import { Button } from '@/components/ui/button';
@@ -303,6 +303,11 @@ export const NetworkGraph = ({
 		graphConfig.forces.alphaDecay,
 	]);
 
+	// Track collapsed nodes for expand/collapse on single click
+	const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
+	const lastClickRef = useRef<{ nodeId: string; time: number } | null>(null);
+	const DOUBLE_CLICK_THRESHOLD = 300; // ms
+
 	const handleNodeClick = useCallback(
 		(node: Node) => {
 			if (linkMode) {
@@ -322,12 +327,62 @@ export const NetworkGraph = ({
 					setLinkMode(false);
 					setLinkSource(null);
 				}
-			} else {
+				return;
+			}
+
+			const now = Date.now();
+			const lastClick = lastClickRef.current;
+
+			// Check for double click
+			if (lastClick && lastClick.nodeId === node.id && (now - lastClick.time) < DOUBLE_CLICK_THRESHOLD) {
+				// Double click - open in editor
 				onNodeSelect(node);
+				lastClickRef.current = null;
+				return;
+			}
+
+			// Single click - toggle expand/collapse for folders
+			lastClickRef.current = { nodeId: node.id, time: now };
+
+			// Check if this node has children
+			const hasChildren = graphData.nodes.some(n => n.parentId === node.id);
+			
+			if (hasChildren) {
+				setCollapsedNodes(prev => {
+					const next = new Set(prev);
+					if (next.has(node.id)) {
+						next.delete(node.id);
+					} else {
+						next.add(node.id);
+					}
+					return next;
+				});
 			}
 		},
 		[linkMode, linkSource, graphData, setGraphData, onNodeSelect]
 	);
+
+	// Get all descendants of collapsed nodes to hide them
+	const getDescendants = useCallback((nodeId: string, nodes: Node[]): Set<string> => {
+		const descendants = new Set<string>();
+		const children = nodes.filter(n => n.parentId === nodeId);
+		children.forEach(child => {
+			descendants.add(child.id);
+			const childDescendants = getDescendants(child.id, nodes);
+			childDescendants.forEach(id => descendants.add(id));
+		});
+		return descendants;
+	}, []);
+
+	// Calculate hidden nodes based on collapsed state
+	const hiddenNodes = useMemo(() => {
+		const hidden = new Set<string>();
+		collapsedNodes.forEach(collapsedId => {
+			const descendants = getDescendants(collapsedId, graphData.nodes);
+			descendants.forEach(id => hidden.add(id));
+		});
+		return hidden;
+	}, [collapsedNodes, graphData.nodes, getDescendants]);
 
 	const calculateDepth = (nodeId: string, nodes: Node[]): number => {
 		const node = nodes.find((n) => n.id === nodeId);
@@ -378,8 +433,11 @@ export const NetworkGraph = ({
 		onNodeSelect(newNode);
 	};
 
-	const filteredData = {
+	const filteredData = useMemo(() => ({
 		nodes: graphData.nodes.filter((node) => {
+			// Hide collapsed descendants
+			if (hiddenNodes.has(node.id)) return false;
+
 			// Depth filter
 			if (node.depth > maxDepth) return false;
 
@@ -416,15 +474,19 @@ export const NetworkGraph = ({
 				typeof link.source === 'string' ? link.source : link.source.id;
 			const targetId =
 				typeof link.target === 'string' ? link.target : link.target.id;
+			
+			// Hide links to/from hidden nodes
+			if (hiddenNodes.has(sourceId) || hiddenNodes.has(targetId)) return false;
+
 			const sourceInFiltered = graphData.nodes.find(
-				(n) => n.id === sourceId && n.depth <= maxDepth
+				(n) => n.id === sourceId && n.depth <= maxDepth && !hiddenNodes.has(n.id)
 			);
 			const targetInFiltered = graphData.nodes.find(
-				(n) => n.id === targetId && n.depth <= maxDepth
+				(n) => n.id === targetId && n.depth <= maxDepth && !hiddenNodes.has(n.id)
 			);
 			return sourceInFiltered && targetInFiltered;
 		}),
-	};
+	}), [graphData, hiddenNodes, maxDepth, searchQuery, contentFilter, tagFilter]);
 
 	const activeFilters = [
 		maxDepth < 10 && `Depth ≤ ${maxDepth}`,
@@ -433,22 +495,11 @@ export const NetworkGraph = ({
 	].filter(Boolean);
 
 	return (
-		<div ref={containerRef} className='relative w-full h-full flex-1 bg-graph-bg'>
+		<div
+			ref={containerRef}
+			className='relative w-full h-full flex-1 bg-graph-bg'>
 			<div className='absolute top-4 left-4 z-10 flex flex-col gap-2'>
 				<div className='flex gap-2 flex-wrap'>
-					<Button
-						onClick={() => addNode('folder')}
-						className='bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg'>
-						<FolderPlus className='w-4 h-4 mr-2' />
-						Add Folder
-					</Button>
-					<Button
-						onClick={() => addNode('file')}
-						className='bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg'>
-						<FilePlus className='w-4 h-4 mr-2' />
-						Add File
-					</Button>
-
 					<Popover>
 						<PopoverTrigger asChild>
 							<Button
@@ -664,6 +715,8 @@ export const NetworkGraph = ({
 					const fontSize = graphConfig.nodes.labelSize / globalScale;
 					const iconSize = (graphConfig.nodes.labelSize + 2) / globalScale;
 					const isFolder = node.type === 'folder';
+					const hasChildren = graphData.nodes.some(n => n.parentId === node.id);
+					const isCollapsed = collapsedNodes.has(node.id);
 
 					// Build font string based on style
 					let fontStyle = '';
@@ -746,6 +799,36 @@ export const NetworkGraph = ({
 					ctx.fill();
 					ctx.shadowBlur = 0;
 					ctx.globalAlpha = 1;
+
+					// Draw collapsed indicator (outer ring) for nodes with hidden children
+					if (hasChildren && isCollapsed) {
+						ctx.strokeStyle = colorWithOpacity(fillColor, 0.6);
+						ctx.lineWidth = 2 / globalScale;
+						ctx.setLineDash([3 / globalScale, 2 / globalScale]);
+						ctx.beginPath();
+						ctx.arc(node.x, node.y, nodeSize + 4 / globalScale, 0, 2 * Math.PI);
+						ctx.stroke();
+						ctx.setLineDash([]);
+
+						// Draw child count badge
+						const childCount = graphData.nodes.filter(n => n.parentId === node.id).length;
+						const badgeSize = 6 / globalScale;
+						const badgeX = node.x + nodeSize * 0.7;
+						const badgeY = node.y - nodeSize * 0.7;
+
+						// Badge background
+						ctx.fillStyle = 'hsl(270, 80%, 60%)';
+						ctx.beginPath();
+						ctx.arc(badgeX, badgeY, badgeSize, 0, 2 * Math.PI);
+						ctx.fill();
+
+						// Badge text
+						ctx.font = `bold ${8 / globalScale}px Inter, sans-serif`;
+						ctx.fillStyle = '#fff';
+						ctx.textAlign = 'center';
+						ctx.textBaseline = 'middle';
+						ctx.fillText(childCount.toString(), badgeX, badgeY);
+					}
 
 					// Draw label if enabled
 					if (graphConfig.nodes.showLabels) {

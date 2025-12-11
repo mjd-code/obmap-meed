@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { NetworkGraph } from '@/components/graph/NetworkGraph';
 import { NodePanel } from '@/components/graph/NodePanel';
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
-import { ThemeCustomizer } from '@/components/common/ThemeCustomizer';
 import { GraphConfigPanel } from '@/components/GraphConfigPanel';
 import { VaultRequiredGate } from '@/components/vault/VaultRequiredGate';
 import {
@@ -11,7 +10,10 @@ import {
 } from '@/components/common/PWAInstallPrompt';
 import { SyncStatusIndicator } from '@/components/sync/SyncStatusIndicator';
 import { OfflineIndicator } from '@/components/sync/OfflineIndicator';
-import { AutoSaveIndicator, SaveStatus } from '@/components/sync/AutoSaveIndicator';
+import {
+	AutoSaveIndicator,
+	SaveStatus,
+} from '@/components/sync/AutoSaveIndicator';
 import { Button } from '@/components/ui/button';
 import { Undo2, Redo2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -50,6 +52,7 @@ interface GraphData {
 interface Backlink {
 	nodeId: string;
 	nodeName: string;
+	nodePath?: string;
 	isWikilink: boolean;
 }
 
@@ -57,29 +60,29 @@ const Index = () => {
 	const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 	const vaultManager = getVaultManager();
 	const [currentVaultId, setCurrentVaultId] = useState<string | null>(null);
-	const [vaultGraphConfig, setVaultGraphConfig] = useState<GraphConfigState | null>(null);
-	const [canUndo, setCanUndo] = useState(false);
-	const [canRedo, setCanRedo] = useState(false);
+	const [vaultGraphConfig, setVaultGraphConfig] =
+		useState<GraphConfigState | null>(null);
 	const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 	const [lastSaved, setLastSaved] = useState<Date | null>(null);
-	
+	const [canUndo, setCanUndo] = useState(false);
+	const [canRedo, setCanRedo] = useState(false);
 	const { user, session } = useAuth();
 	const isAuthenticated = !!user && !!session;
 
 	// Helper to save with status indicator and cloud sync
 	const saveVault = useCallback(async () => {
 		if (!currentVaultId) return;
-		
+
 		setSaveStatus('saving');
 		try {
 			await vaultManager.saveCurrentVault();
 			await vaultManager.recordVaultChange(currentVaultId);
-			
+
 			// If authenticated, sync to cloud
 			if (isAuthenticated) {
 				await vaultSyncService.syncVaultToCloud(vaultManager, currentVaultId);
 			}
-			
+
 			setSaveStatus('saved');
 			setLastSaved(new Date());
 		} catch (error) {
@@ -155,11 +158,14 @@ const Index = () => {
 	});
 
 	// Callback to save graph config to vault's .vault-config.json (local-folder) or IndexedDB (in-memory)
-	const handleGraphConfigChange = useCallback(async (config: GraphConfigState) => {
-		if (currentVaultId) {
-			await vaultManager.setGraphConfig(currentVaultId, config);
-		}
-	}, [currentVaultId, vaultManager]);
+	const handleGraphConfigChange = useCallback(
+		async (config: GraphConfigState) => {
+			if (currentVaultId) {
+				await vaultManager.setGraphConfig(currentVaultId, config);
+			}
+		},
+		[currentVaultId, vaultManager]
+	);
 
 	// Graph configuration with stats - connected to per-vault storage
 	const {
@@ -230,20 +236,6 @@ const Index = () => {
 		}
 	}, [vaultManager]);
 
-	const handleVaultCreated = useCallback((vaultId: string) => {
-		setCurrentVaultId(vaultId);
-		const vault = vaultManager.getVault(vaultId);
-		if (vault) {
-			const vaultGraphData = vault.graphService.getGraphData();
-			setNodes(vaultGraphData.nodes);
-			// Load per-vault graph config (will be null for new vaults)
-			const savedGraphConfig = vaultManager.getGraphConfig(vaultId);
-			setVaultGraphConfig(savedGraphConfig);
-			updateUndoRedoState(vaultId);
-		}
-		toast.success('Vault created and activated');
-	}, [vaultManager]);
-
 	const updateUndoRedoState = (vaultId: string) => {
 		setCanUndo(vaultManager.canUndo(vaultId));
 		setCanRedo(vaultManager.canRedo(vaultId));
@@ -277,35 +269,64 @@ const Index = () => {
 		reloadVaults();
 	}, [isAuthenticated]);
 
-	// Calculate backlinks for the selected node
-	const backlinks = useMemo((): Backlink[] => {
-		if (!selectedNode || selectedNode.type === 'folder') return [];
+	// Helper to get node path
+	const getNodePath = useCallback((nodeId: string): string => {
+		const node = graphData.nodes.find(n => n.id === nodeId);
+		if (!node) return "";
+		
+		const pathParts: string[] = [node.name];
+		let current = node;
+		
+		while (current.parentId) {
+			const parent = graphData.nodes.find(n => n.id === current.parentId);
+			if (parent) {
+				pathParts.unshift(parent.name);
+				current = parent;
+			} else {
+				break;
+			}
+		}
+		
+		return pathParts.join(" / ");
+	}, [graphData.nodes]);
+
+	// Calculate backlinks for a given node
+	const getBacklinksForNode = useCallback((targetNode: Node): Backlink[] => {
+		if (!targetNode || targetNode.type === 'folder') return [];
 
 		const links: Backlink[] = [];
 
 		graphData.nodes.forEach((node) => {
-			if (node.id === selectedNode.id || node.type === 'folder') return;
+			if (node.id === targetNode.id || node.type === 'folder') return;
 
 			// Check for explicit wikilinks
-			if (node.wikilinks && node.wikilinks.includes(selectedNode.name)) {
+			if (node.wikilinks && node.wikilinks.includes(targetNode.name)) {
 				links.push({
 					nodeId: node.id,
 					nodeName: node.name,
+					nodePath: getNodePath(node.id),
 					isWikilink: true,
 				});
 			}
 			// Check for unlinked mentions
-			else if (extractMentions(node.content, selectedNode.name)) {
+			else if (extractMentions(node.content, targetNode.name)) {
 				links.push({
 					nodeId: node.id,
 					nodeName: node.name,
+					nodePath: getNodePath(node.id),
 					isWikilink: false,
 				});
 			}
 		});
 
 		return links;
-	}, [selectedNode, graphData.nodes]);
+	}, [graphData.nodes, getNodePath]);
+
+	// Calculate backlinks for the selected node
+	const backlinks = useMemo((): Backlink[] => {
+		if (!selectedNode) return [];
+		return getBacklinksForNode(selectedNode);
+	}, [selectedNode, getBacklinksForNode]);
 
 	const handleCloseVault = async () => {
 		if (!currentVaultId) return;
@@ -334,26 +355,6 @@ const Index = () => {
 				await saveVault();
 				updateUndoRedoState(currentVaultId);
 			}
-		}
-	};
-
-	const handleUndo = async () => {
-		if (!currentVaultId) return;
-
-		const success = await vaultManager.undo(currentVaultId);
-		if (success) {
-			loadActiveVault();
-			toast.success('Undo successful');
-		}
-	};
-
-	const handleRedo = async () => {
-		if (!currentVaultId) return;
-
-		const success = await vaultManager.redo(currentVaultId);
-		if (success) {
-			loadActiveVault();
-			toast.success('Redo successful');
 		}
 	};
 
@@ -472,46 +473,55 @@ const Index = () => {
 		);
 	};
 
-	const handleAddNode = useCallback(async (type: "folder" | "file") => {
-		// Only folders can have children - enforce this rule
-		const parentNode = selectedNode && selectedNode.type === "folder" ? selectedNode : null;
+	const handleAddNode = useCallback(
+		async (type: 'folder' | 'file') => {
+			// Only folders can have children - enforce this rule
+			const parentNode =
+				selectedNode && selectedNode.type === 'folder' ? selectedNode : null;
 
-		if (selectedNode && selectedNode.type === "file") {
-			toast.error('Files cannot contain children. Please select a folder or create at root level.');
-			return;
-		}
-
-		const depth = parentNode ? parentNode.depth + 1 : 0;
-
-		const newNode: Node = {
-			id: `node-${Date.now()}`,
-			name: type === "folder"
-				? `New Folder ${nodes.filter((n) => n.type === "folder").length + 1}`
-				: `New File ${nodes.filter((n) => n.type === "file").length + 1}`,
-			content: "",
-			type,
-			parentId: parentNode?.id || null,
-			depth,
-			tags: [],
-		};
-
-		const updatedNodes = [...nodes, newNode];
-		setNodes(updatedNodes);
-		setSelectedNode(newNode);
-
-		// Update vault if active
-		if (currentVaultId) {
-			const vault = vaultManager.getVault(currentVaultId);
-			if (vault) {
-				vault.graphService.setNode(newNode);
-				vault.history.addState(updatedNodes, []);
-				await saveVault();
-				updateUndoRedoState(currentVaultId);
+			if (selectedNode && selectedNode.type === 'file') {
+				toast.error(
+					'Files cannot contain children. Please select a folder or create at root level.'
+				);
+				return;
 			}
-		}
 
-		toast.success(`${type === "folder" ? "Folder" : "File"} created!`);
-	}, [currentVaultId, nodes, saveVault, selectedNode, vaultManager]);
+			const depth = parentNode ? parentNode.depth + 1 : 0;
+
+			const newNode: Node = {
+				id: `node-${Date.now()}`,
+				name:
+					type === 'folder'
+						? `New Folder ${
+								nodes.filter((n) => n.type === 'folder').length + 1
+						  }`
+						: `New File ${nodes.filter((n) => n.type === 'file').length + 1}`,
+				content: '',
+				type,
+				parentId: parentNode?.id || null,
+				depth,
+				tags: [],
+			};
+
+			const updatedNodes = [...nodes, newNode];
+			setNodes(updatedNodes);
+			setSelectedNode(newNode);
+
+			// Update vault if active
+			if (currentVaultId) {
+				const vault = vaultManager.getVault(currentVaultId);
+				if (vault) {
+					vault.graphService.setNode(newNode);
+					vault.history.addState(updatedNodes, []);
+					await saveVault();
+					updateUndoRedoState(currentVaultId);
+				}
+			}
+
+			toast.success(`${type === 'folder' ? 'Folder' : 'File'} created!`);
+		},
+		[currentVaultId, nodes, saveVault, selectedNode, vaultManager]
+	);
 
 	const handleWikilinkClick = (target: string) => {
 		// Find the node by name
@@ -577,61 +587,40 @@ const Index = () => {
 		/>
 	);
 
-	const handleImportComplete = useCallback(async (importedNodes: Node[], updatedNodes?: Node[]) => {
-		setNodes((prev) => {
-			let result = [...prev, ...importedNodes];
-			if (updatedNodes && updatedNodes.length > 0) {
-				const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
-				result = result.map(node => updateMap.get(node.id) || node);
-			}
-			return result;
-		});
-		if (currentVaultId) {
-			const vault = vaultManager.getVault(currentVaultId);
-			if (vault) {
-				const allNodes = [...nodes, ...importedNodes];
-				if (updatedNodes) {
-					const updateMap = new Map(updatedNodes.map(n => [n.id, n]));
-					allNodes.forEach((node, i) => {
-						if (updateMap.has(node.id)) {
-							allNodes[i] = updateMap.get(node.id)!;
-						}
-					});
+	const handleImportComplete = useCallback(
+		async (importedNodes: Node[], updatedNodes?: Node[]) => {
+			setNodes((prev) => {
+				let result = [...prev, ...importedNodes];
+				if (updatedNodes && updatedNodes.length > 0) {
+					const updateMap = new Map(updatedNodes.map((n) => [n.id, n]));
+					result = result.map((node) => updateMap.get(node.id) || node);
 				}
-				allNodes.forEach(n => vault.graphService.setNode(n));
-				vault.history.addState(allNodes, []);
-				await saveVault();
+				return result;
+			});
+			if (currentVaultId) {
+				const vault = vaultManager.getVault(currentVaultId);
+				if (vault) {
+					const allNodes = [...nodes, ...importedNodes];
+					if (updatedNodes) {
+						const updateMap = new Map(updatedNodes.map((n) => [n.id, n]));
+						allNodes.forEach((node, i) => {
+							if (updateMap.has(node.id)) {
+								allNodes[i] = updateMap.get(node.id)!;
+							}
+						});
+					}
+					allNodes.forEach((n) => vault.graphService.setNode(n));
+					vault.history.addState(allNodes, []);
+					await saveVault();
+				}
 			}
-		}
-	}, [currentVaultId, nodes, saveVault, vaultManager]);
+		},
+		[currentVaultId, nodes, saveVault, vaultManager]
+	);
 
 	// Graph content for the workspace
 	const graphContent = (
-		<div className="relative w-full h-full">
-			{/* Undo/Redo Controls */}
-			{currentVaultId && (
-				<div className='absolute top-4 right-4 z-30 flex gap-2'>
-					<Button
-						variant='outline'
-						size='icon'
-						onClick={handleUndo}
-						disabled={!canUndo}
-						title='Undo (Ctrl+Z)'
-						className='shadow-md bg-background/95 backdrop-blur-sm'>
-						<Undo2 className='w-4 h-4' />
-					</Button>
-					<Button
-						variant='outline'
-						size='icon'
-						onClick={handleRedo}
-						disabled={!canRedo}
-						title='Redo (Ctrl+Y)'
-						className='shadow-md bg-background/95 backdrop-blur-sm'>
-						<Redo2 className='w-4 h-4' />
-					</Button>
-				</div>
-			)}
-
+		<div className='relative w-full h-full'>
 			<NetworkGraph
 				onNodeSelect={setSelectedNode}
 				selectedNode={selectedNode}
@@ -644,7 +633,10 @@ const Index = () => {
 			{/* Status indicators */}
 			<div className='absolute top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3'>
 				{currentVaultId && (
-					<AutoSaveIndicator status={saveStatus} lastSaved={lastSaved} />
+					<AutoSaveIndicator
+						status={saveStatus}
+						lastSaved={lastSaved}
+					/>
 				)}
 				<SyncStatusIndicator />
 				<PWAStatusBadge />
@@ -652,28 +644,32 @@ const Index = () => {
 		</div>
 	);
 
-	// Editor content (NodePanel) for the workspace
-	const editorContent = selectedNode ? (
-		<div className="w-full h-full">
-			<NodePanel
-				node={selectedNode}
-				onClose={() => setSelectedNode(null)}
-				onUpdate={handleNodeUpdate}
-				onDelete={handleNodeDelete}
-				backlinks={backlinks}
-				onWikilinkClick={handleWikilinkClick}
-				onBacklinkClick={handleBacklinkClick}
-				onTagClick={handleTagClick}
-			/>
-		</div>
-	) : null;
+	// Render editor for a specific node (used by tab switching)
+	const renderEditorForNode = useCallback((node: Node) => {
+		const nodeBacklinks = getBacklinksForNode(node);
+		const nodePath = getNodePath(node.id);
+		return (
+			<div className='w-full h-full'>
+				<NodePanel
+					node={node}
+					nodePath={nodePath}
+					onClose={() => setSelectedNode(null)}
+					onUpdate={handleNodeUpdate}
+					onDelete={handleNodeDelete}
+					backlinks={nodeBacklinks}
+					onWikilinkClick={handleWikilinkClick}
+					onBacklinkClick={handleBacklinkClick}
+					onTagClick={handleTagClick}
+				/>
+			</div>
+		);
+	}, [getBacklinksForNode, getNodePath, handleNodeUpdate, handleNodeDelete, handleWikilinkClick, handleBacklinkClick, handleTagClick]);
+
+	// Editor content (NodePanel) for the workspace - fallback for selectedNode
+	const editorContent = selectedNode ? renderEditorForNode(selectedNode) : null;
 
 	return (
-		<VaultRequiredGate
-			isVaultActive={!!currentVaultId}
-			onVaultCreated={handleVaultCreated}
-		>
-			{/* Offline Status Alert */}
+		<>
 			<div className='fixed top-16 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md'>
 				<OfflineIndicator />
 			</div>
@@ -690,28 +686,25 @@ const Index = () => {
 						? vaultManager.getVault(currentVaultId)?.name || null
 						: null
 				}
-				vaultType={currentVaultId ? vaultManager.getVault(currentVaultId)?.type : undefined}
+				vaultType={
+					currentVaultId
+						? vaultManager.getVault(currentVaultId)?.type
+						: undefined
+				}
 				onCloseVault={handleCloseVault}
 				graphConfigTrigger={graphConfigTrigger}
 				onImportComplete={handleImportComplete}
 				graphContent={graphContent}
 				editorContent={editorContent}
-			>
-				{/* Fallback content */}
-				<NetworkGraph
-					onNodeSelect={setSelectedNode}
-					selectedNode={selectedNode}
-					graphData={graphData}
-					setGraphData={setGraphData}
-					linkStyles={graphConfig.topology.styles}
-					graphConfig={graphConfig}
-				/>
+				renderEditorForNode={renderEditorForNode}>
+				<div />
 			</UnifiedLayout>
 
-			{/* Floating panels */}
-			<ThemeCustomizer />
-			<PWAInstallPrompt variant='banner' showOfflineStatus={true} />
-		</VaultRequiredGate>
+			<PWAInstallPrompt
+				variant='banner'
+				showOfflineStatus={true}
+			/>
+		</>
 	);
 };
 

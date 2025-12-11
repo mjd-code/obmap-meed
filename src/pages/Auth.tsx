@@ -12,9 +12,9 @@ export default function Auth() {
   const mode = searchParams.get('mode') as 'login' | 'register' | 'reset' | 'update-password' | null;
 
   useEffect(() => {
-    // Redirect authenticated users to dashboard (except for password update)
+    // Redirect authenticated users to main app (except for password update)
     if (user && mode !== 'update-password') {
-      navigate('/vaults');
+      navigate('/app');
     }
   }, [user, mode, navigate]);
 
@@ -36,7 +36,7 @@ export default function Auth() {
         
         <AuthForm 
           initialMode={mode || 'login'} 
-          onSuccess={() => navigate('/vaults')} 
+          onSuccess={() => navigate('/app')} 
         />
       </div>
     </div>
