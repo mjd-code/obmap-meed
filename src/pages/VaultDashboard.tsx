@@ -232,7 +232,6 @@ export default function VaultDashboard() {
     const { needsCloudSync } = await vaultManager.setStorageStrategy(vaultId, strategy);
     await loadVaults();
     
-    // If set to cloud strategy and authenticated, sync immediately
     if (needsCloudSync && isAuthenticated) {
       const result = await syncVaultToCloud(vaultId);
       if (result.success) {
@@ -242,6 +241,16 @@ export default function VaultDashboard() {
       }
     } else {
       toast.success(`Storage strategy updated to "${strategy === 'cloud' ? 'Cloud Sync' : 'Local Only'}"`);
+    }
+  };
+
+  const handleRenameVault = async (vaultId: string, newName: string) => {
+    const success = await vaultManager.renameVault(vaultId, newName);
+    if (success) {
+      await loadVaults();
+      toast.success(`Vault renamed to "${newName}"`);
+    } else {
+      toast.error("Failed to rename vault");
     }
   };
 
@@ -502,6 +511,7 @@ export default function VaultDashboard() {
                           isAuthenticated={!!user}
                           onSelect={() => isCompareMode ? toggleVaultSelection(vault.id) : handleSelectVault(vault.id)}
                           onDelete={() => handleDeleteVault(vault.id)}
+                          onRename={(newName) => handleRenameVault(vault.id, newName)}
                           onStorageStrategyChange={(strategy) => handleStorageStrategyChange(vault.id, strategy)}
                         />
                       </div>
