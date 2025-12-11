@@ -396,6 +396,17 @@ export class VaultManager {
     return this.vaults.get(vaultId) || null;
   }
 
+  async renameVault(vaultId: string, newName: string): Promise<boolean> {
+    const vault = this.vaults.get(vaultId);
+    if (!vault || !newName.trim()) return false;
+
+    vault.name = newName.trim();
+    vault.lastModified = Date.now();
+    await this.persistVault(vault);
+    console.log(`VaultManager: Renamed vault ${vaultId} to "${newName}"`);
+    return true;
+  }
+
   private async persistVault(vault: Vault): Promise<void> {
     if (vault.type !== 'in-memory') return;
 
