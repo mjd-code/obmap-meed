@@ -86,10 +86,7 @@ function buildDecorations(view: EditorView): DecorationSet {
       from,
       to,
       enter: (node) => {
-        const styleClass = STYLED_NODES[node.name];
-        if (styleClass) {
-          builder.add(node.from, node.from, Decoration.mark({ class: styleClass }).range(node.from, node.from).value);
-        }
+
 
         if (node.name === "TaskMarker") {
           const lineNumber = state.doc.lineAt(node.from).number;
