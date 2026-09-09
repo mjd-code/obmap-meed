@@ -1,11 +1,12 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/shared/ui/toaster";
+import { Toaster as Sonner } from "@/shared/ui/sonner";
+import { TooltipProvider } from "@/shared/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { AuthProvider } from "./hooks/useAuth";
-import { ProtectedRoute } from "./components/common/ProtectedRoute";
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { AuthProvider } from "@/features/auth/hooks/useAuth";
+import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
+import { EventDebugPanel } from "@/shared/components/debug/EventDebugPanel";
 import { Suspense, lazy } from "react";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <EventDebugPanel />
         <BrowserRouter>
           <AuthProvider>
             <Suspense fallback={<LoadingFallback />}>
