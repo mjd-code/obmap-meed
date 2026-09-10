@@ -96,8 +96,8 @@ export function propertyCompletion(getSource: SourceGetter) {
       "updated",
       "status",
       "author",
-best      ,
     ];
+
 
     return {
       from: before.from,
