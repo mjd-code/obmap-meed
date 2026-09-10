@@ -1,4 +1,5 @@
-import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
+import type { Completion, CompletionContext, CompletionResult } from "@codemirror/autocomplete";
+import type { EditorView } from "@codemirror/view";
 import { fuzzyScore } from "@/shared/lib/fuzzy";
 
 export interface SuggestSource {
