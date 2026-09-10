@@ -31,7 +31,7 @@ export function wikilinkCompletion(getSource: SourceGetter) {
         label: file.name,
         detail: file.path && file.path !== file.name ? file.path : file.type,
         type: file.type === "media" ? "variable" : "text",
-        apply: (view, _c, from: number, to: number) => {
+        apply: (view: EditorView, _c: Completion, from: number, to: number) => {
           const rest = view.state.sliceDoc(to, to + 2) === "]]" ? 2 : 0;
           view.dispatch({
             changes: { from, to: to + rest, insert: `${file.name}]]` },
