@@ -101,6 +101,7 @@ export function createEditorExtensions(
     suggestions.properties
       ? propertyCompletion(options.getSuggestSource)
       : null,
+    suggestions.slashCommands ? slashCommandCompletion() : null,
   ].filter(Boolean) as ReturnType<typeof wikilinkCompletion>[];
 
   return [
