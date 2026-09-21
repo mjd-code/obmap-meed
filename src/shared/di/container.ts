@@ -184,6 +184,7 @@ export const ServiceIds = {
 	// Core services
 	EventBus: Symbol('EventBus'),
 	PluginRegistry: Symbol('PluginRegistry'),
+	CommandRegistry: Symbol('CommandRegistry'),
 
 	// Vault services
 	VaultManager: Symbol('VaultManager'),
@@ -203,12 +204,12 @@ export const ServiceIds = {
 	// Persistence services
 	FileSystemService: Symbol('FileSystemService'),
 
-	// Sync services
-	BackgroundSyncService: Symbol('BackgroundSyncService'),
-
 	// Integration services
 	SupabaseClient: Symbol('SupabaseClient'),
 
 	// API services
 	ApiKeyService: Symbol('ApiKeyService'),
+
+	// Sync engine
+	SyncEngine: Symbol('SyncEngine'),
 } as const;
