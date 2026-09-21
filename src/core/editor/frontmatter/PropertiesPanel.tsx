@@ -466,6 +466,7 @@ const PropertyRow = ({
   actions,
   nodes,
   knownTags,
+  keySuggestions = [],
 }: {
   property: FrontmatterProperty;
   index: number;
@@ -476,11 +477,21 @@ const PropertyRow = ({
   actions: any; // Type accurately mapped to the actions object above
   nodes: any[];
   knownTags: string[];
+  keySuggestions?: string[];
 }) => {
   const Icon = TYPE_ICON[property.type] ?? Type;
   const mandatory = Boolean(rule?.required);
   const reserved = isReservedKey(property.key) || mandatory;
   const invalid = strictMode && mandatory && isEmptyValue(property.value);
+
+  const [keyDraft, setKeyDraft] = useState(property.key);
+  useEffect(() => setKeyDraft(property.key), [property.key]);
+
+  const valueSuggestions = useMemo(() => {
+    const fromRule = (rule?.options ?? []) as string[];
+    return [...fromRule, ...optionsForKey(nodes, property.key)];
+  }, [rule, nodes, property.key]);
+
 
   return (
     <div
