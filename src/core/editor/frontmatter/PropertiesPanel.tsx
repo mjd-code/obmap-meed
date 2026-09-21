@@ -488,7 +488,7 @@ const PropertyRow = ({
   useEffect(() => setKeyDraft(property.key), [property.key]);
 
   const valueSuggestions = useMemo(() => {
-    const fromRule = (rule?.options ?? []) as string[];
+    const fromRule = (((rule as any)?.options ?? []) as string[]) ?? [];
     return [...fromRule, ...optionsForKey(nodes, property.key)];
   }, [rule, nodes, property.key]);
 
