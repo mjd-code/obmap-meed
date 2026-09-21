@@ -59,6 +59,12 @@ export const MarkdownView = ({
   saveRef.current = onSave;
   handlersRef.current = { onWikilinkClick, onTagClick };
 
+  // The YAML frontmatter never reaches the text editor — it is edited
+  // exclusively through the collapsible properties panel.
+  const body = useMemo(() => splitDocument(value).body, [value]);
+  const bodyRef = useRef(body);
+  bodyRef.current = body;
+
   const nodes = useNodeStore((state) => state.nodes);
   const suggestRef = useRef<SuggestSource>({ files: [], tags: [] });
   suggestRef.current = useMemo<SuggestSource>(() => {
