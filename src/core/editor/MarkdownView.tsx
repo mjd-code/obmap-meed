@@ -182,9 +182,9 @@ export const MarkdownView = ({
 
       {isReading ? (
         <div className="prose-container min-h-[50vh] py-3">
-          {value ? (
+          {body ? (
             <MarkdownRenderer
-              content={value}
+              content={body}
               onWikilinkClick={onWikilinkClick}
               onTagClick={onTagClick}
             />
@@ -200,9 +200,9 @@ export const MarkdownView = ({
             {editorSurface}
           </div>
           <div className="rounded-lg border border-border/30 bg-muted/20 p-5 overflow-auto">
-            {value ? (
+            {body ? (
               <MarkdownRenderer
-                content={value}
+                content={body}
                 onWikilinkClick={onWikilinkClick}
                 onTagClick={onTagClick}
               />
