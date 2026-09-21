@@ -44,9 +44,9 @@ import {
   wikilinkCompletion,
   tagCompletion,
   propertyCompletion,
+  slashCommandCompletion,
   type SuggestSource,
 } from "@/core/editor/suggest/suggestions";
-import { openCommandPalette } from "@/core/shell/command-palette/paletteEvents";
 import type {
   EditorAppearanceConfig,
   EditorBehaviorConfig,
@@ -101,6 +101,7 @@ export function createEditorExtensions(
     suggestions.properties
       ? propertyCompletion(options.getSuggestSource)
       : null,
+    suggestions.slashCommands ? slashCommandCompletion() : null,
   ].filter(Boolean) as ReturnType<typeof wikilinkCompletion>[];
 
   return [
@@ -160,17 +161,6 @@ export function createEditorExtensions(
       ...defaultKeymap,
       ...(behavior.tabIndents ? [indentWithTab] : []),
     ]),
-    // Typing "/" on an otherwise empty line opens the command palette.
-    EditorView.inputHandler.of((view, from, to, text) => {
-      if (!suggestions.slashCommands) return false;
-      if (text !== "/") return false;
-      const line = view.state.doc.lineAt(from);
-      const before = view.state.sliceDoc(line.from, from);
-      const after = view.state.sliceDoc(to, line.to);
-      if (before.trim() !== "" || after.trim() !== "") return false;
-      openCommandPalette();
-      return true;
-    }),
     EditorView.updateListener.of((update) => {
       if (update.docChanged) options.onChange(update.state.doc.toString());
     }),

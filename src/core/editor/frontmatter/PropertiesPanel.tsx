@@ -50,6 +50,7 @@ import {
   useSchemaStore,
   type ResolvedProperty,
 } from "@/core/system/schema";
+import { SuggestInput } from "@/core/editor/frontmatter/SuggestInput";
 
 const isEmptyValue = (value: unknown): boolean =>
   value === null ||
@@ -151,6 +152,26 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
     return Array.from(set).filter(Boolean).sort();
   }, [nodes, rules]);
 
+  /** Property keys already used across the vault + schema + common defaults. */
+  const keySuggestions = useMemo(() => {
+    const set = new Set<string>([
+      "title",
+      "tags",
+      "aliases",
+      "created",
+      "updated",
+      "status",
+      "author",
+      "cssclasses",
+    ]);
+    rules.forEach((r) => set.add(r.key));
+    nodes.forEach((n) => {
+      if (typeof n.content !== "string") return;
+      parseFrontmatter(n.content).properties.forEach((p) => set.add(p.key));
+    });
+    return Array.from(set).filter(Boolean).sort();
+  }, [nodes, rules]);
+
   const commit = (
     next: FrontmatterProperty[],
     layout: ListLayout = listLayout,
@@ -201,8 +222,8 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
     },
   };
 
-  const addProperty = () => {
-    const key = newKey.trim();
+  const addProperty = (raw?: string) => {
+    const key = (raw ?? newKey).trim();
     setNewKey("");
     if (
       !key ||
@@ -370,6 +391,7 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                   actions={actions}
                   nodes={nodes}
                   knownTags={knownTags}
+                  keySuggestions={keySuggestions}
                 />
               ))}
 
@@ -393,6 +415,7 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                         actions={actions}
                         nodes={nodes}
                         knownTags={knownTags}
+                        keySuggestions={keySuggestions}
                       />
                     ))}
                   </div>
@@ -403,18 +426,18 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
               <div className="group mt-1 flex items-center gap-2 rounded-md py-1 transition-colors hover:bg-accent/30">
                 <div className="flex w-[140px] shrink-0 items-center gap-1.5 pl-6 text-muted-foreground/60 group-hover:text-muted-foreground">
                   <Plus className="h-3.5 w-3.5" />
-                  <Input
+                  <SuggestInput
                     value={newKey}
-                    onChange={(e) => setNewKey(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addProperty();
-                      }
-                    }}
-                    onBlur={addProperty}
+                    onChange={setNewKey}
+                    onCommit={(next) => addProperty(next)}
+                    suggestions={keySuggestions.filter(
+                      (k) =>
+                        !properties.some(
+                          (p) => p.key.toLowerCase() === k.toLowerCase(),
+                        ),
+                    )}
                     placeholder="Add property"
-                    className="h-6 w-full border-none bg-transparent px-0 text-xs shadow-none focus-visible:ring-0"
+                    className="px-0"
                   />
                 </div>
                 {duplicateKey && (
@@ -443,6 +466,7 @@ const PropertyRow = ({
   actions,
   nodes,
   knownTags,
+  keySuggestions = [],
 }: {
   property: FrontmatterProperty;
   index: number;
@@ -453,11 +477,21 @@ const PropertyRow = ({
   actions: any; // Type accurately mapped to the actions object above
   nodes: any[];
   knownTags: string[];
+  keySuggestions?: string[];
 }) => {
   const Icon = TYPE_ICON[property.type] ?? Type;
   const mandatory = Boolean(rule?.required);
   const reserved = isReservedKey(property.key) || mandatory;
   const invalid = strictMode && mandatory && isEmptyValue(property.value);
+
+  const [keyDraft, setKeyDraft] = useState(property.key);
+  useEffect(() => setKeyDraft(property.key), [property.key]);
+
+  const valueSuggestions = useMemo(() => {
+    const fromRule = (((rule as any)?.options ?? []) as string[]) ?? [];
+    return [...fromRule, ...optionsForKey(nodes, property.key)];
+  }, [rule, nodes, property.key]);
+
 
   return (
     <div
