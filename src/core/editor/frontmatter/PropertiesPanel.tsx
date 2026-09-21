@@ -151,6 +151,26 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
     return Array.from(set).filter(Boolean).sort();
   }, [nodes, rules]);
 
+  /** Property keys already used across the vault + schema + common defaults. */
+  const keySuggestions = useMemo(() => {
+    const set = new Set<string>([
+      "title",
+      "tags",
+      "aliases",
+      "created",
+      "updated",
+      "status",
+      "author",
+      "cssclasses",
+    ]);
+    rules.forEach((r) => set.add(r.key));
+    nodes.forEach((n) => {
+      if (typeof n.content !== "string") return;
+      parseFrontmatter(n.content).properties.forEach((p) => set.add(p.key));
+    });
+    return Array.from(set).filter(Boolean).sort();
+  }, [nodes, rules]);
+
   const commit = (
     next: FrontmatterProperty[],
     layout: ListLayout = listLayout,
