@@ -108,3 +108,47 @@ export function propertyCompletion(getSource: SourceGetter) {
     };
   };
 }
+
+/**
+ * `/` slash-command completion: renders registered commands inline,
+ * exactly like the `[[` and `#` suggesters.
+ */
+export function slashCommandCompletion() {
+  return (context: CompletionContext): CompletionResult | null => {
+    const before = context.matchBefore(/(?:^|\s)\/([\w-]*)$/);
+    if (!before) return null;
+
+    const slashIndex = before.text.indexOf("/");
+    const query = before.text.slice(slashIndex + 1);
+    const from = before.from + slashIndex;
+
+    const editor = getActiveEditor();
+    const commands = commandRegistry
+      .list()
+      .filter((c) => (c.isEnabled ? c.isEnabled({ editor }) : true));
+
+    const options = commands
+      .map((command) => ({
+        command,
+        score: fuzzyScore(query, `${command.section ?? ""} ${command.name}`),
+      }))
+      .filter((o) => o.score !== null)
+      .sort((a, b) => (b.score as number) - (a.score as number))
+      .slice(0, 30)
+      .map(({ command }) => ({
+        label: command.name,
+        detail: command.section,
+        type: "keyword",
+        apply: (view: EditorView, _c: Completion, f: number, to: number) => {
+          view.dispatch({ changes: { from: f, to, insert: "" } });
+          requestAnimationFrame(() =>
+            command.run({ editor: getActiveEditor() }),
+          );
+        },
+      }));
+
+    if (!options.length) return null;
+
+    return { from, options, filter: false, validFor: /^\/[\w-]*$/ };
+  };
+}
