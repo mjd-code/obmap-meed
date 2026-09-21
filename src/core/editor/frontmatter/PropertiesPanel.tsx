@@ -221,8 +221,8 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
     },
   };
 
-  const addProperty = () => {
-    const key = newKey.trim();
+  const addProperty = (raw?: string) => {
+    const key = (raw ?? newKey).trim();
     setNewKey("");
     if (
       !key ||
