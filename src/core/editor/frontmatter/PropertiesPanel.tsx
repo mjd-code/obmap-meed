@@ -390,6 +390,7 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                   actions={actions}
                   nodes={nodes}
                   knownTags={knownTags}
+                  keySuggestions={keySuggestions}
                 />
               ))}
 
