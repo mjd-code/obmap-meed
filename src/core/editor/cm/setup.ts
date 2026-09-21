@@ -44,9 +44,9 @@ import {
   wikilinkCompletion,
   tagCompletion,
   propertyCompletion,
+  slashCommandCompletion,
   type SuggestSource,
 } from "@/core/editor/suggest/suggestions";
-import { openCommandPalette } from "@/core/shell/command-palette/paletteEvents";
 import type {
   EditorAppearanceConfig,
   EditorBehaviorConfig,
