@@ -104,7 +104,7 @@ export const MarkdownView = ({
 
     const editorApi = createEditorApi(() => viewRef.current);
     const state = EditorState.create({
-      doc: valueRef.current,
+      doc: bodyRef.current,
       extensions: createEditorExtensions({
         mode: mode === "live" ? "live" : "source",
         placeholder,
@@ -115,8 +115,10 @@ export const MarkdownView = ({
           onTagClick: (t) => handlersRef.current.onTagClick?.(t),
         },
         onChange: (next) => {
-          valueRef.current = next;
-          changeRef.current(next);
+          bodyRef.current = next;
+          const doc = replaceBody(valueRef.current, next);
+          valueRef.current = doc;
+          changeRef.current(doc);
         },
         onSave: () => saveRef.current?.(),
       }),
@@ -149,11 +151,11 @@ export const MarkdownView = ({
     const view = viewRef.current;
     if (!view) return;
     const current = view.state.doc.toString();
-    if (current === value) return;
+    if (current === body) return;
     view.dispatch({
-      changes: { from: 0, to: current.length, insert: value },
+      changes: { from: 0, to: current.length, insert: body },
     });
-  }, [value]);
+  }, [body]);
 
   const words = useMemo(() => countWords(value), [value]);
 
