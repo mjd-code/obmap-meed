@@ -1,6 +1,8 @@
 import type { Completion, CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import type { EditorView } from "@codemirror/view";
 import { fuzzyScore } from "@/shared/lib/fuzzy";
+import { commandRegistry } from "@/core/system/commands/CommandRegistry";
+import { getActiveEditor } from "@/core/editor/activeEditor";
 
 export interface SuggestSource {
   /** Note / media titles used by `[[` wikilink completion. */
