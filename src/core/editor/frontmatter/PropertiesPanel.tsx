@@ -50,6 +50,7 @@ import {
   useSchemaStore,
   type ResolvedProperty,
 } from "@/core/system/schema";
+import { SuggestInput } from "@/core/editor/frontmatter/SuggestInput";
 
 const isEmptyValue = (value: unknown): boolean =>
   value === null ||
