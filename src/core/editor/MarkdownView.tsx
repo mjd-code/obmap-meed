@@ -12,7 +12,11 @@ import {
 } from "@/core/editor/cm/setup";
 import { createEditorApi } from "@/core/editor/cm/state/editorApi";
 import { setActiveEditor } from "@/core/editor/activeEditor";
-import { countWords } from "@/core/editor/cm/extensions/frontmatterField";
+import {
+  countWords,
+  splitDocument,
+  replaceBody,
+} from "@/core/editor/cm/extensions/frontmatterField";
 import type { SuggestSource } from "@/core/editor/suggest/suggestions";
 import type { EditorApi, EditorMode } from "@/core/editor/types";
 import { useNodeStore } from "@/shared/stores";
