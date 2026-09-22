@@ -166,12 +166,123 @@ export const MarkdownView = ({
 
   const words = useMemo(() => countWords(value), [value]);
 
+  // ---- Table of contents -------------------------------------------------
+  const headings = useMemo(() => parseHeadings(body), [body]);
+  const [activeEditorHeading, setActiveEditorHeading] = useState<string | null>(null);
+  const [activeReadHeading, setActiveReadHeading] = useState<string | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const headingsRef = useRef(headings);
+  headingsRef.current = headings;
+
+  // Track the heading closest to the top of the CodeMirror viewport.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    const scroller = view.scrollDOM;
+    const update = () => {
+      const rect = scroller.getBoundingClientRect();
+      const pos = view.posAtCoords({ x: rect.left + 8, y: rect.top + 8 });
+      if (pos == null) return;
+      const line = view.state.doc.lineAt(pos).number - 1;
+      const list = headingsRef.current;
+      let current: HeadingNode | null = null;
+      for (const h of list) if (h.line <= line) current = h;
+      setActiveEditorHeading(current?.id ?? list[0]?.id ?? null);
+    };
+    update();
+    scroller.addEventListener("scroll", update, { passive: true });
+    return () => scroller.removeEventListener("scroll", update);
+  }, [api, headings.length]);
+
+  // Track the heading closest to the top of the rendered preview.
+  useEffect(() => {
+    const host = previewRef.current;
+    if (!host) return;
+    const findScroller = (el: HTMLElement | null): HTMLElement | Window => {
+      let node = el?.parentElement ?? null;
+      while (node) {
+        const overflow = getComputedStyle(node).overflowY;
+        if ((overflow === "auto" || overflow === "scroll") && node.scrollHeight > node.clientHeight)
+          return node;
+        node = node.parentElement;
+      }
+      return window;
+    };
+    const scroller = findScroller(host);
+    const update = () => {
+      const top = host.getBoundingClientRect().top;
+      const elements = Array.from(
+        host.querySelectorAll<HTMLElement>("[data-heading-id]"),
+      );
+      let current: string | null = elements[0]?.dataset.headingId ?? null;
+      for (const el of elements) {
+        if (el.getBoundingClientRect().top - top <= 8)
+          current = el.dataset.headingId ?? current;
+      }
+      setActiveReadHeading(current);
+    };
+    update();
+    scroller.addEventListener("scroll", update, { passive: true });
+    return () => scroller.removeEventListener("scroll", update);
+  }, [body, isReading, sideBySide]);
+
+  const scrollEditorTo = (heading: HeadingNode) => {
+    const view = viewRef.current;
+    if (!view) return;
+    view.dispatch({
+      selection: { anchor: Math.min(heading.from, view.state.doc.length) },
+      effects: EditorView.scrollIntoView(
+        Math.min(heading.from, view.state.doc.length),
+        { y: "start" },
+      ),
+    });
+    view.focus();
+  };
+
+  const scrollPreviewTo = (heading: HeadingNode) => {
+    const el = previewRef.current?.querySelector<HTMLElement>(
+      `[data-heading-id="${CSS.escape(heading.id)}"]`,
+    );
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.classList.add("heading-flash");
+    window.setTimeout(() => el.classList.remove("heading-flash"), 1200);
+  };
+
   const editorSurface = (
-    <div
-      ref={hostRef}
-      className="min-h-[50vh] w-full text-sm"
-      onFocus={() => api && setActiveEditor(api)}
-    />
+    <div className="relative w-full">
+      <div
+        ref={hostRef}
+        className="min-h-[50vh] w-full text-sm"
+        onFocus={() => api && setActiveEditor(api)}
+      />
+      <FloatingToc
+        headings={headings}
+        activeId={activeEditorHeading}
+        onSelect={scrollEditorTo}
+      />
+    </div>
+  );
+
+  const previewSurface = (
+    <div ref={previewRef} className="relative">
+      {body ? (
+        <FoldableMarkdown
+          content={body}
+          onWikilinkClick={onWikilinkClick}
+          onTagClick={onTagClick}
+        />
+      ) : (
+        <p className="text-muted-foreground/30 text-sm italic">
+          Nothing to preview
+        </p>
+      )}
+      <FloatingToc
+        headings={headings}
+        activeId={activeReadHeading}
+        onSelect={scrollPreviewTo}
+      />
+    </div>
   );
 
   return (
@@ -184,36 +295,14 @@ export const MarkdownView = ({
       )} */}
 
       {isReading ? (
-        <div className="prose-container min-h-[50vh] py-3">
-          {body ? (
-            <MarkdownRenderer
-              content={body}
-              onWikilinkClick={onWikilinkClick}
-              onTagClick={onTagClick}
-            />
-          ) : (
-            <p className="text-muted-foreground/30 text-sm italic">
-              Nothing to preview
-            </p>
-          )}
-        </div>
+        <div className="prose-container min-h-[50vh] py-3">{previewSurface}</div>
       ) : sideBySide ? (
         <div className="grid grid-cols-2 gap-6 min-h-[50vh]">
           <div className="rounded-lg border border-border/30 bg-muted/20 overflow-hidden">
             {editorSurface}
           </div>
           <div className="rounded-lg border border-border/30 bg-muted/20 p-5 overflow-auto">
-            {body ? (
-              <MarkdownRenderer
-                content={body}
-                onWikilinkClick={onWikilinkClick}
-                onTagClick={onTagClick}
-              />
-            ) : (
-              <p className="text-muted-foreground/30 text-sm italic">
-                Nothing to preview
-              </p>
-            )}
+            {previewSurface}
           </div>
         </div>
       ) : (
