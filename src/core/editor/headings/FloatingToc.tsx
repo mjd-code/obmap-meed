@@ -36,16 +36,17 @@ export const FloatingToc = ({
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
     setOpen(true);
   };
+
   const hide = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => setOpen(false), 120);
+    closeTimer.current = window.setTimeout(() => setOpen(false), 140);
   };
 
   return (
     <nav
       aria-label="Table of contents"
       className={cn(
-        "absolute right-2 top-1/2 z-50 -translate-y-1/2 select-none",
+        "absolute right-3 top-1/2 z-50 -translate-y-1/2 select-none",
         className,
       )}
       onMouseEnter={show}
@@ -59,51 +60,63 @@ export const FloatingToc = ({
       <div
         aria-hidden={open}
         className={cn(
-          "flex flex-col items-end gap-[3px] py-1 pr-1 transition-opacity duration-200",
-          open ? "pointer-events-none opacity-0" : "opacity-70",
+          "flex flex-col items-end gap-1.5 py-2 pr-1 transition-opacity duration-200",
+          open ? "pointer-events-none opacity-0" : "opacity-80",
         )}
       >
-        {headings.map((h) => (
-          <span
-            key={h.id}
-            className={cn(
-              "h-[2px] rounded-full transition-colors duration-200",
-              h.id === activeId ? "bg-foreground" : "bg-muted-foreground/40",
-            )}
-            style={{ width: `${Math.max(8, 22 - (h.level - 1) * 3)}px` }}
-          />
-        ))}
+        {headings.map((h) => {
+          const isActive = h.id === activeId;
+          return (
+            <span
+              key={h.id}
+              className={cn(
+                "rounded-full transition-all duration-200",
+                isActive
+                  ? "bg-foreground"
+                  : "bg-muted-foreground/35",
+              )}
+              style={{
+                width: `${Math.max(10, 20 - (h.level - 1) * 2.5)}px`,
+                height: isActive ? "3px" : "2.5px",
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Full mode — hover / focus only */}
       <div
         aria-expanded={open}
         className={cn(
-          "absolute right-0 top-1/2 max-h-[60vh] w-max -translate-y-1/2 overflow-y-auto rounded-lg border border-border/40 bg-popover/95 py-2 pl-2 pr-3 shadow-lg backdrop-blur-sm transition-all duration-200 toc-scroll",
+          "absolute right-0 top-1/2 max-h-[65vh] w-max -translate-y-1/2 overflow-y-auto rounded-lg border border-border/50 bg-popover/95 py-2.5 pl-2 pr-3 shadow-lg backdrop-blur-sm transition-all duration-200 toc-scroll",
           open
             ? "pointer-events-auto translate-x-0 opacity-100"
-            : "pointer-events-none translate-x-2 opacity-0",
+            : "pointer-events-none translate-x-3 opacity-0",
         )}
       >
         <ul className="flex flex-col gap-0.5">
-          {headings.map((h) => (
-            <li key={h.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(h)}
-                title={h.label}
-                className={cn(
-                  "block max-w-[32ch] truncate rounded px-1.5 py-0.5 text-left text-[12px] leading-tight transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                  h.id === activeId
-                    ? "font-semibold text-foreground"
-                    : "text-muted-foreground",
-                )}
-                style={{ paddingLeft: `${(h.level - 1) * 10 + 6}px` }}
-              >
-                {h.label}
-              </button>
-            </li>
-          ))}
+          {headings.map((h) => {
+            const isActive = h.id === activeId;
+            return (
+              <li key={h.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(h)}
+                  title={h.label}
+                  className={cn(
+                    "block max-w-[32ch] truncate rounded px-1.5 py-1 text-left text-[12.5px] leading-tight transition-colors",
+                    "hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                    isActive
+                      ? "font-semibold text-foreground"
+                      : "text-muted-foreground",
+                  )}
+                  style={{ paddingLeft: `${(h.level - 1) * 11 + 6}px` }}
+                >
+                  {h.label}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </nav>
