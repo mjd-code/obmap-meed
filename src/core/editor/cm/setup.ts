@@ -127,6 +127,7 @@ export function createEditorExtensions(
       addKeymap: true,
     }),
     markdownHighlight,
+    headingFolding(),
     editorTheme,
     appearanceCompartment.of(appearanceTheme(appearance)),
     frontmatterField,
