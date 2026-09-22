@@ -32,7 +32,7 @@ function chevron(open: boolean): HTMLElement {
 export function headingFolding(): Extension {
   return [
     codeFolding({
-      placeholderText: "…",
+      placeholderText: " masalsdhaiwjf…",
     }),
     foldService.of((state, lineStart, lineEnd) => {
       const doc = state.doc.toString();
