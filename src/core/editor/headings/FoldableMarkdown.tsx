@@ -78,7 +78,7 @@ const Section = ({
       </div>
 
       {isCollapsed ? (
-        <div className="pl-5 text-sm text-muted-foreground/40">…</div>
+        <div className="pl-10 text-sm text-muted-foreground/40"> masalahnya disini …</div>
       ) : (
         <div className="pl-5">
           {own && (
