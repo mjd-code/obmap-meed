@@ -31,6 +31,7 @@ import {
 } from "@codemirror/language";
 
 import { editorTheme, markdownHighlight } from "./theme";
+import { headingFolding } from "./extensions/headingFold";
 import { livePreview, sourceHighlighting } from "./extensions/livePreview";
 import {
   wikilinkExtension,
