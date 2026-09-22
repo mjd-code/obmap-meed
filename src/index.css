@@ -246,3 +246,50 @@ All colors MUST be HSL.
     background-color: hsl(var(--muted-foreground) / 0.3);
   }
 }
+
+/* ---- Heading TOC & folding -------------------------------------------- */
+.toc-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.toc-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.toc-scroll::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 2px;
+}
+
+.heading-flash {
+  animation: heading-flash 1.2s ease-out;
+  border-radius: 0.25rem;
+}
+
+@keyframes heading-flash {
+  0% {
+    background-color: hsl(48 96% 60% / 0.35);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.cm-heading-fold-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground) / 0.5);
+  transition: color 0.15s ease;
+}
+.cm-heading-fold-chevron:hover {
+  color: hsl(var(--foreground));
+}
+.cm-foldGutter .cm-gutterElement {
+  padding: 0 2px;
+  cursor: pointer;
+}
+.cm-foldPlaceholder {
+  background: transparent;
+  border: none;
+  color: hsl(var(--muted-foreground) / 0.5);
+  padding: 0 0.35rem;
+}
