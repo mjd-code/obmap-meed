@@ -21,6 +21,9 @@ import type { SuggestSource } from "@/core/editor/suggest/suggestions";
 import type { EditorApi, EditorMode } from "@/core/editor/types";
 import { useNodeStore } from "@/shared/stores";
 import { useEditorSettingsStore } from "@/shared/stores/useEditorSettingsStore";
+import { parseHeadings, type HeadingNode } from "@/core/editor/headings/headingTree";
+import { FloatingToc } from "@/core/editor/headings/FloatingToc";
+import { FoldableMarkdown } from "@/core/editor/headings/FoldableMarkdown";
 
 interface MarkdownViewProps {
   value: string;
