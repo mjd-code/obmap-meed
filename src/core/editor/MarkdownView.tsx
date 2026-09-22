@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { EditorView } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { cn } from "@/shared/lib";
-import { MarkdownRenderer } from "@/core/graph/MarkdownRenderer";
 import { EditorToolbar } from "@/core/editor/toolbar/EditorToolbar";
 import { PropertiesPanel } from "@/core/editor/frontmatter/PropertiesPanel";
 import {
