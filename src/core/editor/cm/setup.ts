@@ -43,7 +43,6 @@ import {
 import {
   wikilinkCompletion,
   tagCompletion,
-  propertyCompletion,
   slashCommandCompletion,
   type SuggestSource,
 } from "@/core/editor/suggest/suggestions";
@@ -98,9 +97,6 @@ export function createEditorExtensions(
   const overrides = [
     suggestions.wikilinks ? wikilinkCompletion(options.getSuggestSource) : null,
     suggestions.tags ? tagCompletion(options.getSuggestSource) : null,
-    suggestions.properties
-      ? propertyCompletion(options.getSuggestSource)
-      : null,
     suggestions.slashCommands ? slashCommandCompletion() : null,
   ].filter(Boolean) as ReturnType<typeof wikilinkCompletion>[];
 

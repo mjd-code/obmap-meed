@@ -19,3 +19,4 @@
 - [x] Phase 3–4: UUID vault identity, cloud-matched vault dedup, vault-scoped config sections in ConfigService.
 - [x] Phase 6: logout no longer destroys local vaults; sync queue scoped per user; consolidated duplicate auth listener.
 - [x] Phase 5: folder vaults survive refresh via remembered directory handles (with permission re-prompt); one shared FileSystemService; shared folder-capability detection in the UI.
+- [x] Finish inline slash commands and property key/value suggestions; keep YAML outside the writing surface.

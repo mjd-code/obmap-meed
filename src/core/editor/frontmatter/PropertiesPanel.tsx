@@ -51,6 +51,20 @@ import {
   type ResolvedProperty,
 } from "@/core/system/schema";
 import { SuggestInput } from "@/core/editor/frontmatter/SuggestInput";
+import { useEditorSettingsStore } from "@/shared/stores/useEditorSettingsStore";
+
+interface PropertyNode {
+  content: string;
+  tags?: string[];
+}
+
+interface PropertyActions {
+  updateValue: (key: string, next: unknown) => void;
+  renameKey: (key: string, nextKeyRaw: string) => void;
+  changeType: (key: string, type: FrontmatterPropertyType) => void;
+  removeProperty: (key: string) => void;
+  moveRow: (from: number, to: number) => void;
+}
 
 const isEmptyValue = (value: unknown): boolean =>
   value === null ||
@@ -131,6 +145,9 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
   );
   const rules = useResolvedSchema(frontmatterRecord);
   const strictMode = useSchemaStore((s) => s.schema.strictMode);
+  const propertySuggestionsEnabled = useEditorSettingsStore(
+    (s) => s.suggestions.enabled && s.suggestions.properties,
+  );
   const ruleFor = (key: string) => rules.find((r) => r.key === key);
 
   const missingRequired = rules.filter(
@@ -390,8 +407,10 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                   setDragRow={setDragRow}
                   actions={actions}
                   nodes={nodes}
-                  knownTags={knownTags}
-                  keySuggestions={keySuggestions}
+                   knownTags={propertySuggestionsEnabled ? knownTags : []}
+                   keySuggestions={
+                     propertySuggestionsEnabled ? keySuggestions : []
+                   }
                 />
               ))}
 
@@ -414,8 +433,10 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                         setDragRow={setDragRow}
                         actions={actions}
                         nodes={nodes}
-                        knownTags={knownTags}
-                        keySuggestions={keySuggestions}
+                         knownTags={propertySuggestionsEnabled ? knownTags : []}
+                         keySuggestions={
+                           propertySuggestionsEnabled ? keySuggestions : []
+                         }
                       />
                     ))}
                   </div>
@@ -430,7 +451,10 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                     value={newKey}
                     onChange={setNewKey}
                     onCommit={(next) => addProperty(next)}
-                    suggestions={keySuggestions.filter(
+                    suggestions={(propertySuggestionsEnabled
+                      ? keySuggestions
+                      : []
+                    ).filter(
                       (k) =>
                         !properties.some(
                           (p) => p.key.toLowerCase() === k.toLowerCase(),
@@ -474,8 +498,8 @@ const PropertyRow = ({
   strictMode?: boolean;
   dragRow: number | null;
   setDragRow: (i: number | null) => void;
-  actions: any; // Type accurately mapped to the actions object above
-  nodes: any[];
+  actions: PropertyActions;
+  nodes: PropertyNode[];
   knownTags: string[];
   keySuggestions?: string[];
 }) => {
@@ -487,12 +511,10 @@ const PropertyRow = ({
   const [keyDraft, setKeyDraft] = useState(property.key);
   useEffect(() => setKeyDraft(property.key), [property.key]);
 
-  const valueSuggestions = useMemo(() => {
-    const fromRule = (((rule as any)?.options ?? []) as string[]) ?? [];
-    return [...fromRule, ...optionsForKey(nodes, property.key)];
-  }, [rule, nodes, property.key]);
-
-
+  const valueSuggestions = useMemo(
+    () => optionsForKey(nodes, property.key),
+    [nodes, property.key],
+  );
   return (
     <div
       className={cn(
@@ -544,14 +566,14 @@ const PropertyRow = ({
         </DropdownMenu>
 
         {/* Key Name Input */}
-        <Input
-          defaultValue={property.key}
-          key={`${property.key}-key`}
+        <SuggestInput
+          value={keyDraft}
+          onChange={setKeyDraft}
+          onCommit={(next) => actions.renameKey(property.key, next)}
+          suggestions={keySuggestions.filter(
+            (key) => key.toLowerCase() !== property.key.toLowerCase(),
+          )}
           readOnly={reserved}
-          onBlur={(e) => actions.renameKey(property.key, e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-          }}
           className="h-6 w-full truncate border-none bg-transparent px-1 text-xs text-muted-foreground shadow-none focus-visible:ring-0 focus-visible:text-foreground"
         />
 
@@ -572,18 +594,26 @@ const PropertyRow = ({
           />
         ) : property.type === "tags" || property.type === "list" ? (
           <ListValueInput
-            propertyKey={property.key}
             isTags={property.type === "tags"}
             values={toStringList(property.value)}
-            suggestions={property.type === "tags" ? knownTags : []}
+            suggestions={
+              property.type === "tags" ? knownTags : valueSuggestions
+            }
             onChange={(next) => actions.updateValue(property.key, next)}
           />
         ) : property.type === "select" ? (
-          <SelectValueInput
-            propertyKey={property.key}
+          <SuggestInput
             value={String(property.value ?? "")}
-            options={optionsForKey(nodes, property.key)}
+            suggestions={valueSuggestions}
             onChange={(next) => actions.updateValue(property.key, next)}
+            placeholder="Empty"
+          />
+        ) : property.type === "text" ? (
+          <SuggestInput
+            value={String(property.value ?? "")}
+            suggestions={valueSuggestions}
+            onChange={(next) => actions.updateValue(property.key, next)}
+            placeholder="Empty"
           />
         ) : (
           <Input
@@ -628,7 +658,7 @@ const PropertyRow = ({
   );
 };
 
-function optionsForKey(nodes: { content: string }[], key: string): string[] {
+function optionsForKey(nodes: PropertyNode[], key: string): string[] {
   const set = new Set<string>();
   nodes.forEach((n) => {
     const match = n.content?.match(new RegExp(`^${key}:\\s*(.+)$`, "m"));
@@ -637,34 +667,25 @@ function optionsForKey(nodes: { content: string }[], key: string): string[] {
   return Array.from(set).filter(Boolean).sort();
 }
 
-const SelectValueInput = ({ propertyKey, value, options, onChange }: any) => {
-  const listId = `select-${propertyKey}`;
-  return (
-    <>
-      <Input
-        list={listId}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Empty"
-        className="h-6 w-full border-none bg-transparent px-2 text-xs shadow-none placeholder:text-muted-foreground/40 hover:bg-black/5 dark:hover:bg-white/5 focus-visible:bg-black/5 dark:focus-visible:bg-white/5 focus-visible:ring-0"
-      />
-      <datalist id={listId}>
-        {options.map((o: string) => (
-          <option key={o} value={o} />
-        ))}
-      </datalist>
-    </>
-  );
-};
+interface ListValueInputProps {
+  isTags: boolean;
+  values: string[];
+  suggestions: string[];
+  onChange: (next: string[]) => void;
+}
 
-const ListValueInput = ({ isTags, values, suggestions, onChange }: any) => {
+const ListValueInput = ({
+  isTags,
+  values,
+  suggestions,
+  onChange,
+}: ListValueInputProps) => {
   const [draft, setDraft] = useState("");
   const [open, setOpen] = useState(false);
   const dragIndex = useRef<number | null>(null);
 
-  const clean = (raw: string) => (isTags ? normalizeTag(raw) : raw.trim());
   const matches = useMemo(() => {
-    const q = clean(draft).toLowerCase();
+    const q = (isTags ? normalizeTag(draft) : draft.trim()).toLowerCase();
     if (!q) return [];
     return suggestions
       .filter((s: string) => s.toLowerCase().includes(q) && !values.includes(s))
@@ -672,7 +693,7 @@ const ListValueInput = ({ isTags, values, suggestions, onChange }: any) => {
   }, [draft, suggestions, values, isTags]);
 
   const add = (raw: string) => {
-    const item = clean(raw);
+    const item = isTags ? normalizeTag(raw) : raw.trim();
     setDraft("");
     setOpen(false);
     if (!item || values.includes(item)) return;
