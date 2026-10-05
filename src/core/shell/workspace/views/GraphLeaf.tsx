@@ -10,7 +10,7 @@ import {
   useLeafGraphConfig,
   useLeafGraphConfigStore,
 } from "@/core/graph/model/useLeafGraphConfigStore";
-import { useGraphStore } from "@/shared/stores";
+import { useGraphStore, useNodeStore } from "@/shared/stores";
 import { useVaultSession } from "../VaultSessionContext";
 import { useWorkspaceStore } from "../store/useWorkspaceStore";
 import type { LeafViewProps } from "../ViewRegistry";
@@ -19,8 +19,44 @@ import { useEffect, useRef, useState } from "react";
 
 function GraphLeafBody({ leafId, canvasMode: requestedMode, view }: { leafId: string; view?: ViewState; isActive?: boolean; canvasMode?: "graph" | "mindmap" }) {
 
-  const { graphData, selectedNode, setSelectedNode, onNodeMove } = useVaultSession()
-  
+  const { 
+    graphData, 
+    selectedNode, 
+    setSelectedNode, 
+    onNodeMove, 
+    onNodeDelete,
+    onNodeUpdate,
+    nodes 
+  } = useVaultSession();
+
+  const handleAddSubNode = async (parentId: string, type: "file" | "folder") => {
+    const parentNode = nodes.find((n) => n.id === parentId);
+    if (!parentNode) return;
+
+    // Jika node saat ini berupa file, konversi menjadi folder agar bisa memiliki children
+    if (parentNode.type !== "folder") {
+      onNodeUpdate({ ...parentNode, type: "folder" });
+    }
+
+    const newNode = {
+      id: `node-${Date.now()}`,
+      name: type === "folder" 
+        ? `New Folder ${nodes.filter((n) => n.type === "folder").length + 1}`
+        : `New File ${nodes.filter((n) => n.type === "file").length + 1}`,
+      content: "",
+      type,
+      parentId: parentNode.id,
+      depth: parentNode.depth + 1,
+      tags: [],
+    };
+
+    useNodeStore.getState().addNode(newNode);
+    setSelectedNode(newNode);
+    if (type === "file") {
+      useWorkspaceStore.getState().openFile(newNode.id, newNode.name);
+    }
+  };
+
   // Ambil config dari store lokal tab ini (fallback ke global store bila di luar provider)
   const localConfig = useLeafGraphConfig((s) => s.config);
   const fallbackConfig = useGraphStore((s) => s.config);
@@ -82,6 +118,8 @@ function GraphLeafBody({ leafId, canvasMode: requestedMode, view }: { leafId: st
         onNodeSelect={handleSelect}
         onNodeOpen={handleOpen}
         onNodeMove={onNodeMove}
+        onNodeDelete={onNodeDelete}
+        onAddSubNode={handleAddSubNode}
         graphConfig={graphConfig}
         search={search}
         minDepth={minDepth}

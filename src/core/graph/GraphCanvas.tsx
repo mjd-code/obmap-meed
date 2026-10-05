@@ -46,6 +46,8 @@ export interface GraphCanvasProps {
   onNodeOpen?: (node: Node) => void; 
   graphConfig: GraphConfigState;
   onNodeMove?: (nodeId: string, newParentId: string | null) => Promise<void> | void;
+  onNodeDelete?: (nodeId: string) => Promise<void> | void;
+  onAddSubNode?: (parentId: string, type: "file" | "folder") => Promise<void> | void;
   search: string;
   minDepth: number;
   maxDepth: number;
@@ -89,6 +91,8 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   onNodeSelect,
   onNodeOpen,
   onNodeMove,
+  onNodeDelete,
+  onAddSubNode,
   graphConfig,
   search,
   minDepth,
@@ -785,19 +789,13 @@ useImperativeHandle(
           nodeName={selectedNode.name}
           isFolder={selectedNode.type === 'folder'}
           currentOverride={subtreeLayoutOverrides?.[selectedNode.id]}
-          currentColor={branchColorOverrides?.[selectedNode.id]}
           isFocused={focusedRootId === selectedNode.id}
           onSetStructure={(mode) => setSubtreeLayoutOverride(selectedNode.id, mode)}
-          onSetColor={(color) => setBranchColorOverride(selectedNode.id, color)}
-          onAddSub={() => {
-            // Logika Add Sub-node
-          }}
+          onAddSub={(type) => onAddSubNode?.(selectedNode.id, type)}
           onToggleFocus={() =>
             setFocusedRoot(focusedRootId === selectedNode.id ? null : selectedNode.id)
           }
-          onDelete={() => {
-            // Logika Hapus Node
-          }}
+          onDelete={() => onNodeDelete?.(selectedNode.id)}
         />
       )}
     </div>
