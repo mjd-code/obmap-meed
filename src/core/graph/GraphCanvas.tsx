@@ -18,6 +18,7 @@ import { buildGraphProjection } from './model/buildGraphProjection';
 import type { NodeMetric, RenderNode, RenderLink } from './model/graphTypes';
 import { useGraphInteractionStore } from './model/useGraphInteractionStore';
 import { useLayoutEngine } from './layout/useLayoutEngine';
+import { ContextualToolbar } from './interactions/ContextualToolbar';
 import {
   LayoutTransitionController,
   prefersReducedMotion,
@@ -30,12 +31,21 @@ import { buildTheme } from './render/theme';
 import { GraphLevelLegend } from './GraphLevelLegend';
 import { resolveHierarchyLinkPaint, uniqueDepths } from './model/hierarchyColors';
 import { cardLayout } from './render/textLayout';
+// Tambahkan import ini di bagian atas bersama import interactions lainnya:
+import {
+  findHoveredDropTarget,
+  validateReparent,
+  type DragReparentState,
+} from './interactions/dragReparent';
+
 
 export interface GraphCanvasProps {
   graphData: { nodes: Node[]; links: Link[] };
   selectedNode: Node | null;
   onNodeSelect: (node: Node | null) => void;
+  onNodeOpen?: (node: Node) => void; 
   graphConfig: GraphConfigState;
+  onNodeMove?: (nodeId: string, newParentId: string | null) => Promise<void> | void;
   search: string;
   minDepth: number;
   maxDepth: number;
@@ -45,6 +55,7 @@ export interface GraphCanvasProps {
 
 export interface GraphCanvasHandle {
   smartZoom: (action: 'fit' | 'selection' | 'reset') => void;
+  refresh?: () => void;
 }
 
 type GraphHandle = ForceGraphMethods<RenderNode, RenderLink> & {
@@ -76,6 +87,8 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   graphData,
   selectedNode,
   onNodeSelect,
+  onNodeOpen,
+  onNodeMove,
   graphConfig,
   search,
   minDepth,
@@ -93,15 +106,31 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   const glowStartedAt = useRef(performance.now());
   const [size, setSize] = useState({ width: 800, height: 600 });
   const nodeCache = useRef(new Map<string, RenderNode>());
+    // Simpan state drag di Ref agar tidak memicu re-render canvas loop pada 60fps mouse drag
+  const dragRef = useRef<DragReparentState>({
+    draggedNodeId: null,
+    draggedNodeOriginalPos: null,
+    hoveredTargetId: null,
+    isValidDrop: false,
+  });
+
+
 
   const engine = useGraphEngineStore();
+  // SESUDAH (tambahkan canvasMode dan state subtree override):
   const {
+    canvasMode,
     layoutMode,
     orientation,
     highlightMode,
     collapsedIds,
     hoveredId,
     focusedRootId,
+    subtreeLayoutOverrides,
+    branchColorOverrides,
+    setSubtreeLayoutOverride,
+    setBranchColorOverride,
+    setFocusedRoot,
     toggleCollapsed,
     setHovered,
     setSelected,
@@ -109,6 +138,8 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     simulationCommand,
   } = useGraphInteractionStore();
 
+
+  
   // ---- size ----------------------------------------------------------------
   useEffect(() => {
     const element = containerRef.current;
@@ -176,6 +207,9 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
       .filter((node) => {
         if (hidden.has(node.id)) return false;
         if (focusSet && !focusSet.has(node.id)) return false;
+        // Node type filters (folders vs files/notes).
+        if (!graphConfig.nodes.showFolderNodes && node.type === 'folder') return false;
+        if (!graphConfig.nodes.showFileNodes && node.type !== 'folder') return false;
         if (node.depth < minDepth || node.depth > maxDepth) return false;
         if (term && !node.name.toLowerCase().includes(term)) return false;
         if (content && !node.content.toLowerCase().includes(content)) return false;
@@ -184,7 +218,18 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         return true;
       })
       .map((node) => node.id);
-  }, [projection, collapsedIds, focusedRootId, search, contentFilter, tagFilter, minDepth, maxDepth]);
+  }, [
+    projection,
+    collapsedIds,
+    focusedRootId,
+    search,
+    contentFilter,
+    tagFilter,
+    minDepth,
+    maxDepth,
+    graphConfig.nodes.showFolderNodes,
+    graphConfig.nodes.showFileNodes,
+  ]);
 
   const geometry = useLayoutEngine(projection, {
     mode: layoutMode,
@@ -198,6 +243,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     rootId: focusedRootId ?? undefined,
     visibleIds,
     nodeMetrics: metrics,
+    subtreeOverrides: subtreeLayoutOverrides,
   });
 
   // ---- data handed to ForceGraph2D (stable object identities) --------------
@@ -219,11 +265,19 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         }
       }
     }
+    
     const links = projection.links.filter((link) => {
       const source = typeof link.source === 'string' ? link.source : link.source.id;
       const target = typeof link.target === 'string' ? link.target : link.target.id;
+
+      // Di mode mindmap, hanya tampilkan link hierarki pohon (kecuali jika user menyalakan backlink di config)
+      if (canvasMode === 'mindmap' && link.type !== 'hierarchy') {
+        return false;
+      }
+
       return visible.has(source) && visible.has(target) && topologyEnabled(link.type, graphConfig);
     });
+
     return { nodes, links };
   }, [projection, visibleIds, graphConfig, geometry.targets, layoutMode]);
 
@@ -239,7 +293,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     setTransitionStatus('animating');
     controller.run(data.nodes, geometry.targets, {
       reducedMotion: prefersReducedMotion(),
-      onTick: () => graphRef.current?.refresh?.(),
       onDone: () => setTransitionStatus('idle'),
     });
     return () => controller.cancel();
@@ -286,6 +339,41 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     particleProgress.current = 0;
   }, [graphConfig.links.showParticles, graphConfig.links.particles, graphConfig.links.particleSpeed]);
 
+    useEffect(() => {
+    if (!selectedNode) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Abaikan jika fokus sedang berada pada input teks, textarea, atau elemen editable
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      // 1. Shortcut TAB: Buat child node baru di bawah node terpilih
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        // Panggil fungsi penambahan node
+        // Misal: onAddChildNode?.(selectedNode.id);
+      }
+
+      // 2. Shortcut DELETE / BACKSPACE: Hapus node terpilih
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        // Panggil fungsi dialog/konfirmasi hapus
+        // Misal: onDeleteNode?.(selectedNode.id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNode]);
+
+
   const particlesActive = graphConfig.links.showParticles && graphConfig.links.particles > 0;
   const glowAnimated =
     graphConfig.nodes.glow && graphConfig.nodes.glowSpeed > 0 && !prefersReducedMotion();
@@ -330,6 +418,9 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         preserveDetail: engine.zoomOutRendering === 'full-detail',
         config: graphConfig.nodes,
         glowPhase: glowPhase.current,
+        isDragged: dragRef.current.draggedNodeId === node.id,
+        isDropTarget: dragRef.current.hoveredTargetId === node.id,
+        dropTargetValid: dragRef.current.isValidDrop,
       });
     },
     [theme, selectedNode, hoveredId, pathway, collapsedIds, engine.showLabels, engine.labelZoomThreshold, engine.zoomOutRendering, graphConfig.nodes]
@@ -461,10 +552,13 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     ]
   );
 
+  // Ref untuk mendeteksi interval waktu antar-klik (double-click detector)
+  const lastClickRef = useRef<{ id: string; time: number } | null>(null);
+
   // ---- interactions --------------------------------------------------------
-  const handleClick = useCallback(
+ const handleClick = useCallback(
     (node: RenderNode, event: MouseEvent) => {
-      // Toggle hit test in graph space.
+      // Toggle hit test in graph space (collapse/expand cabang)
       const coords = graphRef.current?.screen2GraphCoords?.(event.offsetX, event.offsetY);
       const toggle = node.toggle;
       if (coords && toggle) {
@@ -474,10 +568,28 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
           return;
         }
       }
+
+      const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
+
+      // 1. Klik sekali: selalu select node
       setSelected(node.id);
-      onNodeSelect(graphData.nodes.find((item) => item.id === node.id) ?? null);
+      onNodeSelect(matchedNode);
+
+      // 2. Deteksi klik dua kali (double click)
+      const now = Date.now();
+      const last = lastClickRef.current;
+      const isDoubleClick =
+        event.detail === 2 ||
+        (last !== null && last.id === node.id && now - last.time < 350);
+
+      lastClickRef.current = { id: node.id, time: now };
+
+      // Jika double-click dan bukan folder -> buka file
+      if (isDoubleClick && matchedNode && matchedNode.type !== 'folder') {
+        onNodeOpen?.(matchedNode);
+      }
     },
-    [toggleCollapsed, setSelected, onNodeSelect, graphData.nodes]
+    [toggleCollapsed, setSelected, onNodeSelect, onNodeOpen, graphData.nodes]
   );
 
   const handleHover = useCallback(
@@ -491,25 +603,129 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     // Re-fit when the layout mode changes, not on every data tick.
   }, [layoutMode, orientation]);
 
-  useImperativeHandle(ref, () => ({
+    // State untuk menyimpan posisi piksel toolbar di layar
+  const [toolbarCoords, setToolbarCoords] = useState<{ x: number; y: number } | null>(null);
+
+  // Update posisi toolbar saat node terpilih bergerak atau kamera digeser
+  const updateToolbarPosition = useCallback(() => {
+    if (!selectedNode || canvasMode !== 'mindmap' || !graphRef.current) {
+      if (toolbarCoords !== null) setToolbarCoords(null);
+      return;
+    }
+
+    const renderNode = data.nodes.find((n) => n.id === selectedNode.id);
+    if (!renderNode || renderNode.x === undefined || renderNode.y === undefined) {
+      if (toolbarCoords !== null) setToolbarCoords(null);
+      return;
+    }
+
+    const screenPos = graphRef.current.graph2ScreenCoords?.(renderNode.x, renderNode.y);
+    if (screenPos && Number.isFinite(screenPos.x) && Number.isFinite(screenPos.y)) {
+      setToolbarCoords({ x: screenPos.x, y: screenPos.y });
+    }
+  }, [selectedNode, canvasMode, data.nodes, toolbarCoords]);
+
+    const handleNodeDrag = useCallback(
+    (node: RenderNode) => {
+      if (canvasMode !== 'mindmap') return;
+
+      if (dragRef.current.draggedNodeId !== node.id) {
+        dragRef.current = {
+          draggedNodeId: node.id,
+          draggedNodeOriginalPos: { x: node.x ?? 0, y: node.y ?? 0 },
+          hoveredTargetId: null,
+          isValidDrop: false,
+        };
+      }
+
+      // Deteksi folder target di bawah kursor (jarak toleransi 60px)
+      const hoveredTarget = findHoveredDropTarget(node, data.nodes, 60);
+      if (!hoveredTarget) {
+        dragRef.current.hoveredTargetId = null;
+        dragRef.current.isValidDrop = false;
+        return;
+      }
+
+      const validation = validateReparent(
+        node,
+        hoveredTarget,
+        projection.parentByChild,
+        projection.childrenByParent
+      );
+
+      dragRef.current.hoveredTargetId = hoveredTarget.id;
+      dragRef.current.isValidDrop = validation.valid;
+      dragRef.current.dropReason = validation.reason;
+    },
+    [canvasMode, data.nodes, projection]
+  );
+
+  const handleNodeDragEnd = useCallback(
+    (node: RenderNode) => {
+      if (canvasMode !== 'mindmap') return;
+
+      const { hoveredTargetId, isValidDrop } = dragRef.current;
+
+      // 1. Eksekusi pemindahan parent jika valid
+      if (isValidDrop && hoveredTargetId) {
+        onNodeMove?.(node.id, hoveredTargetId);
+      }
+
+      // 2. Lepas penguncian koordinat (fx/fy) agar transitionController
+      //    bisa menggerakkan node secara mulus ke posisi slot barunya
+      delete node.fx;
+      delete node.fy;
+
+      // 3. Reset total state drag agar badge "masuk ke folder" & ring putus-putus HILANG
+      dragRef.current = {
+        draggedNodeId: null,
+        draggedNodeOriginalPos: null,
+        hoveredTargetId: null,
+        isValidDrop: false,
+        dropReason: undefined,
+      };
+
+      // 4. Minta kanvas me-render ulang frame bersih
+      graphRef.current?.refresh?.();
+    },
+    [canvasMode, onNodeMove]
+  );
+
+  
+
+
+useImperativeHandle(
+  ref,
+  () => ({
+    refresh: () => {},
     smartZoom: (action) => {
       const graph = graphRef.current;
       if (!graph) return;
+
+      // 1. Zoom to fit: sesuaikan viewport agar mencakup seluruh node yang terlihat
       if (action === 'fit') {
         graph.zoomToFit?.(500, 60);
         return;
       }
+
+      // 2. Zoom to selection: fokus dan perbesar ke node yang sedang dipilih
       if (action === 'selection') {
-        const selected = data.nodes.find((node) => node.id === selectedNode?.id);
+        const targetId = selectedNode?.id;
+        const selected = data.nodes.find((node) => node.id === targetId);
         if (!selected || selected.x === undefined || selected.y === undefined) return;
+        
         graph.centerAt?.(selected.x, selected.y, 450);
         graph.zoom?.(2.25, 450);
         return;
       }
+
+      // 3. Fallback / reset: kembali ke titik pusat default
       graph.centerAt?.(0, 0, 400);
       graph.zoom?.(1, 400);
     },
-  }), [data.nodes, selectedNode?.id]);
+  }),
+  [data.nodes, selectedNode?.id]
+);
 
   return (
     <div ref={containerRef} className="relative h-full w-full">
@@ -526,13 +742,18 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         linkCanvasObject={paintLink}
         linkCanvasObjectMode={() => 'replace'}
         onRenderFramePre={renderDecorations}
+        onRenderFramePost={updateToolbarPosition}
+        onZoom={updateToolbarPosition}
+        onZoomEnd={updateToolbarPosition}
         onNodeClick={handleClick}
         onNodeHover={handleHover}
         onBackgroundClick={() => {
           setSelected(null);
           onNodeSelect(null);
         }}
-        enableNodeDrag={layoutMode === 'free-force'}
+        enableNodeDrag={layoutMode === 'free-force' || canvasMode === 'mindmap'}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragEnd={handleNodeDragEnd}
         dagMode={layoutMode === 'free-force' && graphConfig.forces.dagMode !== 'null' ? graphConfig.forces.dagMode : null}
         dagLevelDistance={graphConfig.forces.dagLevelDistance}
         warmupTicks={layoutMode === 'free-force' ? graphConfig.forces.warmupTicks : 0}
@@ -556,6 +777,29 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         selectedNodeId={selectedNode?.id ?? null}
       />
 
+      {canvasMode === 'mindmap' && selectedNode && toolbarCoords && (
+        <ContextualToolbar
+          x={toolbarCoords.x}
+          y={toolbarCoords.y}
+          nodeId={selectedNode.id}
+          nodeName={selectedNode.name}
+          isFolder={selectedNode.type === 'folder'}
+          currentOverride={subtreeLayoutOverrides?.[selectedNode.id]}
+          currentColor={branchColorOverrides?.[selectedNode.id]}
+          isFocused={focusedRootId === selectedNode.id}
+          onSetStructure={(mode) => setSubtreeLayoutOverride(selectedNode.id, mode)}
+          onSetColor={(color) => setBranchColorOverride(selectedNode.id, color)}
+          onAddSub={() => {
+            // Logika Add Sub-node
+          }}
+          onToggleFocus={() =>
+            setFocusedRoot(focusedRootId === selectedNode.id ? null : selectedNode.id)
+          }
+          onDelete={() => {
+            // Logika Hapus Node
+          }}
+        />
+      )}
     </div>
   );
 });

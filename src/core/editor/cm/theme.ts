@@ -70,6 +70,20 @@ export const editorTheme = EditorView.theme({
   },
   ".cm-md-task": { marginRight: "0.4em", verticalAlign: "middle", accentColor: "hsl(var(--primary))" },
 
+  // Fold placeholder — themed instead of CodeMirror's default light chip
+".cm-foldPlaceholder": {
+    backgroundColor: "transparent",
+    border: "none",
+    color: "hsl(var(--muted-foreground))",
+    borderRadius: "0",
+    padding: "0 0.45em",
+    margin: "0 0.25em 0 0.65em",
+    cursor: "pointer",
+  },
+  ".cm-foldPlaceholder:hover": {
+    backgroundColor: "transparent",
+    boxShadow: "none",
+  },
   // Autocomplete popup
   ".cm-tooltip": {
     backgroundColor: "hsl(var(--popover))",
@@ -97,6 +111,43 @@ export const editorTheme = EditorView.theme({
     opacity: 0.6,
     marginLeft: "0.5rem",
     fontSize: "0.85em",
+  },
+
+    // Gutter lipat heading: sejajar simetris dengan baris pertama saat judul wrapping
+  ".cm-foldGutter": {
+    width: "24px",
+  },
+  ".cm-foldGutter .cm-gutterElement": {
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    paddingTop: "6px", // Mengunci chevron tepat sejajar dengan baris pertama teks heading
+    boxSizing: "border-box",
+  },
+
+  // Tombol chevron identik dengan FoldableMarkdown & PropertiesPanel
+  ".cm-heading-fold-chevron": {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "20px",
+    height: "20px",
+    borderRadius: "4px",
+    color: "hsl(var(--muted-foreground) / 0.5)",
+    cursor: "pointer",
+    transition: "color 150ms ease, background-color 150ms ease",
+  },
+  ".cm-heading-fold-chevron:hover": {
+    color: "hsl(var(--foreground))",
+    backgroundColor: "hsl(var(--muted) / 0.5)",
+  },
+  ".cm-heading-fold-chevron .cm-chevron-icon": {
+    transition: "transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
+    transformOrigin: "center",
+  },
+  // Animasi rotasi 90 derajat saat terbuka
+  ".cm-heading-fold-chevron.is-open .cm-chevron-icon": {
+    transform: "rotate(90deg)",
   },
 });
 

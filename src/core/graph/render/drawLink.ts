@@ -24,6 +24,7 @@ export interface DrawLinkState {
   zoom: number;
   preserveDetail: boolean;
   metricOf: (node: RenderNode) => NodeMetric;
+  isAttachedToDragged?: boolean;
 }
 
 const cubicPoint = (p0: number, p1: number, p2: number, p3: number, t: number) => {
@@ -62,11 +63,40 @@ export function drawLink(
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(start.x, start.y);
+  
+  const linkOpacity = state.isAttachedToDragged 
+    ? 0.35 
+    : state.dimmed ? 0.08 : state.opacity;
+
+  ctx.strokeStyle = dim(state.color, linkOpacity);
+
 
   let c1 = start;
   let c2 = end;
 
-  if (state.mode === 'mindmap') {
+  let elbow: { x: number; y: number }[] | null = null;
+  if (state.mode === 'org-chart') {
+    // Orthogonal (Manhattan) connector with rounded corners.
+    const top = sy <= ty;
+    const a = { x: sx, y: sy + (top ? 1 : -1) * state.metricOf(source).height / 2 };
+    const b = { x: tx, y: ty - (top ? 1 : -1) * state.metricOf(target).height / 2 };
+    const midY = (a.y + b.y) / 2;
+    elbow = [a, { x: a.x, y: midY }, { x: b.x, y: midY }, b];
+  } else if (state.mode === 'brace-map') {
+    const a = { x: sx + state.metricOf(source).width / 2, y: sy };
+    const b = { x: tx - state.metricOf(target).width / 2, y: ty };
+    const midX = (a.x + b.x) / 2;
+    elbow = [a, { x: midX, y: a.y }, { x: midX, y: b.y }, b];
+  }
+
+  if (elbow) {
+    ctx.moveTo(elbow[0].x, elbow[0].y);
+    const radius = 6;
+    for (let i = 1; i < elbow.length - 1; i += 1) {
+      ctx.arcTo(elbow[i].x, elbow[i].y, elbow[i + 1].x, elbow[i + 1].y, radius);
+    }
+    ctx.lineTo(elbow[elbow.length - 1].x, elbow[elbow.length - 1].y);
+  } else if (state.mode === 'mindmap') {
     const dx = end.x - start.x;
     const k = 0.2 + state.curvature * 0.65;
     const bend = Math.sin(state.curveRotation) * Math.abs(dx) * state.curvature * 0.35;
@@ -88,6 +118,11 @@ export function drawLink(
   ctx.stroke();
 
   const curved = state.mode === 'mindmap' || state.mode === 'timeline';
+  if (elbow) {
+    // Arrow / particles follow the last orthogonal segment.
+    start.x = elbow[elbow.length - 2].x; start.y = elbow[elbow.length - 2].y;
+    end.x = elbow[elbow.length - 1].x; end.y = elbow[elbow.length - 1].y;
+  }
   const pointAt = (t: number) => curved
     ? { x: cubicPoint(start.x, c1.x, c2.x, end.x, t), y: cubicPoint(start.y, c1.y, c2.y, end.y, t) }
     : { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };

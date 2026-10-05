@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
@@ -11,6 +11,7 @@ import {
   Eye,
   Code,
   Split,
+  BookOpen,
   Image,
   Music,
   Video,
@@ -31,7 +32,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/shared/ui/badge";
-import { MarkdownRenderer } from "@/core/graph/MarkdownRenderer";
 import { MarkdownView } from "@/core/editor/MarkdownView";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Slider } from "@/shared/ui/slider-number";
@@ -48,6 +48,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/shared/ui/collapsible";
+import { useNodeStore } from "@/shared/stores/useNodeStore";
+import { useUIStore } from "@/shared/stores/useUIStore";
+import { useWorkspaceStore } from "@/core/shell/workspace/store/useWorkspaceStore";
+
 
 interface Node {
   id: string;
@@ -80,6 +84,7 @@ interface NodePanelProps {
   onBacklinkClick?: (nodeId: string) => void;
   onTagClick?: (tag: string) => void;
   autoSaveDelay?: number;
+  onBreadcrumbClick?: (target: Node) => void;
 }
 
 // Minimal Media Player Component
@@ -416,14 +421,13 @@ export const NodePanel = ({
   onBacklinkClick,
   onTagClick,
   autoSaveDelay = 1500,
+  onBreadcrumbClick,
 }: NodePanelProps) => {
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [editorMode, setEditorMode] = useState<
-    "source" | "live" | "preview" | "split"
-  >("live");
+const [editorMode, setEditorMode] = useState<"editor" | "reading">("editor");
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [layoutMode, setLayoutMode] = useState<"wide" | "narrow">("wide");
@@ -565,14 +569,45 @@ export const NodePanel = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [hasChanges, handleSave]);
 
-  // Display path or fallback to node type
-  const displayPath =
-    nodePath ||
-    (node.type === "folder"
-      ? "Folder"
-      : node.type === "media"
-        ? node.mediaType
-        : "Note");
+  // Ambil semua nodes dari store untuk menelusuri rantai hierarki parent
+  const allNodes = useNodeStore((s) => s.nodes);
+
+  // Buat array breadcrumb dari root hingga node saat ini
+  const breadcrumbNodes = useMemo(() => {
+  if (!node) return [];
+
+  const nodes = useNodeStore.getState().nodes;
+  const byId = new Map(nodes.map((item) => [item.id, item]));
+  const path: Node[] = [];
+  const visited = new Set<string>();
+
+  let current: Node | undefined = node;
+
+  while (current && !visited.has(current.id)) {
+    visited.add(current.id);
+    path.unshift(current);
+
+    current = current.parentId
+      ? byId.get(current.parentId)
+      : undefined;
+  }
+
+  return path;
+}, [node]);
+
+  // Handler klik pada breadcrumb node
+  const handleBreadcrumbClick = (targetNode: Node) => {
+    if (targetNode.type === "folder") {
+      // Jika folder: buka File Explorer di sidebar dan pilih folder
+      useUIStore.getState().setActiveTool("files");
+      useNodeStore.getState().setSelectedNode(targetNode);
+    } else {
+      // Jika file atau media: buka file di editor workspace
+      useNodeStore.getState().setSelectedNode(targetNode);
+      useWorkspaceStore.getState().openFile(targetNode.id, targetNode.name);
+    }
+  };
+
 
   return (
     <div className="w-full h-full flex flex-col bg-background">
@@ -580,12 +615,41 @@ export const NodePanel = ({
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-muted/10">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {getNodeIcon(node)}
-          <span
-            className="text-xs text-muted-foreground truncate font-mono"
-            title={displayPath}
-          >
-            {displayPath}
-          </span>
+{/* Breadcrumb Path dengan Scroll tanpa Scrollbar */}
+<nav
+  aria-label="Breadcrumb"
+  className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap py-0.5 text-xs font-mono text-muted-foreground scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+>
+  {breadcrumbNodes.map((item, index) => {
+    const isLast = index === breadcrumbNodes.length - 1;
+
+    return (
+      <span
+        key={item.id}
+        className="inline-flex shrink-0 items-center gap-1"
+      >
+        <button
+          type="button"
+          onClick={() => onBreadcrumbClick?.(item)}
+          className={cn(
+            "rounded px-1 py-0.5 transition-colors",
+            isLast
+              ? "font-medium text-foreground hover:bg-accent/40"
+              : "text-muted-foreground hover:bg-accent/40 hover:text-foreground hover:underline",
+          )}
+        >
+          {item.name}
+        </button>
+
+        {!isLast && (
+          <span className="select-none text-muted-foreground/40">/</span>
+        )}
+      </span>
+    );
+  })}
+</nav>
+
+
           {hasChanges && (
             <span className="text-xs text-amber-500/80 shrink-0">
               • Unsaved
@@ -620,44 +684,28 @@ export const NodePanel = ({
             )}
           </Button>
 
-          {node.type === "file" && (
-            <div className="flex items-center border border-border/40 rounded-md p-0.5 ml-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-6 px-2 text-xs",
-                  editorMode === "source" && "bg-secondary",
-                )}
-                onClick={() => setEditorMode("source")}
-                title="Source mode"
-              >
-                <PenLine className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-6 px-2 text-xs",
-                  editorMode === "preview" && "bg-secondary",
-                )}
-                onClick={() => setEditorMode("preview")}
-              >
-                <Eye className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-6 px-2 text-xs",
-                  editorMode === "split" && "bg-secondary",
-                )}
-                onClick={() => setEditorMode("split")}
-              >
-                <Split className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
+{node.type === "file" && (
+  <Button
+    variant="ghost"
+    size="icon"
+    className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+    onClick={() =>
+      setEditorMode((prev) => (prev === "editor" ? "reading" : "editor"))
+    }
+    title={
+      editorMode === "editor"
+        ? "Beralih ke mode membaca (Reading)"
+        : "Beralih ke mode mengedit (Editor)"
+    }
+  >
+    {editorMode === "editor" ? (
+      <BookOpen className="w-3.5 h-3.5" />
+    ) : (
+      <PenLine className="w-3.5 h-3.5" />
+    )}
+  </Button>
+)}
+
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -729,28 +777,22 @@ export const NodePanel = ({
             </div>
           )}
 
-          {/* Content Editor */}
-          {node.type === "file" && (
-            <div className="min-h-[50vh]">
-              <MarkdownView
-                value={content}
-                onChange={setContent}
-                showProperties
-                mode={
-                  editorMode === "preview"
-                    ? "reading"
-                    : editorMode === "live"
-                      ? "live"
-                      : "source"
-                }
-                sideBySide={editorMode === "split"}
-                placeholder="Start writing..."
-                onWikilinkClick={onWikilinkClick}
-                onTagClick={onTagClick}
-                onSave={() => handleSave(false)}
-              />
-            </div>
-          )}
+{/* Content Editor */}
+{node.type === "file" && (
+  <div className="min-h-[50vh]">
+    <MarkdownView
+      value={content}
+      onChange={setContent}
+      showProperties
+      mode={editorMode === "reading" ? "reading" : "live"}
+      placeholder="Write '/' or start writing..."
+      onWikilinkClick={onWikilinkClick}
+      onTagClick={onTagClick}
+      onSave={() => handleSave(false)}
+    />
+  </div>
+)}
+
 
           {/* Folder Description */}
           {node.type === "folder" && (

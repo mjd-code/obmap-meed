@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { cn } from "@/shared/lib";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -39,6 +39,8 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import type { RibbonTool } from "./IconRibbon";
 import { useWorkspaceStore } from "./store/useWorkspaceStore";
+import { useUIStore } from "@/shared/stores";
+
 
 interface Node {
   id: string;
@@ -98,9 +100,11 @@ export function SidebarPanel({
   onImportComplete,
 }: SidebarPanelProps) {
   const openView = useWorkspaceStore((state) => state.openView);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    new Set(),
-  );
+const expandedFolderIds = useUIStore((state) => state.expandedFolderIds);
+const setExpandedFolderIds = useUIStore(
+  (state) => state.setExpandedFolderIds,
+);
+const expandedFolders = new Set(expandedFolderIds);
   const [expandedSettingsGroups, setExpandedSettingsGroups] = useState<
     Set<string>
   >(() => new Set(SETTINGS_GROUPS));
@@ -118,18 +122,16 @@ export function SidebarPanel({
     openView({ type: "settings", title: label, settingsSection: section });
   };
 
-  const toggleFolder = useCallback((folderId: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setExpandedFolders((prev) => {
-      const next = new Set(prev);
-      if (next.has(folderId)) {
-        next.delete(folderId);
-      } else {
-        next.add(folderId);
-      }
-      return next;
-    });
-  }, []);
+const toggleFolder = useCallback((folderId: string, e?: React.MouseEvent) => {
+  e?.stopPropagation();
+
+  setExpandedFolderIds(
+    expandedFolders.has(folderId)
+      ? expandedFolderIds.filter((id) => id !== folderId)
+      : [...expandedFolderIds, folderId],
+  );
+}, [expandedFolderIds, expandedFolders, setExpandedFolderIds]);
+
 
   const handleDragStart = (node: Node, e: React.DragEvent) => {
     e.stopPropagation();
@@ -233,6 +235,37 @@ export function SidebarPanel({
     return <FileText className="w-4 h-4 shrink-0 text-primary" />;
   };
 
+   // 1. TAMBAH: Lacak jalur parent hingga root dari node yang sedang dipilih (untuk dynamic highlight line)
+  const selectedPathIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (!selectedNode) return ids;
+    let current: Node | undefined = selectedNode;
+    while (current) {
+      ids.add(current.id);
+      current = current.parentId
+        ? nodes.find((n) => n.id === current!.parentId)
+        : undefined;
+    }
+    return ids;
+  }, [selectedNode, nodes]);
+
+  const INDENT_SIZE = 16; // Ukuran indentasi standar dan presisi (HD)
+
+  // Hitung jalur rantai leluhur aktif dari Root hingga Selected Node (Graph Path)
+const selectedPathSet = useMemo(() => {
+  const pathSet = new Set<string>();
+  if (!selectedNode) return pathSet;
+
+  pathSet.add(selectedNode.id);
+  let current = nodes.find((n) => n.id === selectedNode.id);
+  while (current && current.parentId) {
+    pathSet.add(current.parentId);
+    current = nodes.find((n) => n.id === current?.parentId);
+  }
+  return pathSet;
+}, [selectedNode, nodes]);
+
+
   const buildHierarchy = () => {
     const rootNodes = nodes.filter((node) => node.parentId === null);
 
@@ -253,56 +286,111 @@ export function SidebarPanel({
       level: number = 0,
       isLastChild: boolean = true,
       parentLines: boolean[] = [],
+      siblingIndex: number = 0,
+      targetSiblingIndex: number = -1, // Indeks sibling yang memuat target aktif
     ): JSX.Element => {
       const children = getChildren(node.id);
       const hasChildren = children.length > 0;
       const isFolder = node.type === "folder";
       const isExpanded = expandedFolders.has(node.id);
       const isDragOver = dragOverNode === node.id;
+      const isSelected = selectedNode?.id === node.id;
+
+      // Cari apakah di antara children folder ini ada yang berada di jalur selectedPath
+      const activeChildIndex = children.findIndex((child) =>
+        selectedPathSet.has(child.id),
+      );
+
+      // Logika Jalur Graph Network Presisi:
+      // 1. Segmen vertikal atas (0px ke 14px): Aktif jika node ini adalah target ATAU sibling sebelum target (dilewati jalur ke bawah)
+      const isTopVerticalActive =
+        targetSiblingIndex !== -1 && siblingIndex <= targetSiblingIndex;
+
+      // 2. Konektor horizontal (14px masuk ke item): HANYA aktif jika node ini adalah target di tingkat ini
+      const isHorizontalActive =
+        targetSiblingIndex !== -1 && siblingIndex === targetSiblingIndex;
+
+      // 3. Segmen vertikal bawah (14px ke 100%): HANYA aktif jika target berada di bawah node ini (sibling sebelum target)
+      // Node target itu sendiri TIDAK meneruskan garis aktif ke bawah!
+      const isBottomVerticalActive =
+        targetSiblingIndex !== -1 && siblingIndex < targetSiblingIndex;
+
+      // Lebar indentasi per tingkat
+      const INDENT_WIDTH = 16;
+      const connectorLeft = (level - 1) * INDENT_WIDTH + 14;
 
       return (
         <div key={node.id} className="relative">
-          {/* Tree lines */}
+          {/* Tree lines HD - Solid 1px tanpa gradient buram */}
           {level > 0 && (
             <div className="absolute left-0 top-0 bottom-0 pointer-events-none">
+              {/* Garis leluhur di luar cabang ini selalu pasif (tidak ikut ter-highlight) */}
               {parentLines.map(
                 (showLine, idx) =>
                   showLine && (
                     <div
                       key={idx}
-                      className="absolute w-px bg-gradient-to-b from-border/60 to-border/20"
+                      className="absolute w-[1px] bg-border/40"
                       style={{
-                        left: `${idx * 12 + 12}px`,
+                        left: `${idx * INDENT_WIDTH + 14}px`,
                         top: 0,
                         bottom: 0,
                       }}
                     />
                   ),
               )}
-              {/* Horizontal connector */}
+
+              {/* Segmen Vertikal Atas (0px -> 14px) */}
               <div
-                className="absolute h-px bg-gradient-to-r from-border/60 to-border/30"
+                className={cn(
+                  "absolute w-[1px] transition-colors duration-150",
+                  isTopVerticalActive
+                    ? "bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)] z-10"
+                    : "bg-border/40",
+                )}
                 style={{
-                  left: `${(level - 1) * 12 + 12}px`,
-                  width: "10px",
+                  left: `${connectorLeft}px`,
+                  top: 0,
+                  height: "14px",
+                }}
+              />
+
+              {/* Konektor Horizontal ke Node (14px) */}
+              {/* Jika tidak ada chevron (file atau folder kosong), garis diperpanjang (+14px) */}
+              <div
+                className={cn(
+                  "absolute h-[1px] transition-colors duration-150",
+                  isHorizontalActive
+                    ? "bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)] z-10"
+                    : "bg-border/40",
+                )}
+                style={{
+                  left: `${connectorLeft}px`,
+                  width: hasChildren ? "12px" : "26px", // Perpanjang garis menggantikan chevron
                   top: "14px",
                 }}
               />
-              {/* Vertical connector to this node */}
-              <div
-                className={cn(
-                  "absolute w-px bg-gradient-to-b from-border/60 to-border/20",
-                  isLastChild && "to-transparent",
-                )}
-                style={{
-                  left: `${(level - 1) * 12 + 12}px`,
-                  top: 0,
-                  height: isLastChild ? "14px" : "100%",
-                }}
-              />
+
+              {/* Segmen Vertikal Bawah (14px -> 100%) */}
+              {!isLastChild && (
+                <div
+                  className={cn(
+                    "absolute w-[1px] transition-colors duration-150",
+                    isBottomVerticalActive
+                      ? "bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)] z-10"
+                      : "bg-border/40",
+                  )}
+                  style={{
+                    left: `${connectorLeft}px`,
+                    top: "14px",
+                    bottom: 0,
+                  }}
+                />
+              )}
             </div>
           )}
-
+          
+          {/* Node Row */}
           <div
             className={cn(
               "relative group",
@@ -314,6 +402,24 @@ export function SidebarPanel({
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(node, e)}
           >
+            {/* === TAMBAHKAN BAGIAN INI: Stem Vertikal dari Chevron Parent ke Anak-anak === */}
+            {isFolder && hasChildren && isExpanded && (
+              <div
+                className={cn(
+                  "absolute w-[1px] pointer-events-none transition-colors duration-150",
+                  activeChildIndex !== -1
+                    ? "bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)] z-10"
+                    : "bg-border/40",
+                )}
+                style={{
+                  left: `${level * INDENT_WIDTH + 14}px`, // Presisi segaris dengan connectorLeft anak
+                  top: "20px",                           // Mulai tepat dari tengah chevron
+                  bottom: 0,                              // Berakhir di batas bawah baris parent (menyambung ke top: 0 anak pertama)
+                }}
+              />
+            )}
+            {/* ========================================================================= */}
+
             <div
               onClick={() => {
                 onNodeSelect(node);
@@ -323,23 +429,35 @@ export function SidebarPanel({
                 if (!isFolder) onNodeOpen?.(node);
               }}
               className={cn(
-                "w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors cursor-pointer select-none",
+                "w-full flex items-center gap-1.5 px-2 py-1.5 text-sm rounded-md transition-colors cursor-pointer select-none",
                 "hover:bg-accent/50",
-                selectedNode?.id === node.id &&
-                  "bg-accent text-accent-foreground font-medium",
+                isSelected &&
+                  "bg-accent/20",
               )}
-              style={{ paddingLeft: `${level * 12 + 8}px` }}
+              style={{
+                paddingLeft: `${level * INDENT_WIDTH + 8}px`,
+              }}
             >
-              {isFolder && hasChildren && (
-                <span className="p-0.5 rounded">
+              {/* Slot Chevron 16px (w-4 h-4) */}
+              {isFolder && hasChildren ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFolder(node.id);
+                  }}
+                  className="w-4 h-4 flex items-center justify-center p-0.5 rounded hover:bg-accent shrink-0 text-muted-foreground hover:text-foreground z-10"
+                >
                   {isExpanded ? (
                     <ChevronDown className="w-3 h-3" />
                   ) : (
                     <ChevronRight className="w-3 h-3" />
                   )}
-                </span>
+                </button>
+              ) : (
+                <span className="w-4 h-4 shrink-0" />
               )}
-              {isFolder && !hasChildren && <span className="w-4" />}
+
               {getNodeIcon(node)}
               <span className="truncate flex-1 text-left">{node.name}</span>
               {node.tags.length > 0 && (
@@ -350,13 +468,19 @@ export function SidebarPanel({
             </div>
           </div>
 
+
+          {/* Children render */}
           {hasChildren && isExpanded && (
             <div className="relative">
               {children.map((child, idx) =>
-                renderNode(child, level + 1, idx === children.length - 1, [
-                  ...parentLines,
-                  !isLastChild,
-                ]),
+                renderNode(
+                  child,
+                  level + 1,
+                  idx === children.length - 1,
+                  [...parentLines, !isLastChild],
+                  idx,
+                  activeChildIndex, // Berikan indeks anak yang memuat target
+                ),
               )}
             </div>
           )}
@@ -364,24 +488,36 @@ export function SidebarPanel({
       );
     };
 
+    // Render Root
+    const rootActiveIndex = rootNodes.findIndex((n) => selectedPathSet.has(n.id));
     return rootNodes.map((node, idx) =>
-      renderNode(node, 0, idx === rootNodes.length - 1, []),
+      renderNode(
+        node,
+        0,
+        idx === rootNodes.length - 1,
+        [],
+        idx,
+        rootActiveIndex,
+      ),
     );
   };
+
 
   const folderCount = nodes.filter((n) => n.type === "folder").length;
   const fileCount = nodes.filter((n) => n.type === "file").length;
 
-  const expandAll = () => {
-    const allFolderIds = nodes
-      .filter((n) => n.type === "folder")
-      .map((n) => n.id);
-    setExpandedFolders(new Set(allFolderIds));
-  };
+const expandAll = () => {
+  setExpandedFolderIds(
+    nodes
+      .filter((node) => node.type === "folder")
+      .map((node) => node.id),
+  );
+};
 
-  const collapseAll = () => {
-    setExpandedFolders(new Set());
-  };
+
+const collapseAll = () => {
+  setExpandedFolderIds([]);
+};
 
   const panelTitles: Record<RibbonTool, string> = {
     files: "File Explorer",

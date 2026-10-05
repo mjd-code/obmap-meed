@@ -24,6 +24,7 @@ import {
   Diamond,
   Triangle,
   Hexagon,
+  GitBranch,
 } from 'lucide-react';
 import { NodeConfig } from "@/shared/stores/useGraphStore";
 import { ColorPicker } from './ColorPicker';
@@ -311,6 +312,12 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-3 h-3" />
                     Depth Level
+                  </div>
+                </SelectItem>
+                <SelectItem value="branch">
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="w-3 h-3" />
+                    Branch (Inheritance)
                   </div>
                 </SelectItem>
                 <SelectItem value="tags">
