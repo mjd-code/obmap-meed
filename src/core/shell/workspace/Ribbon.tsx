@@ -20,6 +20,8 @@ export function Ribbon() {
     setSelectedNode,
     onNodeMove,
     onAddNode,
+    onNodeDelete,
+    onNodeUpdate,
     onImportComplete,
     onCloseVault,
     currentVaultId,
@@ -42,7 +44,12 @@ export function Ribbon() {
 
   return (
     <>
-      <IconRibbon activeTool={activeTool} onToolSelect={handleToolSelect} onOpenGraph={handleOpenGraph} onOpenMindmap={handleOpenMindmap} />
+      <IconRibbon
+        activeTool={activeTool}
+        onToolSelect={handleToolSelect}
+        onOpenGraph={handleOpenGraph}
+        onOpenMindmap={handleOpenMindmap}
+      />
       {activeTool && (
         <SidebarPanel
           activeTool={activeTool}
@@ -58,6 +65,8 @@ export function Ribbon() {
               openView({ type: "markdown", nodeId: node.id, title: node.name });
           }}
           onNodeMove={onNodeMove}
+          onNodeDelete={onNodeDelete}
+          onNodeUpdate={onNodeUpdate}
           onAddNode={onAddNode}
           isVaultMode={!!currentVaultId}
           vaultName={vaultName}
