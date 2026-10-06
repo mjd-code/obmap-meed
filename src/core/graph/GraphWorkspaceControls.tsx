@@ -63,7 +63,7 @@ import {
 } from './config-panel/HierarchyColorControls';
 import { ChevronRight } from 'lucide-react';
 
-type SettingGroup = 'search' | 'layout' | 'nodes' | 'links' | 'physics' | 'global';
+type SettingGroup = 'search' | 'layout' | 'nodes' | 'links' | 'global';
 type LabelMode = 'nodes' | 'labels' | 'boxes';
 type LinkStyleType = keyof TopologyConfig['styles'];
 
@@ -148,15 +148,6 @@ const NODE_SHAPES = [
   { value: 'square', label: 'Square' },
   { value: 'diamond', label: 'Diamond' },
   { value: 'hexagon', label: 'Hexagon' },
-];
-
-const DAG_MODES = [
-  { value: 'null', label: 'None (Organic)' },
-  { value: 'td', label: 'Top-Down' },
-  { value: 'bu', label: 'Bottom-Up' },
-  { value: 'lr', label: 'Left-Right' },
-  { value: 'radialin', label: 'Radial In' },
-  { value: 'radialout', label: 'Radial Out' },
 ];
 
 export type SmartZoomAction = 'fit' | 'selection' | 'reset';
@@ -480,24 +471,7 @@ export function GraphWorkspaceControls({
                   <TooltipContent side="left">Link & Particles</TooltipContent>
                 </Tooltip>
 
-                {/* 5. Physics & Forces */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant={activePanel === 'physics' ? 'secondary' : 'ghost'}
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => togglePanel('physics')}
-                      aria-label="Physics & Forces"
-                    >
-                      <Zap className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">Physics & Forces</TooltipContent>
-                </Tooltip>
-
-                {/* 6. global & Stats */}
+                {/* 5. global & Stats */}
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
@@ -586,7 +560,6 @@ export function GraphWorkspaceControls({
                   {activePanel === 'layout' && 'Layout Engine'}
                   {activePanel === 'nodes' && 'Node Appearance'}
                   {activePanel === 'links' && 'Links & Particles'}
-                  {activePanel === 'physics' && 'Physics & Forces'}
                   {activePanel === 'global' && 'Graph global'}
                 </span>
               </div>
@@ -732,28 +705,6 @@ export function GraphWorkspaceControls({
                           </Button>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  {/* Dynamic Option Khusus Graph: DAG Direction */}
-                  {canvasMode === 'graph' && (
-                    <div className="space-y-1.5 animate-in fade-in-0 duration-150">
-                      <Label className="text-[11px] text-muted-foreground">DAG Direction</Label>
-                      <Select
-                        value={config.forces.dagMode}
-                        onValueChange={(val: any) => updateForceConfig({ dagMode: val })}
-                      >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DAG_MODES.map((d) => (
-                            <SelectItem key={d.value} value={d.value} className="text-xs">
-                              {d.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
                   )}
 
@@ -1325,80 +1276,7 @@ export function GraphWorkspaceControls({
                 </div>
               )}
 
-              {/* 5. PHYSICS & FORCES PANEL */}
-              {activePanel === 'physics' && (
-                <div className="space-y-3.5">
-                  <div className="flex gap-2">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="flex-1 gap-1.5 text-xs"
-                      onClick={requestReheat}
-                    >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Reheat
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-1.5 text-xs"
-                      onClick={requestStop}
-                    >
-                      <Pause className="h-3.5 w-3.5" />
-                      Freeze
-                    </Button>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">DAG Direction</Label>
-                    <Select
-                      value={config.forces.dagMode}
-                      onValueChange={(val: any) => updateForceConfig({ dagMode: val })}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DAG_MODES.map((d) => (
-                          <SelectItem key={d.value} value={d.value} className="text-xs">
-                            {d.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-[11px] text-muted-foreground">
-                      <span>Repulsion</span>
-                      <span>{config.forces.chargeStrength}</span>
-                    </div>
-                    <Slider
-                      value={[config.forces.chargeStrength]}
-                      min={-1200}
-                      max={-20}
-                      step={20}
-                      onValueChange={([v]) => updateForceConfig({ chargeStrength: v })}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-[11px] text-muted-foreground">
-                      <span>Link Distance</span>
-                      <span>{config.forces.linkDistance}px</span>
-                    </div>
-                    <Slider
-                      value={[config.forces.linkDistance]}
-                      min={20}
-                      max={400}
-                      step={5}
-                      onValueChange={([v]) => updateForceConfig({ linkDistance: v })}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* 6. GRAPH GLOBAL & TEMPLATES PANEL */}
+              {/* 5. GRAPH GLOBAL & TEMPLATES PANEL */}
               {activePanel === 'global' && (
                 <div className="space-y-4">
                   {/* Bagian A: Simpan Template Baru */}

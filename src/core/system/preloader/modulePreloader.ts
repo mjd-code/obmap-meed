@@ -106,7 +106,6 @@ class DynamicPreloadRegistry {
       // --- UNIVERSAL SETTINGS ---
       { id: 'set-hub', name: 'Universal Settings Hub Modal', category: 'settings', loader: () => import('@/core/shell/settings/SettingsHub') },
       { id: 'set-vault', name: 'Per-Vault Configuration & Storage Panel', category: 'settings', loader: () => import('@/core/shell/settings/sections/VaultSettings') },
-      { id: 'set-graph-engine', name: 'Graph Engine & Physics Tuner Panel', category: 'settings', loader: () => import('@/core/shell/settings/sections/GraphEngineSettings') },
       { id: 'set-schema', name: 'Schema Definition & Properties Settings', category: 'settings', loader: () => import('@/core/shell/settings/sections/SchemaSettings') },
       { id: 'set-features', name: 'Plugin & Feature Toggles Manager', category: 'settings', loader: () => import('@/core/shell/settings/FeatureTogglesPanel') },
     ];
