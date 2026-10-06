@@ -77,6 +77,18 @@ function GraphLeafBody({ leafId, canvasMode: requestedMode, view }: { leafId: st
     setCanvasMode,
   } = useGraphInteractionStore();
 
+    useEffect(() => {
+    if (requestedMode) setCanvasMode(requestedMode);
+  }, [requestedMode, setCanvasMode]);
+
+  // Sinkronkan tab title & canvasMode pada leaf view
+  useEffect(() => {
+    const title = canvasMode === "mindmap" ? "Mindmap View" : "Graph View";
+    if (view && (view.title !== title || view.canvasMode !== canvasMode)) {
+      useWorkspaceStore.getState().setLeafView(leafId, { ...view, title, canvasMode });
+    }
+  }, [canvasMode, leafId, view]);
+
   // The ribbon / shortcuts set the requested mode on the tab's view state.
   useEffect(() => {
     if (requestedMode) setCanvasMode(requestedMode);
@@ -131,6 +143,7 @@ function GraphLeafBody({ leafId, canvasMode: requestedMode, view }: { leafId: st
       <GraphWorkspaceControls
         layout={layoutMode}
         canvasMode={canvasMode}
+        onCanvasModeChange={setCanvasMode}
         onLayoutChange={setLayoutMode}
         orientation={orientation}
         onOrientationChange={setOrientation}

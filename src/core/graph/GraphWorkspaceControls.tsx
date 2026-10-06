@@ -164,6 +164,7 @@ export type SmartZoomAction = 'fit' | 'selection' | 'reset';
 interface GraphWorkspaceControlsProps {
   layout: LayoutMode;
   canvasMode?: CanvasMode;
+  onCanvasModeChange?: (mode: CanvasMode) => void;
   onLayoutChange: (layout: LayoutMode) => void;
   orientation: MindmapOrientation;
   onOrientationChange: (orientation: MindmapOrientation) => void;
@@ -189,6 +190,7 @@ interface GraphWorkspaceControlsProps {
 export function GraphWorkspaceControls({
   layout,
   canvasMode = 'graph',
+  onCanvasModeChange,
   onLayoutChange,
   orientation,
   onOrientationChange,
@@ -210,6 +212,16 @@ export function GraphWorkspaceControls({
   onTagFilterChange,
   onSmartZoom,
 }: GraphWorkspaceControlsProps) {
+
+  // Handler untuk beralih canvas mode (mindmap vs graph)
+  const handleModeSwitch = (mode: CanvasMode) => {
+    if (onCanvasModeChange) {
+      onCanvasModeChange(mode);
+    } else {
+      setStoreCanvasMode(mode);
+    }
+  };
+
   // Kontrol gear: toggle menu icon button ke bawah
   const [isGearOpen, setIsGearOpen] = useState(true);
   const [activePanel, setActivePanel] = useState<SettingGroup | null>(null);
@@ -278,6 +290,7 @@ export function GraphWorkspaceControls({
   const stats = useGraphStore((s) => s.stats);
   const requestReheat = useGraphInteractionStore((s) => s.requestReheat);
   const requestStop = useGraphInteractionStore((s) => s.requestStop);
+  const setStoreCanvasMode = useGraphInteractionStore((s) => s.setCanvasMode);
 
   const filterCount =
     Number(minDepth > 0) +
@@ -645,10 +658,46 @@ export function GraphWorkspaceControls({
               {/* 2. LAYOUT ENGINE PANEL */}
               {activePanel === 'layout' && (
                 <div className="space-y-3.5">
+                  {/* Mode Switcher: Mindmap View vs Graph View */}
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-muted-foreground">Layout Algorithm</Label>
+                    <Label className="text-[11px] text-muted-foreground">View Mode</Label>
+                    <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-secondary/30 p-1">
+                      <Button
+                        type="button"
+                        variant={canvasMode === 'mindmap' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className={cn(
+                          "h-8 gap-1.5 text-xs font-medium transition-all",
+                          canvasMode === 'mindmap' && "bg-background text-foreground shadow-sm"
+                        )}
+                        onClick={() => handleModeSwitch('mindmap')}
+                      >
+                        <GitBranch className="h-3.5 w-3.5 text-primary" />
+                        Mindmap View
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={canvasMode === 'graph' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className={cn(
+                          "h-8 gap-1.5 text-xs font-medium transition-all",
+                          canvasMode === 'graph' && "bg-background text-foreground shadow-sm"
+                        )}
+                        onClick={() => handleModeSwitch('graph')}
+                      >
+                        <Network className="h-3.5 w-3.5 text-primary" />
+                        Graph View
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Dynamic Layout Algorithm Options */}
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">
+                      {canvasMode === 'mindmap' ? 'Mindmap Algorithm' : 'Graph Algorithm'}
+                    </Label>
                     <div className="grid grid-cols-2 gap-1.5">
-                      {(canvasMode === 'graph' ? GRAPH_LAYOUTS : MINDMAP_LAYOUTS).map((item) => {
+                      {(canvasMode === 'mindmap' ? MINDMAP_LAYOUTS : GRAPH_LAYOUTS).map((item) => {
                         const Icon = item.icon;
                         return (
                           <Button
@@ -666,8 +715,9 @@ export function GraphWorkspaceControls({
                     </div>
                   </div>
 
-                  {layout === 'mindmap' && (
-                    <div className="space-y-1.5">
+                  {/* Dynamic Option Khusus Mindmap: Orientation */}
+                  {canvasMode === 'mindmap' && layout === 'mindmap' && (
+                    <div className="space-y-1.5 animate-in fade-in-0 duration-150">
                       <Label className="text-[11px] text-muted-foreground">Orientation</Label>
                       <div className="grid grid-cols-2 gap-1.5">
                         {(['balanced', 'radial'] as MindmapOrientation[]).map((val) => (
@@ -685,6 +735,29 @@ export function GraphWorkspaceControls({
                     </div>
                   )}
 
+                  {/* Dynamic Option Khusus Graph: DAG Direction */}
+                  {canvasMode === 'graph' && (
+                    <div className="space-y-1.5 animate-in fade-in-0 duration-150">
+                      <Label className="text-[11px] text-muted-foreground">DAG Direction</Label>
+                      <Select
+                        value={config.forces.dagMode}
+                        onValueChange={(val: any) => updateForceConfig({ dagMode: val })}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DAG_MODES.map((d) => (
+                            <SelectItem key={d.value} value={d.value} className="text-xs">
+                              {d.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Opsi Umum: Zoom-Out Rendering */}
                   <div className="space-y-1.5 border-t border-border/60 pt-2.5">
                     <Label className="text-[11px] text-muted-foreground">Zoom-Out Rendering</Label>
                     <Select
@@ -706,11 +779,11 @@ export function GraphWorkspaceControls({
                       </SelectContent>
                     </Select>
                     <p className="text-[10px] leading-snug text-muted-foreground">
-                      Keep full detail preserves node cards, labels, and link weight while zooming
-                      out.
+                      Keep full detail preserves node cards, labels, and link weight while zooming out.
                     </p>
                   </div>
 
+                  {/* Opsi Umum: Label Zoom Threshold */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-[11px] text-muted-foreground">
                       <span>Label Zoom Threshold</span>
@@ -725,6 +798,7 @@ export function GraphWorkspaceControls({
                     />
                   </div>
 
+                  {/* Opsi Umum: Highlight connected path */}
                   <div className="flex items-center justify-between border-t border-border/60 pt-2.5">
                     <Label className="flex items-center gap-1.5 text-xs">
                       <Sparkles className="h-3.5 w-3.5 text-primary" />
