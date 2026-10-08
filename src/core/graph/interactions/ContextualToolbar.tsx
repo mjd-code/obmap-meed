@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import type { MindmapLayoutMode } from "../model/graphTypes";
+import type { MindmapLayoutMode, CanvasMode } from "../model/graphTypes";
 
 const MINDMAP_STRUCTURES: { mode: MindmapLayoutMode; label: string }[] = [
   { mode: "mindmap", label: "Mindmap (Balanced)" },
@@ -32,26 +32,31 @@ interface ContextualToolbarProps {
   nodeId: string;
   nodeName: string;
   isFolder: boolean;
+  canvasMode?: CanvasMode;
   currentOverride?: MindmapLayoutMode;
   isFocused: boolean;
   onSetStructure: (layout: MindmapLayoutMode | null) => void;
   onAddSub: (type: "file" | "folder") => void;
   onToggleFocus: () => void;
   onDelete: () => void;
+  onClose?: () => void;
 }
 
 export function ContextualToolbar({
   x,
   y,
+  canvasMode = "mindmap",
   currentOverride,
   isFocused,
   onSetStructure,
   onAddSub,
   onToggleFocus,
   onDelete,
+  onClose,
 }: ContextualToolbarProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const toolbarWidth = isExpanded ? 180 : 36;
+  // Default expanded saat dibuka melalui klik kanan / double tap
+  const [isExpanded, setIsExpanded] = useState(true);
+  const toolbarWidth = isExpanded ? (canvasMode === "graph" ? 144 : 180) : 36;
   
   // Clamping koordinat toolbar agar tidak terpotong tepi layar
   const clampedX = typeof window !== "undefined"
@@ -62,6 +67,14 @@ export function ContextualToolbar({
     ? Math.max(50, Math.min(window.innerHeight - 20, y - 18))
     : y - 18;
 
+  const handleToggle = () => {
+    if (isExpanded && onClose) {
+      onClose();
+    } else {
+      setIsExpanded((prev) => !prev);
+    }
+  };
+
   return (
     <div
       className="absolute z-50 flex items-center gap-1 p-1 bg-card/95 backdrop-blur-md border border-border/80 shadow-2xl rounded-full select-none pointer-events-auto transition-all duration-200 ease-out"
@@ -71,16 +84,17 @@ export function ContextualToolbar({
         transform: "translate(-50%, -100%)",
       }}
       onClick={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.stopPropagation()}
     >
-      {/* 1. Toggle Button (Dynamic Gear Setting) */}
+      {/* 1. Toggle / Close Button */}
       <Button
         variant="ghost"
         size="sm"
         className={`h-7 w-7 rounded-full p-0 transition-transform duration-200 ${
           isExpanded ? "bg-accent/70 rotate-90 text-primary" : "hover:bg-accent/50 text-muted-foreground"
         }`}
-        onClick={() => setIsExpanded((prev) => !prev)}
-        title={isExpanded ? "Collapse Actions" : "Node Actions"}
+        onClick={handleToggle}
+        title={isExpanded ? "Close Actions" : "Node Actions"}
       >
         {isExpanded ? <X className="h-3.5 w-3.5" /> : <Settings2 className="h-3.5 w-3.5" />}
       </Button>
@@ -90,48 +104,49 @@ export function ContextualToolbar({
         <div className="flex items-center gap-1 animate-in fade-in slide-in-from-left-2 duration-150">
           <div className="h-4 w-px bg-border/60 mx-0.5" />
 
-          {/* Structure Override Dropdown (Icon Only di baris utama) */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-foreground"
-                title="Change Subtree Structure"
-              >
-                <GitBranch className="h-3.5 w-3.5 text-primary" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48 text-xs">
-              <DropdownMenuLabel>Subtree Layout</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {/* Sub-item: Teks murni tanpa icon */}
-              {MINDMAP_STRUCTURES.map((s) => (
-                <DropdownMenuItem
-                  key={s.mode}
-                  onClick={() => onSetStructure(s.mode)}
-                  className={`cursor-pointer ${
-                    currentOverride === s.mode ? "font-semibold text-primary" : ""
-                  }`}
+          {/* Structure Override Dropdown (HANYA tampil di Mindmap View, tanpa multi/mix layout di Graph View) */}
+          {canvasMode === "mindmap" && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-foreground"
+                  title="Change Subtree Structure"
                 >
-                  {s.label}
-                </DropdownMenuItem>
-              ))}
-              {currentOverride && (
-                <>
-                  <DropdownMenuSeparator />
+                  <GitBranch className="h-3.5 w-3.5 text-primary" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 text-xs">
+                <DropdownMenuLabel>Subtree Layout</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {MINDMAP_STRUCTURES.map((s) => (
                   <DropdownMenuItem
-                    onClick={() => onSetStructure(null)}
-                    className="text-muted-foreground cursor-pointer"
+                    key={s.mode}
+                    onClick={() => onSetStructure(s.mode)}
+                    className={`cursor-pointer ${
+                      currentOverride === s.mode ? "font-semibold text-primary" : ""
+                    }`}
                   >
-                    Reset to Default
+                    {s.label}
                   </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                ))}
+                {currentOverride && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => onSetStructure(null)}
+                      className="text-muted-foreground cursor-pointer"
+                    >
+                      Reset to Default
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
-          {/* Add Sub Dropdown (Icon Only di baris utama, text only di sub-item) */}
+          {/* Add Sub Dropdown (Sub-note & Sub-folder) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -159,7 +174,7 @@ export function ContextualToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Focus Subtree (Icon Only) */}
+          {/* Focus Subtree */}
           <Button
             variant="ghost"
             size="sm"
@@ -174,7 +189,7 @@ export function ContextualToolbar({
 
           <div className="h-4 w-px bg-border/60 mx-0.5" />
 
-          {/* Delete Node (Icon Only) */}
+          {/* Delete Node */}
           <Button
             variant="ghost"
             size="sm"

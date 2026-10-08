@@ -117,8 +117,12 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     hoveredTargetId: null,
     isValidDrop: false,
   });
+    // 1. State visibilitas & koordinat toolbar
+  const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+  const [toolbarCoords, setToolbarCoords] = useState<{ x: number; y: number } | null>(null);
 
-
+  // Tracker untuk deteksi double tap di touchpad / mobile screen
+  const lastTapRef = useRef<{ id: string; time: number }>({ id: '', time: 0 });
 
   const engine = useGraphEngineStore();
   // SESUDAH (tambahkan canvasMode dan state subtree override):
@@ -141,8 +145,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     setTransitionStatus,
     simulationCommand,
   } = useGraphInteractionStore();
-
-
   
   // ---- size ----------------------------------------------------------------
   useEffect(() => {
@@ -560,59 +562,45 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   const lastClickRef = useRef<{ id: string; time: number } | null>(null);
 
   // ---- interactions --------------------------------------------------------
- const handleClick = useCallback(
-    (node: RenderNode, event: MouseEvent) => {
-      // Toggle hit test in graph space (collapse/expand cabang)
-      const coords = graphRef.current?.screen2GraphCoords?.(event.offsetX, event.offsetY);
-      const toggle = node.toggle;
-      if (coords && toggle) {
-        const distance = Math.hypot(coords.x - toggle.x, coords.y - toggle.y);
-        if (distance <= toggle.r) {
-          toggleCollapsed(node.id);
-          return;
-        }
-      }
+//  const handleClick = useCallback(
+//     (node: RenderNode, event: MouseEvent) => {
+//       // Toggle hit test in graph space (collapse/expand cabang)
+//       const coords = graphRef.current?.screen2GraphCoords?.(event.offsetX, event.offsetY);
+//       const toggle = node.toggle;
+//       if (coords && toggle) {
+//         const distance = Math.hypot(coords.x - toggle.x, coords.y - toggle.y);
+//         if (distance <= toggle.r) {
+//           toggleCollapsed(node.id);
+//           return;
+//         }
+//       }
 
-      const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
+//       const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
 
-      // 1. Klik sekali: selalu select node
-      setSelected(node.id);
-      onNodeSelect(matchedNode);
+//       // 1. Klik sekali: selalu select node
+//       setSelected(node.id);
+//       onNodeSelect(matchedNode);
 
-      // 2. Deteksi klik dua kali (double click)
-      const now = Date.now();
-      const last = lastClickRef.current;
-      const isDoubleClick =
-        event.detail === 2 ||
-        (last !== null && last.id === node.id && now - last.time < 350);
+//       // 2. Deteksi klik dua kali (double click)
+//       const now = Date.now();
+//       const last = lastClickRef.current;
+//       const isDoubleClick =
+//         event.detail === 2 ||
+//         (last !== null && last.id === node.id && now - last.time < 350);
 
-      lastClickRef.current = { id: node.id, time: now };
+//       lastClickRef.current = { id: node.id, time: now };
 
-      // Jika double-click dan bukan folder -> buka file
-      if (isDoubleClick && matchedNode && matchedNode.type !== 'folder') {
-        onNodeOpen?.(matchedNode);
-      }
-    },
-    [toggleCollapsed, setSelected, onNodeSelect, onNodeOpen, graphData.nodes]
-  );
+//       // Jika double-click dan bukan folder -> buka file
+//       if (isDoubleClick && matchedNode && matchedNode.type !== 'folder') {
+//         onNodeOpen?.(matchedNode);
+//       }
+//     },
+//     [toggleCollapsed, setSelected, onNodeSelect, onNodeOpen, graphData.nodes]
+//   );
 
-  const handleHover = useCallback(
-    (node: RenderNode | null) => setHovered(node?.id ?? null),
-    [setHovered]
-  );
-
-  useEffect(() => {
-    const id = window.setTimeout(() => graphRef.current?.zoomToFit?.(400, 60), 400);
-    return () => window.clearTimeout(id);
-    // Re-fit when the layout mode changes, not on every data tick.
-  }, [layoutMode, orientation]);
-
-    // State untuk menyimpan posisi piksel toolbar di layar
-  const [toolbarCoords, setToolbarCoords] = useState<{ x: number; y: number } | null>(null);
-
-  // Update posisi toolbar saat node terpilih bergerak atau kamera digeser
+  // Update posisi toolbar saat node terpilih bergerak atau kamera dizoom/pan
   const updateToolbarPosition = useCallback(() => {
-    if (!selectedNode || canvasMode !== 'mindmap' || !graphRef.current) {
+    if (!selectedNode || !graphRef.current) {
       if (toolbarCoords !== null) setToolbarCoords(null);
       return;
     }
@@ -627,7 +615,61 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     if (screenPos && Number.isFinite(screenPos.x) && Number.isFinite(screenPos.y)) {
       setToolbarCoords({ x: screenPos.x, y: screenPos.y });
     }
-  }, [selectedNode, canvasMode, data.nodes, toolbarCoords]);
+  }, [selectedNode, data.nodes, toolbarCoords]);
+
+  // Handler klik kiri standar & deteksi double tap / click
+  const handleClick = useCallback(
+    (node: RenderNode, event: MouseEvent | TouchEvent) => {
+      const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
+
+      // Single click: select node
+      setSelected(node.id);
+      onNodeSelect(matchedNode);
+
+      const now = Date.now();
+      const last = lastTapRef.current;
+      // Cek apakah double click / double tap di touchpad/layar terjadi (< 350ms)
+      const isDoubleTap = (last.id === node.id && now - last.time < 350) || (event as MouseEvent).detail === 2;
+      lastTapRef.current = { id: node.id, time: now };
+
+      if (isDoubleTap) {
+        // DOUBLE TAP / DOUBLE CLICK: Buka Floating Toolbar langsung di atas node!
+        setIsToolbarVisible(true);
+        updateToolbarPosition();
+      }
+    },
+    [setSelected, onNodeSelect, graphData.nodes, updateToolbarPosition]
+  );
+
+  // Handler KLIK KANAN: langsung trigger dan tampilkan Floating Toolbar
+  const handleNodeRightClick = useCallback(
+    (node: RenderNode, event: MouseEvent) => {
+      event.preventDefault?.();
+      const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
+      
+      setSelected(node.id);
+      onNodeSelect(matchedNode);
+      setIsToolbarVisible(true);
+      
+      // Update posisi ke node tersebut
+      const screenPos = graphRef.current?.graph2ScreenCoords?.(node.x ?? 0, node.y ?? 0);
+      if (screenPos && Number.isFinite(screenPos.x) && Number.isFinite(screenPos.y)) {
+        setToolbarCoords({ x: screenPos.x, y: screenPos.y });
+      }
+    },
+    [setSelected, onNodeSelect, graphData.nodes]
+  );
+
+  const handleHover = useCallback(
+    (node: RenderNode | null) => setHovered(node?.id ?? null),
+    [setHovered]
+  );
+
+  useEffect(() => {
+    const id = window.setTimeout(() => graphRef.current?.zoomToFit?.(400, 60), 400);
+    return () => window.clearTimeout(id);
+    // Re-fit when the layout mode changes, not on every data tick.
+  }, [layoutMode, orientation]);
 
     const handleNodeDrag = useCallback(
     (node: RenderNode) => {
@@ -694,8 +736,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     },
     [canvasMode, onNodeMove]
   );
-
-  
 
 
 useImperativeHandle(
@@ -781,13 +821,15 @@ useImperativeHandle(
         selectedNodeId={selectedNode?.id ?? null}
       />
 
-      {canvasMode === 'mindmap' && selectedNode && toolbarCoords && (
+      {/* Tampilkan Toolbar saat isToolbarVisible aktif (baik di mode Mindmap maupun Graph) */}
+      {isToolbarVisible && selectedNode && toolbarCoords && (
         <ContextualToolbar
           x={toolbarCoords.x}
           y={toolbarCoords.y}
           nodeId={selectedNode.id}
           nodeName={selectedNode.name}
           isFolder={selectedNode.type === 'folder'}
+          canvasMode={canvasMode}
           currentOverride={subtreeLayoutOverrides?.[selectedNode.id]}
           isFocused={focusedRootId === selectedNode.id}
           onSetStructure={(mode) => setSubtreeLayoutOverride(selectedNode.id, mode)}
@@ -795,7 +837,11 @@ useImperativeHandle(
           onToggleFocus={() =>
             setFocusedRoot(focusedRootId === selectedNode.id ? null : selectedNode.id)
           }
-          onDelete={() => onNodeDelete?.(selectedNode.id)}
+          onDelete={() => {
+            onNodeDelete?.(selectedNode.id);
+            setIsToolbarVisible(false);
+          }}
+          onClose={() => setIsToolbarVisible(false)}
         />
       )}
     </div>
