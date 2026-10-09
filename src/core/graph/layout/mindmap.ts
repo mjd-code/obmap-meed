@@ -48,70 +48,50 @@ function layoutBalanced(
   metric: (id: string) => { width: number; height: number }
 ) {
   const { levelGap, siblingGap } = context;
-  const safeSiblingGap = Math.max(siblingGap, 28);
-  const safeLevelGap = Math.max(levelGap, 80);
 
-  /** Kalkulasi vertical span anti-overlap dengan gap antar child */
+  /** Vertical span of a subtree, honouring card heights. */
   const spanCache = new Map<string, number>();
   const spanOf = (id: string): number => {
     const cached = spanCache.get(id);
     if (cached !== undefined) return cached;
-
-    const own = metric(id).height + safeSiblingGap;
+    spanCache.set(id, metric(id).height + siblingGap);
     const kids = children(id);
-    if (!kids.length) {
-      spanCache.set(id, own);
-      return own;
-    }
-
-    const kidsTotal = kids.reduce((sum, kid) => sum + spanOf(kid), 0);
-    const span = Math.max(own, kidsTotal);
+    const total = kids.reduce((sum, kid) => sum + spanOf(kid), 0);
+    const span = Math.max(metric(id).height + siblingGap, total);
     spanCache.set(id, span);
     return span;
   };
 
-  const placeBranch = (
-    id: string,
-    side: -1 | 1,
-    parentX: number,
-    parentHalfWidth: number,
-    top: number
-  ) => {
+  const placeBranch = (id: string, side: -1 | 1, parentX: number, top: number) => {
     const span = spanOf(id);
     const centerY = top + span / 2;
-    const currentHalfWidth = metric(id).width / 2;
-
-    // Perhitungan X Presisi: parentX + sisi * (lebar_induk/2 + safeLevelGap + lebar_anak/2)
-    const x = parentX + side * (parentHalfWidth + safeLevelGap + currentHalfWidth);
+    const x = parentX + side * (metric(id).width / 2 + levelGap);
     targets.set(id, { x, y: centerY, side });
 
     let cursor = top;
     const kids = children(id);
     for (const kid of kids) {
-      placeBranch(kid, side, x, currentHalfWidth, cursor);
+      placeBranch(kid, side, x, cursor);
       cursor += spanOf(kid);
     }
-
     if (kids.length) {
-      // Pusatkan kembali induk secara vertikal di tengah-tengah anak-anaknya
-      const firstY = targets.get(kids[0])!.y;
-      const lastY = targets.get(kids[kids.length - 1])!.y;
-      targets.set(id, { x, y: (firstY + lastY) / 2, side });
+      // Re-center the parent over its children.
+      const first = targets.get(kids[0])!;
+      const last = targets.get(kids[kids.length - 1])!;
+      targets.set(id, { x, y: (first.y + last.y) / 2, side });
     }
   };
 
   let rootOffsetY = 0;
   for (const root of roots) {
     targets.set(root, { x: 0, y: rootOffsetY, side: 0 });
-    const rootHalfWidth = metric(root).width / 2;
     const kids = children(root);
 
-    // Keseimbangan sisi kiri dan kanan (XMind Greedy Balance)
+    // Greedy side balancing by subtree weight, stable in original order.
     let leftWeight = 0;
     let rightWeight = 0;
     const left: string[] = [];
     const right: string[] = [];
-
     for (const kid of kids) {
       const weight = weights.get(kid) ?? 1;
       if (rightWeight <= leftWeight) {
@@ -130,7 +110,7 @@ function layoutBalanced(
       const total = group.reduce((sum, id) => sum + spanOf(id), 0);
       let cursor = rootOffsetY - total / 2;
       for (const id of group) {
-        placeBranch(id, side, 0, rootHalfWidth, cursor);
+        placeBranch(id, side, 0, cursor);
         cursor += spanOf(id);
       }
     }
@@ -140,10 +120,9 @@ function layoutBalanced(
       ...group_spans(right, spanOf),
       ...group_spans(left, spanOf)
     );
-    rootOffsetY += rootSpan + safeSiblingGap * 3;
+    rootOffsetY += rootSpan + context.siblingGap * 2;
   }
 }
-
 
 const group_spans = (ids: string[], spanOf: (id: string) => number) =>
   ids.length ? [ids.reduce((sum, id) => sum + spanOf(id), 0)] : [0];

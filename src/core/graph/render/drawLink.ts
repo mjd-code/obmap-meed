@@ -1,6 +1,7 @@
-/** Layout-aware link rendering: XMind silk bezier branches, timeline arches, fishbone ribs. */
+/** Layout-aware link rendering: bezier branches, timeline arches, fishbone ribs. */
 
 import type { LayoutMode, NodeMetric, RenderNode } from '../model/graphTypes';
+import { anchorOnCard } from '../layout/layoutMath';
 import { dim, type GraphTheme } from './theme';
 
 export interface DrawLinkState {
@@ -48,32 +49,9 @@ export function drawLink(
   const ty = target.y ?? 0;
   if (![sx, sy, tx, ty].every(Number.isFinite)) return;
 
-  const sMetric = state.metricOf(source);
-  const tMetric = state.metricOf(target);
-  const sHalfW = sMetric.width / 2;
-  const tHalfW = tMetric.width / 2;
-  const sHalfH = sMetric.height / 2;
-  const tHalfH = tMetric.height / 2;
-
-  // Tentukan orientasi relasi (apakah target di sebelah kanan atau kiri induk)
-  const isTargetRight = tx >= sx;
-
-  // Titik jangkar lateral bersih ala XMind (keluar dari pinggir samping kartu, bukan dari atas/bawah)
-  let start = {
-    x: isTargetRight ? sx + sHalfW : sx - sHalfW,
-    y: sy,
-  };
-  let end = {
-    x: isTargetRight ? tx - tHalfW : tx + tHalfW,
-    y: ty,
-  };
-
-  // Khusus layout vertikal seperti org-chart: jangkar atas-bawah
-  if (state.mode === 'org-chart') {
-    const isTargetBelow = ty >= sy;
-    start = { x: sx, y: isTargetBelow ? sy + sHalfH : sy - sHalfH };
-    end = { x: tx, y: isTargetBelow ? ty - tHalfH : ty + tHalfH };
-  }
+  const start = anchorOnCard({ x: sx, y: sy }, state.metricOf(source), { x: tx, y: ty });
+  const end = anchorOnCard({ x: tx, y: ty }, state.metricOf(target), { x: sx, y: sy });
+  if (![start.x, start.y, end.x, end.y].every(Number.isFinite)) return;
 
   ctx.save();
   ctx.setLineDash(state.dash);
@@ -81,81 +59,77 @@ export function drawLink(
   ctx.lineWidth = state.preserveDetail
     ? configuredWidth / Math.max(0.05, state.zoom)
     : configuredWidth;
-
-  const linkOpacity = state.isAttachedToDragged
-    ? 0.35
-    : state.dimmed
-    ? 0.08
-    : state.opacity;
-
-  ctx.strokeStyle = dim(state.color, linkOpacity);
+  ctx.strokeStyle = dim(state.color, state.dimmed ? 0.08 : state.opacity);
   ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
   ctx.beginPath();
   ctx.moveTo(start.x, start.y);
+  
+  const linkOpacity = state.isAttachedToDragged 
+    ? 0.35 
+    : state.dimmed ? 0.08 : state.opacity;
+
+  ctx.strokeStyle = dim(state.color, linkOpacity);
+
 
   let c1 = start;
   let c2 = end;
-  let isCurved = false;
 
-  if (state.mode === 'mindmap' || state.mode === 'brace-map') {
-    // ---- XMIND SIGNATURE S-CURVE ENGINE ----
-    // Kurva Bézier halus dengan titik kontrol horizontal di tengah span
-    isCurved = true;
+  let elbow: { x: number; y: number }[] | null = null;
+  if (state.mode === 'org-chart') {
+    // Orthogonal (Manhattan) connector with rounded corners.
+    const top = sy <= ty;
+    const a = { x: sx, y: sy + (top ? 1 : -1) * state.metricOf(source).height / 2 };
+    const b = { x: tx, y: ty - (top ? 1 : -1) * state.metricOf(target).height / 2 };
+    const midY = (a.y + b.y) / 2;
+    elbow = [a, { x: a.x, y: midY }, { x: b.x, y: midY }, b];
+  } else if (state.mode === 'brace-map') {
+    const a = { x: sx + state.metricOf(source).width / 2, y: sy };
+    const b = { x: tx - state.metricOf(target).width / 2, y: ty };
+    const midX = (a.x + b.x) / 2;
+    elbow = [a, { x: midX, y: a.y }, { x: midX, y: b.y }, b];
+  }
+
+  if (elbow) {
+    ctx.moveTo(elbow[0].x, elbow[0].y);
+    const radius = 6;
+    for (let i = 1; i < elbow.length - 1; i += 1) {
+      ctx.arcTo(elbow[i].x, elbow[i].y, elbow[i + 1].x, elbow[i + 1].y, radius);
+    }
+    ctx.lineTo(elbow[elbow.length - 1].x, elbow[elbow.length - 1].y);
+  } else if (state.mode === 'mindmap') {
     const dx = end.x - start.x;
-    const midX = start.x + dx * 0.52;
-
-    c1 = { x: midX, y: start.y };
-    c2 = { x: midX, y: end.y };
+    const k = 0.2 + state.curvature * 0.65;
+    const bend = Math.sin(state.curveRotation) * Math.abs(dx) * state.curvature * 0.35;
+    c1 = { x: start.x + k * dx, y: start.y + bend };
+    c2 = { x: end.x - k * dx, y: end.y + bend };
     ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
-  } else if (state.mode === 'org-chart') {
-    // Orthogonal vertikal rapi dengan radius sudut membulat
-    const midY = (start.y + end.y) / 2;
-    const radius = Math.min(12, Math.abs(start.x - end.x) / 2, Math.abs(start.y - end.y) / 2);
-    ctx.lineTo(start.x, midY - (end.y >= start.y ? radius : -radius));
-    ctx.arcTo(start.x, midY, end.x, midY, radius);
-    ctx.arcTo(end.x, midY, end.x, end.y, radius);
-    ctx.lineTo(end.x, end.y);
   } else if (state.mode === 'timeline') {
-    isCurved = true;
     const side = Math.sign(end.y || start.y || 1);
     const bend = Math.max(16, Math.min(80, Math.abs(end.y - start.y) * 0.45));
     const midY = start.y + side * bend;
     c1 = { x: start.x, y: midY };
     c2 = { x: end.x, y: midY };
     ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
+  } else if (state.mode === 'fishbone') {
+    ctx.lineTo(end.x, end.y);
   } else {
-    // Graph view modes (free-force, fr-standard, fr-radial, kamada-kawai, grid)
-    if (state.curvature > 0) {
-      isCurved = true;
-      const dx = end.x - start.x;
-      const dy = end.y - start.y;
-      const dist = Math.hypot(dx, dy);
-      const nx = -dy / (dist || 1);
-      const ny = dx / (dist || 1);
-      const offset = dist * state.curvature * 0.25;
-      c1 = { x: (start.x + end.x) / 2 + nx * offset, y: (start.y + end.y) / 2 + ny * offset };
-      c2 = c1;
-      ctx.quadraticCurveTo(c1.x, c1.y, end.x, end.y);
-    } else {
-      ctx.lineTo(end.x, end.y);
-    }
+    ctx.lineTo(end.x, end.y);
   }
-
   ctx.stroke();
 
-  // Titik interpolasi partikel / panah
-  const pointAt = (t: number) =>
-    isCurved
-      ? { x: cubicPoint(start.x, c1.x, c2.x, end.x, t), y: cubicPoint(start.y, c1.y, c2.y, end.y, t) }
-      : { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };
+  const curved = state.mode === 'mindmap' || state.mode === 'timeline';
+  if (elbow) {
+    // Arrow / particles follow the last orthogonal segment.
+    start.x = elbow[elbow.length - 2].x; start.y = elbow[elbow.length - 2].y;
+    end.x = elbow[elbow.length - 1].x; end.y = elbow[elbow.length - 1].y;
+  }
+  const pointAt = (t: number) => curved
+    ? { x: cubicPoint(start.x, c1.x, c2.x, end.x, t), y: cubicPoint(start.y, c1.y, c2.y, end.y, t) }
+    : { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };
+  const tangentAt = (t: number) => curved
+    ? Math.atan2(cubicTangent(start.y, c1.y, c2.y, end.y, t), cubicTangent(start.x, c1.x, c2.x, end.x, t))
+    : Math.atan2(end.y - start.y, end.x - start.x);
 
-  const tangentAt = (t: number) =>
-    isCurved
-      ? Math.atan2(cubicTangent(start.y, c1.y, c2.y, end.y, t), cubicTangent(start.x, c1.x, c2.x, end.x, t))
-      : Math.atan2(end.y - start.y, end.x - start.x);
-
-  // Render Arrow
   if (state.showArrow && state.arrowLength > 0 && !state.dimmed) {
     const len = state.preserveDetail
       ? state.arrowLength / Math.max(0.05, state.zoom)
@@ -178,8 +152,6 @@ export function drawLink(
     ctx.closePath();
     ctx.fill();
   }
-
-  // Render Particles
   if (state.particles > 0 && !state.dimmed) {
     ctx.setLineDash([]);
     ctx.fillStyle = dim(state.particleColor, state.opacity);
@@ -194,6 +166,5 @@ export function drawLink(
       ctx.fill();
     }
   }
-
   ctx.restore();
 }
