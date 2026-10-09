@@ -22,6 +22,7 @@ export type BranchColorMap = Record<string, string>;
 export const canvasModeOf = (mode: LayoutMode): CanvasMode =>
   (GRAPH_LAYOUT_MODES as string[]).includes(mode) ? 'graph' : 'mindmap';
 export type MindmapOrientation = 'balanced' | 'radial';
+export type TimelineStructure = 'horizontal' | 'vertical' | 'off-axis';
 
 export interface LayoutPoint {
   x: number;
@@ -43,10 +44,13 @@ export interface Bounds {
 
 export interface TimelineAxis {
   kind: 'timeline-axis';
-  y: number;
+  direction?: 'horizontal' | 'vertical';
   x1: number;
+  y1?: number;
   x2: number;
-  ticks: { x: number; label: string }[];
+  y2?: number;
+  y: number; // Tetap sertakan untuk backward compatibility jika ada fungsi lain yang membaca .y
+  ticks: { x: number; y?: number; label: string; nodeId?: string }[];
 }
 
 export interface FishboneSpine {
@@ -90,6 +94,7 @@ export interface LayoutContext {
   height: number;
   rootId?: string;
   orientation: MindmapOrientation;
+  timelineStructure?: TimelineStructure;
   levelGap: number;
   siblingGap: number;
   laneGap: number;

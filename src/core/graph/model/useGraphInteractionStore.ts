@@ -23,6 +23,7 @@ import {
   type LayoutMode,
   type MindmapLayoutMode,
   type MindmapOrientation,
+  type TimelineStructure,
 } from './graphTypes';
 
 export type TransitionStatus = 'idle' | 'animating';
@@ -58,6 +59,7 @@ export interface GraphInteractionState {
   focusedRootId: string | null;
   transitionStatus: TransitionStatus;
   simulationCommand: { type: 'reheat' | 'stop'; nonce: number } | null;
+  timelineStructure: TimelineStructure;
   subtreeLayoutOverrides: Record<string, MindmapLayoutMode>;
   branchColorOverrides: Record<string, string>;
 
@@ -104,7 +106,8 @@ const creator: StateCreator<GraphInteractionState> = (set) => ({
   focusedRootId: null,
   transitionStatus: 'idle',
   simulationCommand: null,
-    subtreeLayoutOverrides: {},
+  timelineStructure: 'off-axis',
+  subtreeLayoutOverrides: {},
   branchColorOverrides: {},
 
   setSubtreeLayoutOverride: (nodeId, layout) =>

@@ -33,7 +33,7 @@ export interface LayoutEngineOptions {
   rootId?: string;
   visibleIds: string[];
   nodeMetrics: Map<string, NodeMetric>;
-  subtreeOverrides?: SubtreeLayoutMap; 
+  subtreeOverrides?: SubtreeLayoutMap;
 }
 
 export function computeLayout(
@@ -94,10 +94,9 @@ export function computeLayout(
       break;
     case 'timeline':
       baseGeometry = timelineLayout({
-        nodes: options.visibleIds.map((id) => ({
-          id,
-          time: projection.byId.get(id)?.time,
-        })),
+        ids: options.visibleIds,
+        roots,
+        childrenOf,
         parentOf: (id) => projection.parentByChild.get(id) ?? null,
         context,
       });
@@ -136,8 +135,7 @@ export function useLayoutEngine(
   projection: GraphProjection,
   options: LayoutEngineOptions
 ): LayoutGeometry {
-
-    const signature = [
+  const signature = [
     options.mode,
     options.orientation,
     options.rootId ?? '',
@@ -149,9 +147,8 @@ export function useLayoutEngine(
     options.ribAngle.toFixed(3),
     options.visibleIds.join(','),
     projection.links.length,
-    JSON.stringify(options.subtreeOverrides ?? {}), // <-- TAMBAHKAN BARIS INI
+    JSON.stringify(options.subtreeOverrides ?? {}),
   ].join('|');
-
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => computeLayout(projection, options), [signature, projection]);
