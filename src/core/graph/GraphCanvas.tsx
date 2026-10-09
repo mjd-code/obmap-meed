@@ -291,46 +291,80 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   // ---- layout transitions --------------------------------------------------
   useEffect(() => {
     const controller = transition.current;
-    if (layoutMode === 'free-force') {
-      controller.release(data.nodes);
-      graphRef.current?.d3ReheatSimulation?.();
-      setTransitionStatus('idle');
-      return;
+
+    if (canvasMode === 'graph') {
+      if (layoutArrangement === 'custom') {
+        // Mode Custom di Graph: Lepaskan koordinat tetap, biarkan gaya fisika (forces) hidup bebas
+        controller.release(data.nodes);
+        graphRef.current?.d3ReheatSimulation?.();
+        setTransitionStatus('idle');
+        return;
+      }
+
+      // Mode Auto di Graph: Transisi ke target algoritma (FR, Kamada, Grid, dsb)
+      setTransitionStatus('animating');
+      controller.run(data.nodes, geometry.targets, {
+        reducedMotion: prefersReducedMotion(),
+        onDone: () => {
+          setTransitionStatus('idle');
+          // Reheat sedikit simulasi agar gaya tolak (charge) merapikan margin akhir
+          graphRef.current?.d3ReheatSimulation?.();
+        },
+      });
+      return () => controller.cancel();
     }
+
+    // Canvas Mode Mindmap
     setTransitionStatus('animating');
     controller.run(data.nodes, geometry.targets, {
       reducedMotion: prefersReducedMotion(),
       onDone: () => setTransitionStatus('idle'),
     });
     return () => controller.cancel();
-  }, [geometry, data.nodes, layoutMode, setTransitionStatus]);
+  }, [geometry, data.nodes, canvasMode, layoutArrangement, setTransitionStatus]);
 
   useEffect(() => () => transition.current.cancel(), []);
 
   // Apply every physics setting through the wrapper's supported force API.
+  // Terapkan physics forces (charge, link, center) ke SEMUA algoritma graph
   useEffect(() => {
     const graph = graphRef.current;
-    if (!graph || layoutMode !== 'free-force') return;
+    if (!graph || canvasMode !== 'graph') return;
+
     const charge = graph.d3Force?.('charge');
     charge?.strength?.(graphConfig.forces.chargeStrength);
+
     const link = graph.d3Force?.('link');
     link?.distance?.(graphConfig.forces.linkDistance);
+
     const center = graph.d3Force?.('center');
     center?.strength?.(graphConfig.forces.centerStrength);
+
+    // Aktifkan collision force agar tidak ada node yang bertumpuk sama sekali di graph
+    const collide = graph.d3Force?.('collide');
+    collide?.radius?.((node: RenderNode) => {
+      const m = metrics.get(node.id);
+      return Math.max(m?.width ?? 40, m?.height ?? 40) / 2 + 16;
+    });
+
     graph.d3ReheatSimulation?.();
-  }, [layoutMode, graphConfig.forces.chargeStrength, graphConfig.forces.linkDistance, graphConfig.forces.centerStrength]);
+  }, [
+    canvasMode,
+    layoutMode,
+    graphConfig.forces.chargeStrength,
+    graphConfig.forces.linkDistance,
+    graphConfig.forces.centerStrength,
+    metrics
+  ]);
 
   useEffect(() => {
     const graph = graphRef.current;
-    if (!graph || !simulationCommand || layoutMode !== 'free-force') return;
+    if (!graph || !simulationCommand || canvasMode !== 'graph') return;
+
     if (simulationCommand.type === 'reheat') {
-      // Releasing fixed coordinates restarts physics without coupling it to the
-      // canvas animation loop. Particle rendering must remain alive either way.
       transition.current.release(data.nodes);
       graph.d3ReheatSimulation?.();
     } else {
-      // Freeze physics by pinning the current coordinates. pauseAnimation()
-      // cannot be used here because it also stops custom canvas redraws.
       for (const node of data.nodes) {
         node.fx = node.x;
         node.fy = node.y;
@@ -339,7 +373,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
       }
       graph.refresh?.();
     }
-  }, [simulationCommand, layoutMode, data.nodes]);
+  }, [simulationCommand, canvasMode, data.nodes]);
 
   useEffect(() => {
     particleStartedAt.current = performance.now();
@@ -765,31 +799,38 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     (node: RenderNode) => {
       const { hoveredTargetId, isValidDrop, draggedNodeOriginalPos } = dragRef.current;
 
-      // KASUS 1: REPARENTING VALID DIJALANKAN (BERLAKU DI AUTO MAUPUN CUSTOM)
+      // 1. Reparenting valid di Mindmap
       if (isValidDrop && hoveredTargetId && canvasMode === 'mindmap') {
         onNodeMove?.(node.id, hoveredTargetId);
         delete node.fx;
         delete node.fy;
       } else {
-        // KASUS 2: DROP TIDAK VALID ATAU DILEPAS DI RUANG KOSONG
+        // 2. Mode Auto (Mindmap maupun Graph Algorithm)
         if (layoutArrangement === 'auto') {
-          // MODE AUTO (XMind Style): Snap-back seketika ke posisi kalkulasi automated layout
+          // Snap-back ke koordinat terhitung dari engine
           const target = geometry.targets.get(node.id);
           const returnX = target?.x ?? draggedNodeOriginalPos?.x ?? node.x ?? 0;
           const returnY = target?.y ?? draggedNodeOriginalPos?.y ?? node.y ?? 0;
 
           node.x = returnX;
           node.y = returnY;
-          node.fx = returnX;
-          node.fy = returnY;
+
+          if (canvasMode === 'mindmap') {
+            node.fx = returnX;
+            node.fy = returnY;
+          } else {
+            // Di graph view auto mode, relaksasikan kembali ke posisi semula
+            node.fx = undefined;
+            node.fy = undefined;
+            graphRef.current?.d3ReheatSimulation?.();
+          }
         } else {
-          // MODE CUSTOM: Kunci posisi baru node di tempat user melepaskannya
+          // 3. Mode Custom (Bebas diatur oleh pengguna)
           node.fx = node.x;
           node.fy = node.y;
         }
       }
 
-      // Reset state drag
       dragRef.current = {
         draggedNodeId: null,
         draggedNodeOriginalPos: null,
@@ -798,7 +839,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         dropReason: undefined,
       };
 
-      // Segarkan tampilan kanvas
       graphRef.current?.refresh?.();
     },
     [canvasMode, layoutArrangement, geometry.targets, onNodeMove]
