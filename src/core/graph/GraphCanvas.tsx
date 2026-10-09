@@ -582,18 +582,51 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     }
   }, [selectedNode, data.nodes, toolbarCoords]);
 
-  // 1. Single click: Select node | Double click: BUKA NOTE EDITOR TAB
+  // 1. Single click: Select node / Toggle Collapse | Double click: BUKA NOTE EDITOR TAB
   const handleClick = useCallback(
     (node: RenderNode, event: MouseEvent | TouchEvent) => {
-      const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
+      // ---- A. DETEKSI KLIK PADA TOMBOL COLLAPSE / EXPAND (— atau +N) ----
+      const container = containerRef.current;
+      const rect = container?.getBoundingClientRect();
+      const mouseEvt = event as MouseEvent;
+      
+      const screenX =
+        mouseEvt.clientX !== undefined && rect
+          ? mouseEvt.clientX - rect.left
+          : 'offsetX' in mouseEvt && typeof mouseEvt.offsetX === 'number'
+          ? mouseEvt.offsetX
+          : 0;
 
+      const screenY =
+        mouseEvt.clientY !== undefined && rect
+          ? mouseEvt.clientY - rect.top
+          : 'offsetY' in mouseEvt && typeof mouseEvt.offsetY === 'number'
+          ? mouseEvt.offsetY
+          : 0;
+
+      const coords = graphRef.current?.screen2GraphCoords?.(screenX, screenY);
+      const toggle = node.toggle;
+
+      if (coords && toggle) {
+        const distance = Math.hypot(coords.x - toggle.x, coords.y - toggle.y);
+        // Toleransi area klik (+4px) agar mudah diklik di desktop & layar sentuh
+        if (distance <= toggle.r + 4) {
+          toggleCollapsed(node.id);
+          setIsToolbarVisible(false);
+          return;
+        }
+      }
+
+      // ---- B. DETEKSI DOUBLE CLICK (BUKA NOTE EDITOR TAB) ----
+      const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
       const now = Date.now();
       const last = lastTapRef.current;
-      const isDoubleClick = (last.id === node.id && now - last.time < 350) || (event as MouseEvent).detail === 2;
+      const isDoubleClick =
+        (last.id === node.id && now - last.time < 350) ||
+        (event as MouseEvent).detail === 2;
       lastTapRef.current = { id: node.id, time: now };
 
       if (isDoubleClick) {
-        // DOUBLE CLICK: Buka Note Editor tab (khusus file note)
         if (matchedNode) {
           onNodeOpen?.(matchedNode);
         }
@@ -601,12 +634,12 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         return;
       }
 
-      // SINGLE CLICK: Hanya select node & sembunyikan toolbar
+      // ---- C. SINGLE CLICK BIASA: SELEKSI NODE ----
       setSelected(node.id);
       onNodeSelect(matchedNode);
       setIsToolbarVisible(false);
     },
-    [setSelected, onNodeSelect, onNodeOpen, graphData.nodes]
+    [toggleCollapsed, setSelected, onNodeSelect, onNodeOpen, graphData.nodes]
   );
 
   // 2. KLIK KANAN / 2-FINGER TAP TOUCHPAD: Langsung trigger dan tampilkan Floating Toolbar

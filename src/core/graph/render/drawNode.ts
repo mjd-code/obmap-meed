@@ -346,41 +346,6 @@ export function drawNode(
   }
 
   ctx.restore();
-
-  // Collapse toggle on the outward edge of branch nodes.
-  if (node.childCount > 0) {
-    const r = 6;
-    const tx = x + (boxed ? w / 2 : markerRadius) + r + 2;
-    const ty = y;
-    ctx.save();
-    ctx.globalAlpha = state.dimmed ? 0.25 : 1;
-    ctx.beginPath();
-    ctx.arc(tx, ty, r, 0, Math.PI * 2);
-    ctx.fillStyle = theme.card;
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = dim(accent, 0.8);
-    ctx.stroke();
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.moveTo(tx - 3, ty);
-    ctx.lineTo(tx + 3, ty);
-    if (state.collapsed) {
-      ctx.moveTo(tx, ty - 3);
-      ctx.lineTo(tx, ty + 3);
-    }
-    ctx.stroke();
-    ctx.restore();
-    node.toggle = {
-      x: x + (tx - x) * detailScale,
-      y: y + (ty - y) * detailScale,
-      r: (r + 3) * detailScale,
-    };
-  } else {
-    node.toggle = null;
-  }
-  ctx.restore();
 }
 
 
@@ -404,7 +369,7 @@ export function paintNodePointerArea(
   });
   const x = node.x ?? 0;
   const y = node.y ?? 0;
-  const extra = node.childCount > 0 ? 18 : 0;
+  const extra = node.childCount > 0 ? 32 : 0;
   const boxed = config ? config.labelBox : true;
   const markerRadius = Math.max(3, config?.relSize ?? 6);
   const width = boxed ? layout.width : markerRadius * 2;
