@@ -103,14 +103,16 @@ export function drawLink(
     c1 = { x: start.x + k * dx, y: start.y + bend };
     c2 = { x: end.x - k * dx, y: end.y + bend };
     ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
-  } else if (state.mode === 'timeline') {
-    const side = Math.sign(end.y || start.y || 1);
-    const bend = Math.max(16, Math.min(80, Math.abs(end.y - start.y) * 0.45));
-    const midY = start.y + side * bend;
-    c1 = { x: start.x, y: midY };
-    c2 = { x: end.x, y: midY };
-    ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
-  } else if (state.mode === 'fishbone') {
+  }  else if (state.mode === 'timeline') {
+    // XMind Timeline Connectors:
+    // Garis tegak lurus dari spine / parent ke milestone, lalu siku ke sub-items
+    const midX = start.x;
+    const midY = end.y;
+    // Siku: turun/naik vertikal dulu dari spine/parent, lalu belok horizontal ke target
+    ctx.lineTo(midX, midY);
+    ctx.lineTo(end.x, end.y);
+  }
+ else if (state.mode === 'fishbone') {
     ctx.lineTo(end.x, end.y);
   } else {
     ctx.lineTo(end.x, end.y);

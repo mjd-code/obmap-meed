@@ -1,3 +1,10 @@
+/**
+ * Timeline layout inspired by XMind:
+ * Organizes milestones sequentially along a horizontal chronological spine
+ * based on folder & file tree hierarchy.
+ * Milestones alternate above and below the spine, with sub-items branching orthogonally.
+ */
+
 import type { LayoutContext, LayoutGeometry, NodeTarget, TimelineAxis } from '../model/graphTypes';
 import { boundsOf } from './layoutMath';
 
@@ -9,7 +16,12 @@ export interface TimelineInput {
   context: LayoutContext;
 }
 
-export function timelineLayout({ ids, roots, childrenOf, parentOf, context }: TimelineInput): LayoutGeometry {
+export function timelineLayout({
+  ids,
+  roots,
+  childrenOf,
+  context,
+}: TimelineInput): LayoutGeometry {
   const targets = new Map<string, NodeTarget>();
   if (!ids.length) {
     return { mode: 'timeline', targets, bounds: boundsOf(targets), decorations: [] };
@@ -18,72 +30,90 @@ export function timelineLayout({ ids, roots, childrenOf, parentOf, context }: Ti
   const visible = new Set(ids);
   const metric = (id: string) => context.nodeMetrics.get(id) ?? { width: 140, height: 38 };
 
-  const maxMetric = ids.reduce(
-    (largest, id) => {
-      const current = metric(id);
-      return {
-        width: Math.max(largest.width, current.width),
-        height: Math.max(largest.height, current.height),
-      };
-    },
-    { width: 140, height: 38 }
-  );
-
   const baselineY = 0;
-  const laneGap = Math.max(context.laneGap, maxMetric.height + context.siblingGap + 20);
+  const laneGap = Math.max(context.laneGap, 90);
+  const subGapX = 140;
+  const subGapY = 44;
 
-  // 1. Root utama (central topic)
-  const primaryRoot = roots.find((r) => visible.has(r)) ?? ids[0];
-  
-  // 2. Milestones = direct children dari root berdasarkan urutan hierarki/explorer
-  // Jika tidak ada children, gunakan visible roots sebagai milestones
+  // 1. Identifikasi Main Root (Pangkal Timeline di ujung kiri)
+  const visibleRoots = roots.filter((r) => visible.has(r));
+  const primaryRoot = visibleRoots[0] ?? ids[0];
+  const rootMetric = metric(primaryRoot);
+
+  targets.set(primaryRoot, {
+    x: 0,
+    y: baselineY,
+    side: 0,
+    lane: 0,
+  });
+
+  // 2. Milestones = anak-anak langsung dari root (sesuai urutan file explorer)
   const rootChildren = childrenOf(primaryRoot).filter((id) => visible.has(id));
   const milestones = rootChildren.length > 0 
     ? rootChildren 
-    : roots.filter((r) => visible.has(r));
+    : visibleRoots.filter((r) => r !== primaryRoot);
 
-  const milestoneIds = new Set(milestones);
-  targets.set(primaryRoot, { x: 0, y: baselineY, side: 0, lane: 0 });
+  let currentX = rootMetric.width / 2 + 100;
 
-  // 3. Spacing horizontal sepanjang timeline axis (XMind horizontal flow)
-  const stepX = maxMetric.width + context.siblingGap + 60;
-  let currentX = stepX;
+  // Rekursif untuk menempatkan sub-items bertingkat di kanan milestone
+  const placeDescendants = (
+    parentId: string,
+    originX: number,
+    baseY: number,
+    lane: -1 | 1
+  ): number => {
+    const kids = childrenOf(parentId).filter((id) => visible.has(id));
+    if (kids.length === 0) return 0;
+
+    let localCursorY = baseY;
+    for (const kid of kids) {
+      targets.set(kid, {
+        x: originX + subGapX,
+        y: localCursorY,
+        side: lane,
+        lane,
+      });
+
+      const deeperOffset = placeDescendants(kid, originX + subGapX, localCursorY, lane);
+      localCursorY += lane * (subGapY + deeperOffset);
+    }
+    return Math.abs(localCursorY - baseY);
+  };
 
   milestones.forEach((milestoneId, index) => {
-    // Alternating lane (atas / bawah dari garis axis: lane 1 dan -1)
-    const lane = index % 2 === 0 ? 1 : -1;
+    // Selang-seling: genap di atas (lane = -1), ganjil di bawah (lane = 1)
+    const lane: -1 | 1 = index % 2 === 0 ? -1 : 1;
     const y = baselineY + lane * laneGap;
 
     targets.set(milestoneId, {
       x: currentX,
       y,
-      side: lane as -1 | 1,
+      side: lane,
       lane,
     });
 
-    // 4. Tempatkan descendants / sub-notes di bawah/atas milestone
-    const subKids = childrenOf(milestoneId).filter((id) => visible.has(id));
-    let subYCursor = y + (lane * (metric(milestoneId).height + 16));
+    // Tempatkan anak-anak dari milestone
+    placeDescendants(milestoneId, currentX, y, lane);
 
-    for (const subId of subKids) {
-      targets.set(subId, {
-        x: currentX + 30, // sedikit indentasi
-        y: subYCursor,
-        side: lane as -1 | 1,
-        lane,
-      });
-      subYCursor += lane * (metric(subId).height + context.siblingGap);
-    }
-
-    currentX += stepX;
+    // Hitung jarak ke milestone berikutnya agar cabang tidak bertabrakan
+    const mMetric = metric(milestoneId);
+    currentX += mMetric.width + context.siblingGap + 120;
   });
 
-  // 5. Buat garis axis timeline (spine tengah)
+  // Pastikan node yatim/tersisa tetap memiliki koordinat aman
+  for (const id of ids) {
+    if (!targets.has(id)) {
+      targets.set(id, { x: currentX, y: baselineY, side: 0, lane: 0 });
+      currentX += 160;
+    }
+  }
+
+  // 3. Garis Utama Spine Timeline (Dekorasi sumbu tengah)
   const decorations: TimelineAxis[] = [
     {
       kind: 'timeline-axis',
       y: baselineY,
-      x1: -60,
+      x1: -rootMetric.width / 2 - 20,
       x2: currentX + 60,
       ticks: milestones.map((id) => ({
         x: targets.get(id)?.x ?? 0,
