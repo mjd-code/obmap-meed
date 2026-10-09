@@ -108,24 +108,11 @@ export function timelineLayout({
     }
   }
 
-  // 3. Garis Utama Spine Timeline (Dekorasi sumbu tengah)
-  const decorations: TimelineAxis[] = [
-    {
-      kind: 'timeline-axis',
-      y: baselineY,
-      x1: -rootMetric.width / 2 - 20,
-      x2: currentX + 60,
-      ticks: milestones.map((id) => ({
-        x: targets.get(id)?.x ?? 0,
-        label: '',
-      })),
-    },
-  ];
 
   return {
     mode: 'timeline',
     targets,
     bounds: boundsOf(targets, context.nodeMetrics),
-    decorations,
+    decorations: [],
   };
 }

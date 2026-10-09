@@ -1,77 +1,118 @@
-/** Axis, spine and rib decorations, drawn once per frame before links. */
+/**
+ * Timeline layout inspired by XMind:
+ * Organizes milestones sequentially along a horizontal chronological path
+ * based on folder & file tree hierarchy.
+ * Milestones alternate above and below without artificial axis decoration lines.
+ */
 
-import type { FishboneRib, FishboneSpine, LayoutDecoration } from '../model/graphTypes';
-import { cardFont } from './textLayout';
-import { dim, type GraphTheme } from './theme';
+import type { LayoutContext, LayoutGeometry, NodeTarget } from '../model/graphTypes';
+import { boundsOf } from './../../graph/layout/layoutMath';
 
-export function drawDecorations(
-  ctx: CanvasRenderingContext2D,
-  decorations: LayoutDecoration[],
-  theme: GraphTheme,
-  zoom: number,
-  fishboneStyle?: { color: string; opacity: number; width: number; dash: number[] },
-  /** Hierarchy-level paint for spine/rib geometry; null keeps the type style. */
-  hierarchyPaint?: (
-    decoration: FishboneSpine | FishboneRib
-  ) => { color: string; opacity?: number } | null,
-  preserveDetail = false
-) {
-  if (!decorations.length) return;
-  ctx.save();
-  for (const decoration of decorations) {
-    if (decoration.kind === 'timeline-axis') {
-      ctx.strokeStyle = dim(theme.decoration, 0.5);
-      ctx.lineWidth = preserveDetail ? 1.5 / Math.max(0.05, zoom) : 1.5;
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(decoration.x1, decoration.y);
-      ctx.lineTo(decoration.x2, decoration.y);
-      ctx.stroke();
+export interface TimelineInput {
+  ids: string[];
+  roots: string[];
+  childrenOf: (id: string) => string[];
+  parentOf?: (id: string) => string | null;
+  context: LayoutContext;
+}
 
-      ctx.font = cardFont(10, '500');
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      for (const tick of decoration.ticks) {
-        ctx.strokeStyle = dim(theme.decoration, 0.25);
-        ctx.lineWidth = preserveDetail ? 1 / Math.max(0.05, zoom) : 1;
-        ctx.beginPath();
-        ctx.moveTo(tick.x, decoration.y - 6);
-        ctx.lineTo(tick.x, decoration.y + 6);
-        ctx.stroke();
-        if (zoom > 0.4) {
-          ctx.fillStyle = dim(theme.label, 0.75);
-          ctx.fillText(tick.label, tick.x, decoration.y + 10);
-        }
-      }
-    } else if (decoration.kind === 'fishbone-spine') {
-      const paint = hierarchyPaint?.(decoration) ?? null;
-      ctx.strokeStyle = dim(
-        paint?.color ?? fishboneStyle?.color ?? theme.decoration,
-        paint?.opacity ?? fishboneStyle?.opacity ?? 0.8
-      );
-      const spineWidth = Math.max(2, (fishboneStyle?.width ?? 2) * 1.4);
-      ctx.lineWidth = preserveDetail ? spineWidth / Math.max(0.05, zoom) : spineWidth;
-      ctx.setLineDash(fishboneStyle?.dash ?? []);
-      ctx.beginPath();
-      ctx.moveTo(decoration.x1, decoration.y1);
-      ctx.lineTo(decoration.x2, decoration.y2);
-      ctx.stroke();
-    } else {
-      const paint = hierarchyPaint?.(decoration) ?? null;
-      const opacity = paint?.opacity ?? fishboneStyle?.opacity ?? 0.8;
-      const width = fishboneStyle?.width ?? 2;
-      ctx.strokeStyle = dim(
-        paint?.color ?? fishboneStyle?.color ?? theme.decoration,
-        decoration.major ? opacity : opacity * 0.65
-      );
-      const ribWidth = decoration.major ? width : Math.max(0.75, width * 0.65);
-      ctx.lineWidth = preserveDetail ? ribWidth / Math.max(0.05, zoom) : ribWidth;
-      ctx.setLineDash(fishboneStyle?.dash ?? []);
-      ctx.beginPath();
-      ctx.moveTo(decoration.x1, decoration.y1);
-      ctx.lineTo(decoration.x2, decoration.y2);
-      ctx.stroke();
+export function timelineLayout({
+  ids,
+  roots,
+  childrenOf,
+  context,
+}: TimelineInput): LayoutGeometry {
+  const targets = new Map<string, NodeTarget>();
+  if (!ids.length) {
+    return { mode: 'timeline', targets, bounds: boundsOf(targets), decorations: [] };
+  }
+
+  const visible = new Set(ids);
+  const metric = (id: string) => context.nodeMetrics.get(id) ?? { width: 140, height: 38 };
+
+  const baselineY = 0;
+  const laneGap = Math.max(context.laneGap, 90);
+  const subGapX = 140;
+  const subGapY = 44;
+
+  // 1. Identifikasi Main Root (Pangkal Timeline di ujung kiri)
+  const visibleRoots = roots.filter((r) => visible.has(r));
+  const primaryRoot = visibleRoots[0] ?? ids[0];
+  const rootMetric = metric(primaryRoot);
+
+  targets.set(primaryRoot, {
+    x: 0,
+    y: baselineY,
+    side: 0,
+    lane: 0,
+  });
+
+  // 2. Milestones = anak-anak langsung dari root (sesuai urutan file explorer)
+  const rootChildren = childrenOf(primaryRoot).filter((id) => visible.has(id));
+  const milestones = rootChildren.length > 0 
+    ? rootChildren 
+    : visibleRoots.filter((r) => r !== primaryRoot);
+
+  let currentX = rootMetric.width / 2 + 100;
+
+  // Rekursif untuk menempatkan sub-items bertingkat di kanan milestone
+  const placeDescendants = (
+    parentId: string,
+    originX: number,
+    baseY: number,
+    lane: -1 | 1
+  ): number => {
+    const kids = childrenOf(parentId).filter((id) => visible.has(id));
+    if (kids.length === 0) return 0;
+
+    let localCursorY = baseY;
+    for (const kid of kids) {
+      targets.set(kid, {
+        x: originX + subGapX,
+        y: localCursorY,
+        side: lane,
+        lane,
+      });
+
+      const deeperOffset = placeDescendants(kid, originX + subGapX, localCursorY, lane);
+      localCursorY += lane * (subGapY + deeperOffset);
+    }
+    return Math.abs(localCursorY - baseY);
+  };
+
+  milestones.forEach((milestoneId, index) => {
+    // Selang-seling: genap di atas (lane = -1), ganjil di bawah (lane = 1)
+    const lane: -1 | 1 = index % 2 === 0 ? -1 : 1;
+    const y = baselineY + lane * laneGap;
+
+    targets.set(milestoneId, {
+      x: currentX,
+      y,
+      side: lane,
+      lane,
+    });
+
+    // Tempatkan anak-anak dari milestone
+    placeDescendants(milestoneId, currentX, y, lane);
+
+    // Hitung jarak ke milestone berikutnya agar cabang tidak bertabrakan
+    const mMetric = metric(milestoneId);
+    currentX += mMetric.width + context.siblingGap + 120;
+  });
+
+  // Pastikan node yatim/tersisa tetap memiliki koordinat aman
+  for (const id of ids) {
+    if (!targets.has(id)) {
+      targets.set(id, { x: currentX, y: baselineY, side: 0, lane: 0 });
+      currentX += 160;
     }
   }
-  ctx.restore();
+
+  // Tanpa dekorasi axis horizontal line
+  return {
+    mode: 'timeline',
+    targets,
+    bounds: boundsOf(targets, context.nodeMetrics),
+    decorations: [],
+  };
 }
