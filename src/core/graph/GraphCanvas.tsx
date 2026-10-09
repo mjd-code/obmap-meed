@@ -129,6 +129,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   const {
     canvasMode,
     layoutMode,
+    layoutArrangement,
     orientation,
     highlightMode,
     collapsedIds,
@@ -724,10 +725,9 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     // Re-fit when the layout mode changes, not on every data tick.
   }, [layoutMode, orientation]);
 
-    const handleNodeDrag = useCallback(
+  const handleNodeDrag = useCallback(
     (node: RenderNode) => {
-      if (canvasMode !== 'mindmap') return;
-
+      // Simpan koordinat awal saat pertama kali node mulai di-drag
       if (dragRef.current.draggedNodeId !== node.id) {
         dragRef.current = {
           draggedNodeId: node.id,
@@ -737,45 +737,59 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         };
       }
 
-      // Deteksi folder target di bawah kursor (jarak toleransi 60px)
-      const hoveredTarget = findHoveredDropTarget(node, data.nodes, 60);
-      if (!hoveredTarget) {
-        dragRef.current.hoveredTargetId = null;
-        dragRef.current.isValidDrop = false;
-        return;
+      // Deteksi folder/node target di bawah kursor (jarak toleransi 60px)
+      if (canvasMode === 'mindmap') {
+        const hoveredTarget = findHoveredDropTarget(node, data.nodes, 60);
+        if (!hoveredTarget) {
+          dragRef.current.hoveredTargetId = null;
+          dragRef.current.isValidDrop = false;
+          return;
+        }
+
+        const validation = validateReparent(
+          node,
+          hoveredTarget,
+          projection.parentByChild,
+          projection.childrenByParent
+        );
+
+        dragRef.current.hoveredTargetId = hoveredTarget.id;
+        dragRef.current.isValidDrop = validation.valid;
+        dragRef.current.dropReason = validation.reason;
       }
-
-      const validation = validateReparent(
-        node,
-        hoveredTarget,
-        projection.parentByChild,
-        projection.childrenByParent
-      );
-
-      dragRef.current.hoveredTargetId = hoveredTarget.id;
-      dragRef.current.isValidDrop = validation.valid;
-      dragRef.current.dropReason = validation.reason;
     },
     [canvasMode, data.nodes, projection]
   );
 
   const handleNodeDragEnd = useCallback(
     (node: RenderNode) => {
-      if (canvasMode !== 'mindmap') return;
+      const { hoveredTargetId, isValidDrop, draggedNodeOriginalPos } = dragRef.current;
 
-      const { hoveredTargetId, isValidDrop } = dragRef.current;
-
-      // 1. Eksekusi pemindahan parent jika valid
-      if (isValidDrop && hoveredTargetId) {
+      // KASUS 1: REPARENTING VALID DIJALANKAN (BERLAKU DI AUTO MAUPUN CUSTOM)
+      if (isValidDrop && hoveredTargetId && canvasMode === 'mindmap') {
         onNodeMove?.(node.id, hoveredTargetId);
+        delete node.fx;
+        delete node.fy;
+      } else {
+        // KASUS 2: DROP TIDAK VALID ATAU DILEPAS DI RUANG KOSONG
+        if (layoutArrangement === 'auto') {
+          // MODE AUTO (XMind Style): Snap-back seketika ke posisi kalkulasi automated layout
+          const target = geometry.targets.get(node.id);
+          const returnX = target?.x ?? draggedNodeOriginalPos?.x ?? node.x ?? 0;
+          const returnY = target?.y ?? draggedNodeOriginalPos?.y ?? node.y ?? 0;
+
+          node.x = returnX;
+          node.y = returnY;
+          node.fx = returnX;
+          node.fy = returnY;
+        } else {
+          // MODE CUSTOM: Kunci posisi baru node di tempat user melepaskannya
+          node.fx = node.x;
+          node.fy = node.y;
+        }
       }
 
-      // 2. Lepas penguncian koordinat (fx/fy) agar transitionController
-      //    bisa menggerakkan node secara mulus ke posisi slot barunya
-      delete node.fx;
-      delete node.fy;
-
-      // 3. Reset total state drag agar badge "masuk ke folder" & ring putus-putus HILANG
+      // Reset state drag
       dragRef.current = {
         draggedNodeId: null,
         draggedNodeOriginalPos: null,
@@ -784,11 +798,12 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         dropReason: undefined,
       };
 
-      // 4. Minta kanvas me-render ulang frame bersih
+      // Segarkan tampilan kanvas
       graphRef.current?.refresh?.();
     },
-    [canvasMode, onNodeMove]
+    [canvasMode, layoutArrangement, geometry.targets, onNodeMove]
   );
+
 
 
 useImperativeHandle(

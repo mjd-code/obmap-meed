@@ -27,6 +27,8 @@ import {
 
 export type TransitionStatus = 'idle' | 'animating';
 export type HighlightMode = 'off' | 'pathway';
+export type LayoutArrangement = 'auto' | 'custom';
+
 
 /** Legacy persisted names from the worker engine. */
 const LEGACY_MODES: Record<string, LayoutMode> = {
@@ -46,6 +48,7 @@ export interface GraphInteractionState {
   layoutMode: LayoutMode;
   canvasMode: CanvasMode;
   lastGraphLayout: GraphLayoutMode;
+  layoutArrangement: LayoutArrangement; 
   lastMindmapLayout: MindmapLayoutMode;
   orientation: MindmapOrientation;
   highlightMode: HighlightMode;
@@ -65,6 +68,7 @@ export interface GraphInteractionState {
 
   setLayoutMode: (mode: LayoutMode) => void;
   /** Switch family; restores the last layout used in that family. */
+  setLayoutArrangement: (arrangement: LayoutArrangement) => void; 
   setCanvasMode: (mode: CanvasMode) => void;
   setOrientation: (orientation: MindmapOrientation) => void;
   setHighlightMode: (mode: HighlightMode) => void;
@@ -89,6 +93,7 @@ const layoutPatch = (layoutMode: LayoutMode): Partial<GraphInteractionState> => 
 const creator: StateCreator<GraphInteractionState> = (set) => ({
   layoutMode: 'mindmap',
   canvasMode: 'mindmap',
+  layoutArrangement: 'auto',
   lastGraphLayout: 'free-force',
   lastMindmapLayout: 'mindmap',
   orientation: 'balanced',
@@ -129,6 +134,7 @@ const creator: StateCreator<GraphInteractionState> = (set) => ({
         ? {}
         : layoutPatch(canvasMode === 'graph' ? state.lastGraphLayout : state.lastMindmapLayout)
     ),
+  setLayoutArrangement: (layoutArrangement) => set({ layoutArrangement }),
   setOrientation: (orientation) => set({ orientation }),
   setHighlightMode: (highlightMode) => set({ highlightMode }),
   toggleCollapsed: (id) =>
