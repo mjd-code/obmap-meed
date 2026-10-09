@@ -52,9 +52,6 @@ function GraphLeafBody({ leafId, canvasMode: requestedMode, view }: { leafId: st
 
     useNodeStore.getState().addNode(newNode);
     setSelectedNode(newNode);
-    if (type === "file") {
-      useWorkspaceStore.getState().openFile(newNode.id, newNode.name);
-    }
   };
 
   // Ambil config dari store lokal tab ini (fallback ke global store bila di luar provider)

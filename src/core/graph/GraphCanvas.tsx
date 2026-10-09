@@ -562,41 +562,6 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   const lastClickRef = useRef<{ id: string; time: number } | null>(null);
 
   // ---- interactions --------------------------------------------------------
-//  const handleClick = useCallback(
-//     (node: RenderNode, event: MouseEvent) => {
-//       // Toggle hit test in graph space (collapse/expand cabang)
-//       const coords = graphRef.current?.screen2GraphCoords?.(event.offsetX, event.offsetY);
-//       const toggle = node.toggle;
-//       if (coords && toggle) {
-//         const distance = Math.hypot(coords.x - toggle.x, coords.y - toggle.y);
-//         if (distance <= toggle.r) {
-//           toggleCollapsed(node.id);
-//           return;
-//         }
-//       }
-
-//       const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
-
-//       // 1. Klik sekali: selalu select node
-//       setSelected(node.id);
-//       onNodeSelect(matchedNode);
-
-//       // 2. Deteksi klik dua kali (double click)
-//       const now = Date.now();
-//       const last = lastClickRef.current;
-//       const isDoubleClick =
-//         event.detail === 2 ||
-//         (last !== null && last.id === node.id && now - last.time < 350);
-
-//       lastClickRef.current = { id: node.id, time: now };
-
-//       // Jika double-click dan bukan folder -> buka file
-//       if (isDoubleClick && matchedNode && matchedNode.type !== 'folder') {
-//         onNodeOpen?.(matchedNode);
-//       }
-//     },
-//     [toggleCollapsed, setSelected, onNodeSelect, onNodeOpen, graphData.nodes]
-//   );
 
   // Update posisi toolbar saat node terpilih bergerak atau kamera dizoom/pan
   const updateToolbarPosition = useCallback(() => {
@@ -617,31 +582,34 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     }
   }, [selectedNode, data.nodes, toolbarCoords]);
 
-  // Handler klik kiri standar & deteksi double tap / click
+  // 1. Single click: Select node | Double click: BUKA NOTE EDITOR TAB
   const handleClick = useCallback(
     (node: RenderNode, event: MouseEvent | TouchEvent) => {
       const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
 
-      // Single click: select node
-      setSelected(node.id);
-      onNodeSelect(matchedNode);
-
       const now = Date.now();
       const last = lastTapRef.current;
-      // Cek apakah double click / double tap di touchpad/layar terjadi (< 350ms)
-      const isDoubleTap = (last.id === node.id && now - last.time < 350) || (event as MouseEvent).detail === 2;
+      const isDoubleClick = (last.id === node.id && now - last.time < 350) || (event as MouseEvent).detail === 2;
       lastTapRef.current = { id: node.id, time: now };
 
-      if (isDoubleTap) {
-        // DOUBLE TAP / DOUBLE CLICK: Buka Floating Toolbar langsung di atas node!
-        setIsToolbarVisible(true);
-        updateToolbarPosition();
+      if (isDoubleClick) {
+        // DOUBLE CLICK: Buka Note Editor tab (khusus file note)
+        if (matchedNode) {
+          onNodeOpen?.(matchedNode);
+        }
+        setIsToolbarVisible(false);
+        return;
       }
+
+      // SINGLE CLICK: Hanya select node & sembunyikan toolbar
+      setSelected(node.id);
+      onNodeSelect(matchedNode);
+      setIsToolbarVisible(false);
     },
-    [setSelected, onNodeSelect, graphData.nodes, updateToolbarPosition]
+    [setSelected, onNodeSelect, onNodeOpen, graphData.nodes]
   );
 
-  // Handler KLIK KANAN: langsung trigger dan tampilkan Floating Toolbar
+  // 2. KLIK KANAN / 2-FINGER TAP TOUCHPAD: Langsung trigger dan tampilkan Floating Toolbar
   const handleNodeRightClick = useCallback(
     (node: RenderNode, event: MouseEvent) => {
       event.preventDefault?.();
@@ -659,6 +627,58 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     },
     [setSelected, onNodeSelect, graphData.nodes]
   );
+
+  // 3. DETEKSI DOUBLE TAP SEKALIGUS (2 JARI) PADA LAYAR SENTUH / SCREEN HP
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      if (e.touches.length === 2) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const containerRect = containerRef.current?.getBoundingClientRect();
+        if (!containerRect || !graphRef.current) return;
+
+        // Cari titik tengah sentuhan kedua jari
+        const midScreenX = (touch1.clientX + touch2.clientX) / 2 - containerRect.left;
+        const midScreenY = (touch1.clientY + touch2.clientY) / 2 - containerRect.top;
+
+        // Konversi ke koordinat graph
+        const graphCoords = graphRef.current.screen2GraphCoords?.(midScreenX, midScreenY);
+        if (!graphCoords) return;
+
+        // Cari node terdekat di bawah sentuhan
+        let closestNode: RenderNode | null = null;
+        let minDistance = Infinity;
+
+        for (const n of data.nodes) {
+          if (n.x === undefined || n.y === undefined) continue;
+          const dx = n.x - graphCoords.x;
+          const dy = n.y - graphCoords.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestNode = n;
+          }
+        }
+
+        const currentZoom = zoomRef.current || 1;
+        const maxThreshold = Math.max(30, 45 / currentZoom);
+
+        if (closestNode && minDistance <= maxThreshold) {
+          e.preventDefault();
+          const matchedNode = graphData.nodes.find((item) => item.id === closestNode.id) ?? null;
+          setSelected(closestNode.id);
+          onNodeSelect(matchedNode);
+          setIsToolbarVisible(true);
+          const screenPos = graphRef.current.graph2ScreenCoords?.(closestNode.x ?? 0, closestNode.y ?? 0);
+          if (screenPos && Number.isFinite(screenPos.x) && Number.isFinite(screenPos.y)) {
+            setToolbarCoords({ x: screenPos.x, y: screenPos.y });
+          }
+        }
+      }
+    },
+    [data.nodes, graphData.nodes, onNodeSelect, setSelected]
+  );
+
 
   const handleHover = useCallback(
     (node: RenderNode | null) => setHovered(node?.id ?? null),
@@ -772,7 +792,11 @@ useImperativeHandle(
 );
 
   return (
-    <div ref={containerRef} className="relative h-full w-full">
+    <div 
+      ref={containerRef} 
+      className="relative h-full w-full"
+      onTouchStart={handleTouchStart}
+    >
       <ForceGraph2D
         ref={graphRef}
         graphData={data}
@@ -790,10 +814,15 @@ useImperativeHandle(
         onZoom={updateToolbarPosition}
         onZoomEnd={updateToolbarPosition}
         onNodeClick={handleClick}
+        onNodeRightClick={handleNodeRightClick}
         onNodeHover={handleHover}
         onBackgroundClick={() => {
           setSelected(null);
           onNodeSelect(null);
+          setIsToolbarVisible(false);
+        }}
+        onBackgroundRightClick={() => {
+          setIsToolbarVisible(false);
         }}
         enableNodeDrag={layoutMode === 'free-force' || canvasMode === 'mindmap'}
         onNodeDrag={handleNodeDrag}
