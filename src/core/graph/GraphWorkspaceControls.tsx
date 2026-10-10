@@ -32,6 +32,7 @@ import {
   UnfoldVertical,
   X,
   Zap,
+  Palette,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import type { CanvasMode, LayoutMode, MindmapOrientation } from './model/graphTypes';
@@ -63,8 +64,10 @@ import {
   HierarchyLinkColorControls,
 } from './config-panel/HierarchyColorControls';
 import { ChevronRight } from 'lucide-react';
+import { ColorEngineControls } from './config-panel/ColorEngineControls';
 
-type SettingGroup = 'search' | 'layout' | 'nodes' | 'links' | 'global';
+type SettingGroup = 'search' | 'layout' | 'colors' | 'nodes' | 'links' | 'global';
+
 type LabelMode = 'nodes' | 'labels' | 'boxes';
 type LinkStyleType = keyof TopologyConfig['styles'];
 
@@ -213,7 +216,7 @@ export function GraphWorkspaceControls({
       setStoreCanvasMode(mode);
     }
   };
-  
+
   const layoutArrangement = useGraphInteractionStore((s) => s.layoutArrangement);
   const setLayoutArrangement = useGraphInteractionStore((s) => s.setLayoutArrangement);
 
@@ -222,7 +225,7 @@ export function GraphWorkspaceControls({
   const [activePanel, setActivePanel] = useState<SettingGroup | null>(null);
   const leafApi = useLeafGraphConfigApi();
 
-    // Ambil config lokal jika ada di dalam tab, jika tidak gunakan global
+  // Ambil config lokal jika ada di dalam tab, jika tidak gunakan global
   const localConfig = useLeafGraphConfig((s) => s.config);
   const globalConfig = useGraphStore((s) => s.config);
   const config = localConfig ?? globalConfig;
@@ -242,7 +245,7 @@ export function GraphWorkspaceControls({
     : (upd: Partial<ForceConfig>) => useGraphStore.getState().updateForceConfig(upd);
   const updateTopologyConfig = leafApi
     ? (upd: Parameters<LeafGraphConfigState['setTopologyConfig']>[0]) =>
-        leafApi.getState().setTopologyConfig(upd)
+      leafApi.getState().setTopologyConfig(upd)
     : (upd: Partial<TopologyConfig>) => useGraphStore.getState().updateTopologyConfig(upd);
   const updateTopologyStyle = (type: LinkStyleType, upd: Partial<LinkStyle>) => {
     if (leafApi) {
@@ -281,7 +284,7 @@ export function GraphWorkspaceControls({
   const saveTemplate = useGraphTemplatesStore((s) => s.saveTemplate);
   const deleteTemplate = useGraphTemplatesStore((s) => s.deleteTemplate);
   const setDefaultTemplate = useGraphTemplatesStore((s) => s.setDefaultTemplate);
-  
+
   const stats = useGraphStore((s) => s.stats);
   const requestReheat = useGraphInteractionStore((s) => s.requestReheat);
   const requestStop = useGraphInteractionStore((s) => s.requestStop);
@@ -310,7 +313,7 @@ export function GraphWorkspaceControls({
     else updateNodeConfig({ showLabels: true, labelBox: true });
   };
 
-    // Handler 1: Simpan setting saat ini sebagai template baru
+  // Handler 1: Simpan setting saat ini sebagai template baru
   const handleSaveTemplate = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmed = templateName.trim();
@@ -439,6 +442,23 @@ export function GraphWorkspaceControls({
                   <TooltipContent side="left">Layout & Hierarchy</TooltipContent>
                 </Tooltip>
 
+                {/* Color Engine Hero Button */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant={activePanel === 'colors' ? 'secondary' : 'ghost'}
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => togglePanel('colors')}
+                      aria-label="Color Engine"
+                    >
+                      <Palette className="h-4 w-4 text-amber-400" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Color Engine (Hierarchy, Tags, Custom)</TooltipContent>
+                </Tooltip>
+
                 {/* 3. Node Appearance */}
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -474,45 +494,45 @@ export function GraphWorkspaceControls({
                 </Tooltip>
 
                 {/* 5. global & Stats */}
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant={activePanel === 'global' ? 'secondary' : 'ghost'}
-          size="icon"
-          className="h-9 w-9"
-          onClick={() => togglePanel('global')}
-        >
-          <Globe className="h-4 w-4" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="left">Graph Global & Templates</TooltipContent>
-    </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant={activePanel === 'global' ? 'secondary' : 'ghost'}
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => togglePanel('global')}
+                    >
+                      <Globe className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Graph Global & Templates</TooltipContent>
+                </Tooltip>
               </div>
             )}
-                            {/* Expand All / Clear Focus Indicator */}
-    {(collapsedCount > 0 || focused) && (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 text-primary animate-in fade-in zoom-in-90 duration-150"
-            aria-label="Show everything"
-            onClick={() => {
-              onExpandAll();
-              onClearFocus();
-            }}
-          >
-            <UnfoldVertical className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">
-          Show everything ({collapsedCount} collapsed)
-        </TooltipContent>
-      </Tooltip>
-    )}
+            {/* Expand All / Clear Focus Indicator */}
+            {(collapsedCount > 0 || focused) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-primary animate-in fade-in zoom-in-90 duration-150"
+                    aria-label="Show everything"
+                    onClick={() => {
+                      onExpandAll();
+                      onClearFocus();
+                    }}
+                  >
+                    <UnfoldVertical className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  Show everything ({collapsedCount} collapsed)
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           {/* Quick Zoom Actions */}
@@ -805,6 +825,18 @@ export function GraphWorkspaceControls({
                 </div>
               )}
 
+              {/* COLOR ENGINE PANEL */}
+              {activePanel === 'colors' && (
+                <div className="space-y-3.5">
+                  <ColorEngineControls
+                    hierarchy={config.hierarchy}
+                    nodeConfig={config.nodes}
+                    onHierarchyUpdate={updateHierarchyConfig}
+                    onNodeConfigUpdate={updateNodeConfig}
+                  />
+                </div>
+              )}
+
               {/* 3. NODE APPEARANCE PANEL */}
               {activePanel === 'nodes' && (
                 <div className="space-y-2">
@@ -882,74 +914,6 @@ export function GraphWorkspaceControls({
                           step={0.25}
                           onValueChange={([v]) => updateNodeConfig({ depthSizeInterval: v })}
                         />
-                      </div>
-                    )}
-                  </PanelSection>
-
-                  <PanelSection title="Hierarchy Colors">
-                    <HierarchyColorControls
-                      hierarchy={config.hierarchy}
-                      onChange={updateHierarchyConfig}
-                    />
-                  </PanelSection>
-
-                  <PanelSection title="Colors & Glow">
-                    <ColorPicker
-                      label="Folder Color"
-                      value={config.nodes.folderColor}
-                      onChange={(val) => updateNodeConfig({ folderColor: val })}
-                    />
-                    <ColorPicker
-                      label="File Color"
-                      value={config.nodes.fileColor}
-                      onChange={(val) => updateNodeConfig({ fileColor: val })}
-                    />
-                    <ColorPicker
-                      label="Selected Color"
-                      value={config.nodes.selectedColor}
-                      onChange={(val) => updateNodeConfig({ selectedColor: val })}
-                    />
-
-                    <div className="flex items-center justify-between border-t border-border/50 pt-2">
-                      <Label className="text-xs">Glowing Nodes</Label>
-                      <Switch
-                        checked={config.nodes.glow}
-                        onCheckedChange={(checked) => updateNodeConfig({ glow: checked })}
-                      />
-                    </div>
-
-                    {config.nodes.glow && (
-                      <div className="space-y-2">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-muted-foreground">
-                            <span>Intensity</span>
-                            <span>{config.nodes.glowIntensity.toFixed(2)}</span>
-                          </div>
-                          <Slider
-                            value={[config.nodes.glowIntensity]}
-                            min={0.1}
-                            max={1}
-                            step={0.05}
-                            onValueChange={([v]) => updateNodeConfig({ glowIntensity: v })}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-muted-foreground">
-                            <span>Pulse Speed</span>
-                            <span>
-                              {config.nodes.glowSpeed === 0
-                                ? 'Static'
-                                : `${config.nodes.glowSpeed.toFixed(1)}x`}
-                            </span>
-                          </div>
-                          <Slider
-                            value={[config.nodes.glowSpeed]}
-                            min={0}
-                            max={3}
-                            step={0.1}
-                            onValueChange={([v]) => updateNodeConfig({ glowSpeed: v })}
-                          />
-                        </div>
                       </div>
                     )}
                   </PanelSection>

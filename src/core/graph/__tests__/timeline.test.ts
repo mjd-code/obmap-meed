@@ -77,7 +77,7 @@ describe('timelineLayout', () => {
     expect(y1 * y2).toBeLessThan(0);
   });
 
-  it('emits a single timeline axis decoration spanning all milestones', () => {
+  it('emits no decorations so the timeline has no horizontal axis line', () => {
     const ids = ['root', 'm1', 'm2'];
     const roots = ['root'];
     const childrenMap: Record<string, string[]> = {
@@ -93,9 +93,7 @@ describe('timelineLayout', () => {
       context: context(),
     });
 
-    const axes = geo.decorations.filter((d) => d.kind === 'timeline-axis');
-    expect(axes).toHaveLength(1);
-    expect((axes[0] as { ticks: unknown[] }).ticks.length).toBe(2);
+    expect(geo.decorations).toHaveLength(0);
   });
 
   it('handles an empty input cleanly', () => {

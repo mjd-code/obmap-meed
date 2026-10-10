@@ -26,9 +26,9 @@ import {
   Hexagon,
   GitBranch,
 } from 'lucide-react';
-import { NodeConfig } from "@/shared/stores/useGraphStore";
+import { NodeConfig, useGraphStore } from "@/shared/stores/useGraphStore";
 import { ColorPicker } from './ColorPicker';
-import { HierarchyColorControls } from './HierarchyColorControls';
+import { ColorEngineControls } from './ColorEngineControls';
 import { CollapsibleSection } from './CollapsibleSection';
 
 interface NodeStylingTabProps {
@@ -38,6 +38,10 @@ interface NodeStylingTabProps {
 }
 
 export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) {
+
+  const hierarchy = useGraphStore((s) => s.config.hierarchy);
+  const updateHierarchyConfig = useGraphStore((s) => s.updateHierarchyConfig);
+
   return (
     <div className="space-y-4">
       {/* Shape Configuration */}
@@ -280,7 +284,14 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
         title="Color Management"
         defaultOpen={false}
       >
-        <HierarchyColorControls />
+        <div className="p-3 rounded-lg bg-card border border-border">
+          <ColorEngineControls
+            hierarchy={hierarchy}
+            nodeConfig={config}
+            onHierarchyUpdate={updateHierarchyConfig}
+            onNodeConfigUpdate={onUpdate}
+          />
+        </div>
 
         <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
           {/* Auto-Color Toggle */}
