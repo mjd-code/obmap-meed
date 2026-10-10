@@ -80,10 +80,9 @@ function runSubtreeLayout(
       return braceMapLayout(treeInput);
     case 'timeline':
       return timelineLayout({
-        nodes: subtreeIds.map((id) => ({
-          id,
-          time: projection?.byId.get(id)?.time,
-        })),
+        ids: subtreeIds,
+        roots: [rootId],
+        childrenOf,
         parentOf: (id) => projection?.parentByChild.get(id) ?? null,
         context,
       });
