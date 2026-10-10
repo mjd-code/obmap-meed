@@ -11,10 +11,12 @@ import {
   useGraphStore,
 } from '@/shared/stores/useGraphStore';
 import { useGraphTemplatesStore } from '@/shared/stores/useGraphTemplatesStore';
+import { mergeAtmosphereConfig, type AtmosphereConfig } from './atmosphereConfig';
 
 export interface LeafGraphConfigState {
   config: GraphConfigState;
   activeTemplateId: string | null;
+  setAtmosphereConfig: (updates: Partial<AtmosphereConfig>) => void;
   setNodeConfig: (updater: Partial<NodeConfig> | ((prev: NodeConfig) => Partial<NodeConfig>)) => void;
   setLinkConfig: (updater: Partial<LinkConfig> | ((prev: LinkConfig) => Partial<LinkConfig>)) => void;
   setForceConfig: (updater: Partial<ForceConfig> | ((prev: ForceConfig) => Partial<ForceConfig>)) => void;
@@ -35,6 +37,13 @@ export function createLeafGraphConfigStore(initialConfig?: GraphConfigState): St
   return createStore<LeafGraphConfigState>((set) => ({
     config: baseConfig,
     activeTemplateId: templatesState.defaultTemplateId ?? null,
+
+    setAtmosphereConfig: (updates) => set((state) => ({
+      config: {
+        ...state.config,
+        atmosphere: mergeAtmosphereConfig({ ...state.config.atmosphere, ...updates }),
+      },
+    })),
 
     setNodeConfig: (updater) =>
       set((state) => ({
@@ -154,6 +163,7 @@ export function useLeafGraphConfig<T>(selector?: (state: LeafGraphConfigState) =
     return {
       config: mergeGraphConfig(g.config),
       activeTemplateId: null,
+      setAtmosphereConfig: (u) => g.updateAtmosphereConfig(u),
       setNodeConfig: (u) => g.updateNodeConfig(typeof u === 'function' ? u(g.config.nodes) : u),
       setLinkConfig: (u) => g.updateLinkConfig(typeof u === 'function' ? u(g.config.links) : u),
       setForceConfig: (u) => g.updateForceConfig(typeof u === 'function' ? u(g.config.forces) : u),

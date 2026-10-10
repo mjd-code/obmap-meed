@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { Node, Link } from './types';
+import { mergeAtmosphereConfig, defaultAtmosphereConfig, type AtmosphereConfig } from '@/core/graph/model/atmosphereConfig';
 import {
   defaultHierarchyColorConfig,
   mergeHierarchyColorConfig,
@@ -118,6 +119,7 @@ export interface GraphConfigState {
   links: LinkConfig;
   topology: TopologyConfig;
   forces: ForceConfig;
+  atmosphere?: AtmosphereConfig;
 }
 
 // ============= DEFAULTS =============
@@ -221,6 +223,7 @@ export const defaultGraphConfig: GraphConfigState = {
   links: defaultLinkConfig,
   topology: defaultTopologyConfig,
   forces: defaultForceConfig,
+  atmosphere: defaultAtmosphereConfig,
 };
 
 /**
@@ -231,6 +234,7 @@ export function mergeGraphConfig(partial?: Partial<GraphConfigState> | null): Gr
   const p = (partial ?? {}) as Partial<GraphConfigState>;
   return {
     version: GRAPH_CONFIG_VERSION,
+    atmosphere: mergeAtmosphereConfig(p.atmosphere),
     nodes: { ...defaultNodeConfig, ...(p.nodes ?? {}) },
     links: { ...defaultLinkConfig, ...(p.links ?? {}) },
     forces: { ...defaultForceConfig, ...(p.forces ?? {}) },
@@ -262,6 +266,7 @@ interface GraphState {
   
   // Actions - Config updates
   updateNodeConfig: (updates: Partial<NodeConfig>) => void;
+  updateAtmosphereConfig: (updates: Partial<AtmosphereConfig>) => void;
   updateLinkConfig: (updates: Partial<LinkConfig>) => void;
   updateTopologyConfig: (updates: Partial<TopologyConfig>) => void;
   updateTopologyStyle: (linkType: keyof TopologyConfig['styles'], updates: Partial<LinkStyle>) => void;
@@ -303,6 +308,17 @@ export const useGraphStore = create<GraphState>()(
         isDirty: false,
         
         // Config update actions
+        updateAtmosphereConfig: (updates) => set(
+          (state) => ({
+            config: {
+              ...state.config,
+              atmosphere: mergeAtmosphereConfig({ ...state.config.atmosphere, ...updates }),
+            },
+            isDirty: true,
+          }),
+          false,
+          'updateAtmosphereConfig'
+        ),
         updateNodeConfig: (updates) => set(
           (state) => ({
             config: {
@@ -383,30 +399,14 @@ export const useGraphStore = create<GraphState>()(
 
         // Full config actions
         setConfig: (config) => set(
-          { config, isDirty: true },
+          { config: mergeGraphConfig(config), isDirty: true },
           false,
           'setConfig'
         ),
         
         loadConfig: (config) => set(
           {
-            config: config ? {
-              ...defaultGraphConfig,
-              ...config,
-              nodes: { ...defaultNodeConfig, ...config.nodes },
-              links: { ...defaultLinkConfig, ...config.links },
-              topology: {
-                ...defaultTopologyConfig,
-                ...config.topology,
-                styles: {
-                  ...defaultTopologyConfig.styles,
-                  ...config.topology?.styles,
-                },
-              },
-              forces: { ...defaultForceConfig, ...config.forces },
-              hierarchy: mergeHierarchyColorConfig(config.hierarchy),
-              version: GRAPH_CONFIG_VERSION,
-            } : defaultGraphConfig,
+            config: mergeGraphConfig(config),
             isDirty: false,
           },
           false,
@@ -546,20 +546,7 @@ export const useGraphStore = create<GraphState>()(
           return {
             ...current,
             ...saved,
-            config: {
-              ...defaultGraphConfig,
-              ...config,
-              nodes: { ...defaultNodeConfig, ...config.nodes },
-              links: { ...defaultLinkConfig, ...config.links },
-              topology: {
-                ...defaultTopologyConfig,
-                ...config.topology,
-                styles: { ...defaultTopologyConfig.styles, ...config.topology?.styles },
-              },
-              forces: { ...defaultForceConfig, ...config.forces },
-              hierarchy: mergeHierarchyColorConfig(config.hierarchy),
-              version: GRAPH_CONFIG_VERSION,
-            },
+            config: mergeGraphConfig(config),
           };
         },
       }
