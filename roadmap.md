@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Combine node and link gear options and make the effects panel readable at narrow widths.
+- [ ] Connect atmosphere controls to scoped configuration and repair elevation and link-flow rendering.
+- [ ] Verify effects controls, graph tests, and the running preview.
+
 - [x] Make the Settings Hub responsive across mobile, tablet, and desktop.
 - [x] Consolidate graph layout, search, and filters into one compact tool rail.
 - [x] Default the graph mini-map to its minimized state.

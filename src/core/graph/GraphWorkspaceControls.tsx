@@ -66,8 +66,10 @@ import {
 import { ChevronRight } from 'lucide-react';
 import { ColorEngineControls } from './config-panel/ColorEngineControls';
 import { AtmosphereControls } from './config-panel/AtmosphereControls';
+import { mergeAtmosphereConfig } from './model/atmosphereConfig';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 
-type SettingGroup = 'search' | 'layout' | 'colors' | 'atmosphere' | 'nodes' | 'links' | 'global';
+type SettingGroup = 'search' | 'layout' | 'colors' | 'atmosphere' | 'appearance' | 'global';
 
 type LabelMode = 'nodes' | 'labels' | 'boxes';
 type LinkStyleType = keyof TopologyConfig['styles'];
@@ -224,6 +226,7 @@ export function GraphWorkspaceControls({
   // Kontrol gear: toggle menu icon button ke bawah
   const [isGearOpen, setIsGearOpen] = useState(true);
   const [activePanel, setActivePanel] = useState<SettingGroup | null>(null);
+  const [appearanceTab, setAppearanceTab] = useState<'nodes' | 'links'>('nodes');
   const leafApi = useLeafGraphConfigApi();
 
   // Ambil config lokal jika ada di dalam tab, jika tidak gunakan global
@@ -454,7 +457,7 @@ export function GraphWorkspaceControls({
                       onClick={() => togglePanel('colors')}
                       aria-label="Color Engine"
                     >
-                      <Palette className="h-4 w-4 text-amber-400" />
+                      <Palette className="h-4 w-4 text-primary" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="left">Color Engine (Hierarchy, Tags, Custom)</TooltipContent>
@@ -471,44 +474,19 @@ export function GraphWorkspaceControls({
                       onClick={() => togglePanel('atmosphere')}
                       aria-label="Atmosphere & Effects"
                     >
-                      <Sparkles className="h-4 w-4 text-emerald-400" />
+                      <Sparkles className="h-4 w-4 text-primary" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="left">Atmosphere & Living Canvas Effects</TooltipContent>
                 </Tooltip>
 
-                {/* 3. Node Appearance */}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant={activePanel === 'nodes' ? 'secondary' : 'ghost'}
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => togglePanel('nodes')}
-                      aria-label="Node Appearance"
-                    >
-                      <Circle className="h-4 w-4" />
-                    </Button>
+                    <Button type="button" variant={activePanel === 'appearance' ? 'secondary' : 'ghost'}
+                      size="icon" className="h-8 w-8" onClick={() => togglePanel('appearance')}
+                      aria-label="Nodes & Links"><Link2 className="h-4 w-4" /></Button>
                   </TooltipTrigger>
-                  <TooltipContent side="left">Node Styling & Glow</TooltipContent>
-                </Tooltip>
-
-                {/* 4. Link & Particles */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant={activePanel === 'links' ? 'secondary' : 'ghost'}
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => togglePanel('links')}
-                      aria-label="Link & Particles"
-                    >
-                      <Link2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">Link & Particles</TooltipContent>
+                  <TooltipContent side="left">Nodes & Links</TooltipContent>
                 </Tooltip>
 
                 {/* 5. global & Stats */}
@@ -591,15 +569,16 @@ export function GraphWorkspaceControls({
 
         {/* Panel Pop-up Konten Pengaturan di Kiri Toolbar */}
         {activePanel && (
-          <section className="pointer-events-auto flex max-h-[420px] min-h-[220px] w-[260px] flex-col rounded-lg border border-border/80 bg-card/95 shadow-2xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-2 duration-150 sm:w-[300px]">
+          <section className="pointer-events-auto flex max-h-[min(640px,calc(100dvh-100px))] min-h-0 w-[min(340px,calc(100vw-76px))] flex-col rounded-lg border border-border/80 bg-card/95 shadow-2xl backdrop-blur-md animate-in fade-in-0 slide-in-from-right-2 duration-150">
             {/* Header Panel */}
             <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold capitalize text-foreground">
                   {activePanel === 'search' && 'Search & Depth'}
                   {activePanel === 'layout' && 'Layout Engine'}
-                  {activePanel === 'nodes' && 'Node Appearance'}
-                  {activePanel === 'links' && 'Links & Particles'}
+                  {activePanel === 'appearance' && 'Nodes & Links'}
+                  {activePanel === 'colors' && 'Color Engine'}
+                  {activePanel === 'atmosphere' && 'Atmosphere & Effects'}
                   {activePanel === 'global' && 'Graph global'}
                 </span>
               </div>
@@ -608,6 +587,7 @@ export function GraphWorkspaceControls({
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                aria-label="Close settings panel"
                 onClick={() => setActivePanel(null)}
               >
                 <X className="h-3.5 w-3.5" />
@@ -615,7 +595,7 @@ export function GraphWorkspaceControls({
             </header>
 
             {/* Body Panel dengan Thin Scrollbar */}
-            <div className="flex-1 overflow-y-auto p-3 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.3)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 [scrollbar-width:thin] [scrollbar-color:hsl(var(--muted-foreground)/0.3)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/50">
               {/* 1. SEARCH & DEPTH PANEL */}
               {activePanel === 'search' && (
                 <div className="space-y-3.5">
@@ -857,27 +837,29 @@ export function GraphWorkspaceControls({
 
               {activePanel === 'atmosphere' && (
                 <AtmosphereControls
-                  atmosphere={(config as any).atmosphere ?? {
-                    cosmicParticles: 35,
-                    cosmicSpeed: 1,
-                    linkGlow: true,
-                    nodeElevation: true,
-                    elevationIntensity: 0.8,
-                  }}
+                  atmosphere={mergeAtmosphereConfig(config.atmosphere)}
                   linkConfig={config.links}
                   nodeConfig={config.nodes}
                   onAtmosphereUpdate={(updates) => {
-                    // Update atmosphere di leaf store / graph store
-                    const cur = (config as any).atmosphere ?? { cosmicParticles: 35, cosmicSpeed: 1 };
-                    (updateNodeConfig as any)({ ...updates }); // atau setter atmosphereConfig
+                    if (leafApi) leafApi.getState().setAtmosphereConfig(updates);
+                    else useGraphStore.getState().updateAtmosphereConfig(updates);
                   }}
                   onLinkUpdate={updateLinkConfig}
                   onNodeUpdate={updateNodeConfig}
                 />
               )}
 
+              {activePanel === 'appearance' && (
+                <Tabs value={appearanceTab} onValueChange={value => { if (value === 'nodes' || value === 'links') setAppearanceTab(value); }} className="mb-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="nodes">Nodes</TabsTrigger>
+                    <TabsTrigger value="links">Links</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
+
               {/* 3. NODE APPEARANCE PANEL */}
-              {activePanel === 'nodes' && (
+              {activePanel === 'appearance' && appearanceTab === 'nodes' && (
                 <div className="space-y-2">
                   <PanelSection title="Node Types" defaultOpen>
                     <div className="flex items-center justify-between">
@@ -1078,7 +1060,7 @@ export function GraphWorkspaceControls({
               )}
 
               {/* 4. LINKS & PARTICLES PANEL */}
-              {activePanel === 'links' && (
+              {activePanel === 'appearance' && appearanceTab === 'links' && (
                 <div className="space-y-2">
                   <PanelSection title="Link Types" defaultOpen>
                     <div className="flex items-center justify-between">
@@ -1252,72 +1234,7 @@ export function GraphWorkspaceControls({
                     </div>
                   </PanelSection>
 
-                  <PanelSection title="Particle Animations">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs">Particles Animation</Label>
-                      <Switch
-                        checked={config.links.showParticles}
-                        onCheckedChange={(checked) =>
-                          updateLinkConfig({
-                            showParticles: checked,
-                            ...(checked && config.links.particles < 1 ? { particles: 2 } : {}),
-                            ...(checked && config.links.particleSpeed <= 0
-                              ? { particleSpeed: 0.01 }
-                              : {}),
-                          })
-                        }
-                      />
-                    </div>
 
-                    {config.links.showParticles && (
-                      <div className="space-y-2">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-muted-foreground">
-                            <span>Count / link</span>
-                            <span>{config.links.particles}</span>
-                          </div>
-                          <Slider
-                            value={[config.links.particles]}
-                            min={1}
-                            max={6}
-                            step={1}
-                            onValueChange={([v]) => updateLinkConfig({ particles: v })}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-muted-foreground">
-                            <span>Flow Speed</span>
-                            <span>{config.links.particleSpeed.toFixed(3)}</span>
-                          </div>
-                          <Slider
-                            value={[config.links.particleSpeed]}
-                            min={0.002}
-                            max={0.05}
-                            step={0.002}
-                            onValueChange={([v]) => updateLinkConfig({ particleSpeed: v })}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px] text-muted-foreground">
-                            <span>Particle Width</span>
-                            <span>{config.links.particleWidth}px</span>
-                          </div>
-                          <Slider
-                            value={[config.links.particleWidth]}
-                            min={1}
-                            max={10}
-                            step={0.5}
-                            onValueChange={([v]) => updateLinkConfig({ particleWidth: v })}
-                          />
-                        </div>
-                        <ColorPicker
-                          label="Particle Color"
-                          value={config.links.particleColor}
-                          onChange={(val) => updateLinkConfig({ particleColor: val })}
-                        />
-                      </div>
-                    )}
-                  </PanelSection>
                 </div>
               )}
 
@@ -1418,7 +1335,7 @@ export function GraphWorkspaceControls({
                                       className={cn(
                                         'h-6 w-6',
                                         isDefault
-                                          ? 'text-amber-400 hover:text-amber-500'
+                                          ? 'text-primary hover:text-amber-500'
                                           : 'text-muted-foreground hover:text-foreground'
                                       )}
                                       onClick={() => handleToggleDefault(tmpl)}
