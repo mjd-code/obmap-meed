@@ -20,11 +20,13 @@ const cfg = (over: Partial<HierarchyColorConfig> = {}): HierarchyColorConfig => 
 });
 
 describe('presets', () => {
-  it('exposes the five documented palettes', () => {
+  it('exposes the seven documented palettes', () => {
     expect(HIERARCHY_PRESETS.map((p) => p.id)).toEqual([
       'classic',
       'mono-blue',
       'dark-friendly',
+      'neon',
+      'pastel',
       'warm',
       'cool',
     ]);
