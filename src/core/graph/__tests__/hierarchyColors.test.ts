@@ -8,6 +8,7 @@ import {
   resolveLevelColor,
   resolveLevelOpacity,
   uniqueDepths,
+  mergeHierarchyColorConfig,
   type HierarchyColorConfig,
 } from '../model/hierarchyColors';
 
