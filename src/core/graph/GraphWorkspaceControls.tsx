@@ -65,8 +65,9 @@ import {
 } from './config-panel/HierarchyColorControls';
 import { ChevronRight } from 'lucide-react';
 import { ColorEngineControls } from './config-panel/ColorEngineControls';
+import { AtmosphereControls } from './config-panel/AtmosphereControls';
 
-type SettingGroup = 'search' | 'layout' | 'colors' | 'nodes' | 'links' | 'global';
+type SettingGroup = 'search' | 'layout' | 'colors' | 'atmosphere' | 'nodes' | 'links' | 'global';
 
 type LabelMode = 'nodes' | 'labels' | 'boxes';
 type LinkStyleType = keyof TopologyConfig['styles'];
@@ -459,6 +460,23 @@ export function GraphWorkspaceControls({
                   <TooltipContent side="left">Color Engine (Hierarchy, Tags, Custom)</TooltipContent>
                 </Tooltip>
 
+                {/* Atmosphere & Effects Button */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant={activePanel === 'atmosphere' ? 'secondary' : 'ghost'}
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => togglePanel('atmosphere')}
+                      aria-label="Atmosphere & Effects"
+                    >
+                      <Sparkles className="h-4 w-4 text-emerald-400" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Atmosphere & Living Canvas Effects</TooltipContent>
+                </Tooltip>
+
                 {/* 3. Node Appearance */}
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -835,6 +853,27 @@ export function GraphWorkspaceControls({
                     onNodeConfigUpdate={updateNodeConfig}
                   />
                 </div>
+              )}
+
+              {activePanel === 'atmosphere' && (
+                <AtmosphereControls
+                  atmosphere={(config as any).atmosphere ?? {
+                    cosmicParticles: 35,
+                    cosmicSpeed: 1,
+                    linkGlow: true,
+                    nodeElevation: true,
+                    elevationIntensity: 0.8,
+                  }}
+                  linkConfig={config.links}
+                  nodeConfig={config.nodes}
+                  onAtmosphereUpdate={(updates) => {
+                    // Update atmosphere di leaf store / graph store
+                    const cur = (config as any).atmosphere ?? { cosmicParticles: 35, cosmicSpeed: 1 };
+                    (updateNodeConfig as any)({ ...updates }); // atau setter atmosphereConfig
+                  }}
+                  onLinkUpdate={updateLinkConfig}
+                  onNodeUpdate={updateNodeConfig}
+                />
               )}
 
               {/* 3. NODE APPEARANCE PANEL */}

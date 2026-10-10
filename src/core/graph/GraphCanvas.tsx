@@ -37,13 +37,15 @@ import {
   validateReparent,
   type DragReparentState,
 } from './interactions/dragReparent';
+import { drawCosmicAtmosphere } from './render/cosmicAtmosphere';
+
 
 
 export interface GraphCanvasProps {
   graphData: { nodes: Node[]; links: Link[] };
   selectedNode: Node | null;
   onNodeSelect: (node: Node | null) => void;
-  onNodeOpen?: (node: Node) => void; 
+  onNodeOpen?: (node: Node) => void;
   graphConfig: GraphConfigState;
   onNodeMove?: (nodeId: string, newParentId: string | null) => Promise<void> | void;
   onNodeDelete?: (nodeId: string) => Promise<void> | void;
@@ -110,14 +112,14 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   const glowStartedAt = useRef(performance.now());
   const [size, setSize] = useState({ width: 800, height: 600 });
   const nodeCache = useRef(new Map<string, RenderNode>());
-    // Simpan state drag di Ref agar tidak memicu re-render canvas loop pada 60fps mouse drag
+  // Simpan state drag di Ref agar tidak memicu re-render canvas loop pada 60fps mouse drag
   const dragRef = useRef<DragReparentState>({
     draggedNodeId: null,
     draggedNodeOriginalPos: null,
     hoveredTargetId: null,
     isValidDrop: false,
   });
-    // 1. State visibilitas & koordinat toolbar
+  // 1. State visibilitas & koordinat toolbar
   const [isToolbarVisible, setIsToolbarVisible] = useState(false);
   const [toolbarCoords, setToolbarCoords] = useState<{ x: number; y: number } | null>(null);
 
@@ -146,7 +148,8 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     setTransitionStatus,
     simulationCommand,
   } = useGraphInteractionStore();
-  
+  const cosmicActive = ((graphConfig as any).atmosphere?.cosmicParticles ?? 35) > 0;
+
   // ---- size ----------------------------------------------------------------
   useEffect(() => {
     const element = containerRef.current;
@@ -272,7 +275,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         }
       }
     }
-    
+
     const links = projection.links.filter((link) => {
       const source = typeof link.source === 'string' ? link.source : link.source.id;
       const target = typeof link.target === 'string' ? link.target : link.target.id;
@@ -346,7 +349,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     particleProgress.current = 0;
   }, [graphConfig.links.showParticles, graphConfig.links.particles, graphConfig.links.particleSpeed]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!selectedNode) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -458,7 +461,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
       if (layoutMode === 'fishbone' && (link.type ?? 'hierarchy') === 'hierarchy') return;
       const style =
         graphConfig.topology.styles[
-          (link.type ?? 'hierarchy') as keyof typeof graphConfig.topology.styles
+        (link.type ?? 'hierarchy') as keyof typeof graphConfig.topology.styles
         ] ?? graphConfig.topology.styles.hierarchy;
       const type = (link.type ?? 'hierarchy') as keyof typeof graphConfig.topology.styles;
       const defaultTypeStyle = defaultTopologyConfig.styles[type] ?? defaultTopologyConfig.styles.hierarchy;
@@ -504,8 +507,27 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   const renderDecorations = useCallback(
     (ctx: CanvasRenderingContext2D, globalScale: number) => {
       zoomRef.current = globalScale;
-      // This callback runs inside ForceGraph's own frame cycle, after it clears
-      // the complete backing canvas and before links/nodes are painted.
+
+      // 1. Living Canvas Atmosphere (Cosmic Dust & Nebula Grid)
+      // Transform context ke koordinat layar penuh
+      const atmosphere = (graphConfig as any).atmosphere ?? { cosmicParticles: 35, cosmicSpeed: 1 };
+      if (atmosphere.cosmicParticles > 0 && size.width > 0 && size.height > 0) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        drawCosmicAtmosphere(
+          ctx,
+          size.width,
+          size.height,
+          performance.now() / 1000,
+          {
+            intensity: atmosphere.cosmicParticles,
+            speed: atmosphere.cosmicSpeed ?? 1.0,
+          }
+        );
+        ctx.restore();
+      }
+
+      // 2. Link flow particles & node glow phases
       if (particlesActive) {
         particleProgress.current =
           ((performance.now() - particleStartedAt.current) * graphConfig.links.particleSpeed) / 100;
@@ -513,6 +535,8 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
       glowPhase.current = glowAnimated
         ? ((performance.now() - glowStartedAt.current) / 2400) * graphConfig.nodes.glowSpeed
         : 0.25;
+
+      // 3. Fishbone & hierarchy layout decorations
       if (layoutMode === 'fishbone' && !graphConfig.topology.showHierarchy) return;
       const hierarchy = graphConfig.topology.styles.hierarchy;
       const levels = graphConfig.hierarchy;
@@ -529,17 +553,17 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
         },
         levels.enabled
           ? (decoration) => {
-              const sourceDepth =
-                projection.byId.get((decoration as { sourceId?: string }).sourceId ?? '')?.depth;
-              const targetDepth = projection.byId.get(decoration.targetId ?? '')?.depth;
-              if (sourceDepth === undefined && targetDepth === undefined) return null;
-              return resolveHierarchyLinkPaint(
-                sourceDepth ?? targetDepth ?? 0,
-                targetDepth ?? sourceDepth ?? 0,
-                levels
-              );
-            }
-            : undefined,
+            const sourceDepth =
+              projection.byId.get((decoration as { sourceId?: string }).sourceId ?? '')?.depth;
+            const targetDepth = projection.byId.get(decoration.targetId ?? '')?.depth;
+            if (sourceDepth === undefined && targetDepth === undefined) return null;
+            return resolveHierarchyLinkPaint(
+              sourceDepth ?? targetDepth ?? 0,
+              targetDepth ?? sourceDepth ?? 0,
+              levels
+            );
+          }
+          : undefined,
         engine.zoomOutRendering === 'full-detail'
       );
     },
@@ -556,8 +580,12 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
       graphConfig.hierarchy,
       projection,
       engine.zoomOutRendering,
+      (graphConfig as any).atmosphere,
+      size.width,
+      size.height,
     ]
   );
+
 
   // Ref untuk mendeteksi interval waktu antar-klik (double-click detector)
   const lastClickRef = useRef<{ id: string; time: number } | null>(null);
@@ -590,20 +618,20 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
       const container = containerRef.current;
       const rect = container?.getBoundingClientRect();
       const mouseEvt = event as MouseEvent;
-      
+
       const screenX =
         mouseEvt.clientX !== undefined && rect
           ? mouseEvt.clientX - rect.left
           : 'offsetX' in mouseEvt && typeof mouseEvt.offsetX === 'number'
-          ? mouseEvt.offsetX
-          : 0;
+            ? mouseEvt.offsetX
+            : 0;
 
       const screenY =
         mouseEvt.clientY !== undefined && rect
           ? mouseEvt.clientY - rect.top
           : 'offsetY' in mouseEvt && typeof mouseEvt.offsetY === 'number'
-          ? mouseEvt.offsetY
-          : 0;
+            ? mouseEvt.offsetY
+            : 0;
 
       const coords = graphRef.current?.screen2GraphCoords?.(screenX, screenY);
       const toggle = node.toggle;
@@ -648,11 +676,11 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
     (node: RenderNode, event: MouseEvent) => {
       event.preventDefault?.();
       const matchedNode = graphData.nodes.find((item) => item.id === node.id) ?? null;
-      
+
       setSelected(node.id);
       onNodeSelect(matchedNode);
       setIsToolbarVisible(true);
-      
+
       // Update posisi ke node tersebut
       const screenPos = graphRef.current?.graph2ScreenCoords?.(node.x ?? 0, node.y ?? 0);
       if (screenPos && Number.isFinite(screenPos.x) && Number.isFinite(screenPos.y)) {
@@ -806,42 +834,42 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
 
 
 
-useImperativeHandle(
-  ref,
-  () => ({
-    refresh: () => {},
-    smartZoom: (action) => {
-      const graph = graphRef.current;
-      if (!graph) return;
+  useImperativeHandle(
+    ref,
+    () => ({
+      refresh: () => { },
+      smartZoom: (action) => {
+        const graph = graphRef.current;
+        if (!graph) return;
 
-      // 1. Zoom to fit: sesuaikan viewport agar mencakup seluruh node yang terlihat
-      if (action === 'fit') {
-        graph.zoomToFit?.(500, 60);
-        return;
-      }
+        // 1. Zoom to fit: sesuaikan viewport agar mencakup seluruh node yang terlihat
+        if (action === 'fit') {
+          graph.zoomToFit?.(500, 60);
+          return;
+        }
 
-      // 2. Zoom to selection: fokus dan perbesar ke node yang sedang dipilih
-      if (action === 'selection') {
-        const targetId = selectedNode?.id;
-        const selected = data.nodes.find((node) => node.id === targetId);
-        if (!selected || selected.x === undefined || selected.y === undefined) return;
-        
-        graph.centerAt?.(selected.x, selected.y, 450);
-        graph.zoom?.(2.25, 450);
-        return;
-      }
+        // 2. Zoom to selection: fokus dan perbesar ke node yang sedang dipilih
+        if (action === 'selection') {
+          const targetId = selectedNode?.id;
+          const selected = data.nodes.find((node) => node.id === targetId);
+          if (!selected || selected.x === undefined || selected.y === undefined) return;
 
-      // 3. Fallback / reset: kembali ke titik pusat default
-      graph.centerAt?.(0, 0, 400);
-      graph.zoom?.(1, 400);
-    },
-  }),
-  [data.nodes, selectedNode?.id]
-);
+          graph.centerAt?.(selected.x, selected.y, 450);
+          graph.zoom?.(2.25, 450);
+          return;
+        }
+
+        // 3. Fallback / reset: kembali ke titik pusat default
+        graph.centerAt?.(0, 0, 400);
+        graph.zoom?.(1, 400);
+      },
+    }),
+    [data.nodes, selectedNode?.id]
+  );
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="relative h-full w-full"
       onTouchStart={handleTouchStart}
     >
@@ -851,7 +879,7 @@ useImperativeHandle(
         width={size.width}
         height={size.height}
         backgroundColor={theme.card}
-        autoPauseRedraw={!particlesActive && !glowAnimated}
+        autoPauseRedraw={!particlesActive && !glowAnimated && !cosmicActive}
         nodeRelSize={graphConfig.nodes.relSize}
         nodeCanvasObject={paintNode}
         nodePointerAreaPaint={paintPointer}

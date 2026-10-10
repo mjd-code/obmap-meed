@@ -59,24 +59,21 @@ export function drawLink(
   ctx.lineWidth = state.preserveDetail
     ? configuredWidth / Math.max(0.05, state.zoom)
     : configuredWidth;
-  ctx.strokeStyle = dim(state.color, state.dimmed ? 0.08 : state.opacity);
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(start.x, start.y);
   
   const linkOpacity = state.isAttachedToDragged 
     ? 0.35 
     : state.dimmed ? 0.08 : state.opacity;
 
   ctx.strokeStyle = dim(state.color, linkOpacity);
-
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(start.x, start.y);
 
   let c1 = start;
   let c2 = end;
 
   let elbow: { x: number; y: number }[] | null = null;
   if (state.mode === 'org-chart') {
-    // Orthogonal (Manhattan) connector with rounded corners.
     const top = sy <= ty;
     const a = { x: sx, y: sy + (top ? 1 : -1) * state.metricOf(source).height / 2 };
     const b = { x: tx, y: ty - (top ? 1 : -1) * state.metricOf(target).height / 2 };
@@ -103,25 +100,20 @@ export function drawLink(
     c1 = { x: start.x + k * dx, y: start.y + bend };
     c2 = { x: end.x - k * dx, y: end.y + bend };
     ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
-  }  else if (state.mode === 'timeline') {
-    // XMind Timeline Connectors:
-    // Garis tegak lurus dari spine / parent ke milestone, lalu siku ke sub-items
+  } else if (state.mode === 'timeline') {
     const midX = start.x;
     const midY = end.y;
-    // Siku: turun/naik vertikal dulu dari spine/parent, lalu belok horizontal ke target
     ctx.lineTo(midX, midY);
     ctx.lineTo(end.x, end.y);
-  }
- else if (state.mode === 'fishbone') {
+  } else if (state.mode === 'fishbone') {
     ctx.lineTo(end.x, end.y);
   } else {
     ctx.lineTo(end.x, end.y);
   }
   ctx.stroke();
 
-  const curved = state.mode === 'mindmap' || state.mode === 'timeline';
+  const curved = state.mode === 'mindmap';
   if (elbow) {
-    // Arrow / particles follow the last orthogonal segment.
     start.x = elbow[elbow.length - 2].x; start.y = elbow[elbow.length - 2].y;
     end.x = elbow[elbow.length - 1].x; end.y = elbow[elbow.length - 1].y;
   }
@@ -132,6 +124,7 @@ export function drawLink(
     ? Math.atan2(cubicTangent(start.y, c1.y, c2.y, end.y, t), cubicTangent(start.x, c1.x, c2.x, end.x, t))
     : Math.atan2(end.y - start.y, end.x - start.x);
 
+  // Panah relasi
   if (state.showArrow && state.arrowLength > 0 && !state.dimmed) {
     const len = state.preserveDetail
       ? state.arrowLength / Math.max(0.05, state.zoom)
@@ -154,19 +147,50 @@ export function drawLink(
     ctx.closePath();
     ctx.fill();
   }
+
+  // ============= LINK DYNAMIC GLOW (FLOW PARTICLES) =============
   if (state.particles > 0 && !state.dimmed) {
     ctx.setLineDash([]);
-    ctx.fillStyle = dim(state.particleColor, state.opacity);
+    const baseRadius = state.preserveDetail
+      ? state.particleWidth / Math.max(0.05, state.zoom) / 2
+      : state.particleWidth / 2;
+    const particleRadius = Math.max(0.85, baseRadius);
+
     for (let index = 0; index < state.particles; index += 1) {
       const t = (state.particleProgress + index / state.particles) % 1;
       const point = pointAt(t);
+
+      // 1. Comet Tail (Ekor energi di belakang partikel)
+      const tailCount = 3;
+      for (let s = 1; s <= tailCount; s++) {
+        const trailT = (t - s * 0.02 + 1) % 1;
+        const trailPoint = pointAt(trailT);
+        const trailAlpha = (1 - s / (tailCount + 1)) * 0.35 * state.opacity;
+        ctx.fillStyle = dim(state.particleColor, trailAlpha);
+        ctx.beginPath();
+        ctx.arc(trailPoint.x, trailPoint.y, Math.max(0.5, particleRadius * (1 - s * 0.2)), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 2. Soft Dynamic Glow Halo (Aura radial gradient)
+      const glowOuter = particleRadius * 2.8;
+      const grad = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, glowOuter);
+      grad.addColorStop(0, dim(state.particleColor, 0.95 * state.opacity));
+      grad.addColorStop(0.4, dim(state.particleColor, 0.4 * state.opacity));
+      grad.addColorStop(1, dim(state.particleColor, 0));
+
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      const particleRadius = state.preserveDetail
-        ? state.particleWidth / Math.max(0.05, state.zoom) / 2
-        : state.particleWidth / 2;
-      ctx.arc(point.x, point.y, Math.max(0.75, particleRadius), 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, glowOuter, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Crisp Bright Core
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, particleRadius * 0.65, 0, Math.PI * 2);
       ctx.fill();
     }
   }
+
   ctx.restore();
 }
