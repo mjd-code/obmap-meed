@@ -8,6 +8,7 @@ import {
   resolveLevelColor,
   resolveLevelOpacity,
   uniqueDepths,
+  mergeHierarchyColorConfig,
   type HierarchyColorConfig,
 } from '../model/hierarchyColors';
 
@@ -19,11 +20,13 @@ const cfg = (over: Partial<HierarchyColorConfig> = {}): HierarchyColorConfig => 
 });
 
 describe('presets', () => {
-  it('exposes the five documented palettes', () => {
+  it('exposes the seven documented palettes', () => {
     expect(HIERARCHY_PRESETS.map((p) => p.id)).toEqual([
       'classic',
       'mono-blue',
       'dark-friendly',
+      'neon',
+      'pastel',
       'warm',
       'cool',
     ]);
@@ -133,38 +136,3 @@ describe('mergeHierarchyColorConfig', () => {
     expect(repaired.levelColors).toEqual(defaultHierarchyColorConfig.levelColors);
   });
 });
-
-export function mergeHierarchyColorConfig(
-  raw?: Partial<HierarchyColorConfig> | null
-): HierarchyColorConfig {
-  if (!raw) return { ...defaultHierarchyColorConfig };
-  const validPreset =
-    raw.preset === 'custom' || presetById(raw.preset as HierarchyPresetId)
-      ? raw.preset
-      : defaultHierarchyColorConfig.preset;
-  const validOverflow =
-    raw.overflow === 'gradient' || raw.overflow === 'loop'
-      ? raw.overflow
-      : defaultHierarchyColorConfig.overflow;
-  const validLinkMode =
-    raw.linkColorMode === 'parent' ||
-    raw.linkColorMode === 'child' ||
-    raw.linkColorMode === 'level'
-      ? raw.linkColorMode
-      : defaultHierarchyColorConfig.linkColorMode;
-  const levelColors =
-    Array.isArray(raw.levelColors) && raw.levelColors.length > 0
-      ? raw.levelColors
-      : [...defaultHierarchyColorConfig.levelColors];
-
-  return {
-    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : defaultHierarchyColorConfig.enabled,
-    preset: validPreset,
-    levelColors,
-    overflow: validOverflow,
-    linkColorMode: validLinkMode,
-    levelOpacity: Array.isArray(raw.levelOpacity) && raw.levelOpacity.length > 0
-      ? raw.levelOpacity
-      : [...defaultHierarchyColorConfig.levelOpacity],
-  };
-}
