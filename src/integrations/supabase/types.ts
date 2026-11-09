@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
@@ -103,6 +103,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          data: Json
+          device_id: string | null
+          id: string
+          section: string
+          updated_at: string
+          user_id: string
+          vault_id: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          device_id?: string | null
+          id?: string
+          section: string
+          updated_at?: string
+          user_id: string
+          vault_id?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          device_id?: string | null
+          id?: string
+          section?: string
+          updated_at?: string
+          user_id?: string
+          vault_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_vault_id_fkey"
+            columns: ["vault_id"]
+            isOneToOne: false
+            referencedRelation: "user_vaults"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_vaults: {
         Row: {
@@ -198,7 +242,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          snapshot?: Json
+          snapshot: Json
           user_id: string
           vault_id: string
         }
