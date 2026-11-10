@@ -7,7 +7,7 @@ import { openGraphCanvas } from "@/domains/workspace/commands/graphCanvasCommand
 import { useNodeStore, useVaultStore } from "@/global/stores";
 import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { supabase } from "@/global/api/untypedSupabase";
-import { getVaultManager } from "@/domains/vault/services/VaultManagerSingleton";
+import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import {
   moveNodeAction,
   addNodeAction,

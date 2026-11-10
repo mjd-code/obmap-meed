@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Node } from "@/domains/graph/shared/utils/graph.types";
 import { useNodeStore } from "@/global/stores";
 import { useWorkspaceStore } from "@/domains/workspace/stores/useWorkspaceStore";
-import { useVaultStore } from "@/domains/vault/stores/useVaultStore";
+import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
 import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
 import { NoteService } from "@/domains/vault/services/NoteService";
 import { updateNodeAction, deleteNodeAction } from "@/domains/workspace/actions/workspaceActions";

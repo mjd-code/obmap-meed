@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
-import { useNodeStore } from "@/domains/graph/stores/useNodeStore";
+import { useNodeStore } from "@/domains/graph/shared/stores/useNodeStore";
 import { useUIStore } from "@/global/stores";
 import type { WorkspaceGroup, WorkspaceLeaf } from "../types";
 

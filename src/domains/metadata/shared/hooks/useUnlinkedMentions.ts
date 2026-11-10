@@ -54,7 +54,7 @@ export function useUnlinkedMentions(
         if (!workerRef.current) {
           workerRef.current = new Worker(
             new URL(
-              "../mentions.worker.ts",
+              "../api/mentions.worker.ts",
               import.meta.url,
             ),
             { type: "module" },
