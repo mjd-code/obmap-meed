@@ -1,8 +1,8 @@
 import React from 'react';
-import { MetadataBacklinksView } from './components/MetadataBacklinksView';
-import { MetadataUnlinkedMentions } from './components/MetadataUnlinkedMentions';
-export { MetadataCache } from './shared/api/MetadataCache';
-export { useMetadataCache } from './shared/hooks/useMetadataCache';
+import { MetadataBacklinksView } from '@/domains/metadata/components/MetadataBacklinksView';
+import { MetadataUnlinkedMentions } from '@/domains/metadata/components/MetadataUnlinkedMentions';
+export { MetadataCache } from '@/domains/metadata/shared/api/MetadataCache';
+export { useMetadataCache } from '@/domains/metadata/shared/hooks/useMetadataCache';
 
 export interface MetadataOrchestratorProps {
   currentNoteId?: string;

@@ -1,9 +1,9 @@
 import React from 'react';
-import { SyncAutoSaveIndicator } from './components/SyncAutoSaveIndicator';
-import { SyncStatusIndicator } from './components/SyncStatusIndicator';
-export { SyncCoordinator } from './shared/api/SyncCoordinator';
-export { SyncEngine } from './shared/api/SyncEngine';
-export { useOfflineStore } from './shared/stores/useOfflineStore';
+import { SyncAutoSaveIndicator } from '@/domains/sync/components/SyncAutoSaveIndicator';
+import { SyncStatusIndicator } from '@/domains/sync/components/SyncStatusIndicator';
+export { SyncCoordinator } from '@/domains/sync/shared/api/SyncCoordinator';
+export { SyncEngine } from '@/domains/sync/shared/api/SyncEngine';
+export { useOfflineStore } from '@/domains/sync/shared/stores/useOfflineStore';
 
 /**
  * SyncOrchestrator: Entry point tunggal sinkronisasi data & status offline/cloud

@@ -1,6 +1,6 @@
 import React from 'react';
-import { CollabDocumentSharePopover } from './components/CollabDocumentSharePopover';
-import { CollabBulkPublishModal } from './components/CollabBulkPublishModal';
+import { CollabDocumentSharePopover } from '@/domains/collaboration/components/CollabDocumentSharePopover';
+import { CollabBulkPublishModal } from '@/domains/collaboration/components/CollabBulkPublishModal';
 
 export interface CollaborationOrchestratorProps {
   noteId?: string;

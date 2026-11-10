@@ -1,8 +1,8 @@
 import React from 'react';
-import { SettingsHub } from './components/SettingsHub';
-export { SettingsCommandPalette as CommandPalette } from './components/SettingsCommandPalette';
-export { useThemeStore } from './shared/stores/useThemeStore';
-export { useSchemaStore } from './shared/stores/useSchemaStore';
+import { SettingsHub } from '@/domains/settings/components/SettingsHub';
+export { SettingsCommandPalette as CommandPalette } from '@/domains/settings/components/SettingsCommandPalette';
+export { useThemeStore } from '@/domains/settings/shared/stores/useThemeStore';
+export { useSchemaStore } from '@/domains/settings/shared/stores/useSchemaStore';
 
 /**
  * SettingsOrchestrator: Entry point tunggal pengaturan preferensi, vault, dan skema

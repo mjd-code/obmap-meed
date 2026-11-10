@@ -1,2 +1,2 @@
-export * from "./ErrorBoundary";
-export * from "./PWAInstallPrompt";
+export * from "@/global/components/ErrorBoundary";
+export * from "@/global/components/PWAInstallPrompt";

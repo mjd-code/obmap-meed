@@ -1,7 +1,7 @@
 import React from 'react';
-import { VcsSidebarPanel } from './components/VcsSidebarPanel';
-import { VcsBranchSelector } from './components/VcsBranchSelector';
-export { useVcsStore } from './shared/stores/useVcsStore';
+import { VcsSidebarPanel } from '@/domains/vcs/components/VcsSidebarPanel';
+import { VcsBranchSelector } from '@/domains/vcs/components/VcsBranchSelector';
+export { useVcsStore } from '@/domains/vcs/shared/stores/useVcsStore';
 
 /**
  * VcsOrchestrator: Entry point tunggal version control system & branching

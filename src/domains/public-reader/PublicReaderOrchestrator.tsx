@@ -1,7 +1,7 @@
 import React from 'react';
-import { PublicReaderFileTree } from './components/PublicReaderFileTree';
-import { PublicReaderMarkdownReader } from './components/PublicReaderMarkdownReader';
-import { PublicReaderInteractiveGraph } from './components/PublicReaderInteractiveGraph';
+import { PublicReaderFileTree } from '@/domains/public-reader/components/PublicReaderFileTree';
+import { PublicReaderMarkdownReader } from '@/domains/public-reader/components/PublicReaderMarkdownReader';
+import { PublicReaderInteractiveGraph } from '@/domains/public-reader/components/PublicReaderInteractiveGraph';
 
 export interface PublicReaderOrchestratorProps {
   username?: string;

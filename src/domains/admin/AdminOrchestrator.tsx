@@ -1,9 +1,9 @@
 import React from 'react';
-import { AdminSystemArchitectureTab } from './components/AdminSystemArchitectureTab';
-import { AdminHealthMetricsTab } from './components/AdminHealthMetricsTab';
-import { AdminAuditFeedTab } from './components/AdminAuditFeedTab';
-import { AdminUserManagementTab } from './components/AdminUserManagementTab';
-import { useSuperadminGuard } from './shared/hooks/useSuperadminGuard';
+import { AdminSystemArchitectureTab } from '@/domains/admin/components/AdminSystemArchitectureTab';
+import { AdminHealthMetricsTab } from '@/domains/admin/components/AdminHealthMetricsTab';
+import { AdminAuditFeedTab } from '@/domains/admin/components/AdminAuditFeedTab';
+import { AdminUserManagementTab } from '@/domains/admin/components/AdminUserManagementTab';
+import { useSuperadminGuard } from '@/domains/admin/shared/hooks/useSuperadminGuard';
 
 export interface AdminOrchestratorProps {
   activeTab?: 'architecture' | 'health' | 'audit' | 'users';

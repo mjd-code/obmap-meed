@@ -1,8 +1,8 @@
 /**
  * Global stores & cross-domain state facade
  */
-export * from "./events";
-export * from "./useStatusNoticeStore";
+export * from "@/global/stores/events";
+export * from "@/global/stores/useStatusNoticeStore";
 
 // Re-export domain stores untuk modul yang mengimpor dari @/global/stores
 export { useUIStore } from "@/domains/workspace/shared/stores/useUIStore";
