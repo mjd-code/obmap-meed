@@ -239,13 +239,32 @@ export function GraphInteractionProvider({
 const leafStoreRegistry = new Map<string, StoreApi<GraphInteractionState>>();
 
 /** Creates (and memoises) one store per graph leaf id. */
-export function useLeafGraphInteractionStore(leafId: string) {
-  return useMemo(() => createGraphInteractionStore(), [leafId]);
+export function getOrCreateLeafInteractionStore(
+  leafId: string,
+  initialLayout?: LayoutMode
+): StoreApi<GraphInteractionState> {
+  let store = leafStoreRegistry.get(leafId);
+  if (!store) {
+    store = createGraphInteractionStore(initialLayout);
+    leafStoreRegistry.set(leafId, store);
+  }
+  return store;
+}
+
+export function disposeLeafInteractionStore(leafId: string): void {
+  leafStoreRegistry.delete(leafId);
+}
+
+/** Hook: Memoisasi satu store interaksi per graph leaf id */
+export function useLeafGraphInteractionStore(leafId: string): StoreApi<GraphInteractionState> {
+  return useMemo(() => getOrCreateLeafInteractionStore(leafId), [leafId]);
 }
 
 export function useGraphInteractionStoreApi(): StoreApi<GraphInteractionState> {
   return useContext(GraphInteractionContext) ?? globalGraphInteractionStore;
 }
+
+
 
 export function useGraphInteractionStore(): GraphInteractionState;
 export function useGraphInteractionStore<T>(selector: (state: GraphInteractionState) => T): T;

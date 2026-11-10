@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { IconRibbon, type RibbonTool } from "@/domains/workspace/components/WorkspaceIconRibbon";
 import { SidebarPanel } from "@/domains/workspace/components/WorkspaceSidebarPanel";
 import { useUIStore } from "@/global/stores";
@@ -36,6 +36,9 @@ export function Ribbon() {
   const vaultName = vault?.name ?? null;
   const vaultLocation = vault?.location;
 
+    const lastActionTimestampRef = useRef<number>(0);
+  const ACTION_COOLDOWN_MS = 250;
+
   const handleToolSelect = (tool: RibbonTool) => {
     if (tool === "settings") {
       setActiveTool(activeTool === "settings" ? null : "settings");
@@ -43,9 +46,23 @@ export function Ribbon() {
     }
     setActiveTool(activeTool === tool ? null : tool);
   };
+  const handleOpenGraph = useCallback(() => {
+    const now = Date.now();
+    if (now - lastActionTimestampRef.current < ACTION_COOLDOWN_MS) {
+      return; // Abaikan klik beruntun dalam interval 250ms
+    }
+    lastActionTimestampRef.current = now;
+    openGraphCanvas("graph");
+  }, []);
 
-  const handleOpenGraph = () => openGraphCanvas("graph");
-  const handleOpenMindmap = () => openGraphCanvas("mindmap");
+  const handleOpenMindmap = useCallback(() => {
+    const now = Date.now();
+    if (now - lastActionTimestampRef.current < ACTION_COOLDOWN_MS) {
+      return; // Abaikan klik beruntun dalam interval 250ms
+    }
+    lastActionTimestampRef.current = now;
+    openGraphCanvas("mindmap");
+  }, []);
 
   const [authorizedVaultIds, setAuthorizedVaultIds] = useState<Set<string> | null>(null);
 

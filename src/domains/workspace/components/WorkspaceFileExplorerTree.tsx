@@ -504,16 +504,6 @@ export const FileExplorerTree: React.FC<FileExplorerTreeProps> = ({
             )}
           </div>
         )}
-
-        <BulkPublishModal
-          open={!!publishingFolder}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) setPublishingFolder(null);
-          }}
-          folderNode={publishingFolder}
-          allNodes={nodes}
-          currentVaultId={currentVaultId}
-        />
       </div>
     );
   };
@@ -538,9 +528,19 @@ export const FileExplorerTree: React.FC<FileExplorerTreeProps> = ({
           No files yet. Import or create your first node.
         </div>
       )}
+
+      {/* RENDER MODAL TEPAT SATU KALI DI ROOT LEVEL */}
+      <BulkPublishModal
+        open={!!publishingFolder}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setPublishingFolder(null);
+        }}
+        folderNode={publishingFolder}
+        allNodes={nodes}
+        currentVaultId={currentVaultId}
+      />
     </div>
   );
-};
 
 // Wave 2 Dual Named Export Compatibility
 export { FileExplorerTree as WorkspaceFileExplorerTree };

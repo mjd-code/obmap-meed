@@ -106,17 +106,24 @@ export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
     }
   }, [open, folderNode, allNodes, selectedNodeIds]);
 
-  // Ganti blok useEffect inisialisasi catatan (sekitar baris 74-90):
   useEffect(() => {
     if (open && folderNode) {
-      // Mengumpulkan folder ini beserta seluruh sub-folder dan file di dalamnya
-      const allDescendants = BulkPublishService.collectDescendantsRecursive(
-        folderNode.id,
-        allNodes,
-        true, // sertakan folder induk juga
-      );
-      const initial = BulkPublishService.initializeItems(allDescendants);
+      let targetNodes: (ExplorerNode | any)[] = [];
+
+      if (selectedNodeIds && selectedNodeIds.length > 0) {
+        const selectedSet = new Set(selectedNodeIds);
+        targetNodes = allNodes.filter((n) => selectedSet.has(n.id));
+      } else {
+        targetNodes = BulkPublishService.collectDescendantsRecursive(
+          folderNode.id,
+          allNodes,
+          true
+        );
+      }
+
+      const initial = BulkPublishService.initializeItems(targetNodes);
       setItems(initial);
+      setCheckedIds(new Set(initial.map((i) => i.nodeId)));
       setProgress({
         total: initial.length,
         completed: 0,
@@ -127,7 +134,7 @@ export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
       setIsRunning(false);
       setPublicReaderUrl(null);
     }
-  }, [open, folderNode, allNodes]);
+  }, [open, folderNode, allNodes, selectedNodeIds]);
 
   const hasFailures = useMemo(() => items.some((i) => i.status === "failed"), [items]);
   const hasSuccesses = useMemo(() => items.some((i) => i.status === "success"), [items]);

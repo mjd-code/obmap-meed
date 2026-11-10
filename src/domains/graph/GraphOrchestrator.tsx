@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { GraphCanvas, type GraphCanvasHandle } from "@/domains/graph/components/GraphCanvas";
 import {
   GraphWorkspaceControls,
@@ -33,9 +33,6 @@ export interface GraphOrchestratorProps {
   className?: string;
 }
 
-/**
- * Surface rendering graf yang hidup di dalam konteks provider terisolasi per-leaf tab.
- */
 function GraphSurface({
   leafId,
   view,
@@ -52,12 +49,10 @@ function GraphSurface({
   const selectedNode = useNodeStore((s) => s.selectedNode);
   const setSelectedNode = useNodeStore((s) => s.setSelectedNode);
 
-  // Ambil config dari store lokal leaf, fallback ke global bila belum ter-init
   const localConfig = useLeafGraphConfig((s) => s.config);
   const fallbackConfig = useGraphStore((s) => s.config);
   const graphConfig = localConfig ?? fallbackConfig;
 
-  // Hitung topology & autolinks spesifik untuk konfigurasi leaf ini (anti-crash topology)
   const graphData = useGraphData(graphConfig);
 
   const {
@@ -73,30 +68,47 @@ function GraphSurface({
     setCanvasMode,
   } = useGraphInteractionStore();
 
-  // Sinkronkan canvasMode bila ada request dari view state
+  // Guard: Mencegah siklus update timbal-balik antar-tab
+  const isSyncingRef = useRef<boolean>(false);
+
+  // Ingest mode dari view prop hanya jika berbeda dan tidak sedang dalam sinkronisasi
   useEffect(() => {
     if (view?.canvasMode && view.canvasMode !== canvasMode) {
+      isSyncingRef.current = true;
       setCanvasMode(view.canvasMode);
+      // Lepaskan lock pada microtask berikutnya
+      Promise.resolve().then(() => {
+        isSyncingRef.current = false;
+      });
     }
   }, [view?.canvasMode, canvasMode, setCanvasMode]);
 
-
-
-  // Sinkronkan judul tab & canvasMode pada leaf view workspace tanpa feedback-loop
+  // Sinkronkan judul tab ke WorkspaceStore HANYA untuk leafId spesifik ini (BUKAN getActiveLeaf)
   const currentViewTitle = view?.title;
   const currentViewCanvasMode = view?.canvasMode;
 
   useEffect(() => {
+    if (isSyncingRef.current) return;
+
     const expectedTitle = canvasMode === "mindmap" ? "Mindmap View" : "Graph View";
     if (currentViewTitle !== expectedTitle || currentViewCanvasMode !== canvasMode) {
-      const currentView = useWorkspaceStore.getState().getActiveLeaf()?.view;
-      if (currentView) {
-        useWorkspaceStore.getState().setLeafView(leafId, {
-          ...currentView,
-          title: expectedTitle,
-          canvasMode,
-        });
+      // Ambil view KHUSUS milik leafId ini dari root tree
+      const targetLeaf = useWorkspaceStore.getState().findLeafById(leafId);
+      if (!targetLeaf) return;
+
+      const currentTargetView = targetLeaf.view;
+      if (
+        currentTargetView.title === expectedTitle &&
+        currentTargetView.canvasMode === canvasMode
+      ) {
+        return; // Sudah sama, cegah re-render loop
       }
+
+      useWorkspaceStore.getState().setLeafView(leafId, {
+        ...currentTargetView,
+        title: expectedTitle,
+        canvasMode,
+      });
     }
   }, [canvasMode, leafId, currentViewTitle, currentViewCanvasMode]);
 
@@ -181,10 +193,6 @@ function GraphSurface({
   );
 }
 
-/**
- * GraphOrchestrator - Single Entry Point untuk Domain Graph.
- * Mengisolasi store konfigurasi & interaksi per-tab tanpa membocorkan state ke tab lain.
- */
 export const GraphOrchestrator: React.FC<GraphOrchestratorProps> = ({
   leafId,
   view,

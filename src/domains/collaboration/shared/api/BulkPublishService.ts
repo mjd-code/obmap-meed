@@ -41,12 +41,13 @@ export interface BulkPublishProgress {
 export class BulkPublishService {
   /**
    * Mengumpulkan folder saat ini, seluruh sub-folder, dan seluruh sub-item (file)
-   * secara rekursif berbasis relasi parentId.
+   * secara rekursif berbasis relasi parentId dengan cycle detection & depth limit.
    */
   static collectDescendantsRecursive(
     rootFolderId: string,
     allNodes: (ExplorerNode | Node)[],
-    includeRootFolder = true
+    includeRootFolder = true,
+    maxDepth = 50
   ): (ExplorerNode | Node)[] {
     const results: (ExplorerNode | Node)[] = [];
     const visited = new Set<string>();
@@ -59,9 +60,18 @@ export class BulkPublishService {
       }
     }
 
-    const traverse = (parentId: string) => {
-      const children = allNodes.filter((n) => n.parentId === parentId);
-      // Urutkan: Folder diproses terlebih dahulu agar relasi parent terbentuk sebelum anak
+    // Defensive recursive visitor
+    const traverse = (parentId: string, currentDepth: number) => {
+      if (currentDepth > maxDepth) {
+        console.warn(`[BulkPublishService] Max recursion depth (${maxDepth}) exceeded at parent: ${parentId}`);
+        return;
+      }
+
+      // Filter children & abaikan anomali self-referencing (parentId === child.id)
+      const children = allNodes.filter(
+        (n) => n.parentId === parentId && n.id !== parentId
+      );
+
       const sorted = [...children].sort((a, b) => {
         if (a.type === "folder" && b.type !== "folder") return -1;
         if (a.type !== "folder" && b.type === "folder") return 1;
@@ -73,13 +83,18 @@ export class BulkPublishService {
           visited.add(child.id);
           results.push(child);
           if (child.type === "folder") {
-            traverse(child.id);
+            traverse(child.id, currentDepth + 1);
           }
         }
       }
     };
 
-    traverse(rootFolderId);
+    try {
+      traverse(rootFolderId, 1);
+    } catch (err) {
+      console.error("[BulkPublishService] Traversal failure:", err);
+    }
+
     return results;
   }
 
@@ -97,6 +112,8 @@ export class BulkPublishService {
       status: "idle",
     }));
   }
+
+  
 
   /**
    * Menerbitkan satu item (baik folder maupun catatan):
