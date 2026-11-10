@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "domains_count": 12,
+  "domains": [
+    {
+      "name": "admin",
+      "path": "src/domains/admin",
+      "orchestrator": "AdminOrchestrator.tsx",
+      "responsibility": "Administrasi sistem, analitik penggunaan, log audit, dan manajemen pengguna multi-tenant.",
+      "stores": [],
+      "dependencies": ["auth", "workspace"],
+      "stability": "STABLE"
+    },
+    {
+      "name": "auth",
+      "path": "src/domains/auth",
+      "orchestrator": "AuthOrchestrator.tsx",
+      "responsibility": "Autentikasi Supabase, proteksi rute, manajemen sesi, profil, dan token anonim.",
+      "stores": [],
+      "dependencies": [],
+      "stability": "CORE"
+    },
+    {
+      "name": "collaboration",
+      "path": "src/domains/collaboration",
+      "orchestrator": "CollaborationOrchestrator.tsx",
+      "responsibility": "Publikasi web instan, kontrol akses bertingkat, bulk publishing, dan presence.",
+      "stores": [],
+      "dependencies": ["vault", "workspace", "auth"],
+      "stability": "STABLE"
+    },
+    {
+      "name": "editor",
+      "path": "src/domains/editor",
+      "orchestrator": "EditorOrchestrator.tsx",
+      "responsibility": "Editor teks CodeMirror 6, live preview, syntax highlighting, properties panel, slash commands.",
+      "stores": ["useEditorSettingsStore.ts"],
+      "dependencies": ["metadata", "workspace"],
+      "stability": "CORE"
+    },
+    {
+      "name": "graph",
+      "path": "src/domains/graph",
+      "orchestrator": "GraphOrchestrator.tsx",
+      "responsibility": "Visual engine 2D/3D (XMind + Force), pemecah layout pohon/timeline, atmosphere, styling warna.",
+      "stores": [
+        "useExplorerGraphSyncStore.ts",
+        "useGraphEngineStore.ts",
+        "useGraphTemplatesStore.ts",
+        "useGraphToolbarStore.ts",
+        "useLeafGraphConfigStore.ts",
+        "useGraphStore.ts",
+        "useNodeStore.ts",
+        "useGraphInteractionStore.ts"
+      ],
+      "dependencies": ["vault", "workspace"],
+      "stability": "CORE"
+    },
+    {
+      "name": "metadata",
+      "path": "src/domains/metadata",
+      "orchestrator": "MetadataOrchestrator.tsx",
+      "responsibility": "Ekstraksi wikilinks, indexing unlinked mentions via Aho-Corasick worker, tag graph.",
+      "stores": [],
+      "dependencies": ["vault"],
+      "stability": "STABLE"
+    },
+    {
+      "name": "public-reader",
+      "path": "src/domains/public-reader",
+      "orchestrator": "PublicReaderOrchestrator.tsx",
+      "responsibility": "Portal baca publik anonim (/p/:user/:vault/:slug) berkinerja tinggi tanpa login.",
+      "stores": [],
+      "dependencies": ["graph", "collaboration"],
+      "stability": "STABLE"
+    },
+    {
+      "name": "settings",
+      "path": "src/domains/settings",
+      "orchestrator": "SettingsOrchestrator.tsx",
+      "responsibility": "Preferensi pengguna, tema gelap kosmik, sinkronisasi cloud config, dan skema.",
+      "stores": ["CloudConfigStore.ts", "LocalConfigStore.ts", "useSchemaStore.ts", "useThemeStore.ts"],
+      "dependencies": ["auth"],
+      "stability": "STABLE"
+    },
+    {
+      "name": "sync",
+      "path": "src/domains/sync",
+      "orchestrator": "SyncOrchestrator.tsx",
+      "responsibility": "Sinkronisasi offline, penanganan antrean mutasi IndexedDB, dan rekonsiliasi remote.",
+      "stores": ["useOfflineStore.ts"],
+      "dependencies": ["vault"],
+      "stability": "STABLE"
+    },
+    {
+      "name": "vault",
+      "path": "src/domains/vault",
+      "orchestrator": "VaultOrchestrator.tsx",
+      "responsibility": "Driver penyimpanan berkas (FS API, IndexedDB, Supabase), impor/ekspor akumulatif, backup.",
+      "stores": ["useBackupConfigStore.ts", "useVaultStore.ts"],
+      "dependencies": ["auth"],
+      "stability": "CORE"
+    },
+    {
+      "name": "vcs",
+      "path": "src/domains/vcs",
+      "orchestrator": "VcsOrchestrator.tsx",
+      "responsibility": "Sistem kontrol versi internal (mikro-revisi, stashing, branching, 3-way conflict resolver).",
+      "stores": ["useVcsStore.ts"],
+      "dependencies": ["vault"],
+      "stability": "STABLE"
+    },
+    {
+      "name": "workspace",
+      "path": "src/domains/workspace",
+      "orchestrator": "WorkspaceOrchestrator.tsx",
+      "responsibility": "Manajemen tata letak VS Code-style (tabs, split panes, ribbons, sidebars, context menus).",
+      "stores": ["useUIStore.ts", "useWorkspaceStore.ts"],
+      "dependencies": [],
+      "stability": "CORE"
+    }
+  ]
+}

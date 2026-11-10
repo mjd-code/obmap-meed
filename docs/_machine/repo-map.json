@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "root_mappings": {
+    "src/domains": {
+      "purpose": "Domain-Driven Design boundaries (12 decoupled feature domains)",
+      "pattern": "<Domain>Orchestrator.tsx, components/, shared/{api,hooks,stores,utils}"
+    },
+    "src/global": {
+      "purpose": "Shared horizontal primitives, UI design tokens, global stores, Supabase client",
+      "subpaths": {
+        "api": "Untyped/typed Supabase instances & event bus",
+        "components": "App-level layouts and dialogs",
+        "hooks": "Cross-cutting lifecycle & UI hooks",
+        "stores": "DomainEvents, useStatusNoticeStore",
+        "types": "Common domain-agnostic interfaces",
+        "ui": "Radix UI + Tailwind design system components (shadcn)",
+        "utils": "Formatting, math, and styling helpers"
+      }
+    },
+    "supabase/migrations": {
+      "purpose": "Source of truth for database schema, RLS policies, and triggers"
+    },
+    "docs": {
+      "purpose": "Enterprise-grade documentation system (Human, Robot, AI friendly)"
+    },
+    "_machine": {
+      "purpose": "Structured JSON metadata catalogs for AI agents and code generators"
+    }
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "generated_at": "2026-11-10",
+  "documents_count": 35,
+  "documents": [
+    {
+      "id": "DOC-META-000",
+      "path": "docs/README.md",
+      "title": "Portal Dokumentasi ObMap",
+      "category": "meta",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-META-001",
+      "path": "docs/00-meta/doc-conventions.md",
+      "title": "Konvensi Dokumentasi & Penulisan",
+      "category": "meta",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-META-002",
+      "path": "docs/00-meta/glossary.md",
+      "title": "Glosarium Istilah Sistem",
+      "category": "meta",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-META-003",
+      "path": "docs/00-meta/status-legend.md",
+      "title": "Legenda Taksonomi Status Fitur",
+      "category": "meta",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-META-004",
+      "path": "docs/00-meta/changelog.md",
+      "title": "Catatan Perubahan Dokumentasi & Arsitektur",
+      "category": "meta",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-VIS-001",
+      "path": "docs/01-vision/vision-mission.md",
+      "title": "Visi, Misi, dan Pernyataan Nilai Inti",
+      "category": "vision",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-VIS-002",
+      "path": "docs/01-vision/product-philosophy.md",
+      "title": "Filosofi Produk: 5 Pilar Desain Sistem",
+      "category": "vision",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-VIS-003",
+      "path": "docs/01-vision/positioning.md",
+      "title": "Analisis Posisi Kompetitif Produk",
+      "category": "vision",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-VIS-004",
+      "path": "docs/01-vision/use-case-pillars.md",
+      "title": "Empat Pilar Kasus Penggunaan Utama",
+      "category": "vision",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PLAN-001",
+      "path": "docs/02-planning/prd.md",
+      "title": "Product Requirement Document (PRD)",
+      "category": "planning",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PLAN-002",
+      "path": "docs/02-planning/brd.md",
+      "title": "Business Requirement Document (BRD)",
+      "category": "planning",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PLAN-003",
+      "path": "docs/02-planning/srs.md",
+      "title": "Software Requirements Specification (SRS)",
+      "category": "planning",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PLAN-004",
+      "path": "docs/02-planning/sow.md",
+      "title": "Statement of Work (SoW)",
+      "category": "planning",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PLAN-005",
+      "path": "docs/02-planning/personas.md",
+      "title": "Arketipe Persona Pengguna",
+      "category": "planning",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PLAN-006",
+      "path": "docs/02-planning/roadmap.md",
+      "title": "Peta Jalan Produk & Rilis Rinci",
+      "category": "planning",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PLAN-007",
+      "path": "docs/02-planning/traceability-matrix.md",
+      "title": "Matriks Keterlacakan Kebutuhan & Fitur",
+      "category": "planning",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ARCH-001",
+      "path": "docs/03-architecture/system-overview.md",
+      "title": "Ikhtisar Arsitektur Sistem (C4 Model)",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ARCH-002",
+      "path": "docs/03-architecture/repository-structure.md",
+      "title": "Struktur Repositori & Anotasi Direktori",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ARCH-003",
+      "path": "docs/03-architecture/domain-map.md",
+      "title": "Peta Domain Sistem (DDD)",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ARCH-004",
+      "path": "docs/03-architecture/data-and-storage.md",
+      "title": "Strategi Data, Storage & Keamanan Supabase",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ARCH-005",
+      "path": "docs/03-architecture/layout-engine.md",
+      "title": "Mesin Tata Letak Graf & Mindmap",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ARCH-006",
+      "path": "docs/03-architecture/collaboration-and-publishing.md",
+      "title": "Arsitektur Kolaborasi & Publikasi Web",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ADR-000",
+      "path": "docs/03-architecture/adr/README.md",
+      "title": "Indeks Catatan Keputusan Arsitektur (ADR)",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "ADR-0001",
+      "path": "docs/03-architecture/adr/ADR-0001-multi-storage-strategy.md",
+      "title": "Driver Multi-Penyimpanan Per-Vault Terisolasi",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "ADR-0002",
+      "path": "docs/03-architecture/adr/ADR-0002-deterministic-layout-solvers.md",
+      "title": "Pemisahan Solver Deterministik dari D3 Simulation",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "ADR-0003",
+      "path": "docs/03-architecture/adr/ADR-0003-domain-driven-restructuring.md",
+      "title": "Restrukturisasi Arsitektur ke Domain-Driven Design",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "ADR-0004",
+      "path": "docs/03-architecture/adr/ADR-0004-internal-vcs-engine.md",
+      "title": "Sistem Kontrol Versi Internal Berbasis Mikro-Revisi",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "ADR-0005",
+      "path": "docs/03-architecture/adr/ADR-0005-web-worker-metadata-indexing.md",
+      "title": "Ekstraksi Mention Asinkron Menggunakan Web Worker",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-FEAT-001",
+      "path": "docs/04-features/feature-catalog.md",
+      "title": "Katalog Master Fitur Sistem",
+      "category": "features",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ENG-001",
+      "path": "docs/05-engineering/repository-rules.md",
+      "title": "Aturan Repositori & Standar Arsitektur",
+      "category": "engineering",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ENG-002",
+      "path": "docs/05-engineering/testing-strategy.md",
+      "title": "Strategi Pengujian & Kualitas Perangkat Lunak",
+      "category": "engineering",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ENG-003",
+      "path": "docs/05-engineering/tech-debt-register.md",
+      "title": "Register Hutang Teknis Sistem (TD-001 - TD-006)",
+      "category": "engineering",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ENG-004",
+      "path": "docs/05-engineering/doc-drift-log.md",
+      "title": "Catatan Deviasi Dokumentasi vs Kode Aktual",
+      "category": "engineering",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-LMS-001",
+      "path": "docs/06-lms/lms-vision.md",
+      "title": "Cetak Biru Platform LMS Interaktif",
+      "category": "lms",
+      "status": "IMPLEMENTED"
+    }
+  ]
+}

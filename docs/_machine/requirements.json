@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "functional_requirements": [
+    {
+      "id": "FR-VAULT-001",
+      "domain": "vault",
+      "title": "Per-Vault Multi-Storage Isolation",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/vault/shared/api/VaultManager.ts",
+      "test_method": "Unit test & IndexedDB storage verification"
+    },
+    {
+      "id": "FR-VAULT-002",
+      "domain": "vault",
+      "title": "Auto-Save Engine & UI Notice",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/vault/shared/hooks/useVaultLifecycle.ts",
+      "test_method": "Simulated mutation trigger & status indicator assert"
+    },
+    {
+      "id": "FR-VAULT-003",
+      "domain": "vault",
+      "title": "Accumulative Import Strategies (Merge/Overwrite/Skip/Rename)",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/vault/shared/api/ImportExportService.ts",
+      "test_method": "Import duplicate conflict simulator"
+    },
+    {
+      "id": "FR-EDIT-001",
+      "domain": "editor",
+      "title": "CodeMirror 6 Live Preview & Markdown Extensions",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/editor/shared/utils/cmSetup.ts",
+      "test_method": "Syntax highlighting & Wikilink regex validation"
+    },
+    {
+      "id": "FR-EDIT-002",
+      "domain": "editor",
+      "title": "Isolated YAML Frontmatter Properties Editor",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/editor/components/EditorPropertiesPanel.tsx",
+      "test_method": "YAML parsing without body leakage"
+    },
+    {
+      "id": "FR-GRAPH-001",
+      "domain": "graph",
+      "title": "Multi-Model Layout Solver (Mindmap, Org, Timeline, Fishbone, Radial)",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/graph/shared/utils/layoutAlgorithms.ts",
+      "test_method": "Deterministic coordinates & node collision check"
+    },
+    {
+      "id": "FR-GRAPH-002",
+      "domain": "graph",
+      "title": "Living Canvas Atmosphere & Hierarchy Depth Color Engine",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/graph/components/GraphAtmosphereControls.tsx",
+      "test_method": "Visual render smoke test & palette generator unit test"
+    },
+    {
+      "id": "FR-GRAPH-003",
+      "domain": "graph",
+      "title": "Subtree-Specific Layout Override",
+      "status": "PARTIAL",
+      "source": "src/domains/graph/shared/utils/subtreeCompose.ts",
+      "test_method": "Mixed layout coordinate continuity"
+    },
+    {
+      "id": "FR-META-001",
+      "domain": "metadata",
+      "title": "Aho-Corasick High Performance Mention Indexing",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/metadata/shared/api/mentions.worker.ts",
+      "test_method": "Worker message response time under 1000 notes"
+    },
+    {
+      "id": "FR-PUB-001",
+      "domain": "collaboration",
+      "title": "Instant Public Web Note & Graph Publishing",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/collaboration/shared/api/PublishingService.ts",
+      "test_method": "HTTP GET /p/:user/:vault/:slug renders successfully"
+    },
+    {
+      "id": "FR-PUB-002",
+      "domain": "collaboration",
+      "title": "Hierarchical Inherited Permissions Engine",
+      "status": "PARTIAL",
+      "source": "supabase/migrations/20261001000000_storage_and_permissions.sql",
+      "test_method": "PostgreSQL RLS policy execution assertions"
+    },
+    {
+      "id": "FR-PUB-003",
+      "domain": "collaboration",
+      "title": "Yjs/CRDT Real-Time Collaborative Canvas",
+      "status": "PLANNED",
+      "source": "docs/02-planning/roadmap.md",
+      "test_method": "WebRTC / WebSocket multi-client synchronization"
+    },
+    {
+      "id": "FR-VCS-001",
+      "domain": "vcs",
+      "title": "Internal VCS Micro-Revisions, Stashes, & 3-Way Merge",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/vcs/shared/stores/useVcsStore.ts",
+      "test_method": "Branch checkout, diff generation, merge conflict detection"
+    },
+    {
+      "id": "FR-SYNC-001",
+      "domain": "sync",
+      "title": "Offline IndexedDB Mutation Queue & Auto-Reconnection",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/sync/shared/stores/useOfflineStore.ts",
+      "test_method": "Offline network toggle mutation playback"
+    },
+    {
+      "id": "FR-LMS-001",
+      "domain": "workspace",
+      "title": "Interactive Curriculum Tree with Mastery Checkpoints",
+      "status": "VISION",
+      "source": "docs/06-lms/lms-vision.md",
+      "test_method": "Interactive node completion status tracking"
+    },
+    {
+      "id": "FR-WS-001",
+      "domain": "workspace",
+      "title": "VS Code/Obsidian-Style Leaf Docking & Split Panes",
+      "status": "IMPLEMENTED",
+      "source": "src/domains/workspace/shared/stores/useWorkspaceStore.ts",
+      "test_method": "Leaf lifecycle and tab drag-split layout tests"
+    }
+  ],
+  "non_functional_requirements": [
+    {
+      "id": "NFR-001",
+      "category": "Performance",
+      "title": "Graph Rendering 60 FPS up to 1,000 nodes",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "NFR-002",
+      "category": "Reliability",
+      "title": "Local-First Zero Data Loss Guarantee",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "NFR-003",
+      "category": "Security",
+      "title": "Strict Tenant Data Isolation via Supabase RLS",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "NFR-004",
+      "category": "Scalability",
+      "title": "Web Worker Offloaded Indexing",
+      "status": "IMPLEMENTED"
+    }
+  ]
+}

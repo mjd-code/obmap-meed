@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "updated_at": "2026-11-10",
+  "total_features": 16,
+  "features": [
+    {
+      "id": "FEAT-VAULT-001",
+      "name": "Multi-Strategy Storage & Isolation",
+      "domain": "vault",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/vault/shared/api/VaultManager.ts",
+      "persona": ["PER-01", "PER-03", "PER-04"],
+      "requirements": ["FR-VAULT-001"],
+      "tests": ["src/domains/vault/shared/api/__tests__/VaultManager.test.ts"]
+    },
+    {
+      "id": "FEAT-VAULT-002",
+      "name": "Auto-Save Engine & Indicator",
+      "domain": "vault",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/vault/shared/hooks/useVaultLifecycle.ts",
+      "persona": ["PER-01", "PER-04"],
+      "requirements": ["FR-VAULT-002"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-VAULT-003",
+      "name": "Accumulative Import & Duplicate Resolution",
+      "domain": "vault",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/vault/shared/api/ImportExportService.ts",
+      "persona": ["PER-01", "PER-03"],
+      "requirements": ["FR-VAULT-003"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-EDITOR-001",
+      "name": "CodeMirror 6 Live Preview & Markdown Extensions",
+      "domain": "editor",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/editor/shared/utils/cmSetup.ts",
+      "persona": ["PER-01", "PER-02", "PER-05"],
+      "requirements": ["FR-EDIT-001"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-EDITOR-002",
+      "name": "Collapsible Properties & YAML Frontmatter Isolation",
+      "domain": "editor",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/editor/components/EditorPropertiesPanel.tsx",
+      "persona": ["PER-01", "PER-02"],
+      "requirements": ["FR-EDIT-002"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-GRAPH-001",
+      "name": "Multi-Model Layout Solver & Canvas",
+      "domain": "graph",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/graph/shared/utils/layoutAlgorithms.ts",
+      "persona": ["PER-01", "PER-02", "PER-03"],
+      "requirements": ["FR-GRAPH-001"],
+      "tests": ["src/domains/graph/shared/utils/__tests__/layoutAlgorithms.test.ts"]
+    },
+    {
+      "id": "FEAT-GRAPH-002",
+      "name": "Hierarchy & Atmosphere Visual Engine",
+      "domain": "graph",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/graph/components/GraphAtmosphereControls.tsx",
+      "persona": ["PER-01", "PER-03"],
+      "requirements": ["FR-GRAPH-002"],
+      "tests": ["src/domains/graph/shared/utils/__tests__/hierarchyColors.test.ts"]
+    },
+    {
+      "id": "FEAT-GRAPH-003",
+      "name": "Subtree Structure Override & Dynamic Relayout",
+      "domain": "graph",
+      "status": "PARTIAL",
+      "source_of_truth": "src/domains/graph/shared/utils/subtreeCompose.ts",
+      "persona": ["PER-01", "PER-02"],
+      "requirements": ["FR-GRAPH-003"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-META-001",
+      "name": "Aho-Corasick Web Worker Wikilink & Mention Indexing",
+      "domain": "metadata",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/metadata/shared/api/mentions.worker.ts",
+      "persona": ["PER-01", "PER-05"],
+      "requirements": ["FR-META-001"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-COLLAB-001",
+      "name": "Instant Web Publishing & Public URL Slug",
+      "domain": "collaboration",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/collaboration/shared/api/PublishingService.ts",
+      "persona": ["PER-03", "PER-05"],
+      "requirements": ["FR-PUB-001"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-COLLAB-002",
+      "name": "Inherited Hierarchical Permissions & RLS",
+      "domain": "collaboration",
+      "status": "PARTIAL",
+      "source_of_truth": "supabase/migrations/20261001000000_storage_and_permissions.sql",
+      "persona": ["PER-04", "PER-06"],
+      "requirements": ["FR-PUB-002"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-COLLAB-003",
+      "name": "CRDT Real-Time Collaborative Canvas & Note Editing",
+      "domain": "collaboration",
+      "status": "PLANNED",
+      "source_of_truth": "docs/02-planning/roadmap.md",
+      "persona": ["PER-04"],
+      "requirements": ["FR-PUB-003"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-VCS-001",
+      "name": "Git-Like Micro-Revisions, Stash & 3-Way Merge",
+      "domain": "vcs",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/vcs/shared/stores/useVcsStore.ts",
+      "persona": ["PER-01", "PER-04"],
+      "requirements": ["FR-VCS-001"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-SYNC-001",
+      "name": "Offline IndexedDB Sync Queue & Conflict Resolver",
+      "domain": "sync",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/sync/shared/stores/useOfflineStore.ts",
+      "persona": ["PER-01", "PER-04"],
+      "requirements": ["FR-SYNC-001"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-LMS-001",
+      "name": "Interactive Knowledge Graph Curriculum & Progress Tracker",
+      "domain": "workspace",
+      "status": "VISION",
+      "source_of_truth": "docs/06-lms/lms-vision.md",
+      "persona": ["PER-02"],
+      "requirements": ["FR-LMS-001"],
+      "tests": []
+    },
+    {
+      "id": "FEAT-WORKSPACE-001",
+      "name": "Multi-Leaf Flexible Docking System & Dynamic Ribbons",
+      "domain": "workspace",
+      "status": "IMPLEMENTED",
+      "source_of_truth": "src/domains/workspace/shared/stores/useWorkspaceStore.ts",
+      "persona": ["PER-01", "PER-02", "PER-03", "PER-04", "PER-05"],
+      "requirements": ["FR-WS-001"],
+      "tests": []
+    }
+  ]
+}
