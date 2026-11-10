@@ -3,22 +3,22 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/domains/auth/hooks/useAuth";
-import { ProfileService } from "../services/ProfileService";
-import { AvatarUpload } from "./AvatarUpload";
-import { ApiKeyManager } from "./ApiKeyManager";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Switch } from "@/shared/ui/switch";
+import { ProfileService } from "@/domains/settings/profile/services/ProfileService";
+import { AvatarUpload } from "@/domains/settings/profile/components/AvatarUpload";
+import { ApiKeyManager } from "@/domains/settings/profile/components/ApiKeyManager";
+import { Button } from "@/global/ui/button";
+import { Input } from "@/global/ui/input";
+import { Label } from "@/global/ui/label";
+import { Textarea } from "@/global/ui/textarea";
+import { Switch } from "@/global/ui/switch";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/shared/ui/card";
-import { Separator } from "@/shared/ui/separator";
+} from "@/global/ui/card";
+import { Separator } from "@/global/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
+} from "@/global/ui/alert-dialog";
 import { Loader2, Save, Trash2, Lock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 

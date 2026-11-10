@@ -5,16 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/shared/ui/dialog';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Badge } from '@/shared/ui/badge';
+} from '@/global/ui/dialog';
+import { Button } from '@/global/ui/button';
+import { Input } from '@/global/ui/input';
+import { Badge } from '@/global/ui/badge';
 import { GitCommit, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { VcsCloudService } from '../services/VcsCloudService';
-import { VcsMicroRevisionService } from '../services/VcsMicroRevisionService';
-import { VcsSyncQueueService } from '../services/VcsSyncQueueService';
-import { useVcsStore } from '../stores/useVcsStore';
+import { VcsCloudService } from '@/domains/vcs/services/VcsCloudService';
+import { VcsMicroRevisionService } from '@/domains/vcs/services/VcsMicroRevisionService';
+import { VcsSyncQueueService } from '@/domains/vcs/services/VcsSyncQueueService';
+import { useVcsStore } from '@/domains/vcs/stores/useVcsStore';
 
 interface VcsQuickCommitModalProps {
   open: boolean;

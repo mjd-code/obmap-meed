@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Button } from '@/shared/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
+import { Button } from '@/global/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/global/ui/tooltip';
 import { GitCommit, History, CloudOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/domains/auth/hooks/useAuth';
-import { useVaultStore } from '@/domains/vault/stores/useVaultStore';
-import { useVcsStore } from '../stores/useVcsStore';
-import { VcsCoPresenceAvatars } from './VcsCoPresenceAvatars';
-import { VcsQuickCommitModal } from './VcsQuickCommitModal';
-import { VcsDocumentHistoryModal } from './VcsDocumentHistoryModal';
+import { useVaultStore } from '@/domains/vault/shared/stores/useVaultStore';
+import { useVcsStore } from '@/domains/vcs/stores/useVcsStore';
+import { VcsCoPresenceAvatars } from '@/domains/vcs/components/VcsCoPresenceAvatars';
+import { VcsQuickCommitModal } from '@/domains/vcs/components/VcsQuickCommitModal';
+import { VcsDocumentHistoryModal } from '@/domains/vcs/components/VcsDocumentHistoryModal';
 
 interface DocumentVcsButtonGroupProps {
   noteId: string;

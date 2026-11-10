@@ -2,8 +2,8 @@
  * Unified Settings Hub — Pusat pengaturan modern dengan navigasi minimalis.
  */
 
-import { ScrollArea } from "@/shared/ui/scroll-area";
-import { EditorSettingsContent } from "@/domains/editor/settings/EditorSettingsPanel";
+import { ScrollArea } from "@/global/ui/scroll-area";
+import { EditorSettingsContent } from "@/domains/editor/components/EditorSettingsPanel";
 import { FeatureTogglesPanel } from "@/domains/settings/FeatureTogglesPanel";
 import { SyncPanel } from "@/domains/settings/SyncPanel";
 import { SchemaSettings } from "@/domains/settings/sections/SchemaSettings";
@@ -13,7 +13,7 @@ import { ConfigurationSettings } from "@/domains/settings/sections/Configuration
 import {
   SETTINGS_SECTIONS,
   type SettingsSectionId,
-} from "./settingsNavigation";
+} from "@/domains/settings/settingsNavigation";
 
 export interface SettingsHubProps {
   active?: SettingsSectionId;

@@ -3,20 +3,20 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from "@/shared/ui/dropdown-menu";
+} from "@/global/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import { Badge } from "@/shared/ui/badge";
+} from "@/global/ui/dialog";
+import { Badge } from "@/global/ui/badge";
 import { NoteRecord } from "@/types/collaboration";
-import { NoteService } from "@/domains/vault/services/NoteService";
-import { useVaultStore } from "@/domains/vault/stores/useVaultStore";
+import { NoteService } from "@/domains/vault/shared/api/NoteService";
+import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
 import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
-import { TwoStageLinterModal } from "./TwoStageLinterModal";
-import { DiffViewer } from "./DiffViewer";
+import { TwoStageLinterModal } from "@/domains/collaboration/components/TwoStageLinterModal";
+import { DiffViewer } from "@/domains/collaboration/components/DiffViewer";
 import {
   Globe,
   Send,

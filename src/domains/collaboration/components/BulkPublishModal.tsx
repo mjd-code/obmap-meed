@@ -7,21 +7,21 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { ScrollArea } from "@/shared/ui/scroll-area";
-import { Progress } from "@/shared/ui/progress";
-import { supabase } from "@/integrations/supabase/client"; // <--- TAMBAHKAN IMPORT INI
+} from "@/global/ui/dialog";
+import { Button } from "@/global/ui/button";
+import { Badge } from "@/global/ui/badge";
+import { ScrollArea } from "@/global/ui/scroll-area";
+import { Progress } from "@/global/ui/progress";
+import { supabase } from "@/global/api/supabaseClient"; // <--- TAMBAHKAN IMPORT INI
 import {
   BulkPublishService,
   type BulkPublishItemState,
   type BulkPublishProgress,
-} from "../services/BulkPublishService";
-import { getPublicNoteUrl } from "../utils/publicUrlHelper";
+} from "@/domains/collaboration/services/BulkPublishService";
+import { getPublicNoteUrl } from "@/domains/collaboration/utils/publicUrlHelper";
 import { useAuth } from "@/domains/auth/hooks/useAuth";
 import { ClaimUsernameModal } from "@/domains/settings/profile/components/ClaimUsernameModal";
-import type { ExplorerNode } from "@/domains/workspace/sidebar/FileExplorerTree";
+import type { ExplorerNode } from "@/domains/workspace/components/WorkspaceFileExplorerTree";
 import {
   Folder,
   FileText,
@@ -42,6 +42,7 @@ export interface BulkPublishModalProps {
   folderNode: ExplorerNode | null;
   allNodes: ExplorerNode[];
   currentVaultId: string | null;
+  selectedNodeIds?: string[];
 }
 
 export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
@@ -50,6 +51,7 @@ export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
   folderNode,
   allNodes,
   currentVaultId,
+   selectedNodeIds,
 }) => {
   const { user } = useAuth();
 
@@ -69,6 +71,40 @@ export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
   const [publicReaderUrl, setPublicReaderUrl] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (open && folderNode) {
+      let targetNodes: (ExplorerNode | any)[] = [];
+
+      if (selectedNodeIds && selectedNodeIds.length > 0) {
+        // Ambil hanya item yang secara eksplisit dipilih
+        const selectedSet = new Set(selectedNodeIds);
+        targetNodes = allNodes.filter((n) => selectedSet.has(n.id));
+      } else {
+        // Rekursif penuh
+        targetNodes = BulkPublishService.collectDescendantsRecursive(
+          folderNode.id,
+          allNodes,
+          true,
+        );
+      }
+
+      const initial = BulkPublishService.initializeItems(targetNodes);
+      setItems(initial);
+      setCheckedIds(new Set(initial.map((i) => i.nodeId)));
+      setProgress({
+        total: initial.length,
+        completed: 0,
+        succeeded: 0,
+        failed: 0,
+        percent: 0,
+      });
+      setIsRunning(false);
+      setPublicReaderUrl(null);
+    }
+  }, [open, folderNode, allNodes, selectedNodeIds]);
 
   // Ganti blok useEffect inisialisasi catatan (sekitar baris 74-90):
   useEffect(() => {
@@ -119,8 +155,9 @@ export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
 
   // Jalankan Publikasi Massal
   const handleStartPublish = async () => {
-    if (!currentVaultId) {
-      toast.error("Vault aktif tidak teridentifikasi.");
+    const activeItems = items.filter((i) => checkedIds.has(i.nodeId));
+    if (activeItems.length === 0) {
+      toast.warning("Pilih minimal satu berkas atau folder untuk dipublikasikan.");
       return;
     }
 

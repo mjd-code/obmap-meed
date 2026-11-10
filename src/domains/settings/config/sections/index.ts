@@ -4,26 +4,26 @@
  * A future feature becomes persistent by adding one more registration here.
  */
 
-import { registerConfigSection } from "../registry";
+import { registerConfigSection } from "@/domains/settings/config/registry";
 import {
   useGraphStore,
   defaultGraphConfig,
   type GraphConfigState,
-} from "@/domains/graph/stores/useGraphStore";
-import { useGraphEngineStore } from "@/domains/graph/stores/useGraphEngineStore";
+} from "@/domains/graph/shared/stores/useGraphStore";
+import { useGraphEngineStore } from "@/domains/graph/shared/stores/useGraphEngineStore";
 import { useThemeStore } from "@/domains/settings/stores/useThemeStore";
-import { useEditorSettingsStore } from "@/domains/editor/stores/useEditorSettingsStore";
-import { useUIStore } from "@/domains/workspace/stores/useUIStore";
-import { useWorkspaceStore } from "@/domains/workspace/stores/useWorkspaceStore";
+import { useEditorSettingsStore } from "@/domains/editor/shared/stores/useEditorSettingsStore";
+import { useUIStore } from "@/domains/workspace/shared/stores/useUIStore";
+import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import { useSchemaStore } from "@/domains/settings/schema/useSchemaStore";
-import { useBackupConfigStore } from "@/domains/vault/stores/useBackupConfigStore";
+import { useBackupConfigStore } from "@/domains/vault/shared/stores/useBackupConfigStore";
 import {
   TOGGLEABLE_FEATURES,
   getFeatureToggles,
   onFeatureTogglesChange,
   setFeatureEnabled,
 } from "@/domains/settings/plugins/feature-toggles";
-import { useGraphTemplatesStore } from "@/domains/graph/stores/useGraphTemplatesStore";
+import { useGraphTemplatesStore } from "@/domains/graph/shared/stores/useGraphTemplatesStore";
 
 let registered = false;
 

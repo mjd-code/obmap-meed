@@ -1,5 +1,2 @@
-import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio";
-
-const AspectRatio = AspectRatioPrimitive.Root;
-
-export { AspectRatio };
+// Re-export bridge Quo Vadis: shared/ui -> global/ui
+export * from '@/global/ui/aspect-ratio';

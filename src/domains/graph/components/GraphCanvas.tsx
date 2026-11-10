@@ -17,32 +17,32 @@ import {
 } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import type { ForceGraphMethods } from 'react-force-graph-2d';
-import type { GraphConfigState } from '@/domains/graph/stores/useGraphStore';
-import { defaultLinkConfig, defaultTopologyConfig } from '@/domains/graph/stores/useGraphStore';
+import type { GraphConfigState } from '@/domains/graph/shared/stores/useGraphStore';
+import { defaultLinkConfig, defaultTopologyConfig } from '@/domains/graph/shared/stores/useGraphStore';
 import type { Link, Node } from '@/shared/stores/types';
-import { useGraphEngineStore } from '@/domains/graph/stores/useGraphEngineStore';
-import { GraphCanvasUtilityDock } from './GraphCanvasUtilityDock';
-import { buildGraphProjection } from '../model/buildGraphProjection';
-import type { NodeMetric, RenderNode, RenderLink } from '../model/graphTypes';
-import { useGraphInteractionStore } from '../model/useGraphInteractionStore';
-import { useLayoutEngine } from '../layout/useLayoutEngine';
-import { ContextualToolbar } from '../interactions/ContextualToolbar';
+import { useGraphEngineStore } from '@/domains/graph/shared/stores/useGraphEngineStore';
+import { GraphCanvasUtilityDock } from '@/domains/graph/components/GraphCanvasUtilityDock';
+import { buildGraphProjection } from '@/domains/graph/shared/utils/buildGraphProjection';
+import type { NodeMetric, RenderNode, RenderLink } from '@/domains/graph/shared/utils/graph.types';
+import { useGraphInteractionStore } from '@/domains/graph/shared/stores/useGraphInteractionStore';
+import { useLayoutEngine } from '@/domains/graph/shared/hooks/useLayoutEngine';
+import { ContextualToolbar } from '@/domains/graph/components/GraphContextualToolbar';
 import {
   LayoutTransitionController,
   prefersReducedMotion,
-} from '../layout/transitionController';
-import { hiddenByCollapse, pathwayOf, subtreeOf } from '../interactions/graphTraversal';
-import { drawNode, paintNodePointerArea } from '../render/drawNode';
-import { drawLink } from '../render/drawLink';
-import { buildTheme } from '../render/theme';
-import { resolveHierarchyLinkPaint, uniqueDepths } from '../model/hierarchyColors';
-import { cardLayout } from '../render/textLayout';
-import { useCanvasGestureBridge } from '../hooks/useCanvasGestureBridge';
-import { useCanvasDragReparent } from '../hooks/useCanvasDragReparent';
-import { useCanvasAtmosphere } from '../hooks/useCanvasAtmosphere';
-import { useExplorerGraphSyncStore } from '@/domains/graph/stores/useExplorerGraphSyncStore';
-import type { CanvasMode, MindmapLayoutMode } from '../model/graphTypes';
-import { usesPhysicsSimulation, isDeterministicLayout } from '../layout/layoutCategory';
+} from '@/domains/graph/shared/utils/transitionController';
+import { hiddenByCollapse, pathwayOf, subtreeOf } from '@/domains/graph/shared/utils/graphTraversal';
+import { drawNode, paintNodePointerArea } from '@/domains/graph/shared/utils/drawNode';
+import { drawLink } from '@/domains/graph/shared/utils/drawLink';
+import { buildTheme } from '@/domains/graph/shared/utils/theme';
+import { resolveHierarchyLinkPaint, uniqueDepths } from '@/domains/graph/shared/utils/hierarchyColors';
+import { cardLayout } from '@/domains/graph/shared/utils/textLayout';
+import { useCanvasGestureBridge } from '@/domains/graph/shared/hooks/useCanvasGestureBridge';
+import { useCanvasDragReparent } from '@/domains/graph/shared/hooks/useCanvasDragReparent';
+import { useCanvasAtmosphere } from '@/domains/graph/shared/hooks/useCanvasAtmosphere';
+import { useExplorerGraphSyncStore } from '@/domains/graph/shared/stores/useExplorerGraphSyncStore';
+import type { CanvasMode, MindmapLayoutMode } from '@/domains/graph/shared/utils/graph.types';
+import { usesPhysicsSimulation, isDeterministicLayout } from '@/domains/graph/shared/utils/layoutCategory';
 
 
 
@@ -629,25 +629,49 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(funct
   // ---- 3. Metrics Calculation ----------------------------------------------
   const metrics = useMemo(() => {
     const map = new Map<string, NodeMetric>();
+    const showLabels = graphConfig.nodes.showLabels;
+    const labelBox = graphConfig.nodes.labelBox;
+
     for (const node of projection.nodes) {
-      if (!graphConfig.nodes.labelBox) {
-        const depthScale = graphConfig.nodes.sizeByDepth
-          ? Math.max(0.45, 1 - node.depth * graphConfig.nodes.depthSizeInterval * 0.08)
-          : 1;
-        const diameter = Math.max(3, graphConfig.nodes.relSize * depthScale) * 2;
-        map.set(node.id, { width: diameter, height: diameter });
-        continue;
-      }
       const label = graphConfig.nodes.labelField === 'id' ? node.id : node.name;
+      const depthScale = graphConfig.nodes.sizeByDepth
+        ? Math.max(0.45, 1 - node.depth * graphConfig.nodes.depthSizeInterval * 0.08)
+        : 1;
+      const diameter = Math.max(3, graphConfig.nodes.relSize * depthScale) * 2;
+
+      // Menggunakan signature cardLayout standar yang sudah kompatibel 100%
       const layout = cardLayout(label, {
         root: node.parentId === null,
         badge: node.childCount > 0,
         fontSize: graphConfig.nodes.labelSize + (node.parentId === null ? 2 : 0),
       });
-      map.set(node.id, { width: layout.width, height: layout.height });
+
+      if (labelBox) {
+        // Mode Bento Box
+        map.set(node.id, { width: layout.width, height: layout.height });
+      } else if (showLabels) {
+        // Mode Unboxed: layout.width sudah mencakup lebar teks + padding + badge
+        map.set(node.id, {
+          width: layout.width,
+          height: Math.max(diameter + 10, layout.height),
+        });
+      } else {
+        // Mode Dot Only
+        map.set(node.id, { width: diameter, height: diameter });
+      }
     }
     return map;
-  }, [projection, graphConfig.nodes]);
+  }, [
+    projection.nodes,
+    graphConfig.nodes.labelBox,
+    graphConfig.nodes.showLabels,
+    graphConfig.nodes.labelField,
+    graphConfig.nodes.labelSize,
+    graphConfig.nodes.relSize,
+    graphConfig.nodes.sizeByDepth,
+    graphConfig.nodes.depthSizeInterval,
+  ]);
+
 
   // ---- 4. Visibility Filter ------------------------------------------------
   

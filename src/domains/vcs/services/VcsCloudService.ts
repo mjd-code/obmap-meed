@@ -3,8 +3,8 @@
  * Menggunakan src/shared/lib/untypedSupabase.ts untuk tabel migrasi VCS baru.
  */
 
-import { supabase } from '@/shared/lib/untypedSupabase';
-import { VcsHashUtil } from '../utils/vcsHash';
+import { supabase } from '@/global/api/untypedSupabase';
+import { VcsHashUtil } from '@/domains/vcs/utils/vcsHash';
 import {
   VcsBranch,
   VcsCommit,
@@ -13,7 +13,7 @@ import {
   VcsScope,
   VcsChangeType,
   VcsItemType,
-} from '../types/vcs';
+} from '@/domains/vcs/types/vcs';
 
 export class VcsCloudService {
   // ============================================================================

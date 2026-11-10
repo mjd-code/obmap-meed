@@ -1,8 +1,8 @@
 /** Mini-map panel content. Overlay state and controls live in GraphBottomOverlays. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ForceGraphMethods } from 'react-force-graph-2d';
-import { colorWithOpacity, resolveColor } from '@/shared/lib/color-utils';
-import type { RenderLink, RenderNode } from '../model/graphTypes';
+import { colorWithOpacity, resolveColor } from '@/global/utils/color-utils';
+import type { RenderLink, RenderNode } from '@/domains/graph/shared/utils/graph.types';
 
 export interface GraphMiniMapProps {
   nodes: RenderNode[];

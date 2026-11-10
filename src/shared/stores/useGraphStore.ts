@@ -6,13 +6,13 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Node, Link } from './types';
-import { mergeAtmosphereConfig, defaultAtmosphereConfig, type AtmosphereConfig } from '@/core/graph/model/atmosphereConfig';
+import type { Node, Link } from '@/shared/stores/types';
+import { mergeAtmosphereConfig, defaultAtmosphereConfig, type AtmosphereConfig } from '@/domains/graph/shared/utils/atmosphereConfig';
 import {
   defaultHierarchyColorConfig,
   mergeHierarchyColorConfig,
   type HierarchyColorConfig,
-} from '@/core/graph/model/hierarchyColors';
+} from '@/domains/graph/shared/utils/hierarchyColors';
 
 export type { HierarchyColorConfig };
 

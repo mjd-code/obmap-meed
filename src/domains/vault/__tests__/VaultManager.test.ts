@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { VaultManager } from '../services/VaultManager';
-import type { GraphNode, GraphLink } from '@/domains/graph/services/RelationshipMapper';
+import { VaultManager } from '@/domains/vault/shared/api/VaultManager';
+import type { GraphNode, GraphLink } from '@/domains/graph/shared/api/RelationshipMapper';
 
 describe('VaultManager Characterization Tests', () => {
   let vaultManager: VaultManager;
@@ -11,12 +11,23 @@ describe('VaultManager Characterization Tests', () => {
 
     // Mock localStorage untuk isolasi test suite
     const localStore = new Map<string, string>();
-    vi.stubGlobal('localStorage', {
+    const mockLocalStorage = {
       getItem: (key: string) => localStore.get(key) ?? null,
       setItem: (key: string, val: string) => localStore.set(key, val),
       removeItem: (key: string) => localStore.delete(key),
       clear: () => localStore.clear(),
-    });
+      length: 0,
+      key: () => null,
+    };
+    if (typeof vi !== 'undefined' && typeof (vi as any).stubGlobal === 'function') {
+      (vi as any).stubGlobal('localStorage', mockLocalStorage);
+    } else {
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: mockLocalStorage,
+        writable: true,
+        configurable: true,
+      });
+    }
 
     vaultManager = new VaultManager();
 

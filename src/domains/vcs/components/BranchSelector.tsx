@@ -6,12 +6,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+} from "@/global/ui/dropdown-menu";
+import { Button } from "@/global/ui/button";
+import { Badge } from "@/global/ui/badge";
 import { GitBranch, Check, Plus, Shield, ShieldAlert, Archive } from "lucide-react";
-import { useVcsStore } from "../stores/useVcsStore";
-import { VcsBranchStashService } from "../services/VcsBranchStashService";
+import { useVcsStore } from "@/domains/vcs/stores/useVcsStore";
+import { VcsBranchStashService } from "@/domains/vcs/services/VcsBranchStashService";
 import { useNodeStore, useVaultStore } from "@/shared/stores";
 import { toast } from "sonner";
 

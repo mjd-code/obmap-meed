@@ -3,8 +3,8 @@
  */
 
 import { useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Button } from "@/global/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/global/ui/tabs";
 import {
   BarChart3,
   Circle,
@@ -13,12 +13,12 @@ import {
   Zap,
   LayoutGrid,
 } from "lucide-react";
-import { LayoutEngineTab } from "@/domains/graph/config-panel/LayoutEngineTab";
-import { NodeStylingTab } from "@/domains/graph/config-panel/NodeStylingTab";
-import { LinkStylingTab } from "@/domains/graph/config-panel/LinkStylingTab";
-import { AnalyticsTab } from "@/domains/graph/config-panel/AnalyticsTab";
-import { useGraphStore } from "@/domains/graph/stores/useGraphStore";
-import { useGraphInteractionStore } from "@/domains/graph/model/useGraphInteractionStore";
+import { LayoutEngineTab } from "@/domains/graph/components/GraphLayoutEngineTab";
+import { NodeStylingTab } from "@/domains/graph/components/GraphNodeStylingTab";
+import { LinkStylingTab } from "@/domains/graph/components/GraphLinkStylingTab";
+import { AnalyticsTab } from "@/domains/graph/components/GraphAnalyticsTab";
+import { useGraphStore } from "@/domains/graph/shared/stores/useGraphStore";
+import { useGraphInteractionStore } from "@/domains/graph/shared/stores/useGraphInteractionStore";
 
 const tabItems = [
   { value: "layout", icon: LayoutGrid, label: "Layout" },

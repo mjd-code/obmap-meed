@@ -72,7 +72,7 @@ class DynamicPreloadRegistry {
         friendlyMessage: 'Menghubungkan bus event sistem & service locator...',
         category: 'system',
         priority: 15,
-        loader: () => import('@/shared/di/container'),
+        loader: () => import('@/global/utils/container'),
       },
       {
         id: 'sys-vault-mgr',
@@ -80,7 +80,7 @@ class DynamicPreloadRegistry {
         friendlyMessage: 'Membuka basis data IndexedDB & memulihkan vault aktif...',
         category: 'system',
         priority: 14,
-        loader: () => import('@/domains/vault/services/VaultManagerSingleton'),
+        loader: () => import('@/domains/vault/shared/api/VaultManagerSingleton'),
         warmup: async (mod: any) => {
           // Pre-warm: Buka IndexedDB dan hydrate data vault langsung ke memori
           const vaultManager = mod.getVaultManager();
@@ -93,7 +93,7 @@ class DynamicPreloadRegistry {
         friendlyMessage: 'Menyiapkan driver persistence & storage bridge...',
         category: 'system',
         priority: 12,
-        loader: () => import('@/domains/vault/persistence/FileSystemServiceSingleton'),
+        loader: () => import('@/domains/vault/shared/api/FileSystemServiceSingleton'),
       },
       {
         id: 'sys-meta',
@@ -105,7 +105,7 @@ class DynamicPreloadRegistry {
         warmup: async (mod: any) => {
           // Pre-warm: Dapatkan node aktif dan jalankan indexing awal di RAM
           try {
-            const { getVaultManager } = await import('@/domains/vault/services/VaultManagerSingleton');
+            const { getVaultManager } = await import('@/domains/vault/shared/api/VaultManagerSingleton');
             const activeVault = getVaultManager().getActiveVault();
             if (activeVault) {
               const nodes = activeVault.graphService.getGraphData().nodes;
@@ -133,21 +133,21 @@ class DynamicPreloadRegistry {
         name: 'Activity Ribbon Navigation',
         friendlyMessage: 'Menyiapkan navigasi samping & bilah aksi...',
         category: 'shell',
-        loader: () => import('@/domains/workspace/components/Ribbon'),
+        loader: () => import('@/domains/workspace/components/WorkspaceRibbon'),
       },
       {
         id: 'shell-sidebar',
         name: 'Vault Explorer & File Tree',
         friendlyMessage: 'Menyiapkan penjelajah hierarki file vault...',
         category: 'shell',
-        loader: () => import('@/domains/workspace/components/SidebarPanel'),
+        loader: () => import('@/domains/workspace/components/WorkspaceSidebarPanel'),
       },
       {
         id: 'shell-statusbar',
         name: 'System Status & Breadcrumbs',
         friendlyMessage: 'Menginisialisasi status bar & diagnostik...',
         category: 'shell',
-        loader: () => import('@/domains/workspace/components/StatusBar'),
+        loader: () => import('@/domains/workspace/components/WorkspaceStatusBar'),
       },
       {
         id: 'shell-palette',
@@ -184,21 +184,21 @@ class DynamicPreloadRegistry {
         name: 'Markdown Note Leaf',
         friendlyMessage: 'Memuat modul tampilan dokumen catatan...',
         category: 'workspace',
-        loader: () => import('@/domains/workspace/views/MarkdownLeaf'),
+        loader: () => import('@/domains/workspace/components/WorkspaceMarkdownLeaf'),
       },
       {
         id: 'ws-leaf-graph',
         name: 'Graph Visualization Leaf',
         friendlyMessage: 'Memuat modul visualisasi graf interaktif...',
         category: 'workspace',
-        loader: () => import('@/domains/workspace/views/GraphLeaf'),
+        loader: () => import('@/domains/workspace/components/WorkspaceGraphLeaf'),
       },
       {
         id: 'ws-leaf-backlinks',
         name: 'Backlinks & Mentions Leaf',
         friendlyMessage: 'Memuat modul penjelajah relasi backlinks...',
         category: 'workspace',
-        loader: () => import('@/domains/workspace/views/BacklinksLeaf'),
+        loader: () => import('@/domains/workspace/components/WorkspaceBacklinksLeaf'),
       },
 
       // --- CODE EDITOR & COMPILERS ---
@@ -208,7 +208,7 @@ class DynamicPreloadRegistry {
         friendlyMessage: 'Mengompilasi parser Markdown & syntax highlighter...',
         category: 'editor',
         priority: 10,
-        loader: () => import('@/domains/editor/cm/setup'),
+        loader: () => import('@/domains/editor/shared/utils/cmSetup'),
         warmup: async () => {
           // Pre-warm: Kompilasi Lezer grammar di V8 JIT engine tanpa mount DOM
           try {
@@ -228,14 +228,14 @@ class DynamicPreloadRegistry {
         name: 'Markdown Live Preview Engine',
         friendlyMessage: 'Menyiapkan render live-preview Markdown...',
         category: 'editor',
-        loader: () => import('@/domains/editor/components/MarkdownView'),
+        loader: () => import('@/domains/editor/components/EditorMarkdownView'),
       },
       {
         id: 'ed-suggest',
         name: 'Wikilink & Tag Autocomplete',
         friendlyMessage: 'Mengindeks kamus autocomplete wikilink & tag...',
         category: 'editor',
-        loader: () => import('@/domains/editor/suggest/suggestions'),
+        loader: () => import('@/domains/editor/shared/utils/suggestions'),
       },
 
       // --- GRAPH & GPU ACCELERATION ---
@@ -273,14 +273,14 @@ class DynamicPreloadRegistry {
         name: 'Hierarchical Layout Engine',
         friendlyMessage: 'Menyiapkan algoritma layout Mindmap & Radial...',
         category: 'graph',
-        loader: () => import('@/domains/graph/layout/useLayoutEngine'),
+        loader: () => import('@/domains/graph/shared/hooks/useLayoutEngine'),
       },
       {
         id: 'graph-projection',
         name: 'Graph Topology & Projection Model',
         friendlyMessage: 'Mengompilasi model proyeksi hierarki & filter...',
         category: 'graph',
-        loader: () => import('@/domains/graph/model/buildGraphProjection'),
+        loader: () => import('@/domains/graph/shared/utils/buildGraphProjection'),
       },
       {
         id: 'graph-controls',

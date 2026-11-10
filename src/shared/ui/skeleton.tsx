@@ -1,7 +1,2 @@
-import { cn } from "@/shared/lib";
-
-function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
-}
-
-export { Skeleton };
+// Re-export bridge Quo Vadis: shared/ui -> global/ui
+export * from '@/global/ui/skeleton';

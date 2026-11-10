@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { ScrollArea } from "@/shared/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/global/ui/tabs";
+import { Button } from "@/global/ui/button";
+import { Badge } from "@/global/ui/badge";
+import { ScrollArea } from "@/global/ui/scroll-area";
 import {
   GitBranch,
   GitCommit,
@@ -16,14 +16,14 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAuth } from "@/domains/auth/hooks/useAuth";
-import { useVaultStore } from "@/domains/vault/stores/useVaultStore";
+import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
 import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
-import { useVcsStore } from "../stores/useVcsStore";
-import { VcsCloudService } from "../services/VcsCloudService";
-import { BranchSelector } from "./BranchSelector";
-import { VcsCreateBranchModal } from "./VcsCreateBranchModal";
-import { VcsCreateMergeRequestModal } from "./VcsCreateMergeRequestModal";
-import { VcsCommit, VcsMergeRequest } from "../types/vcs";
+import { useVcsStore } from "@/domains/vcs/stores/useVcsStore";
+import { VcsCloudService } from "@/domains/vcs/services/VcsCloudService";
+import { BranchSelector } from "@/domains/vcs/components/BranchSelector";
+import { VcsCreateBranchModal } from "@/domains/vcs/components/VcsCreateBranchModal";
+import { VcsCreateMergeRequestModal } from "@/domains/vcs/components/VcsCreateMergeRequestModal";
+import { VcsCommit, VcsMergeRequest } from "@/domains/vcs/types/vcs";
 import { toast } from "sonner";
 
 export const VcsSidebarPanel: React.FC = () => {

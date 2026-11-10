@@ -4,10 +4,10 @@
  */
 
 import { Cloud, CloudOff, HardDrive, FolderPlus } from "lucide-react";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Switch } from "@/shared/ui/switch";
-import type { VaultLocation } from "@/domains/vault/types";
+import { Badge } from "@/global/ui/badge";
+import { Button } from "@/global/ui/button";
+import { Switch } from "@/global/ui/switch";
+import type { VaultLocation } from "@/domains/vault/shared/utils/vault.types";
 
 export function VaultLocationBadge({
   location,

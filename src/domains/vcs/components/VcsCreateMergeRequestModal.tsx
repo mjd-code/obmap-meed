@@ -5,14 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/shared/ui/dialog';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Textarea } from '@/shared/ui/textarea';
+} from '@/global/ui/dialog';
+import { Button } from '@/global/ui/button';
+import { Input } from '@/global/ui/input';
+import { Textarea } from '@/global/ui/textarea';
 import { GitPullRequest, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { VcsCloudService } from '../services/VcsCloudService';
-import { useVcsStore } from '../stores/useVcsStore';
+import { VcsCloudService } from '@/domains/vcs/services/VcsCloudService';
+import { useVcsStore } from '@/domains/vcs/stores/useVcsStore';
 
 interface VcsCreateMergeRequestModalProps {
   open: boolean;

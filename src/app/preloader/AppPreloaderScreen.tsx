@@ -4,10 +4,10 @@ import {
   preloadRegistry, 
   PreloadProgressState, 
   ModuleCategory 
-} from './modulePreloader';
-import { Badge } from '@/shared/ui/badge';
-import { ScrollArea } from '@/shared/ui/scroll-area';
-import { Button } from '@/shared/ui/button';
+} from '@/app/preloader/modulePreloader';
+import { Badge } from '@/global/ui/badge';
+import { ScrollArea } from '@/global/ui/scroll-area';
+import { Button } from '@/global/ui/button';
 import { 
   CheckCircle2, 
   Clock, 

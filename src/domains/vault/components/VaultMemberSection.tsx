@@ -13,19 +13,19 @@ import {
   Search,
   Check,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/global/ui/avatar";
+import { Badge } from "@/global/ui/badge";
+import { Button } from "@/global/ui/button";
+import { Input } from "@/global/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
+} from "@/global/ui/select";
 import { toast } from "sonner";
-import { VaultMemberService, type UserSearchResult } from "../services/VaultMemberService";
+import { VaultMemberService, type UserSearchResult } from "@/domains/vault/shared/api/VaultMemberService";
 import type { VaultMemberRole } from "@/types/collaboration";
 import type { VaultMemberWithProfile } from "@/types/admin";
 

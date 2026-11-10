@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
-import { ScrollArea } from "@/shared/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/global/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/global/ui/tabs";
+import { Button } from "@/global/ui/button";
+import { Badge } from "@/global/ui/badge";
+import { Input } from "@/global/ui/input";
+import { ScrollArea } from "@/global/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/global/ui/tooltip";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
+} from "@/global/ui/dialog";
 import {
   Share2,
   Globe,
@@ -33,12 +33,12 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/shared/lib/untypedSupabase";
+import { supabase } from "@/global/api/untypedSupabase";
 import { useAuth } from "@/domains/auth/hooks/useAuth";
-import { useVaultStore } from "@/domains/vault/stores/useVaultStore";
+import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
 import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
 import { useVcsStore } from "@/domains/vcs/stores/useVcsStore";
-import { NoteService } from "@/domains/vault/services/NoteService";
+import { NoteService } from "@/domains/vault/shared/api/NoteService";
 import { NoteRecord } from "@/types/collaboration";
 import { getPublicNoteUrl } from "@/domains/collaboration/utils/publicUrlHelper";
 import { VcsCoPresenceAvatars } from "@/domains/vcs/components/VcsCoPresenceAvatars";
@@ -46,8 +46,8 @@ import { VcsCloudService } from "@/domains/vcs/services/VcsCloudService";
 import { VcsMicroRevisionService } from "@/domains/vcs/services/VcsMicroRevisionService";
 import { VcsSyncQueueService } from "@/domains/vcs/services/VcsSyncQueueService";
 import { VcsCommit, LocalMicroRevision } from "@/domains/vcs/types/vcs";
-import { TwoStageLinterModal } from "./TwoStageLinterModal";
-import { DiffViewer } from "./DiffViewer";
+import { TwoStageLinterModal } from "@/domains/collaboration/components/TwoStageLinterModal";
+import { DiffViewer } from "@/domains/collaboration/components/DiffViewer";
 import { ClaimUsernameModal } from "@/domains/settings/profile/components/ClaimUsernameModal";
 
 export interface DocumentSharePopoverProps {

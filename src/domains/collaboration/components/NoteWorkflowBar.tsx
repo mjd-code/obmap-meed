@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useVaultStore } from "@/domains/vault/stores/useVaultStore";
-import { NoteService } from "@/domains/vault/services/NoteService";
+import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
+import { NoteService } from "@/domains/vault/shared/api/NoteService";
 import { NoteRecord } from "@/types/collaboration";
-import { EditorWorkflowToolbar } from "./EditorWorkflowToolbar";
+import { EditorWorkflowToolbar } from "@/domains/collaboration/components/EditorWorkflowToolbar";
 
 interface NoteWorkflowBarProps {
   nodeId: string;

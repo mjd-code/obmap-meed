@@ -7,16 +7,16 @@
  */
 
 import React from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { Button } from "@/shared/ui/button";
-import { Slider } from "@/shared/ui/slider";
-import { Switch } from "@/shared/ui/switch";
-import { Label } from "@/shared/ui/label";
-import { Separator } from "@/shared/ui/separator";
-import { Badge } from "@/shared/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
-import type { GraphConfigState } from "@/domains/graph/stores/useGraphStore";
-import type { LayoutMode } from "@/domains/graph/model/graphTypes";
+import { Popover, PopoverContent, PopoverTrigger } from "@/global/ui/popover";
+import { Button } from "@/global/ui/button";
+import { Slider } from "@/global/ui/slider";
+import { Switch } from "@/global/ui/switch";
+import { Label } from "@/global/ui/label";
+import { Separator } from "@/global/ui/separator";
+import { Badge } from "@/global/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/global/ui/tooltip";
+import type { GraphConfigState } from "@/domains/graph/shared/stores/useGraphStore";
+import type { LayoutMode } from "@/domains/graph/shared/utils/graph.types";
 import {
   Settings2,
   RotateCcw,

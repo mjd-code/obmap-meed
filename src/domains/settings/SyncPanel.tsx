@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw, Trash2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/global/ui/button";
 import {
   syncEngine,
   type SyncEngineStatus,
@@ -11,7 +11,7 @@ import {
   clearAllCaches,
   formatBytes,
   getCacheStorageInfo,
-} from "@/domains/vault/persistence/offline-storage";
+} from "@/domains/vault/shared/api/offline-storage";
 import { useOfflineStore } from "@/shared/stores";
 import { toast } from "sonner";
 

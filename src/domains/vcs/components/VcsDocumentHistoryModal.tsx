@@ -4,16 +4,16 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
-import { ScrollArea } from '@/shared/ui/scroll-area';
+} from '@/global/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/global/ui/tabs';
+import { Button } from '@/global/ui/button';
+import { Badge } from '@/global/ui/badge';
+import { ScrollArea } from '@/global/ui/scroll-area';
 import { DiffViewer } from '@/domains/collaboration/components/DiffViewer';
-import { VcsCloudService } from '../services/VcsCloudService';
-import { VcsMicroRevisionService } from '../services/VcsMicroRevisionService';
-import { VcsCommit, LocalMicroRevision } from '../types/vcs';
-import { useVcsStore } from '../stores/useVcsStore';
+import { VcsCloudService } from '@/domains/vcs/services/VcsCloudService';
+import { VcsMicroRevisionService } from '@/domains/vcs/services/VcsMicroRevisionService';
+import { VcsCommit, LocalMicroRevision } from '@/domains/vcs/types/vcs';
+import { useVcsStore } from '@/domains/vcs/stores/useVcsStore';
 import { History, Cloud, HardDrive, RotateCcw, Eye, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 

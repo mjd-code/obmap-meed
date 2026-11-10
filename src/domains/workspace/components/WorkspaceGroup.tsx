@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { cn } from "@/shared/lib";
+import { cn } from "@/global/utils";
 import {
   X,
   Pin,
@@ -15,11 +15,11 @@ import {
   PanelLeft, // <-- TAMBAHKAN INI
 } from "lucide-react";
 import { useUIStore } from "@/shared/stores"; // <-- PASTIKAN DI-IMPORT
-import { Button } from "@/shared/ui/button";
-import { LeafView } from "../registry/ViewRegistry";
-import { useWorkspaceStore } from "../stores/useWorkspaceStore";
-import type { WorkspaceGroup } from "../types";
-import { TabContextMenu } from "./TabContextMenu";
+import { Button } from "@/global/ui/button";
+import { LeafView } from "@/domains/workspace/components/WorkspaceViewRegistry";
+import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
+import type { WorkspaceGroup } from "@/domains/workspace/shared/utils/workspace.types";
+import { TabContextMenu } from "@/domains/workspace/components/WorkspaceTabContextMenu";
 
 type Edge = "left" | "right" | "top" | "bottom" | null;
 

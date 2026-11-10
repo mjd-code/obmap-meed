@@ -5,25 +5,25 @@
  * resolve them through `useService` instead of importing singletons directly.
  */
 
-import { container, ServiceIds } from "@/shared/di/container";
-import { eventBus } from "@/shared/events/events";
-import { pluginRegistry } from "@/core/system/plugins/plugin-registry";
-import { getVaultManager } from "@/core/system/vault/VaultManagerSingleton";
-import { VaultStorage } from "@/core/system/vault/VaultStorage";
-import { vaultSyncService } from "@/core/system/vault/VaultSyncService";
-import { VaultBackupService } from "@/core/system/vault/VaultBackupService";
-import { GraphService } from "@/core/graph/GraphService";
-import { RelationshipMapper } from "@/core/graph/RelationshipMapper";
-import { ContentParser } from "@/core/system/metadata/content-parser";
-import { getFileSystemService } from "@/core/system/persistence/FileSystemServiceSingleton";
-import { importExportService } from "@/core/system/import-export/services/ImportExportService";
-import { apiKeyService } from "@/core/shell/profile/services/ApiKeyService";
-import { supabase } from "@/integrations/supabase/client";
-import { commandRegistry } from "@/core/system/commands/CommandRegistry";
-import { registerEditorCommands } from "@/core/editor/commands/editorCommands";
-import { syncEngine } from "@/core/system/sync/SyncEngine";
-import { syncCoordinator } from "@/core/system/sync/SyncCoordinator";
-import { registerToggleableFeatures } from "@/core/system/plugins/feature-toggles";
+import { container, ServiceIds } from "@/global/utils/container";
+import { eventBus } from "@/global/stores/events";
+import { pluginRegistry } from "@/domains/settings/plugins/plugin-registry";
+import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
+import { VaultStorage } from "@/domains/vault/shared/api/VaultStorage";
+import { vaultSyncService } from "@/domains/vault/shared/api/VaultSyncService";
+import { VaultBackupService } from "@/domains/vault/shared/api/VaultBackupService";
+import { GraphService } from "@/domains/graph/shared/api/GraphService";
+import { RelationshipMapper } from "@/domains/graph/shared/api/RelationshipMapper";
+import { ContentParser } from "@/domains/metadata/content-parser";
+import { getFileSystemService } from "@/domains/vault/shared/api/FileSystemServiceSingleton";
+import { importExportService } from "@/domains/vault/shared/api/ImportExportService";
+import { apiKeyService } from "@/domains/settings/profile/services/ApiKeyService";
+import { supabase } from "@/global/api/supabaseClient";
+import { commandRegistry } from "@/domains/workspace/shared/api/CommandRegistry";
+import { registerEditorCommands } from "@/domains/editor/shared/api/editorCommands";
+import { syncEngine } from "@/domains/sync/SyncEngine";
+import { syncCoordinator } from "@/domains/sync/SyncCoordinator";
+import { registerToggleableFeatures } from "@/domains/settings/plugins/feature-toggles";
 
 let bootstrapped = false;
 

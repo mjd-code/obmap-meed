@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/global/ui/button";
+import { Badge } from "@/global/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
+} from "@/global/ui/dialog";
 import { NoteRecord, NoteStatus } from "@/types/collaboration";
-import { TwoStageLinterModal } from "./TwoStageLinterModal";
-import { DiffViewer } from "./DiffViewer";
-import { NoteService } from "@/domains/vault/services/NoteService";
+import { TwoStageLinterModal } from "@/domains/collaboration/components/TwoStageLinterModal";
+import { DiffViewer } from "@/domains/collaboration/components/DiffViewer";
+import { NoteService } from "@/domains/vault/shared/api/NoteService";
 import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
 import { toast } from "sonner";
 import {

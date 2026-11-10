@@ -6,12 +6,12 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
-import { ScrollArea } from "@/shared/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+} from "@/global/ui/dialog";
+import { Button } from "@/global/ui/button";
+import { Badge } from "@/global/ui/badge";
+import { Input } from "@/global/ui/input";
+import { ScrollArea } from "@/global/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/global/ui/tabs";
 import {
   FolderGit2,
   History,
@@ -23,8 +23,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { VcsCloudService } from "../services/VcsCloudService";
-import type { VcsCommit } from "../types/vcs";
+import { VcsCloudService } from "@/domains/vcs/services/VcsCloudService";
+import type { VcsCommit } from "@/domains/vcs/types/vcs";
 
 interface FolderVcsDialogProps {
   open: boolean;

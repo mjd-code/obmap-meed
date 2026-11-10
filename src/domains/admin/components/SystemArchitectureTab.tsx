@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import type { SystemTelemetryContract } from "@/types/admin";
-import { LivingGraphView } from "./visualizer/LivingGraphView";
-import { BentoTelemetryView } from "./visualizer/BentoTelemetryView";
-import { DiagnosticsTableView } from "./visualizer/DiagnosticsTableView";
-import { Button } from "@/shared/ui/button";
+import { LivingGraphView } from "@/domains/admin/components/visualizer/LivingGraphView";
+import { BentoTelemetryView } from "@/domains/admin/components/visualizer/BentoTelemetryView";
+import { DiagnosticsTableView } from "@/domains/admin/components/visualizer/DiagnosticsTableView";
+import { Button } from "@/global/ui/button";
 import { Network, Sliders, Table as TableIcon } from "lucide-react";
 
 interface Props {
