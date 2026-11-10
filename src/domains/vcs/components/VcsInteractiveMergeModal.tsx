@@ -25,8 +25,8 @@ import {
   GitBranch,
 } from "lucide-react";
 import { toast } from "sonner";
-import { VcsCloudService } from "@/domains/vcs/services/VcsCloudService";
-import type { VcsCommit } from "@/domains/vcs/types/vcs";
+import { VcsCloudService } from "@/domains/vcs/shared/api/VcsCloudService";
+import type { VcsCommit } from "@/domains/vcs/shared/utils/vcs.types";
 
 interface VcsGraphLinkIssue {
   sourcePath: string;

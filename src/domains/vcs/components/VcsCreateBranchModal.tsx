@@ -10,8 +10,8 @@ import { Button } from '@/global/ui/button';
 import { Input } from '@/global/ui/input';
 import { GitBranch, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { VcsCloudService } from '@/domains/vcs/services/VcsCloudService';
-import { useVcsStore } from '@/domains/vcs/stores/useVcsStore';
+import { VcsCloudService } from '@/domains/vcs/shared/api/VcsCloudService';
+import { useVcsStore } from '@/domains/vcs/shared/stores/useVcsStore';
 
 interface VcsCreateBranchModalProps {
   open: boolean;

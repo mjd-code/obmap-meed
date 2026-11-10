@@ -5,7 +5,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
-} from "@/shared/ui/context-menu";
+} from "@/global/ui/context-menu";
 import {
   X,
   ArrowRightToLine,
@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
 import { useNodeStore } from "@/domains/graph/stores/useNodeStore";
-import { useUIStore } from "@/shared/stores";
+import { useUIStore } from "@/global/stores";
 import type { WorkspaceGroup, WorkspaceLeaf } from "../types";
 
 interface TabContextMenuProps {

@@ -3,11 +3,11 @@
  * Hanya me-recompute data graf saat diperlukan oleh tab graf yang sedang aktif.
  */
 import { useMemo, useEffect } from "react";
-import { useNodeStore, useGraphStore, type GraphData } from "@/shared/stores";
-import { useIndexedNodes, useMetadataVersion } from "@/domains/metadata/useMetadataCache";
-import { metadataCache } from "@/domains/metadata/MetadataCache";
+import { useNodeStore, useGraphStore, type GraphData } from "@/global/stores";
+import { useIndexedNodes, useMetadataVersion } from "@/domains/metadata/shared/hooks/useMetadataCache";
+import { metadataCache } from "@/domains/metadata/shared/api/MetadataCache";
 import { useAutoLinks } from "@/domains/graph/shared/hooks/useAutoLinks";
-import { useFeatureEnabled } from "@/domains/settings/plugins/useFeatureEnabled";
+import { useFeatureEnabled } from "@/domains/settings/shared/hooks/useFeatureEnabled";
 import type { GraphConfigState } from "@/domains/graph/shared/stores/useGraphStore";
 
 export function useGraphData(graphConfig: GraphConfigState): GraphData {

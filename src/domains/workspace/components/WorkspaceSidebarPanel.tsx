@@ -25,7 +25,7 @@ import {
   SETTINGS_GROUPS,
   SETTINGS_SECTIONS,
   type SettingsSectionId,
-} from "@/domains/settings/settingsNavigation";
+} from "@/domains/settings/shared/utils/settingsNavigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +34,7 @@ import {
 } from "@/global/ui/dropdown-menu";
 import type { RibbonTool } from "@/domains/workspace/components/WorkspaceIconRibbon";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
-import { useUIStore } from "@/shared/stores";
+import { useUIStore } from "@/global/stores";
 import { useFolderNavigation } from "@/domains/workspace/shared/hooks/useFolderNavigation";
 import { FileExplorerTree } from "@/domains/workspace/components/WorkspaceFileExplorerTree";
 import { VcsSidebarPanel } from "@/domains/vcs/components/VcsSidebarPanel";

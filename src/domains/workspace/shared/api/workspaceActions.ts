@@ -9,8 +9,8 @@ import {
   useVaultStore,
   type Backlink,
   type Node,
-} from "@/shared/stores";
-import { extractMentions } from "@/domains/metadata/markdown-parser";
+} from "@/global/stores";
+import { extractMentions } from "@/domains/metadata/shared/utils/markdown-parser";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import {
@@ -23,14 +23,14 @@ import {
 import {
   enrichNode,
   metadataCache,
-} from "@/domains/metadata/MetadataCache";
+} from "@/domains/metadata/shared/api/MetadataCache";
 import {
   linkMentions,
   renameNode,
 } from "@/domains/vault/shared/api/FileManager";
-import { isFeatureEnabled } from "@/domains/settings/plugins/feature-toggles";
-import { syncEngine } from "@/domains/sync/SyncEngine";
-import { useStatusNoticeStore } from "@/shared/stores/useStatusNoticeStore";
+import { isFeatureEnabled } from "@/domains/settings/shared/utils/featureToggles";
+import { syncEngine } from "@/domains/sync/shared/api/SyncEngine";
+import { useStatusNoticeStore } from "@/global/stores/useStatusNoticeStore";
 import { supabase } from "@/global/api/untypedSupabase";
 
 

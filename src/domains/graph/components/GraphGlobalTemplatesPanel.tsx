@@ -6,7 +6,7 @@ import { Input } from '@/global/ui/input';
 import { Badge } from '@/global/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/global/ui/tooltip';
 import { cn } from '@/global/utils/cn';
-import { useGraphStore } from '@/shared/stores';
+import { useGraphStore } from '@/global/stores';
 import { SectionHeaderWithReset } from '@/global/ui/SectionHeaderWithReset';
 import {
   useGraphTemplatesStore,

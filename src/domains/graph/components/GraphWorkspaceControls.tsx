@@ -24,7 +24,7 @@ import type {
   LayoutMode,
   MindmapOrientation,
 } from "@/domains/graph/shared/utils/graph.types";
-import { useGraphStore } from "@/shared/stores";
+import { useGraphStore } from "@/global/stores";
 import { useGraphInteractionStore } from "@/domains/graph/shared/stores/useGraphInteractionStore";
 import {
   useLeafGraphConfig,

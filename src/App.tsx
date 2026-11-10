@@ -4,11 +4,11 @@ import { TooltipProvider } from "@/global/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/global/components/ErrorBoundary";
-import { AuthProvider } from "@/domains/auth/hooks/useAuth";
-import { ProtectedRoute } from "@/domains/auth/components/ProtectedRoute";
-import { DevAuthBanner } from "@/domains/auth/components/DevAuthBanner";
+import { AuthProvider } from "@/domains/auth/shared/hooks/useAuth";
+import { ProtectedRoute } from "@/domains/auth/components/AuthProtectedRoute";
+import { DevAuthBanner } from "@/domains/auth/components/AuthDevBanner";
 import { EventDebugPanel } from "@/domains/vault/components/VaultEventDebugPanel";
-import { CommandPalette } from "@/domains/settings/command-palette/CommandPalette";
+import { CommandPalette } from "@/domains/settings/components/SettingsCommandPalette";
 import { Suspense, lazy } from "react";
 
 const queryClient = new QueryClient();
@@ -48,7 +48,7 @@ const Install = lazy(() =>
 );
 
 const Auth = lazy(() =>
-  import("@/domains/auth/components/Auth").catch((err) => {
+  import("@/domains/auth/components/AuthView").catch((err) => {
     console.error("Failed to load Auth:", err);
     return {
       default: () => <div className="p-8 text-destructive">Failed to load Auth: {err.message}</div>,

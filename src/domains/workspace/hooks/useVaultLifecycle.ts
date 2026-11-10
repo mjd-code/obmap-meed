@@ -4,11 +4,11 @@
  * serta persistensi layout & config vault aktif.
  */
 import { useCallback, useEffect } from "react";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { getVaultManager } from "@/domains/vault/services/VaultManagerSingleton";
-import { syncCoordinator } from "@/domains/sync/SyncCoordinator";
-import { eventBus, EventType } from "@/shared/events/events";
-import { useNodeStore, useVaultStore, useGraphStore } from "@/shared/stores";
+import { syncCoordinator } from "@/domains/sync/shared/api/SyncCoordinator";
+import { eventBus, EventType } from "@/global/stores/events";
+import { useNodeStore, useVaultStore, useGraphStore } from "@/global/stores";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
 import { refreshUndoRedoState } from "../actions/workspaceActions";
 

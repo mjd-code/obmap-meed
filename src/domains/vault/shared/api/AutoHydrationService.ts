@@ -9,7 +9,7 @@
 
 import { supabase } from "@/global/api/untypedSupabase";
 import { NoteService } from "@/domains/vault/shared/api/NoteService";
-import type { Node as LegacyNode } from "@/shared/stores/types";
+import type { Node as LegacyNode } from "@/domains/graph/shared/utils/graph.types";
 
 export interface HydrationResult {
   vaultId: string;

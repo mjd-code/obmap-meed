@@ -5,7 +5,7 @@
  * data in and hand the result back to the vault's `setGraphData`.
  */
 
-import type { Link, Node } from '@/shared/stores/types';
+import type { Link, Node } from '@/domains/graph/shared/utils/graph.types';
 
 export interface GraphData {
   nodes: Node[];

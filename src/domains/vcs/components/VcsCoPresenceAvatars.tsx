@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/global/api/supabaseClient';
-import { useAuth } from '@/domains/auth/hooks/useAuth';
+import { useAuth } from '@/domains/auth/shared/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/global/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/global/ui/tooltip';
-import { DocumentCoPresenceUser } from '@/domains/vcs/types/vcs';
+import { DocumentCoPresenceUser } from '@/domains/vcs/shared/utils/vcs.types';
 
 interface VcsCoPresenceAvatarsProps {
   vaultId: string;

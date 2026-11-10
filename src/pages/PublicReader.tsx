@@ -4,14 +4,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   PublicReaderService,
   type PublicVaultInfo,
-} from "@/domains/public-reader/services/PublicReaderService";
-import { PublicMarkdownReader } from "@/domains/public-reader/components/PublicMarkdownReader";
-import { PublicInteractiveGraph } from "@/domains/public-reader/components/PublicInteractiveGraph";
-import { PublicFileTree } from "@/domains/public-reader/components/PublicFileTree";
-import { PublicBreadcrumbs } from "@/domains/public-reader/components/PublicBreadcrumbs";
-import { PublicFolderOverview } from "@/domains/public-reader/components/PublicFolderOverview";
+} from "@/domains/public-reader/shared/api/PublicReaderService";
+import { PublicMarkdownReader } from "@/domains/public-reader/components/PublicReaderMarkdownReader";
+import { PublicInteractiveGraph } from "@/domains/public-reader/components/PublicReaderInteractiveGraph";
+import { PublicFileTree } from "@/domains/public-reader/components/PublicReaderFileTree";
+import { PublicBreadcrumbs } from "@/domains/public-reader/components/PublicReaderBreadcrumbs";
+import { PublicFolderOverview } from "@/domains/public-reader/components/PublicReaderFolderOverview";
 import type { NoteRecord } from "@/types/collaboration";
-import type { GraphData } from "@/shared/stores/types";
+import type { GraphData } from "@/domains/graph/shared/utils/graph.types";
 import { Button } from "@/global/ui/button";
 import { Input } from "@/global/ui/input";
 import { Badge } from "@/global/ui/badge";

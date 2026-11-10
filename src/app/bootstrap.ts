@@ -7,23 +7,23 @@
 
 import { container, ServiceIds } from "@/global/utils/container";
 import { eventBus } from "@/global/stores/events";
-import { pluginRegistry } from "@/domains/settings/plugins/plugin-registry";
+import { pluginRegistry } from "@/domains/settings/shared/api/pluginRegistry";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import { VaultStorage } from "@/domains/vault/shared/api/VaultStorage";
 import { vaultSyncService } from "@/domains/vault/shared/api/VaultSyncService";
 import { VaultBackupService } from "@/domains/vault/shared/api/VaultBackupService";
 import { GraphService } from "@/domains/graph/shared/api/GraphService";
 import { RelationshipMapper } from "@/domains/graph/shared/api/RelationshipMapper";
-import { ContentParser } from "@/domains/metadata/content-parser";
+import { ContentParser } from "@/domains/metadata/shared/utils/content-parser";
 import { getFileSystemService } from "@/domains/vault/shared/api/FileSystemServiceSingleton";
 import { importExportService } from "@/domains/vault/shared/api/ImportExportService";
-import { apiKeyService } from "@/domains/settings/profile/services/ApiKeyService";
+import { apiKeyService } from "@/domains/settings/shared/api/ApiKeyService";
 import { supabase } from "@/global/api/supabaseClient";
 import { commandRegistry } from "@/domains/workspace/shared/api/CommandRegistry";
 import { registerEditorCommands } from "@/domains/editor/shared/api/editorCommands";
-import { syncEngine } from "@/domains/sync/SyncEngine";
-import { syncCoordinator } from "@/domains/sync/SyncCoordinator";
-import { registerToggleableFeatures } from "@/domains/settings/plugins/feature-toggles";
+import { syncEngine } from "@/domains/sync/shared/api/SyncEngine";
+import { syncCoordinator } from "@/domains/sync/shared/api/SyncCoordinator";
+import { registerToggleableFeatures } from "@/domains/settings/shared/utils/featureToggles";
 
 let bootstrapped = false;
 

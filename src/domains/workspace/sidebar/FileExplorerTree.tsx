@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { cn } from "@/shared/lib";
-import { Badge } from "@/shared/ui/badge";
+import { cn } from "@/global/utils";
+import { Badge } from "@/global/ui/badge";
 import { ChevronRight, ChevronDown, Folder, FileText, Image, Music, Video } from "lucide-react";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
-import { useNodeStore } from "@/shared/stores";
+import { useNodeStore } from "@/global/stores";
 import { getVaultManager } from "@/domains/vault/services/VaultManagerSingleton";
 import { writeNodeToDisk } from "@/domains/vault/persistence/VaultFileWriter";
 import { useFolderNavigation } from "../hooks/useFolderNavigation";
 import { ExplorerContextMenu } from "./ExplorerContextMenu";
 import { getAncestorIdSet, isNodeDescendant } from "@/domains/graph/model/hierarchyTraversal";
 import { useExplorerGraphSyncStore } from "@/domains/graph/stores/useExplorerGraphSyncStore";
-import { BulkPublishModal } from "@/domains/collaboration/components/BulkPublishModal";
+import { BulkPublishModal } from "@/domains/collaboration/components/CollabBulkPublishModal";
 
 export interface ExplorerNode {
   id: string;

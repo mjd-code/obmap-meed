@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EditorView } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
-import { cn } from "@/shared/lib";
+import { cn } from "@/global/utils";
 import { PropertiesPanel } from "@/domains/editor/frontmatter/PropertiesPanel";
 import {
   createEditorExtensions,
@@ -18,7 +18,7 @@ import {
 } from "@/domains/editor/cm/extensions/frontmatterField";
 import type { SuggestSource } from "@/domains/editor/suggest/suggestions";
 import type { EditorApi, EditorMode } from "@/domains/editor/types";
-import { useNodeStore } from "@/shared/stores";
+import { useNodeStore } from "@/global/stores";
 import { useEditorSettingsStore } from "@/domains/editor/stores/useEditorSettingsStore";
 import { FoldableMarkdown } from "@/domains/editor/headings/FoldableMarkdown";
 import {
@@ -27,7 +27,7 @@ import {
   upsertFootnoteDefinition,
 } from "@/domains/editor/footnotes/footnoteParser";
 import { FootnotePopover } from "@/domains/editor/components/FootnotePopover";
-import { Popover, PopoverAnchor } from "@/shared/ui/popover";
+import { Popover, PopoverAnchor } from "@/global/ui/popover";
 
 interface MarkdownViewProps {
   value: string;

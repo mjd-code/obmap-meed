@@ -1,4 +1,4 @@
-import type { Node } from '@/shared/stores/types';
+import type { Node } from '@/domains/graph/shared/utils/graph.types';
 
 /**
  * Konversi list Node[] atau Map<string, Node> ke Map pencarian O(1).

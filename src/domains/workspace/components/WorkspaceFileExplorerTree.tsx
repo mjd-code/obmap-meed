@@ -3,14 +3,14 @@ import { cn } from "@/global/utils";
 import { Badge } from "@/global/ui/badge";
 import { ChevronRight, ChevronDown, Folder, FileText, Image, Music, Video } from "lucide-react";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
-import { useNodeStore } from "@/shared/stores";
+import { useNodeStore } from "@/global/stores";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import { writeNodeToDisk } from "@/domains/vault/shared/api/VaultFileWriter";
 import { useFolderNavigation } from "@/domains/workspace/shared/hooks/useFolderNavigation";
 import { ExplorerContextMenu } from "@/domains/workspace/components/WorkspaceExplorerContextMenu";
 import { getAncestorIdSet, isNodeDescendant } from "@/domains/graph/shared/utils/hierarchyTraversal";
 import { useExplorerGraphSyncStore } from "@/domains/graph/shared/stores/useExplorerGraphSyncStore";
-import { BulkPublishModal } from "@/domains/collaboration/components/BulkPublishModal";
+import { BulkPublishModal } from "@/domains/collaboration/components/CollabBulkPublishModal";
 
 export interface ExplorerNode {
   id: string;

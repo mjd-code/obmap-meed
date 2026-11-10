@@ -17,7 +17,7 @@ import type { FileSystemService } from "@/domains/vault/shared/api/FileSystemSer
 import { getFileSystemService } from "@/domains/vault/shared/api/FileSystemServiceSingleton";
 import { directoryHandleStore } from "@/domains/vault/shared/api/directoryHandleStore";
 import { hasGrantedPermission } from "@/domains/vault/shared/api/repositoryCapabilities";
-import { writeVaultConfigFile } from "@/domains/settings/config/VaultConfigFile";
+import { writeVaultConfigFile } from "@/domains/settings/shared/api/VaultConfigFile";
 import {
   BackupConfig,
   VaultLocation,

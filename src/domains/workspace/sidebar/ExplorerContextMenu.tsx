@@ -5,7 +5,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
-} from "@/shared/ui/context-menu";
+} from "@/global/ui/context-menu";
 import {
   ExternalLink,
   Columns2,
@@ -19,7 +19,7 @@ import {
   GitCommit,
 } from "lucide-react";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
-import { FolderVcsDialog } from "@/domains/vcs/components/FolderVcsDialog";
+import { FolderVcsDialog } from "@/domains/vcs/components/VcsFolderDialog";
 
 export interface ContextMenuNode {
   id: string;

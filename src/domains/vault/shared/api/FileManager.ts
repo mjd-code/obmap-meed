@@ -8,8 +8,8 @@
  * one, so callers can commit a single undo/history entry per operation.
  */
 
-import { metadataCache } from "@/domains/metadata/MetadataCache";
-import type { Node } from "@/shared/stores/types";
+import { metadataCache } from "@/domains/metadata/shared/api/MetadataCache";
+import type { Node } from "@/domains/graph/shared/utils/graph.types";
 
 export interface RenameResult {
   /** Next node list (renamed note + every note whose links were rewritten). */

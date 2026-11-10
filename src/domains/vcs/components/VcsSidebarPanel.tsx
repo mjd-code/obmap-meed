@@ -15,15 +15,15 @@ import {
   Download,
   Loader2,
 } from "lucide-react";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
-import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
-import { useVcsStore } from "@/domains/vcs/stores/useVcsStore";
-import { VcsCloudService } from "@/domains/vcs/services/VcsCloudService";
-import { BranchSelector } from "@/domains/vcs/components/BranchSelector";
+import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
+import { useVcsStore } from "@/domains/vcs/shared/stores/useVcsStore";
+import { VcsCloudService } from "@/domains/vcs/shared/api/VcsCloudService";
+import { BranchSelector } from "@/domains/vcs/components/VcsBranchSelector";
 import { VcsCreateBranchModal } from "@/domains/vcs/components/VcsCreateBranchModal";
 import { VcsCreateMergeRequestModal } from "@/domains/vcs/components/VcsCreateMergeRequestModal";
-import { VcsCommit, VcsMergeRequest } from "@/domains/vcs/types/vcs";
+import { VcsCommit, VcsMergeRequest } from "@/domains/vcs/shared/utils/vcs.types";
 import { toast } from "sonner";
 
 export const VcsSidebarPanel: React.FC = () => {

@@ -1,5 +1,5 @@
-import { BacklinksView } from "@/domains/metadata/backlinks/BacklinksView";
-import { useNodeStore } from "@/shared/stores";
+import { BacklinksView } from "@/domains/metadata/components/MetadataBacklinksView";
+import { useNodeStore } from "@/global/stores";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
 import { linkMentionAction } from "../actions/workspaceActions";
 import type { WorkspaceLeaf } from "../types";

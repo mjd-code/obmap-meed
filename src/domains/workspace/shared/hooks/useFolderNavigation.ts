@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useUIStore } from "@/shared/stores";
+import { useUIStore } from "@/global/stores";
 
 export function useFolderNavigation() {
   const expandedFolderIds = useUIStore((state) => state.expandedFolderIds);

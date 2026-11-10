@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { NodePanel } from "@/domains/graph/components/NodePanel";
-import { useNodeStore, useUIStore } from "@/shared/stores";
+import { useNodeStore, useUIStore } from "@/global/stores";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
 import type { WorkspaceLeaf } from "../types";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
-import { useMetadataVersion } from "@/domains/metadata/useMetadataCache";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
+import { useMetadataVersion } from "@/domains/metadata/shared/hooks/useMetadataCache";
 import {
   deleteNodeAction,
   getBacklinksForNode,

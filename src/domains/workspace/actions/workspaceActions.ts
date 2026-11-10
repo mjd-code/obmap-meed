@@ -9,8 +9,8 @@ import {
   useVaultStore,
   type Backlink,
   type Node,
-} from "@/shared/stores";
-import { extractMentions } from "@/domains/metadata/markdown-parser";
+} from "@/global/stores";
+import { extractMentions } from "@/domains/metadata/shared/utils/markdown-parser";
 import { useWorkspaceStore } from "@/domains/workspace/stores/useWorkspaceStore";
 import { getVaultManager } from "@/domains/vault/services/VaultManagerSingleton";
 import {
@@ -23,15 +23,15 @@ import {
 import {
   enrichNode,
   metadataCache,
-} from "@/domains/metadata/MetadataCache";
+} from "@/domains/metadata/shared/api/MetadataCache";
 import {
   linkMentions,
   renameNode,
 } from "@/domains/vault/services/FileManager";
-import { isFeatureEnabled } from "@/domains/settings/plugins/feature-toggles";
-import { syncEngine } from "@/domains/sync/SyncEngine";
-import { useStatusNoticeStore } from "@/shared/stores/useStatusNoticeStore";
-import { supabase } from "@/shared/lib/untypedSupabase";
+import { isFeatureEnabled } from "@/domains/settings/shared/utils/featureToggles";
+import { syncEngine } from "@/domains/sync/shared/api/SyncEngine";
+import { useStatusNoticeStore } from "@/global/stores/useStatusNoticeStore";
+import { supabase } from "@/global/api/untypedSupabase";
 
 
 /** Sinkronisasi status tombol undo/redo ke useVaultStore */

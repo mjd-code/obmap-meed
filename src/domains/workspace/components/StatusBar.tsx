@@ -1,8 +1,8 @@
 /** Bottom bar: active file path, dynamic notices, time-lapse evolution, sync and offline state. */
 
 import { Cloud, CloudOff, Loader2, Check, AlertCircle, CheckCircle2 } from "lucide-react";
-import { useNodeStore, useVaultStore, useOfflineStore } from "@/shared/stores";
-import { useStatusNoticeStore } from "@/shared/stores/useStatusNoticeStore";
+import { useNodeStore, useVaultStore, useOfflineStore } from "@/global/stores";
+import { useStatusNoticeStore } from "@/global/stores/useStatusNoticeStore";
 import { useGraphInteractionStore } from "@/domains/graph/model/useGraphInteractionStore";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
 

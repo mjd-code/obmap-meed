@@ -101,7 +101,7 @@ class DynamicPreloadRegistry {
         friendlyMessage: 'Mengindeks tautan wikilink, tag, dan metadata catatan di RAM...',
         category: 'system',
         priority: 11,
-        loader: () => import('@/domains/metadata/MetadataCache'),
+        loader: () => import('@/domains/metadata/shared/api/MetadataCache'),
         warmup: async (mod: any) => {
           // Pre-warm: Dapatkan node aktif dan jalankan indexing awal di RAM
           try {
@@ -124,7 +124,7 @@ class DynamicPreloadRegistry {
         friendlyMessage: 'Menyiapkan sinkronisasi offline-first...',
         category: 'system',
         priority: 10,
-        loader: () => import('@/domains/sync/SyncEngine'),
+        loader: () => import('@/domains/sync/shared/api/SyncEngine'),
       },
 
       // --- SHELL & NAVIGATION ---
@@ -154,14 +154,14 @@ class DynamicPreloadRegistry {
         name: 'Fuzzy Command Palette',
         friendlyMessage: 'Menyiapkan mesin pencarian instan palette...',
         category: 'shell',
-        loader: () => import('@/domains/settings/command-palette/CommandPalette'),
+        loader: () => import('@/domains/settings/components/SettingsCommandPalette'),
       },
       {
         id: 'shell-auth',
         name: 'Auth & Session Provider',
         friendlyMessage: 'Menyiapkan status otentikasi akun...',
         category: 'shell',
-        loader: () => import('@/domains/auth/hooks/useAuth'),
+        loader: () => import('@/domains/auth/shared/hooks/useAuth'),
       },
 
       // --- WORKSPACE LEAF VIEWS ---
@@ -310,14 +310,14 @@ class DynamicPreloadRegistry {
         name: 'Settings Hub & Plugin Registry',
         friendlyMessage: 'Menyiapkan preferensi & konfigurasi aplikasi...',
         category: 'settings',
-        loader: () => import('@/domains/settings/SettingsHub'),
+        loader: () => import('@/domains/settings/components/SettingsHub'),
       },
       {
         id: 'set-vault',
         name: 'Vault Storage & Backup Settings',
         friendlyMessage: 'Menyiapkan utilitas backup & konfigurasi vault...',
         category: 'settings',
-        loader: () => import('@/domains/settings/sections/VaultSettings'),
+        loader: () => import('@/domains/settings/components/SettingsVaultSection'),
       },
     ];
 

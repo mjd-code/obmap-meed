@@ -1,4 +1,4 @@
-import type { Link, Node } from '@/shared/stores/types';
+import type { Link, Node } from '@/domains/graph/shared/utils/graph.types';
 import type { LayoutContext } from '@/domains/graph/shared/utils/graph.types';
 
 export function makeNode(id: string, parentId: string | null = null, extra: Partial<Node> = {}): Node {

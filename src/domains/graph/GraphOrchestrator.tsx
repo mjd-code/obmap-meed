@@ -14,9 +14,9 @@ import {
   GraphInteractionProvider,
   useGraphInteractionStore,
 } from "@/domains/graph/shared/stores/useGraphInteractionStore";
-import { useGraphStore, useNodeStore } from "@/shared/stores";
+import { useGraphStore, useNodeStore } from "@/global/stores";
 import { useGraphData } from "@/domains/graph/shared/hooks/useGraphData";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import type { ViewState } from "@/domains/workspace/shared/utils/workspace.types";
 import {

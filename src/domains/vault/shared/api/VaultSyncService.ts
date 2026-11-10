@@ -12,7 +12,7 @@ import type { BackupConfig } from "@/domains/vault/shared/utils/vault.types";
 import { supabase } from "@/global/api/supabaseClient";
 import { cloudVaultService, CloudVault } from "@/domains/vault/shared/api/CloudVaultService";
 import { VaultManager } from "@/domains/vault/shared/api/VaultManager";
-import { syncEngine } from "@/domains/sync/SyncEngine";
+import { syncEngine } from "@/domains/sync/shared/api/SyncEngine";
 
 export type SyncStatus = "idle" | "syncing" | "synced" | "error" | "offline";
 

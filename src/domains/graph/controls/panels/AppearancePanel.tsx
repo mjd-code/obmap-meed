@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Switch } from '@/shared/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { ControlSliderRow } from '@/shared/ui/ControlSliderRow';
-import { SectionHeaderWithReset } from '@/shared/ui/SectionHeaderWithReset';
+import { Switch } from '@/global/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/global/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/global/ui/tabs';
+import { ControlSliderRow } from '@/global/ui/ControlSliderRow';
+import { SectionHeaderWithReset } from '@/global/ui/SectionHeaderWithReset';
 import { ColorPicker } from '@/domains/graph/config-panel/ColorPicker';
 import { HierarchyLinkColorControls } from '@/domains/graph/config-panel/HierarchyColorControls';
 import { 

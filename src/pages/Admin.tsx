@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSuperadminGuard } from "@/domains/admin/hooks/useSuperadminGuard";
-import { AdminService } from "@/domains/admin/services/AdminService";
+import { useSuperadminGuard } from "@/domains/admin/shared/hooks/useSuperadminGuard";
+import { AdminService } from "@/domains/admin/shared/api/AdminService";
 import type { UserWithRole, SystemMetrics, SystemTelemetryContract } from "@/types/admin";
 import type { AuditLogRecord } from "@/types/collaboration";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/global/ui/tabs";
 import { Button } from "@/global/ui/button";
 import { Badge } from "@/global/ui/badge";
-import { FirstTimeSetupWizard } from "@/domains/admin/components/FirstTimeSetupWizard";
-import { UserManagementTab } from "@/domains/admin/components/UserManagementTab";
-import { HealthMetricsTab } from "@/domains/admin/components/HealthMetricsTab";
-import { AuditFeedTab } from "@/domains/admin/components/AuditFeedTab";
-import { SystemArchitectureTab } from "@/domains/admin/components/SystemArchitectureTab";
+import { FirstTimeSetupWizard } from "@/domains/admin/components/AdminFirstTimeSetupWizard";
+import { UserManagementTab } from "@/domains/admin/components/AdminUserManagementTab";
+import { HealthMetricsTab } from "@/domains/admin/components/AdminHealthMetricsTab";
+import { AuditFeedTab } from "@/domains/admin/components/AdminAuditFeedTab";
+import { SystemArchitectureTab } from "@/domains/admin/components/AdminSystemArchitectureTab";
 import {
   ShieldCheck,
   Users,

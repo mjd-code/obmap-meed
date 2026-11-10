@@ -18,7 +18,7 @@ import {
 } from "@/domains/editor/shared/utils/frontmatterField";
 import type { SuggestSource } from "@/domains/editor/shared/utils/suggestions";
 import type { EditorApi, EditorMode } from "@/domains/editor/shared/utils/editor.types";
-import { useNodeStore } from "@/shared/stores";
+import { useNodeStore } from "@/global/stores";
 import { useEditorSettingsStore } from "@/domains/editor/shared/stores/useEditorSettingsStore";
 import { FoldableMarkdown } from "@/domains/editor/components/EditorFoldableMarkdown";
 import {

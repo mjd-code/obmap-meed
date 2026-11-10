@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { IconRibbon, type RibbonTool } from "@/domains/workspace/components/WorkspaceIconRibbon";
 import { SidebarPanel } from "@/domains/workspace/components/WorkspaceSidebarPanel";
-import { useUIStore } from "@/shared/stores";
+import { useUIStore } from "@/global/stores";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import { openGraphCanvas } from "@/domains/workspace/shared/api/graphCanvasCommands";
-import { useNodeStore, useVaultStore } from "@/shared/stores";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useNodeStore, useVaultStore } from "@/global/stores";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { supabase } from "@/global/api/untypedSupabase";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import {

@@ -5,7 +5,7 @@
  * render model and computes deterministic coordinates for it.
  */
 
-import type { Link, Node } from '@/shared/stores/types';
+import type { Link, Node } from '@/domains/graph/shared/utils/graph.types';
 
 export type GraphLayoutMode = 'free-force' | 'fr-standard' | 'fr-radial' | 'kamada-kawai' | 'grid';
 export type MindmapLayoutMode = 'mindmap' | 'org-chart' | 'brace-map' | 'timeline' | 'fishbone';

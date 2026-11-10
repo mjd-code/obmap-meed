@@ -6,8 +6,8 @@
  */
 
 import JSZip from "jszip";
-import { eventBus, EventType } from "@/shared/events/events";
-import { ContentParser } from "@/domains/metadata/content-parser";
+import { eventBus, EventType } from "@/global/stores/events";
+import { ContentParser } from "@/domains/metadata/shared/utils/content-parser";
 
 interface GraphNode {
   id: string;

@@ -14,7 +14,7 @@ import {
   Plus,
   PanelLeft, // <-- TAMBAHKAN INI
 } from "lucide-react";
-import { useUIStore } from "@/shared/stores"; // <-- PASTIKAN DI-IMPORT
+import { useUIStore } from "@/global/stores"; // <-- PASTIKAN DI-IMPORT
 import { Button } from "@/global/ui/button";
 import { LeafView } from "@/domains/workspace/components/WorkspaceViewRegistry";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";

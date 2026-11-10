@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import type { Node } from "@/shared/stores/types";
+import type { Node } from "@/domains/graph/shared/utils/graph.types";
 import type { RenderNode } from "../model/graphTypes";
 
 export interface UseCanvasGestureBridgeOptions {

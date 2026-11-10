@@ -30,12 +30,12 @@ import {
 import { NodeMediaPreview } from "@/domains/graph/components/GraphNodeMediaPreview";
 import { NodeBreadcrumbBar } from "@/domains/graph/components/GraphNodeBreadcrumbBar";
 import { NodeBacklinksSection, type Backlink } from "@/domains/graph/components/GraphNodeBacklinksSection";
-import { NoteWorkflowMenuSection } from "@/domains/collaboration/components/NoteWorkflowMenuSection";
+import { NoteWorkflowMenuSection } from "@/domains/collaboration/components/CollabNoteWorkflowMenuSection";
 import { FolderOverviewEditor } from "@/domains/graph/components/GraphFolderOverviewEditor";
-import { DocumentVcsButtonGroup } from "@/domains/vcs/components/DocumentVcsButtonGroup";
-import { DocumentSharePopover } from "@/domains/collaboration/components/DocumentSharePopover";
+import { DocumentVcsButtonGroup } from "@/domains/vcs/components/VcsDocumentButtonGroup";
+import { DocumentSharePopover } from "@/domains/collaboration/components/CollabDocumentSharePopover";
 import { openGraphCanvas } from "@/domains/workspace/shared/api/graphCanvasCommands";
-import { useNodeStore } from "@/shared/stores";
+import { useNodeStore } from "@/global/stores";
 import { NodeCitationsSection } from "@/domains/graph/components/GraphNodeCitationsSection";
 import {
   undoActiveEditor,

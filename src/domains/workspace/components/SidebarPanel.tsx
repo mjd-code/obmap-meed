@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { cn } from "@/shared/lib";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { ScrollArea } from "@/shared/ui/scroll-area";
+import { cn } from "@/global/utils";
+import { Button } from "@/global/ui/button";
+import { Input } from "@/global/ui/input";
+import { ScrollArea } from "@/global/ui/scroll-area";
 import { toast } from "sonner";
 import {
   X,
@@ -25,16 +25,16 @@ import {
   SETTINGS_GROUPS,
   SETTINGS_SECTIONS,
   type SettingsSectionId,
-} from "@/domains/settings/settingsNavigation";
+} from "@/domains/settings/shared/utils/settingsNavigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@/global/ui/dropdown-menu";
 import type { RibbonTool } from "./IconRibbon";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
-import { useUIStore } from "@/shared/stores";
+import { useUIStore } from "@/global/stores";
 import { useFolderNavigation } from "../hooks/useFolderNavigation";
 import { FileExplorerTree } from "../sidebar/FileExplorerTree";
 import { VcsSidebarPanel } from "@/domains/vcs/components/VcsSidebarPanel";

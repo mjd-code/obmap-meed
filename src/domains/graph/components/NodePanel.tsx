@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
+import { Button } from "@/global/ui/button";
+import { Input } from "@/global/ui/input";
+import { Textarea } from "@/global/ui/textarea";
 import {
   Trash2,
   Save,
@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { MarkdownView } from "@/domains/editor/components/MarkdownView";
-import { ScrollArea } from "@/shared/ui/scroll-area";
-import { cn } from "@/shared/lib";
+import { ScrollArea } from "@/global/ui/scroll-area";
+import { cn } from "@/global/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,16 +26,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-} from "@/shared/ui/dropdown-menu";
+} from "@/global/ui/dropdown-menu";
 import { NodeMediaPreview } from "../node-panel/NodeMediaPreview";
 import { NodeBreadcrumbBar } from "../node-panel/NodeBreadcrumBar";
 import { NodeBacklinksSection, type Backlink } from "../node-panel/NodeBacklinksSection";
-import { NoteWorkflowMenuSection } from "@/domains/collaboration/components/NoteWorkflowMenuSection";
+import { NoteWorkflowMenuSection } from "@/domains/collaboration/components/CollabNoteWorkflowMenuSection";
 import { FolderOverviewEditor } from "./FolderOverviewEditor";
-import { DocumentVcsButtonGroup } from "@/domains/vcs/components/DocumentVcsButtonGroup";
-import { DocumentSharePopover } from "@/domains/collaboration/components/DocumentSharePopover";
+import { DocumentVcsButtonGroup } from "@/domains/vcs/components/VcsDocumentButtonGroup";
+import { DocumentSharePopover } from "@/domains/collaboration/components/CollabDocumentSharePopover";
 import { openGraphCanvas } from "@/domains/workspace/commands/graphCanvasCommands";
-import { useNodeStore } from "@/shared/stores";
+import { useNodeStore } from "@/global/stores";
 import { NodeCitationsSection } from "../node-panel/NodeCitationsSection";
 import {
   undoActiveEditor,

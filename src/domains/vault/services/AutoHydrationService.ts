@@ -7,9 +7,9 @@
  * Non-destructive: The original `graph_data` JSON remains intact as a safety backup.
  */
 
-import { supabase } from "@/shared/lib/untypedSupabase";
+import { supabase } from "@/global/api/untypedSupabase";
 import { NoteService } from "./NoteService";
-import type { Node as LegacyNode } from "@/shared/stores/types";
+import type { Node as LegacyNode } from "@/domains/graph/shared/utils/graph.types";
 
 export interface HydrationResult {
   vaultId: string;

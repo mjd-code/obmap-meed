@@ -4,12 +4,12 @@ import { StatusBar } from "@/domains/workspace/components/StatusBar";
 import { WorkspaceTree } from "@/domains/workspace/components/WorkspaceTree";
 import { WorkspaceGroup } from "@/domains/workspace/components/WorkspaceGroup";
 import { useWorkspaceStore } from "@/domains/workspace/stores/useWorkspaceStore";
-import { useIsMobile } from "@/shared/hooks/useMobile";
-import { PWAInstallPrompt } from "@/domains/sync/components/PWAInstallPrompt";
-import { useConfigSync } from "@/domains/settings/config";
+import { useIsMobile } from "@/global/hooks/useMobile";
+import { PWAInstallPrompt } from "@/domains/sync/components/SyncPWAInstallPrompt";
+import { useConfigSync } from "@/domains/settings/shared/api/configIndex";
 import { AppPreloaderScreen } from "@/app/preloader/AppPreloaderScreen";
 import { useVaultLifecycle } from "@/domains/workspace/hooks/useVaultLifecycle";
-import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
+import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
 import { VaultAccessDenied } from "@/domains/workspace/components/VaultAccessDenied";
 
 

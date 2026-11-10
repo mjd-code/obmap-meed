@@ -3,13 +3,13 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import {
   vaultSyncService,
   SyncStatus,
 } from "@/domains/vault/shared/api/VaultSyncService";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
-import { syncCoordinator } from "@/domains/sync/SyncCoordinator";
+import { syncCoordinator } from "@/domains/sync/shared/api/SyncCoordinator";
 import { toast } from "sonner";
 
 interface SyncProgress {

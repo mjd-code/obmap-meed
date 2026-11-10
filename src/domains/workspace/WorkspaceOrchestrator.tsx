@@ -5,11 +5,11 @@ import { WorkspaceTree } from "@/domains/workspace/components/WorkspaceTree";
 import { WorkspaceGroup } from "@/domains/workspace/components/WorkspaceGroup";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import { useIsMobile } from "@/global/hooks/useMobile";
-import { PWAInstallPrompt } from "@/domains/sync/components/PWAInstallPrompt";
-import { useConfigSync } from "@/domains/settings/config";
+import { PWAInstallPrompt } from "@/domains/sync/components/SyncPWAInstallPrompt";
+import { useConfigSync } from "@/domains/settings/shared/api/configIndex";
 import { AppPreloaderScreen } from "@/app/preloader/AppPreloaderScreen";
 import { useVaultLifecycle } from "@/domains/workspace/shared/hooks/useVaultLifecycle";
-import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
+import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
 import { VaultAccessDenied } from "@/domains/workspace/components/WorkspaceVaultAccessDenied";
 
 

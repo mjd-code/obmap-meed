@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { usePWA } from "@/core/system/sync/hooks/usePWA";
+import { usePWA } from "@/domains/sync/shared/hooks/usePWA";
 import { Button } from "@/global/ui/button";
 import {
   Card,

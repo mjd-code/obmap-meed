@@ -10,12 +10,12 @@ import {
   useLeafGraphConfig,
   useLeafGraphConfigStore,
 } from "@/domains/graph/model/useLeafGraphConfigStore";
-import { useGraphStore, useNodeStore } from "@/shared/stores";
+import { useGraphStore, useNodeStore } from "@/global/stores";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
 import type { LeafViewProps } from "../registry/ViewRegistry";
 import type { ViewState } from "../types";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { useGraphData } from "@/domains/graph/hooks/useGraphData";
 import {
   moveNodeAction,

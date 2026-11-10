@@ -10,7 +10,7 @@
  */
 
 import { eventBus, EventType, DomainEvent } from "@/global/stores/events";
-import { ContentParser } from "@/domains/metadata/content-parser";
+import { ContentParser } from "@/domains/metadata/shared/utils/content-parser";
 import { RelationshipMapper, GraphNode, GraphLink } from "@/domains/graph/shared/api/RelationshipMapper";
 
 // Event payload interfaces for type safety

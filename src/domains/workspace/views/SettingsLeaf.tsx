@@ -1,5 +1,5 @@
-import { SettingsHub } from "@/domains/settings/SettingsHub";
-import { isSettingsSectionId, type SettingsSectionId } from "@/domains/settings/settingsNavigation";
+import { SettingsHub } from "@/domains/settings/components/SettingsHub";
+import { isSettingsSectionId, type SettingsSectionId } from "@/domains/settings/shared/utils/settingsNavigation";
 import { useWorkspaceStore } from "../stores/useWorkspaceStore";
 import type { LeafViewProps } from "../registry/ViewRegistry";
 

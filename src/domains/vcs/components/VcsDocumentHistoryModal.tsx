@@ -9,11 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/global/ui/tabs';
 import { Button } from '@/global/ui/button';
 import { Badge } from '@/global/ui/badge';
 import { ScrollArea } from '@/global/ui/scroll-area';
-import { DiffViewer } from '@/domains/collaboration/components/DiffViewer';
-import { VcsCloudService } from '@/domains/vcs/services/VcsCloudService';
-import { VcsMicroRevisionService } from '@/domains/vcs/services/VcsMicroRevisionService';
-import { VcsCommit, LocalMicroRevision } from '@/domains/vcs/types/vcs';
-import { useVcsStore } from '@/domains/vcs/stores/useVcsStore';
+import { DiffViewer } from '@/domains/collaboration/components/CollabDiffViewer';
+import { VcsCloudService } from '@/domains/vcs/shared/api/VcsCloudService';
+import { VcsMicroRevisionService } from '@/domains/vcs/shared/api/VcsMicroRevisionService';
+import { VcsCommit, LocalMicroRevision } from '@/domains/vcs/shared/utils/vcs.types';
+import { useVcsStore } from '@/domains/vcs/shared/stores/useVcsStore';
 import { History, Cloud, HardDrive, RotateCcw, Eye, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 

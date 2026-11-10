@@ -11,10 +11,10 @@ import { Input } from '@/global/ui/input';
 import { Badge } from '@/global/ui/badge';
 import { GitCommit, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { VcsCloudService } from '@/domains/vcs/services/VcsCloudService';
-import { VcsMicroRevisionService } from '@/domains/vcs/services/VcsMicroRevisionService';
-import { VcsSyncQueueService } from '@/domains/vcs/services/VcsSyncQueueService';
-import { useVcsStore } from '@/domains/vcs/stores/useVcsStore';
+import { VcsCloudService } from '@/domains/vcs/shared/api/VcsCloudService';
+import { VcsMicroRevisionService } from '@/domains/vcs/shared/api/VcsMicroRevisionService';
+import { VcsSyncQueueService } from '@/domains/vcs/shared/api/VcsSyncQueueService';
+import { useVcsStore } from '@/domains/vcs/shared/stores/useVcsStore';
 
 interface VcsQuickCommitModalProps {
   open: boolean;

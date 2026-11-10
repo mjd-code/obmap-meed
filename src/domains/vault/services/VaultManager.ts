@@ -30,7 +30,7 @@ import {
   emitVaultDeleted,
   emitVaultRenamed,
   emitVaultSwitched,
-} from "@/shared/events/events";
+} from "@/global/stores/events";
 import { VaultValidationService } from "./VaultValidationService";
 import { cloudVaultService } from "./CloudVaultService";
 

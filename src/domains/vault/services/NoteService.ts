@@ -6,7 +6,7 @@
  * revision history, and seamless publishing transitions for local & cloud notes.
  */
 
-import { supabase } from "@/shared/lib/untypedSupabase";
+import { supabase } from "@/global/api/untypedSupabase";
 import type { Json } from "@/integrations/supabase/types";
 import type {
   NoteRecord,

@@ -1,26 +1,26 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Node } from "@/shared/stores/types";
-import { useNodeStore } from "@/shared/stores";
+import { Node } from "@/domains/graph/shared/utils/graph.types";
+import { useNodeStore } from "@/global/stores";
 import { useWorkspaceStore } from "@/domains/workspace/stores/useWorkspaceStore";
 import { useVaultStore } from "@/domains/vault/stores/useVaultStore";
-import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
+import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
 import { NoteService } from "@/domains/vault/services/NoteService";
 import { updateNodeAction, deleteNodeAction } from "@/domains/workspace/actions/workspaceActions";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
-import { BulkPublishModal } from "@/domains/collaboration/components/BulkPublishModal";
-import { BulkPublishService } from "@/domains/collaboration/services/BulkPublishService";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { Badge } from "@/shared/ui/badge";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
+import { BulkPublishModal } from "@/domains/collaboration/components/CollabBulkPublishModal";
+import { BulkPublishService } from "@/domains/collaboration/shared/api/BulkPublishService";
+import { Button } from "@/global/ui/button";
+import { Input } from "@/global/ui/input";
+import { Textarea } from "@/global/ui/textarea";
+import { Badge } from "@/global/ui/badge";
+import { Checkbox } from "@/global/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@/global/ui/dropdown-menu";
 import {
   Folder,
   FileText,
@@ -39,7 +39,7 @@ import {
   Network,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/shared/lib";
+import { cn } from "@/global/utils";
 import { openGraphCanvas } from "@/domains/workspace/commands/graphCanvasCommands";
 
 interface FolderOverviewEditorProps {

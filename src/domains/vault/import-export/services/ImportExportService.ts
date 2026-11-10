@@ -6,7 +6,7 @@
  */
 
 import JSZip from "jszip";
-import { ContentParser } from "@/domains/metadata/content-parser";
+import { ContentParser } from "@/domains/metadata/shared/utils/content-parser";
 
 export type DuplicateStrategy = "rename" | "overwrite" | "skip" | "merge";
 

@@ -1,17 +1,17 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Node } from "@/shared/stores/types";
-import { useNodeStore } from "@/shared/stores";
+import { Node } from "@/domains/graph/shared/utils/graph.types";
+import { useNodeStore } from "@/global/stores";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
-import { useVaultPermission } from "@/domains/auth/hooks/useVaultPermission";
+import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
 import { NoteService } from "@/domains/vault/shared/api/NoteService";
 import {
   updateNodeAction,
   deleteNodeAction,
 } from "@/domains/workspace/shared/api/workspaceActions";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
-import { BulkPublishModal } from "@/domains/collaboration/components/BulkPublishModal";
-import { BulkPublishService } from "@/domains/collaboration/services/BulkPublishService";
+import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
+import { BulkPublishModal } from "@/domains/collaboration/components/CollabBulkPublishModal";
+import { BulkPublishService } from "@/domains/collaboration/shared/api/BulkPublishService";
 import { Button } from "@/global/ui/button";
 import { Input } from "@/global/ui/input";
 import { Textarea } from "@/global/ui/textarea";

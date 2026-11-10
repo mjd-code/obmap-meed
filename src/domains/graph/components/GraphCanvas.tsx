@@ -19,7 +19,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import type { ForceGraphMethods } from 'react-force-graph-2d';
 import type { GraphConfigState } from '@/domains/graph/shared/stores/useGraphStore';
 import { defaultLinkConfig, defaultTopologyConfig } from '@/domains/graph/shared/stores/useGraphStore';
-import type { Link, Node } from '@/shared/stores/types';
+import type { Link, Node } from '@/domains/graph/shared/utils/graph.types';
 import { useGraphEngineStore } from '@/domains/graph/shared/stores/useGraphEngineStore';
 import { GraphCanvasUtilityDock } from '@/domains/graph/components/GraphCanvasUtilityDock';
 import { buildGraphProjection } from '@/domains/graph/shared/utils/buildGraphProjection';

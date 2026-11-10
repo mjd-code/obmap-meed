@@ -25,7 +25,7 @@ import {
   Lock,
 } from "lucide-react";
 import { cn } from "@/global/utils";
-import { useNodeStore } from "@/shared/stores";
+import { useNodeStore } from "@/global/stores";
 import type {
   FrontmatterProperty,
   FrontmatterPropertyType,
@@ -49,7 +49,7 @@ import {
   useResolvedSchema,
   useSchemaStore,
   type ResolvedProperty,
-} from "@/domains/settings/schema";
+} from "@/domains/settings/shared/api/schemaIndex";
 import { SuggestInput } from "@/domains/editor/components/EditorSuggestInput";
 import { useEditorSettingsStore } from "@/domains/editor/shared/stores/useEditorSettingsStore";
 

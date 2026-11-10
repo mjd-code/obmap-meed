@@ -1,5 +1,5 @@
 import { FilePlus, Network, FolderOpen } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/global/ui/button';
 import { addNodeAction } from '../actions/workspaceActions';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import type { LeafViewProps } from '../registry/ViewRegistry';

@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import { useNodeStore } from "@/domains/graph/shared/stores/useNodeStore";
-import { useUIStore } from "@/shared/stores";
+import { useUIStore } from "@/global/stores";
 import type { WorkspaceGroup, WorkspaceLeaf } from "@/domains/workspace/shared/utils/workspace.types";
 
 interface TabContextMenuProps {

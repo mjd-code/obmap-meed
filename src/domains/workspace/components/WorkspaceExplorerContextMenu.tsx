@@ -19,7 +19,7 @@ import {
   GitCommit,
 } from "lucide-react";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
-import { FolderVcsDialog } from "@/domains/vcs/components/FolderVcsDialog";
+import { FolderVcsDialog } from "@/domains/vcs/components/VcsFolderDialog";
 
 export interface ContextMenuNode {
   id: string;

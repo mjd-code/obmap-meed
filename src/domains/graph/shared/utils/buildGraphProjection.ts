@@ -5,7 +5,7 @@
  */
 
 import { parse as parseYaml } from 'yaml';
-import type { Link, Node } from '@/shared/stores/types';
+import type { Link, Node } from '@/domains/graph/shared/utils/graph.types';
 import type { GraphProjection, RenderLink, RenderNode } from '@/domains/graph/shared/utils/graph.types';
 
 export const endpointId = (end: string | { id: string }) =>
