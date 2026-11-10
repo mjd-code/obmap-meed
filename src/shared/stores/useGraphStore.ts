@@ -7,16 +7,33 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { Node, Link } from './types';
+import { mergeAtmosphereConfig, defaultAtmosphereConfig, type AtmosphereConfig } from '@/core/graph/model/atmosphereConfig';
+import {
+  defaultHierarchyColorConfig,
+  mergeHierarchyColorConfig,
+  type HierarchyColorConfig,
+} from '@/core/graph/model/hierarchyColors';
+
+export type { HierarchyColorConfig };
 
 // ============= TYPE DEFINITIONS =============
 
 export interface NodeConfig {
   relSize: number;
+  sizeByDepth: boolean;
+  depthSizeInterval: number;
   resolution: number;
+  /** Show folder nodes on the canvas. */
+  showFolderNodes: boolean;
+  /** Show file/note nodes on the canvas. */
+  showFileNodes: boolean;
   shape: 'circle' | 'square' | 'diamond' | 'triangle' | 'hexagon';
   visible: boolean;
   opacity: number;
-  autoColorBy: 'none' | 'type' | 'depth' | 'tags';
+  autoColorBy: 'none' | 'type' | 'depth' | 'tags' | 'branch';
+  glow: boolean;
+  glowIntensity: number;
+  glowSpeed: number;
   folderColor: string;
   fileColor: string;
   selectedColor: string;
@@ -25,6 +42,7 @@ export interface NodeConfig {
   labelSize: number;
   labelColor: string;
   labelFontStyle: 'normal' | 'bold' | 'italic' | 'bold-italic';
+  labelBox: boolean;
   labelBackground: boolean;
   labelBackgroundColor: string;
 }
@@ -94,21 +112,32 @@ export interface LinkStats {
 }
 
 export interface GraphConfigState {
+  /** Bumped when the persisted shape changes; drives default merging. */
+  version?: number;
   nodes: NodeConfig;
+  hierarchy: HierarchyColorConfig;
   links: LinkConfig;
   topology: TopologyConfig;
   forces: ForceConfig;
+  atmosphere?: AtmosphereConfig;
 }
 
 // ============= DEFAULTS =============
 
 export const defaultNodeConfig: NodeConfig = {
   relSize: 6,
+  sizeByDepth: false,
+  depthSizeInterval: 1,
   resolution: 8,
+  showFolderNodes: true,
+  showFileNodes: true,
   shape: 'circle',
   visible: true,
   opacity: 1.0,
   autoColorBy: 'type',
+  glow: false,
+  glowIntensity: 0.6,
+  glowSpeed: 1,
   folderColor: 'hsl(48, 100%, 60%)',
   fileColor: 'hsl(270, 70%, 65%)',
   selectedColor: 'hsl(270, 80%, 70%)',
@@ -117,6 +146,7 @@ export const defaultNodeConfig: NodeConfig = {
   labelSize: 12,
   labelColor: 'hsl(0, 0%, 100%)',
   labelFontStyle: 'normal',
+  labelBox: true,
   labelBackground: true,
   labelBackgroundColor: 'hsl(0, 0%, 0%)',
 };
@@ -184,12 +214,43 @@ export const defaultForceConfig: ForceConfig = {
   cooldownTime: 15000,
 };
 
+export const GRAPH_CONFIG_VERSION = 2;
+
 export const defaultGraphConfig: GraphConfigState = {
+  version: GRAPH_CONFIG_VERSION,
   nodes: defaultNodeConfig,
+  hierarchy: defaultHierarchyColorConfig,
   links: defaultLinkConfig,
   topology: defaultTopologyConfig,
   forces: defaultForceConfig,
+  atmosphere: defaultAtmosphereConfig,
 };
+
+/**
+ * Deep-merge any (possibly legacy/partial) config onto the defaults so
+ * consumers never see `undefined` sections like `config.nodes`.
+ */
+export function mergeGraphConfig(partial?: Partial<GraphConfigState> | null): GraphConfigState {
+  const p = (partial ?? {}) as Partial<GraphConfigState>;
+  return {
+    version: GRAPH_CONFIG_VERSION,
+    atmosphere: mergeAtmosphereConfig(p.atmosphere),
+    nodes: { ...defaultNodeConfig, ...(p.nodes ?? {}) },
+    links: { ...defaultLinkConfig, ...(p.links ?? {}) },
+    forces: { ...defaultForceConfig, ...(p.forces ?? {}) },
+    hierarchy: mergeHierarchyColorConfig(p.hierarchy),
+    topology: {
+      ...defaultTopologyConfig,
+      ...(p.topology ?? {}),
+      styles: {
+        hierarchy: { ...defaultTopologyConfig.styles.hierarchy, ...(p.topology?.styles?.hierarchy ?? {}) },
+        backlink: { ...defaultTopologyConfig.styles.backlink, ...(p.topology?.styles?.backlink ?? {}) },
+        tag: { ...defaultTopologyConfig.styles.tag, ...(p.topology?.styles?.tag ?? {}) },
+        semantic: { ...defaultTopologyConfig.styles.semantic, ...(p.topology?.styles?.semantic ?? {}) },
+      },
+    },
+  };
+}
 
 // ============= STORE INTERFACE =============
 
@@ -205,10 +266,12 @@ interface GraphState {
   
   // Actions - Config updates
   updateNodeConfig: (updates: Partial<NodeConfig>) => void;
+  updateAtmosphereConfig: (updates: Partial<AtmosphereConfig>) => void;
   updateLinkConfig: (updates: Partial<LinkConfig>) => void;
   updateTopologyConfig: (updates: Partial<TopologyConfig>) => void;
   updateTopologyStyle: (linkType: keyof TopologyConfig['styles'], updates: Partial<LinkStyle>) => void;
   updateForceConfig: (updates: Partial<ForceConfig>) => void;
+  updateHierarchyConfig: (updates: Partial<HierarchyColorConfig>) => void;
   
   // Actions - Full config
   setConfig: (config: GraphConfigState) => void;
@@ -218,6 +281,7 @@ interface GraphState {
   resetLinkConfig: () => void;
   resetTopologyConfig: () => void;
   resetForceConfig: () => void;
+  resetHierarchyConfig: () => void;
   
   // Actions - Stats (computed from nodes/links)
   computeStats: (nodes: Node[], links: Link[]) => void;
@@ -244,6 +308,17 @@ export const useGraphStore = create<GraphState>()(
         isDirty: false,
         
         // Config update actions
+        updateAtmosphereConfig: (updates) => set(
+          (state) => ({
+            config: {
+              ...state.config,
+              atmosphere: mergeAtmosphereConfig({ ...state.config.atmosphere, ...updates }),
+            },
+            isDirty: true,
+          }),
+          false,
+          'updateAtmosphereConfig'
+        ),
         updateNodeConfig: (updates) => set(
           (state) => ({
             config: {
@@ -310,30 +385,28 @@ export const useGraphStore = create<GraphState>()(
           'updateForceConfig'
         ),
         
+        updateHierarchyConfig: (updates) => set(
+          (state) => ({
+            config: {
+              ...state.config,
+              hierarchy: { ...state.config.hierarchy, ...updates },
+            },
+            isDirty: true,
+          }),
+          false,
+          'updateHierarchyConfig'
+        ),
+
         // Full config actions
         setConfig: (config) => set(
-          { config, isDirty: true },
+          { config: mergeGraphConfig(config), isDirty: true },
           false,
           'setConfig'
         ),
         
         loadConfig: (config) => set(
           {
-            config: config ? {
-              ...defaultGraphConfig,
-              ...config,
-              nodes: { ...defaultNodeConfig, ...config.nodes },
-              links: { ...defaultLinkConfig, ...config.links },
-              topology: {
-                ...defaultTopologyConfig,
-                ...config.topology,
-                styles: {
-                  ...defaultTopologyConfig.styles,
-                  ...config.topology?.styles,
-                },
-              },
-              forces: { ...defaultForceConfig, ...config.forces },
-            } : defaultGraphConfig,
+            config: mergeGraphConfig(config),
             isDirty: false,
           },
           false,
@@ -380,6 +453,15 @@ export const useGraphStore = create<GraphState>()(
           }),
           false,
           'resetForceConfig'
+        ),
+
+        resetHierarchyConfig: () => set(
+          (state) => ({
+            config: { ...state.config, hierarchy: defaultHierarchyColorConfig },
+            isDirty: true,
+          }),
+          false,
+          'resetHierarchyConfig'
         ),
         
         // Stats computation
@@ -457,6 +539,16 @@ export const useGraphStore = create<GraphState>()(
       {
         name: 'graph-config-storage',
         partialize: (state) => ({ config: state.config }),
+        merge: (persisted, current) => {
+          const saved = persisted as Partial<GraphState>;
+          const config = saved.config;
+          if (!config) return current;
+          return {
+            ...current,
+            ...saved,
+            config: mergeGraphConfig(config),
+          };
+        },
       }
     ),
     { name: 'GraphStore' }

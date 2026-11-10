@@ -1,48 +1,54 @@
-import { useState, useEffect } from 'react';
-import { usePWA } from "@/features/sync/hooks/usePWA";
+import { useState, useEffect } from "react";
+import { usePWA } from "@/core/system/sync/hooks/usePWA";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
-import { 
-  Download, 
-  X, 
-  Smartphone, 
-  Monitor, 
-  Wifi, 
+import {
+  Download,
+  X,
+  Smartphone,
+  Monitor,
+  Wifi,
   WifiOff,
   RefreshCw,
   CheckCircle2,
-  Share
-} from 'lucide-react';
+  Share,
+} from "lucide-react";
 
 interface PWAInstallPromptProps {
-  variant?: 'banner' | 'card' | 'minimal';
+  variant?: "banner" | "card" | "minimal";
   showOfflineStatus?: boolean;
   onDismiss?: () => void;
 }
 
-export function PWAInstallPrompt({ 
-  variant = 'banner', 
+export function PWAInstallPrompt({
+  variant = "banner",
   showOfflineStatus = true,
-  onDismiss 
+  onDismiss,
 }: PWAInstallPromptProps) {
-  const { 
-    canInstall, 
-    isInstalled, 
-    isOnline, 
+  const {
+    canInstall,
+    isInstalled,
+    isOnline,
     isUpdateAvailable,
     platform,
-    installApp, 
+    installApp,
     updateApp,
-    getInstallInstructions 
+    getInstallInstructions,
   } = usePWA();
-  
+
   const [dismissed, setDismissed] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
 
   // Check localStorage for dismissal
   useEffect(() => {
-    const dismissedUntil = localStorage.getItem('pwa-prompt-dismissed');
+    const dismissedUntil = localStorage.getItem("pwa-prompt-dismissed");
     if (dismissedUntil) {
       const dismissedDate = new Date(dismissedUntil);
       if (dismissedDate > new Date()) {
@@ -55,14 +61,14 @@ export function PWAInstallPrompt({
     // Dismiss for 7 days
     const dismissUntil = new Date();
     dismissUntil.setDate(dismissUntil.getDate() + 7);
-    localStorage.setItem('pwa-prompt-dismissed', dismissUntil.toISOString());
+    localStorage.setItem("pwa-prompt-dismissed", dismissUntil.toISOString());
     setDismissed(true);
     onDismiss?.();
   };
 
   const handleInstall = async () => {
     const result = await installApp();
-    if (!result.success && (platform === 'ios' || !canInstall)) {
+    if (!result.success && (platform === "ios" || !canInstall)) {
       setShowInstructions(true);
     }
   };
@@ -77,8 +83,12 @@ export function PWAInstallPrompt({
           <CardContent className="p-4 flex items-center gap-4">
             <RefreshCw className="w-5 h-5 text-primary" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Update available</p>
-              <p className="text-xs text-muted-foreground">Click to refresh and get the latest version</p>
+              <p className="text-sm font-medium text-foreground">
+                Update available
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Click to refresh and get the latest version
+              </p>
             </div>
             <Button size="sm" onClick={updateApp}>
               Update
@@ -93,7 +103,10 @@ export function PWAInstallPrompt({
   if (showOfflineStatus && !isOnline) {
     return (
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2">
-        <Badge variant="outline" className="bg-destructive/10 border-destructive/20 text-destructive gap-2 px-4 py-2">
+        <Badge
+          variant="outline"
+          className="bg-destructive/10 border-destructive/20 text-destructive gap-2 px-4 py-2"
+        >
           <WifiOff className="w-4 h-4" />
           You're offline - changes will sync when connected
         </Badge>
@@ -107,7 +120,7 @@ export function PWAInstallPrompt({
   }
 
   // Dismissed or not installable
-  if (dismissed || (!canInstall && platform !== 'ios')) {
+  if (dismissed || (!canInstall && platform !== "ios")) {
     return null;
   }
 
@@ -126,7 +139,7 @@ export function PWAInstallPrompt({
               <X className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-3">
-              {platform === 'ios' ? (
+              {platform === "ios" ? (
                 <Share className="w-8 h-8 text-primary" />
               ) : (
                 <Download className="w-8 h-8 text-primary" />
@@ -148,8 +161,8 @@ export function PWAInstallPrompt({
                 </li>
               ))}
             </ol>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full mt-4"
               onClick={() => setShowInstructions(false)}
             >
@@ -162,7 +175,7 @@ export function PWAInstallPrompt({
   }
 
   // Banner variant
-  if (variant === 'banner') {
+  if (variant === "banner") {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-background via-background to-transparent">
         <div className="max-w-2xl mx-auto">
@@ -170,31 +183,25 @@ export function PWAInstallPrompt({
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  {platform === 'ios' || platform === 'android' ? (
+                  {platform === "ios" || platform === "android" ? (
                     <Smartphone className="w-6 h-6 text-primary" />
                   ) : (
                     <Monitor className="w-6 h-6 text-primary" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground">Install VaultGraph</h3>
+                  <h3 className="font-semibold text-foreground">
+                    Install VaultGraph
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Get quick access from your home screen. Works offline!
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDismiss}
-                  >
+                  <Button variant="ghost" size="sm" onClick={handleDismiss}>
                     Not now
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleInstall}
-                    className="gap-2"
-                  >
+                  <Button size="sm" onClick={handleInstall} className="gap-2">
                     <Download className="w-4 h-4" />
                     Install
                   </Button>
@@ -208,7 +215,7 @@ export function PWAInstallPrompt({
   }
 
   // Card variant
-  if (variant === 'card') {
+  if (variant === "card") {
     return (
       <Card className="bg-card border-border">
         <CardHeader>
@@ -267,24 +274,30 @@ export function PWAInstallPrompt({
 
 export function PWAStatusBadge() {
   const { isOnline, isInstalled } = usePWA();
-  
+
   if (!isOnline) {
     return (
-      <Badge variant="outline" className="gap-1.5 bg-destructive/10 border-destructive/20 text-destructive">
+      <Badge
+        variant="outline"
+        className="gap-1.5 bg-destructive/10 border-destructive/20 text-destructive"
+      >
         <WifiOff className="w-3 h-3" />
         Offline
       </Badge>
     );
   }
-  
+
   if (isInstalled) {
     return (
-      <Badge variant="outline" className="gap-1.5 bg-primary/10 border-primary/20 text-primary">
+      <Badge
+        variant="outline"
+        className="gap-1.5 bg-primary/10 border-primary/20 text-primary"
+      >
         <Wifi className="w-3 h-3" />
         Installed
       </Badge>
     );
   }
-  
+
   return null;
 }
