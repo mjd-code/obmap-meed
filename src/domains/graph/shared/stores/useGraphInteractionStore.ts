@@ -210,12 +210,15 @@ export const globalGraphInteractionStore = createStore<GraphInteractionState>()(
 );
 
 /** A fresh, leaf-scoped instance seeded from the app-wide defaults. */
-export const createGraphInteractionStore = (): StoreApi<GraphInteractionState> => {
+export const createGraphInteractionStore = (
+  initialLayout?: LayoutMode
+): StoreApi<GraphInteractionState> => {
   const store = createStore<GraphInteractionState>()(creator);
   const defaults = globalGraphInteractionStore.getState();
+  const activeLayout = initialLayout ?? defaults.layoutMode;
   store.setState({
-    layoutMode: defaults.layoutMode,
-    canvasMode: canvasModeOf(defaults.layoutMode),
+    layoutMode: activeLayout,
+    canvasMode: canvasModeOf(activeLayout),
     lastGraphLayout: defaults.lastGraphLayout ?? 'free-force',
     lastMindmapLayout: defaults.lastMindmapLayout ?? 'mindmap',
     orientation: defaults.orientation,

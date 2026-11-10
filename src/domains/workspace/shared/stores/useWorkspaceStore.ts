@@ -210,7 +210,18 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           const group = state.getActiveGroup();
           if (!group) return;
 
-          // Reuse an existing leaf showing the same thing.
+          // Idempotency check: jika tab yang diminta sudah aktif di grup saat ini dengan view yang sama, abaikan
+          const activeLeaf = group.leaves.find((l) => l.id === group.activeLeafId);
+          if (
+            activeLeaf &&
+            activeLeaf.view.type === view.type &&
+            activeLeaf.view.canvasMode === view.canvasMode &&
+            activeLeaf.view.nodeId === view.nodeId
+          ) {
+            return;
+          }
+
+          // Reuse existing leaf yang menampilkan tipe yang sama
           const existing = allGroups(state.root)
             .flatMap((g) => g.leaves.map((l) => ({ g, l })))
             .find(
@@ -218,6 +229,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
                 l.view.type === view.type &&
                 (view.nodeId ? l.view.nodeId === view.nodeId : !l.view.nodeId),
             );
+
           if (existing && mode === "tab") {
             updateGroup(existing.g.id, (g) => ({
               ...g,
@@ -252,6 +264,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           };
           commit(prune(replaceNode(state.root, group.id, split)), newGroup.id);
         },
+
 
         openFile: (nodeId, title, mode = "tab") =>
           get().openView({ type: "markdown", nodeId, title }, mode),
@@ -421,66 +434,6 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           if (hasChanged) {
             set({ root });
           }
-        },
-
-        openView: (view, mode = "tab") => {
-          const state = get();
-          const group = state.getActiveGroup();
-          if (!group) return;
-
-          // Idempotency check: jika tab yang diminta sudah aktif di grup saat ini dengan view yang sama, abaikan
-          const activeLeaf = group.leaves.find((l) => l.id === group.activeLeafId);
-          if (
-            activeLeaf &&
-            activeLeaf.view.type === view.type &&
-            activeLeaf.view.canvasMode === view.canvasMode &&
-            activeLeaf.view.nodeId === view.nodeId
-          ) {
-            return;
-          }
-
-          // Reuse existing leaf yang menampilkan tipe yang sama
-          const existing = allGroups(state.root)
-            .flatMap((g) => g.leaves.map((l) => ({ g, l })))
-            .find(
-              ({ l }) =>
-                l.view.type === view.type &&
-                (view.nodeId ? l.view.nodeId === view.nodeId : !l.view.nodeId),
-            );
-
-          if (existing && mode === "tab") {
-            updateGroup(existing.g.id, (g) => ({
-              ...g,
-              activeLeafId: existing.l.id,
-              leaves: g.leaves.map((leaf) =>
-                leaf.id === existing.l.id ? { ...leaf, view: { ...leaf.view, ...view } } : leaf,
-              ),
-            }));
-            set({ activeGroupId: existing.g.id });
-            return;
-          }
-
-          const leaf = createLeaf(view);
-
-          if (mode === "tab") {
-            updateGroup(group.id, (g) => ({
-              ...g,
-              leaves: [...g.leaves, leaf],
-              activeLeafId: leaf.id,
-            }));
-            return;
-          }
-
-          const direction = mode === "split-vertical" ? "vertical" : "horizontal";
-          const newGroup = createGroup([leaf]);
-          const split: WorkspaceSplit = {
-            kind: "split",
-            id: uid("split"),
-            direction,
-            children: [group, newGroup],
-            sizes: [50, 50],
-          };
-          commit(prune(replaceNode(state.root, group.id, split)), newGroup.id);
         },
 
         renameLeaf: (nodeId, title) => {
