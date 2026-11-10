@@ -541,6 +541,7 @@ export const FileExplorerTree: React.FC<FileExplorerTreeProps> = ({
       />
     </div>
   );
+}
 
 // Wave 2 Dual Named Export Compatibility
 export { FileExplorerTree as WorkspaceFileExplorerTree };
