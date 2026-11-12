@@ -20,6 +20,8 @@ export interface DynamicCameraBoundsOptions {
   paddingRatio?: number;
 }
 
+const DEFAULT_NODE_BOUNDS_MARGIN = 10;
+
 export function calculateCameraBounds(
   nodes: RenderNode[],
   options: DynamicCameraBoundsOptions,
@@ -46,12 +48,12 @@ export function calculateCameraBounds(
   for (const node of nodes) {
     const x = typeof node.x === 'number' ? node.x : 0;
     const y = typeof node.y === 'number' ? node.y : 0;
-    const val = typeof node.val === 'number' ? node.val : 8;
+    const margin = DEFAULT_NODE_BOUNDS_MARGIN;
 
-    if (x - val < minX) minX = x - val;
-    if (x + val > maxX) maxX = x + val;
-    if (y - val < minY) minY = y - val;
-    if (y + val > maxY) maxY = y + val;
+    if (x - margin < minX) minX = x - margin;
+    if (x + margin > maxX) maxX = x + margin;
+    if (y - margin < minY) minY = y - margin;
+    if (y + margin > maxY) maxY = y + margin;
   }
 
   const rawWidth = Math.max(1, maxX - minX);
@@ -95,7 +97,6 @@ export function seedInitialNodePositions(
         y: cached.y,
         vx: cached.vx ?? 0,
         vy: cached.vy ?? 0,
-        val: cached.val ?? 10,
         childCount: cached.childCount ?? 0,
       } as RenderNode);
     } else {
@@ -110,7 +111,6 @@ export function seedInitialNodePositions(
         y,
         vx: 0,
         vy: 0,
-        val: 10,
         childCount: 0,
       } as RenderNode);
     }
