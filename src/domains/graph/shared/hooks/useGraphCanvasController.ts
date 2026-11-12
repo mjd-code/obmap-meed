@@ -8,22 +8,32 @@ import {
   type ForwardedRef,
 } from 'react';
 import type { ForceGraphMethods } from 'react-force-graph-2d';
-import type { Node, Link } from '@/global/types';
-import type { RenderNode, RenderLink } from '@/domains/graph/shared/utils/graph.types';
+import type {
+  Node,
+  Link,
+  RenderNode,
+  RenderLink,
+  NodeMetric,
+  MindmapLayoutMode,
+} from '@/domains/graph/shared/utils/graph.types';
 import type { GraphCanvasProps, GraphCanvasHandle } from '@/domains/graph/components/GraphCanvas';
 import { useGraphEngineStore } from '@/domains/graph/shared/stores/useGraphEngineStore';
 import { useGraphInteractionStore } from '@/domains/graph/shared/stores/useGraphInteractionStore';
+import { useExplorerGraphSyncStore } from '@/domains/graph/shared/stores/useExplorerGraphSyncStore';
+import { buildGraphProjection } from '@/domains/graph/shared/utils/buildGraphProjection';
+import { buildTheme } from '@/domains/graph/shared/utils/theme';
+import { cardLayout } from '@/domains/graph/shared/utils/textLayout';
+import { hiddenByCollapse, pathwayOf, subtreeOf } from '@/domains/graph/shared/utils/graphTraversal';
+import { useLayoutEngine } from '@/domains/graph/shared/hooks/useLayoutEngine';
 import { useCanvasAtmosphere } from '@/domains/graph/shared/hooks/useCanvasAtmosphere';
 import { useCanvasDragReparent } from '@/domains/graph/shared/hooks/useCanvasDragReparent';
 import { useCanvasGestureBridge } from '@/domains/graph/shared/hooks/useCanvasGestureBridge';
-import { useLayoutEngine } from '@/domains/graph/shared/hooks/useLayoutEngine';
 import { useGraphPhysicsSimulation } from '@/domains/graph/shared/hooks/useGraphPhysicsSimulation';
 import { LayoutTransitionController } from '@/domains/graph/shared/utils/transitionController';
-import {
-  calculateCameraBounds,
-  seedInitialNodePositions,
-  resolveAncestorsToUncollapse,
-} from '@/domains/graph/shared/utils/cameraBounds';
+import { drawNode, paintNodePointerArea } from '@/domains/graph/shared/utils/drawNode';
+import { drawLink } from '@/domains/graph/shared/utils/drawLink';
+import { calculateCameraBounds } from '@/domains/graph/shared/utils/cameraBounds';
+import { usesPhysicsSimulation } from '@/domains/graph/shared/utils/layoutCategory';
 
 export function useGraphCanvasController(
   props: GraphCanvasProps,
@@ -50,62 +60,159 @@ export function useGraphCanvasController(
     setSubtreeLayoutOverride,
     setFocusedRoot,
     toggleCollapsed,
-    uncollapseNode,
-    setHoveredNode,
-    timeLapseStep,
-    timeLapseTotal,
-    isTimeLapseActive,
+    setHovered,
+    setSelected,
   } = useGraphInteractionStore();
 
-  // ResizeObserver for Container
+  const clearExplorerHoveredNode = useExplorerGraphSyncStore(
+    (state) => state.clearExplorerHoveredNode,
+  );
+
+  // ResizeObserver untuk Container
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
       if (entry) {
         const { width, height } = entry.contentRect;
-        setSize({ width: Math.max(width, 100), height: Math.max(height, 100) });
+        if (width > 0 && height > 0) {
+          setSize({ width, height });
+        }
       }
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  // Seed Layout Nodes
-  const seededNodes = useMemo(() => {
-    return seedInitialNodePositions(props.graphData.nodes, nodeCache.current);
-  }, [props.graphData.nodes]);
+  // Projection Computation
+  const projection = useMemo(() => {
+    const next = buildGraphProjection(props.graphData.nodes, props.graphData.links, {
+      timeField: engine.timeField,
+    });
+    const activeIds = new Set(next.nodes.map((node) => node.id));
+    const nodes = next.nodes.map((node) => {
+      const existing = nodeCache.current.get(node.id);
+      if (!existing) {
+        nodeCache.current.set(node.id, node);
+        return node;
+      }
+      Object.assign(existing, node);
+      return existing;
+    });
+    for (const id of nodeCache.current.keys()) {
+      if (!activeIds.has(id)) nodeCache.current.delete(id);
+    }
+    return { ...next, nodes, byId: new Map(nodes.map((node) => [node.id, node])) };
+  }, [props.graphData.nodes, props.graphData.links, engine.timeField]);
 
-  // Layout Engine solver computation
-  const displayData = useLayoutEngine({
-    nodes: seededNodes,
-    links: props.graphData.links,
-    layoutMode,
-    layoutArrangement,
-    orientation,
+  // Metrics Calculation
+  const metrics = useMemo(() => {
+    const map = new Map<string, NodeMetric>();
+    const showLabels = props.graphConfig.nodes.showLabels;
+
+    for (const node of projection.nodes) {
+      const label = props.graphConfig.nodes.labelField === 'id' ? node.id : node.name;
+      const depthScale = props.graphConfig.nodes.sizeByDepth
+        ? Math.max(0.45, 1 - node.depth * props.graphConfig.nodes.depthSizeInterval * 0.08)
+        : 1;
+      const diameter = Math.max(3, props.graphConfig.nodes.relSize * depthScale) * 2;
+
+      const layout = cardLayout(label, {
+        root: node.parentId === null,
+        badge: node.childCount > 0,
+        fontSize: props.graphConfig.nodes.labelSize + (node.parentId === null ? 2 : 0),
+      });
+
+      if (showLabels) {
+        map.set(node.id, {
+          width: layout.width,
+          height: Math.max(diameter + 10, layout.height),
+        });
+      } else {
+        map.set(node.id, { width: diameter, height: diameter });
+      }
+    }
+    return map;
+  }, [
+    projection.nodes,
+    props.graphConfig.nodes.showLabels,
+    props.graphConfig.nodes.labelField,
+    props.graphConfig.nodes.labelSize,
+    props.graphConfig.nodes.relSize,
+    props.graphConfig.nodes.sizeByDepth,
+    props.graphConfig.nodes.depthSizeInterval,
+  ]);
+
+  // Visibility Filter
+  const visibleIds = useMemo(() => {
+    const hidden = hiddenByCollapse(projection, collapsedIds);
+    const focusSet = focusedRootId ? subtreeOf(projection, focusedRootId) : null;
+    const term = props.search.trim().toLowerCase();
+    const content = props.contentFilter.trim().toLowerCase();
+    const tag = props.tagFilter.trim().toLowerCase().replace(/^#/, '');
+
+    return projection.nodes
+      .filter((node) => {
+        if (hidden.has(node.id)) return false;
+        if (focusSet && !focusSet.has(node.id)) return false;
+        if (node.depth < props.minDepth || node.depth > props.maxDepth) return false;
+        if (term && !node.name.toLowerCase().includes(term)) return false;
+        if (content && !node.content.toLowerCase().includes(content)) return false;
+        if (tag && !node.tags.some((t) => t.toLowerCase() === tag)) return false;
+        return true;
+      })
+      .map((n) => n.id);
+  }, [
+    projection,
     collapsedIds,
     focusedRootId,
-    subtreeLayoutOverrides,
-    search: props.search,
-    minDepth: props.minDepth,
-    maxDepth: props.maxDepth,
-    contentFilter: props.contentFilter,
-    tagFilter: props.tagFilter,
+    props.search,
+    props.contentFilter,
+    props.tagFilter,
+    props.minDepth,
+    props.maxDepth,
+  ]);
+
+  // Layout Engine Computation
+  const geometry = useLayoutEngine(projection, {
+    mode: layoutMode,
+    width: size.width,
+    height: size.height,
+    orientation,
+    levelGap: 140,
+    siblingGap: 36,
+    laneGap: 80,
+    ribAngle: Math.PI / 4,
+    rootId: focusedRootId ?? undefined,
+    visibleIds,
+    nodeMetrics: metrics,
+    subtreeOverrides: subtreeLayoutOverrides,
   });
 
-  // Keep node cache fresh
-  useEffect(() => {
-    displayData.nodes.forEach((n) => {
-      nodeCache.current.set(n.id, n);
+  // Display Data untuk ForceGraph2D
+  const displayData = useMemo(() => {
+    const visibleSet = new Set(visibleIds);
+    const nodes = projection.nodes.filter((n) => visibleSet.has(n.id));
+    const links = projection.links.filter((l) => {
+      const s = typeof l.source === 'object' ? (l.source as any).id : l.source;
+      const t = typeof l.target === 'object' ? (l.target as any).id : l.target;
+      return visibleSet.has(s) && visibleSet.has(t);
     });
-  }, [displayData.nodes]);
+    return { nodes, links };
+  }, [projection, visibleIds]);
 
-  // Atmosphere Particles & Living Canvas
+  const theme = useMemo(() => buildTheme(), []);
+
+  // Atmosphere Particles
   const atmosphere = useCanvasAtmosphere({
-    enabled: props.graphConfig.atmosphere?.particles?.enabled ?? false,
-    intensity: props.graphConfig.atmosphere?.particles?.intensity ?? 35,
-    speed: props.graphConfig.atmosphere?.particles?.speed ?? 1,
-    flowGlow: props.graphConfig.atmosphere?.links?.flowGlow ?? false,
+    graphConfig: props.graphConfig,
+    layoutMode,
+    decorations: geometry.decorations,
+    theme,
+    projection,
+    zoomOutRendering: 'dots',
+    size,
+    zoomRef,
   });
 
   // Physics Simulation
@@ -115,97 +222,82 @@ export function useGraphCanvasController(
     config: props.graphConfig,
   });
 
-  // Drag Reparenting Hook
+  // Drag Reparent Hook
   const dragReparent = useCanvasDragReparent({
-    graphData: displayData,
+    nodes: displayData.nodes,
+    parentByChild: projection.parentByChild,
+    childrenByParent: projection.childrenByParent,
+    layoutMode,
+    layoutArrangement,
+    layoutTargets: geometry.targets,
+    transitionRef: transition,
+    graphRef,
     onNodeMove: props.onNodeMove,
   });
 
-  // Contextual Toolbar Position State
-  const [toolbarNode, setToolbarNode] = useState<Node | null>(null);
-  const [toolbarPos, setToolbarPos] = useState<{ x: number; y: number } | null>(null);
-
-  const closeToolbar = useCallback(() => {
-    setToolbarNode(null);
-    setToolbarPos(null);
-  }, []);
-
-  // Gesture Bridge (Touch, Right Click, Double Click)
+  // Gesture Bridge (Touch, Click, Double Click)
   const gestureBridge = useCanvasGestureBridge({
     containerRef,
     graphRef,
-    onNodeRightClick: (node, event) => {
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (rect) {
-        setToolbarNode(node);
-        setToolbarPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
-      }
-    },
-    onNodeDoubleClick: (node) => {
-      props.onNodeOpen?.(node);
-    },
+    zoomRef,
+    nodes: displayData.nodes,
+    rawNodes: props.graphData.nodes,
+    selectedNode: props.selectedNode,
+    onNodeSelect: props.onNodeSelect,
+    onNodeOpen: props.onNodeOpen,
+    onToggleCollapse: (nodeId) => toggleCollapsed(nodeId),
+    setSelected,
+    onCanvasInteraction: () => clearExplorerHoveredNode(),
   });
 
-  // Imperative Handle for Parent (Smart Zoom, Fit, Reset)
+  // Imperative Handle
   useImperativeHandle(
     ref,
     () => ({
-      smartZoom: (action) => {
-        const fg = graphRef.current;
-        if (!fg) return;
-
-        if (action === 'fit') {
-          const bounds = calculateCameraBounds(displayData.nodes, {
-            viewportWidth: size.width,
-            viewportHeight: size.height,
-          });
-          fg.centerAt(bounds.centerX, bounds.centerY, 400);
-          fg.zoomToFit(400, bounds.dynamicPadding);
-        } else if (action === 'reset') {
-          fg.centerAt(0, 0, 400);
-          fg.zoom(1, 400);
-        } else if (action === 'selection' && props.selectedNode) {
-          const target = displayData.nodes.find((n) => n.id === props.selectedNode?.id);
-          if (target && typeof target.x === 'number' && typeof target.y === 'number') {
-            fg.centerAt(target.x, target.y, 400);
-            fg.zoom(1.8, 400);
-          }
-        }
-      },
-      refresh: () => {
-        graphRef.current?.refresh?.();
-      },
+      smartZoom: (action) => gestureBridge.smartZoom(action),
+      refresh: () => graphRef.current?.refresh?.(),
     }),
-    [displayData.nodes, props.selectedNode, size.width, size.height],
+    [gestureBridge],
   );
+
+  const visibleDepths = useMemo(() => {
+    return Array.from(new Set(displayData.nodes.map((n) => n.depth))).sort((a, b) => a - b);
+  }, [displayData.nodes]);
+
+  const isPhysicsActive = usesPhysicsSimulation(layoutMode);
 
   return {
     containerRef,
     graphRef,
     size,
     displayData,
+    theme,
+    geometry,
+    visibleDepths,
     atmosphere,
     dragReparent,
     gestureBridge,
-    toolbar: {
-      node: toolbarNode,
-      position: toolbarPos,
-      close: closeToolbar,
-    },
+    isPhysicsActive,
+    layoutMode,
+    canvasMode,
+    subtreeLayoutOverrides,
+    focusedRootId,
     actions: {
-      onNodeClick: (node: RenderNode) => {
-        props.onNodeSelect(node);
-      },
-      onNodeHover: (node: RenderNode | null) => {
-        setHoveredNode(node ? node.id : null);
-      },
-      onZoom: ({ k }: { k: number }) => {
-        zoomRef.current = k;
-      },
       setFocusedRoot,
       setSubtreeLayoutOverride,
+      toggleCollapsed,
+      paintNode: (node: RenderNode, ctx: CanvasRenderingContext2D, globalScale: number) =>
+        drawNode(node, ctx, globalScale, props.graphConfig.nodes, props.selectedNode?.id),
+      paintPointer: (node: RenderNode, color: string, ctx: CanvasRenderingContext2D, globalScale: number) =>
+        paintNodePointerArea(node, color, ctx, globalScale, props.graphConfig.nodes),
+      paintLink: (link: RenderLink, ctx: CanvasRenderingContext2D, globalScale: number) =>
+        drawLink(link, ctx, globalScale, props.graphConfig),
+      renderDecorations: (ctx: CanvasRenderingContext2D, globalScale: number) => {
+        atmosphere.renderPreFrame?.(ctx, globalScale);
+      },
+      handleZoomEnd: () => {
+        gestureBridge.updateToolbarPosition();
+      },
     },
-    canvasMode,
-    layoutMode,
   };
 }

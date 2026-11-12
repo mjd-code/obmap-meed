@@ -15,8 +15,8 @@ describe('cameraBounds utility', () => {
 
   it('calculates bounding box and dynamic padding for dispersed nodes', () => {
     const testNodes: RenderNode[] = [
-      { id: '1', name: 'A', x: -100, y: -50, val: 10 } as RenderNode,
-      { id: '2', name: 'B', x: 200, y: 150, val: 10 } as RenderNode,
+      { id: '1', name: 'A', x: -100, y: -50, val: 10, type: 'file', parentId: null, depth: 0, tags: [], content: '', childCount: 0 },
+      { id: '2', name: 'B', x: 200, y: 150, val: 10, type: 'file', parentId: null, depth: 0, tags: [], content: '', childCount: 0 },
     ];
 
     const bounds = calculateCameraBounds(testNodes, { viewportWidth: 1200, viewportHeight: 800 });
@@ -33,8 +33,8 @@ describe('cameraBounds utility', () => {
 
   it('deterministically seeds positions for new nodes with golden ratio spiral', () => {
     const rawNodes: Node[] = [
-      { id: 'n1', name: 'First', path: 'First.md', type: 'file' },
-      { id: 'n2', name: 'Second', path: 'Second.md', type: 'file' },
+      { id: 'n1', name: 'First', type: 'file', parentId: null, depth: 0, tags: [], content: '' },
+      { id: 'n2', name: 'Second', type: 'file', parentId: null, depth: 0, tags: [], content: '' },
     ];
     const cache = new Map<string, RenderNode>();
 

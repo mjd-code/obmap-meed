@@ -4,6 +4,33 @@
 
 // src/shared/stores/types.ts
 
+/** Mutable object handed to ForceGraph2D — it writes x/y/fx/fy in place. */
+export interface RenderNode {
+  id: string;
+  name: string;
+  type: Node['type'];
+  mediaType?: Node['mediaType']; 
+  parentId: string | null;
+  depth: number;
+  tags: string[];
+  content: string;
+  time?: number;
+  category?: string;
+  childCount: number;
+  branchId?: string;
+  branchColor?: string;
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+  fx?: number;
+  fy?: number;
+  val?: number; // <-- Ukuran / radius node untuk kalkulasi kamera & bounds
+  /** Toggle hit region in graph space, written by the node renderer. */
+  toggle?: { x: number; y: number; r: number } | null;
+}
+
+
 export interface Node {
   id: string;
   name: string;

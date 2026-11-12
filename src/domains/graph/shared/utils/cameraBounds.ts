@@ -1,5 +1,4 @@
-import type { Node, Link } from '@/global/types';
-import type { RenderNode, RenderLink } from '@/domains/graph/shared/utils/graph.types';
+import type { Node, Link, RenderNode, RenderLink } from '@/domains/graph/shared/utils/graph.types';
 import type { GraphConfigState } from '@/domains/graph/shared/stores/useGraphStore';
 
 export interface GraphCameraBounds {
@@ -97,6 +96,7 @@ export function seedInitialNodePositions(
         vx: cached.vx ?? 0,
         vy: cached.vy ?? 0,
         val: cached.val ?? 10,
+        childCount: cached.childCount ?? 0,
       } as RenderNode);
     } else {
       const radius = 22 * Math.sqrt(i + 1);
@@ -111,6 +111,7 @@ export function seedInitialNodePositions(
         vx: 0,
         vy: 0,
         val: 10,
+        childCount: 0,
       } as RenderNode);
     }
   }
@@ -153,6 +154,9 @@ export const dashFor = (style: string | undefined, width: number): number[] => {
 };
 
 export const topologyEnabled = (type: RenderLink['type'], config: GraphConfigState): boolean => {
-  if (!config.topology?.linkVisibility) return true;
-  return config.topology.linkVisibility[type] !== false;
+  if (!config.topology) return true;
+  if (type === 'hierarchy') return config.topology.showHierarchy ?? true;
+  if (type === 'backlink') return config.topology.showBacklinks ?? true;
+  if (type === 'tag') return config.topology.showTags ?? true;
+  return true;
 };

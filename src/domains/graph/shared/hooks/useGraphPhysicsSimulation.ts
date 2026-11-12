@@ -21,12 +21,12 @@ export function useGraphPhysicsSimulation({
     if (layoutMode === 'free-force') {
       const chargeForce = fg.d3Force('charge');
       if (chargeForce) {
-        chargeForce.strength(config.node?.repulsion ?? -180);
+        chargeForce.strength(config.forces?.chargeStrength ?? -180);
       }
 
       const linkForce = fg.d3Force('link');
       if (linkForce) {
-        linkForce.distance(config.link?.distance ?? 45);
+        linkForce.distance(config.forces?.linkDistance ?? 45);
       }
 
       fg.d3ReheatSimulation();
@@ -38,5 +38,5 @@ export function useGraphPhysicsSimulation({
       const linkForce = fg.d3Force('link');
       if (linkForce) linkForce.distance(0);
     }
-  }, [layoutMode, config.node?.repulsion, config.link?.distance, graphRef]);
+  }, [layoutMode, config.forces?.chargeStrength, config.forces?.linkDistance, graphRef]);
 }

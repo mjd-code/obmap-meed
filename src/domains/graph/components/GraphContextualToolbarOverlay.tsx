@@ -1,48 +1,53 @@
 import { ContextualToolbar } from '@/domains/graph/components/GraphContextualToolbar';
-import type { Node } from '@/global/types';
-import type { LayoutMode } from '@/domains/graph/shared/utils/graph.types';
+import type { Node, MindmapLayoutMode, CanvasMode } from '@/domains/graph/shared/utils/graph.types';
 
 export interface GraphContextualToolbarOverlayProps {
-  activeNode: Node | null;
-  position: { x: number; y: number } | null;
-  layoutMode: LayoutMode;
-  onFocusBranch: (nodeId: string) => void;
-  onSelectSubtreeLayout: (nodeId: string, layout: LayoutMode) => void;
-  onClose: () => void;
+  isVisible?: boolean;
+  selectedNode: Node | null;
+  toolbarCoords: { x: number; y: number } | null;
+  canvasMode?: CanvasMode;
+  currentOverride?: MindmapLayoutMode;
+  isFocused: boolean;
+  onSetStructure: (layout: MindmapLayoutMode | null) => void;
   onAddSubNode?: (parentId: string, type: 'file' | 'folder') => void;
-  onDeleteNode?: (nodeId: string) => void;
+  onNodeDelete?: (nodeId: string) => void;
+  onToggleFocus: () => void;
+  onZoomToSelection: () => void;
+  onClose?: () => void;
 }
 
 export function GraphContextualToolbarOverlay({
-  activeNode,
-  position,
-  layoutMode,
-  onFocusBranch,
-  onSelectSubtreeLayout,
-  onClose,
+  isVisible = true,
+  selectedNode,
+  toolbarCoords,
+  canvasMode = 'mindmap',
+  currentOverride,
+  isFocused,
+  onSetStructure,
   onAddSubNode,
-  onDeleteNode,
+  onNodeDelete,
+  onToggleFocus,
+  onZoomToSelection,
+  onClose,
 }: GraphContextualToolbarOverlayProps) {
-  if (!activeNode || !position) return null;
+  if (!isVisible || !selectedNode || !toolbarCoords) return null;
 
   return (
-    <div
-      className="absolute pointer-events-auto z-40 transition-transform duration-75"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: 'translate(-50%, -100%) translateY(-18px)',
-      }}
-    >
-      <ContextualToolbar
-        activeNode={activeNode}
-        currentLayout={layoutMode}
-        onFocusBranch={() => onFocusBranch(activeNode.id)}
-        onSelectSubtreeLayout={(mode) => onSelectSubtreeLayout(activeNode.id, mode)}
-        onClose={onClose}
-        onAddSubNode={onAddSubNode ? (type) => onAddSubNode(activeNode.id, type) : undefined}
-        onDeleteNode={onDeleteNode ? () => onDeleteNode(activeNode.id) : undefined}
-      />
-    </div>
+    <ContextualToolbar
+      x={toolbarCoords.x}
+      y={toolbarCoords.y}
+      nodeId={selectedNode.id}
+      nodeName={selectedNode.name}
+      isFolder={selectedNode.type === 'folder'}
+      canvasMode={canvasMode}
+      currentOverride={currentOverride}
+      isFocused={isFocused}
+      onSetStructure={onSetStructure}
+      onAddSub={(type) => onAddSubNode?.(selectedNode.id, type)}
+      onDelete={() => onNodeDelete?.(selectedNode.id)}
+      onToggleFocus={onToggleFocus}
+      onZoomToSelection={onZoomToSelection}
+      onClose={onClose}
+    />
   );
 }
