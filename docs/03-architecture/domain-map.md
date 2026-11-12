@@ -4,13 +4,13 @@ title: Peta dan Arsitektur 12 Domain ObMap
 type: architecture
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
+version: 1.1.0
+last_reviewed: 2026-11-12
 audience: both
 related:
   - ARCH-STRUCT-001
   - ENG-RULES-001
-  - DOC-META-002
+  - DOC-ENG-004
 source_of_truth: src/domains/
 ---
 
@@ -18,8 +18,8 @@ source_of_truth: src/domains/
 
 ## Ringkasan 3 Baris
 - Aplikasi dibagi secara tegas menjadi 12 modul domain independen menggunakan prinsip Domain-Driven Design (DDD).
-- Setiap domain memiliki satu `Orchestrator` yang mengekspos kapabilitas domain ke domain lain atau ke halaman (`src/pages/`).
-- Komponen internal domain dilarang mengimpor internal komponen domain lain secara langsung (harus melalui Orchestrator atau Event Bus).
+- Setiap domain memiliki satu `Orchestrator` yang mengekspos kapabilitas domain ke Workspace atau ke rute halaman.
+- Komponen internal domain menerapkan struktur 3 lapis: Orchestrator (Façade), View (JSX Murni), dan Headless Controller Hook.
 
 ---
 
@@ -59,14 +59,21 @@ graph TD
 
 ---
 
-## 2. Pola Akses dan State Store
+## 2. Pola Arsitektur Internal Domain
 
-1. **Leaf-Scoped Store:** Store graf (`useGraphInteractionStore`) dibuat independen per leaf workspace agar konfigurasi tab tidak saling menimpa.
-2. **Domain Action Layer:** Mutasi vault dilakukan secara deterministik melalui `vaultSessionActions.ts`.
-3. **Decoupled Events:** Peristiwa global ditransmisikan melalui `src/global/stores/` menggunakan arsitektur publish/subscribe `DomainEvents`.
+1. **Domain Orchestrator (`<Domain>Orchestrator.tsx`):**
+   Bertindak sebagai penghubung makro antara domain dengan *workspace layout* dan *leaf store*. Orchestrator tidak mengurusi kalkulasi kalkulasi detail UI individual.
+2. **Headless Component Controller Pattern:**
+   Komponen visual yang memiliki kerumitan grafis atau manipulasi data (seperti `GraphCanvas` atau `EditorMarkdownView`) mendelegasikan seluruh efek samping (`useEffect`), kalkulasi geometri (`useMemo`), dan *subscriptions* ke hook pendamping berawalan `use<Component>Controller.ts`.
+3. **Leaf-Scoped Store Registry:**
+   State interaksi kanvas (`useGraphInteractionStore`) dikelola secara independen per leaf workspace melalui *leaf registry* untuk mencegah mutasi kaskade antar-tab.
+4. **Decoupled Event Bus:**
+   Komunikasi tak langsung lintas domain disalurkan melalui `DomainEvents.ts` untuk menjaga batas isolasi modul.
 
 ---
 
 ## Terkait
 - [Struktur Repositori](repository-structure.md)
 - [Aturan Repositori](../05-engineering/repository-rules.md)
+- [Standar Koding](../05-engineering/coding-standards.md)
+```

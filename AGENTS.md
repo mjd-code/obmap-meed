@@ -25,10 +25,15 @@
 4. **Database & Migrations:** Recreate or update schemas strictly via byte-for-byte migrations in `supabase/migrations/`. Grant table access to `authenticated` and `service_role` explicitly.
 5. **Private Storage Buckets:** All uploads to `vault-media` or `avatars` must reside in the user's UUID folder and be accessed via `createSignedUrl`, NEVER `getPublicUrl`.
 6. **Isolated Frontmatter:** Markdown body editor must remain clean; edit YAML properties exclusively via collapsible `EditorPropertiesPanel.tsx`.
+7. **Headless Controller Pattern (Anti-God Component):** Komponen kompleks (>300 baris atau memadukan >3 hooks/stores) DILARANG mencampur logika dan JSX. Wajib dipisah menjadi:
+   - **Domain Orchestrator** (`<Domain>Orchestrator.tsx`): Menghubungkan domain ke workspace & tab context.
+   - **View Component** (`<Feature>.tsx`): Murni JSX/styling deklaratif (~50–150 baris).
+   - **Headless Controller Hook** (`use<Feature>Controller.ts`): Menampung seluruh `useEffect`, `useMemo`, store subscriptions, dan event handlers tanpa merender markup.
 
 ## 5. Documentation Source of Truth
 - System Portal: `docs/README.md`
-- Master Feature Catalog: `docs/04-features/feature-catalog.md` and `_machine/features.json`
-- Domain Map: `docs/03-architecture/domain-map.md` and `_machine/domains.json`
+- Master Feature Catalog: `docs/04-features/feature-catalog.md` and `docs/_machine/features.json`
+- Domain Map: `docs/03-architecture/domain-map.md` and `docs/_machine/domains.json`
 - Tech Debt Register: `docs/05-engineering/tech-debt-register.md`
-- Documentation Index: `llms.txt` and `_machine/docs-index.json`
+- Coding Standards: `docs/05-engineering/coding-standards.md`
+- Documentation Index: `llms.txt` and `docs/_machine/docs-index.json`

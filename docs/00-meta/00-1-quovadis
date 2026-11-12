@@ -1,0 +1,163 @@
+[10:46 - 12-11-2026]
+
+QUO VADIS ObMap: Cetak Biru Strategis & Peta Jalan Eksekusi
+
+Selamat atas keberhasilan restrukturisasi Wave 3 (arsitektur 12 domain-driven design yang bersih, pembersihan import alias `@/`, serta fondasi sistem dokumentasi enterprise). Fondasi struktural kita sekarang sudah kokoh. Pertanyaannya sekarang: "Quo Vadis?" (Mau ke mana dan mulai dari mana dulu?)
+
+Berikut adalah audit evaluatif, dekonstruksi 3 aplikasi inspirasi patokan, analisis disrupsi 3 pilar, evaluasi fitur berbobot nilai (1–10), serta peta jalan eksekusi tahap demi tahap.
+
+---
+
+1. Analisis Mendalam 3 Aplikasi Patokan & Inspirasi Inti
+
+Untuk memvalidasi arah ObMap, kita harus membedah DNA dari 3 aplikasi acuan:
+
+```
+                  ┌─────────────────────────────────────────┐
+                  │               O B M A P                 │
+                  │   Hybrid Knowledge Hub & Visual LMS     │
+                  └───────────────────┬─────────────────────┘
+          ┌───────────────────────────┼───────────────────────────┐
+          ▼                           ▼                           ▼
+┌──────────────────┐        ┌──────────────────┐        ┌──────────────────┐
+│     OBSIDIAN     │        │      XMIND       │        │  LEARN-ANYTHING  │
+│  (Kedaulatan     │        │   (Struktur &    │        │  / WIKIPEDIA     │
+│   Data & Vault)  │        │   Kognisi Visual)│        │  (Graf Publik &  │
+│                  │        │                  │        │   Kurikulum DAG) │
+└──────────────────┘        └──────────────────┘        └──────────────────┘
+```
+
+1. Obsidian (Patokan: Kedaulatan Data, Wikilinks, & File Sistem Terbuka)
+ Kekuatan Utama: Kedaulatan absolut (plain text Markdown on disk), format anti-usang (future-proof), ekosistem atomic notes, dan bidirectional wikilinks* (`[[Note]]`).
+* Kelemahan Obsidian: 
+  1. Graph view bawaannya hampir murni free-force (menghasilkan "bola rambut" / hairball kusut yang tidak bermakna kognitif begitu vault membesar).
+  2. Publikasi webnya berbayar mahal (Obsidian Publish) dan menghasilkan situs statis hierarkis yang kaku, bukan eksplorasi graf yang dinamis untuk publik.
+  3. Kolaborasi tim sulit tanpa Git manual atau layanan sinkronisasi berbayar.
+* Yang Kita Serap & Lampaui: Kita mempertahankan integritas file Markdown + Frontmatter, namun kita mengganti "bola rambut" graf dengan solver tata letak terstruktur deterministik (Mindmap, Tree, Timeline, Fishbone) serta publikasi web instan satu klik gratis (`/p/*`).
+
+2. XMind (Patokan: Tata Letak Deterministik, Sintaks Kognitif & Estetika Diagram)
+ Kekuatan Utama: Ragam layout hierarkis yang rapi (Mindmap radial, Logic chart, Org chart horizontal/vertikal, Timeline, Ishikawa fishbone), struktur fold/unfold cabang yang intuitif, kurva konektor Bézier yang mulus, dan branch coloring* yang membedakan domain gagasan.
+* Kelemahan XMind:
+  1. Terkunci dalam format berkas biner/proprietary (`.xmind`). Sulit dicari (non-searchable oleh alat teks biasa), tidak ramah Git/VCS.
+  2. Bukan sistem manajemen pengetahuan (PKM): tidak ada editor catatan panjang, tidak ada relasi silang antar-dokumen (cross-referencing dua arah tidak ada).
+* Yang Kita Serap & Lampaui: ObMap menghadirkan keindahan visual dan ketertiban layout XMind langsung di atas pohon direktori berkas Markdown murni. Mengubah struktur folder menjadi cabang mindmap secara otomatis tanpa konfigurasi rumit.
+
+3. Learn-Anything.xyz & Wikipedia (Patokan: Graf Pengetahuan Terbuka & Kurikulum Interaktif)
+* Kekuatan Utama: 
+  - Wikipedia: Pengetahuan terbuka terluas di dunia, model rujukan silang terbuka, dan pengindeksan massal.
+  - Learn-Anything: Konsep kurikulum pengetahuan berbentuk Directed Acyclic Graph (DAG), di mana topik belajar adalah node yang memiliki garis prasyarat (prerequisites).
+* Kelemahan Keduanya:
+  - Wikipedia: Dokumen linier statis. Pengguna tersesat dalam lautan teks tanpa tahu peta konsep besarnya. Sangat kaku untuk studi interdisipliner visual.
+  - Learn-Anything: Statis, kurasi konten sentralistik, pengguna tidak bisa mengedit atau mengimpor vault lokal mereka sendiri ke dalam kanvas.
+* Yang Kita Serap & Lampaui: ObMap menggabungkan ensiklopedia publik dan kurikulum belajar ke dalam arsitektur pembaca publik (`/p/*`) dengan graf interaktif hidup. Vault Anda bisa langsung bertransformasi menjadi buku terbuka atau modul kursus mandiri.
+
+---
+
+2. Bedah Disrupsi 3 Pilar Utama ObMap
+
+Pilar A: Disrupsi Ensiklopedia Publik (Alternatif Wikipedia Interaktif)
+* Masalah Wikipedia Saat Ini: Menjelajahi artikel biologi, sejarah, atau filsafat di Wikipedia terasa seperti membaca ensiklopedia cetak tahun 1990 yang didigitalkan. Anda membuka 50 tab peramban untuk memahami hubungan antar-konsep, kehilangan konteks hierarki, dan tidak bisa melihat posisi sebuah artikel dalam peta besar ilmu pengetahuan.
+* Pendekatan Disrupsi ObMap:
+  1. Konstelasi Pengetahuan: Pengunjung membuka `/p/:username/:vaultSlug`. Alih-alih daftar teks linier, mereka disambut kanvas graf interaktif berlatar kosmik yang memetakan bab dan konsep inti.
+  2. Dual-Pane Reading Mode: Klik simpul &rarr; membaca catatan Markdown yang bersih di sebelah kiri, sementara graf di sebelah kanan tetap menjadi kompas visual yang menyoroti topik yang sedang dibaca.
+  3. Pencarian Semantik Instan: Pencarian berbasis Web Worker di sisi klien tanpa latensi server, menavigasi ribuan konsep secara instan.
+
+Pilar B: Portofolio Pengetahuan Visual (Living Digital Brain / CV Abad ke-21)
+* Masalah Portofolio Tradisional: CV PDF atau profil LinkedIn bersifat datar, linier, dan tidak mampu membuktikan kedalaman cara berpikir seseorang. Blog pribadi sering kali terkubur dalam urutan kronologis tanpa keterkaitan tema.
+* Pendekatan Disrupsi ObMap:
+  1. Proof of Thought: Seorang profesional, peneliti, atau insinyur dapat membagikan tautan portofolio ObMap mereka. Pengunjung dapat melihat jaringan proyek, studi kasus, tulisan, dan relasi kompetensi mereka dalam satu peta pikiran yang hidup.
+  2. Living Canvas Atmosphere: Partikel debu kosmik, glow effect, dan flow particles pada tautan relasi memberikan daya pikat visual premium (Apple-like space minimalism).
+  3. Media First-Class Citizen: Bukti karya (diagram, video demo, audio wawancara, tangkapan layar) menjadi node visual aktif di dalam graf, bukan sekadar lampiran teks tersembunyi.
+
+Pilar C: Kurikulum LMS Interaktif (Knowledge-Graph Directed Learning)
+ Masalah LMS Tradisional (Moodle, Canvas, Coursera): Memaksa siswa belajar dalam urutan linier yang membosankan (Modul 1 &rarr; Kuis 1 &rarr; Modul 2). Padahal pembelajaran manusia bersifat jaringan non-linier: beberapa modul bisa dipelajari paralel, dan ada materi prasyarat (prerequisites*) yang nyata.
+* Pendekatan Disrupsi ObMap:
+  1. Skill Tree ala Game RPG: Materi ajar adalah simpul graf. Hubungan antar-simpul menentukan jalur prasyarat belajar (Directed Acyclic Graph).
+  2. Node Completion & Progress Engine: Simpul yang belum memenuhi prasyarat berstatus terkunci (locked/greyed out). Menyelesaikan bacaan atau latihan pada suatu catatan akan memancarkan pulsa energi dan membuka simpul-simpul turunan berikutnya.
+  3. Self-Contained Offline Course: Satu paket materi pembelajaran dapat diekspor menjadi satu vault ZIP atau folder lokal. Siswa di daerah minim internet tetap dapat belajar penuh secara offline-first.
+
+---
+
+3. Matriks Evaluasi & Penilaian Fitur Saat Ini (Skala 1–10)
+
+Berdasarkan audit menyeluruh terhadap kode sumber di `src/domains/*`, `src/global/*`, dan register hutang teknis `TD-001` s/d `TD-006`:
+
+| Domain / Fitur | Skor (1–10) | Kelebihan (Plus) | Kelemahan & Kekurangan (Minus) | Prioritas Perbaikan |
+| :--- | :---: | :--- | :--- | :---: |
+| Arsitektur Inti & DDD (`src/domains/`) | 9.0 / 10 | 12 domain terisolasi rapi, konvensi alias `@/` bersih, dokumentasi C4 & ADR lengkap. | Beberapa orchestrator masih berupa thin wrapper. | Rendah |
+| Editor Markdown (`src/domains/editor/`) | 8.0 / 10 | CodeMirror 6 modern, frontmatter terisolasi di panel properti, slash command, folding headings mulus. | Performa render dokumen raksasa (>50k kata) belum di-benchmark; belum ada kuis interaktif inline. | Sedang |
+| Solver Tata Letak Graf (`src/domains/graph/`) | 8.5 / 10 | Algoritma Mindmap, Org, Fishbone, dan Timeline berjalan deterministik. Switcher dinamis. | Masalah collision teks panjang pada fishbone/timeline (`TD-006`); bounding-box detection butuh hardening. | Tinggi |
+| Living Canvas & Visual FX (`Atmosphere`) | 8.5 / 10 | Efek kosmik, partikel melayang, flow particles pada link, tema deep space sangat estetis dan khas. | `GraphWorkspaceControls.tsx` (`TD-001`) dan `GraphCanvas.tsx` (`TD-002`) masih berstatus God Component. | Tinggi |
+| Isolasi Vault & Storage (`src/domains/vault/`) | 7.5 / 10 | Tiga strategi isolasi bekerja (Memory, Cloud Supabase RLS, File System Access API). Auto-save aktif. | `VaultManager.ts` terlalu gemuk (`TD-003`), ada 1 kegagalan uji rename di `VaultManager.test.ts` (`TD-004`). | Sedang |
+| Mesin Kolaborasi & VCS (`src/domains/vcs/`) | 6.5 / 10 | Konsep mikro-commit lokal dan snapshot history di IndexedDB sudah ada. | Belum ada resolusi konflik visual 3-way merge; kolaborasi multi-user realtime masih bersifat polling/partial. | Sedang |
+| Portal Pembaca Publik (`src/domains/public-reader/`) | 7.0 / 10 | Rute `/p/:username/:vaultSlug` ada, tampilan minimalis dan cepat diakses pembaca anonim. | Tampilan graf di sisi publik belum semewah di kanvas workspace; fitur bookmark/share sosial masih minim. | Tinggi |
+| Mesin LMS Interaktif (`docs/06-lms/`) | 4.0 / 10 | Spesifikasi konsep DAG sangat matang di `DOC-LMS-001`. | Belum diimplementasikan secara teknis di kode sumber; belum ada status checklist penyelesaian simpul belajar. | Sangat Tinggi |
+
+---
+
+4. Rencana Aksi Strategis: Darimana Dulu & What's Next?
+
+Agar ObMap tidak terjebak dalam siklus pengembangan tak berujung, kita membagi langkah selanjutnya ke dalam 3 Horizon Eksekusi Berurutan:
+
+```mermaid
+gantt
+    title Peta Jalan Eksekusi Quo Vadis ObMap
+    dateFormat  YYYY-MM-DD
+    section Horizon 1: Hardening
+    Refaktor God Components (TD-001, TD-002)   :h1_1, 2026-11-15, 5d
+    Perbaikan Uji VaultManager (TD-004)        :h1_2, after h1_1, 2d
+    Text Bounding Collision (TD-006)           :h1_3, after h1_2, 3d
+    section Horizon 2: Public Disruption
+    Penyempurnaan Portal Publik (/p/*)         :h2_1, after h1_3, 6d
+    SEO Metadata & Social Share Preview        :h2_2, after h2_1, 3d
+    Multi-Vault Knowledge Showcase             :h2_3, after h2_2, 4d
+    section Horizon 3: The LMS Engine
+    Prerequisite DAG Engine (Frontmatter link) :h3_1, after h2_3, 7d
+    Interactive Learning Progress Store (IDB)  :h3_2, after h3_1, 5d
+    Skill Tree Graph Mode (RPG Progression UI) :h3_3, after h3_2, 7d
+```
+
+Horizon 1: Stabilitas & Resolusi Hutang Teknis Kritis (Fondasi)
+Tujuan: Memastikan aplikasi bebas flicker, tahan uji beban, dan modularitas komponen graf bersih.
+1. Pecah `GraphCanvas.tsx` (`TD-002`): Pisahkan layer gesture/interaction, paint loop (Canvas2D), dan HTML overlays/toolbars ke dalam hook dan controller independen.
+2. Pecah `GraphWorkspaceControls.tsx` (`TD-001`): Bagi menjadi 3 sub-panel terisolasi: `LayoutSettingsTab`, `AppearanceTab`, dan `AtmosphereTab`.
+3. Perbaiki Kegagalan Uji `VaultManager.test.ts` (`TD-004`): Pastikan 100% test lulus (`vitest run` mencapai 94/94).
+
+Horizon 2: Mempertajam Taji Disrupsi Publik (Pilar A & B: Wikipedia & Portofolio)
+Tujuan: Menjadikan tautan publik ObMap viral dan membuat orang berkata: "Bagaimana cara membuat halaman seindah ini?"
+1. Public Reader 2.0 (`src/domains/public-reader/`):
+   - Hadirkan mode split-screen adaptif: Graf interaktif di satu sisi, bacaan artikel dengan table of contents di sisi lain.
+   - Tambahkan minimap preview saat kursor hover di atas wikilink.
+   - Pasang tombol satu klik: "Salin ke Vault Pribadi" (Forking Knowledge).
+2. Mode Portofolio Showcase:
+   - Template khusus portofolio: Node kategori proyek memiliki badge status (misal: `[Live]`, `[Research]`, `[Completed]`).
+   - Dukungan pemutaran video demo dan galeri gambar langsung di kanvas publik.
+
+Horizon 3: Peluncuran Fitur Pembelajaran Interaktif (Pilar C: LMS Skill Tree)
+Tujuan: Mengaktifkan skenario kurikulum graf adaptif sesuai spesifikasi `DOC-LMS-001`.
+1. Sintaks Prasyarat di Frontmatter:
+   Catatan Markdown dapat menentukan prasyarat belajar secara deklaratif:
+   ```yaml
+   ---
+   title: Machine Learning Dasar
+   prerequisites:
+     - "[[Aljabar Linier]]"
+     - "[[Kalkulus Multivariabel]]"
+   status: learning
+   quiz_ref: "quiz-ml-01.json"
+   ---
+   ```
+2. Engine Evaluasi Relasi Prasyarat (DAG Evaluator):
+   - Sistem membaca relasi `prerequisites` dan mengubah status simpul graf menjadi: Locked (Terkunci), Available (Bisa Dibuka), atau Mastered (Selesai).
+3. Visualisasi Skill Tree:
+   - Mode visual khusus di kanvas: Node yang terkunci tampak seperti siluet redup; saat pengguna menandai catatan prasyarat selesai, animasi pulsa cahaya merambat membuka simpul materi selanjutnya.
+
+---
+
+5. Rekomendasi Titik Mulai Sekarang
+
+Untuk memulai perjalanan ini, langkah paling bijak dan berdampak instan adalah Horizon 1 Langkah 1 & 2:
+* Membersihkan dan merapikan komponen graf (`GraphWorkspaceControls.tsx` dan `GraphCanvas.tsx`), memastikan seluruh pengujian otomatis lulus 100%.
+* Setelah performa kanvas sempurna, kita langsung tancap gas membangun Public Reader 2.0 agar portofolio dan ensiklopedia Anda siap dipamerkan ke publik.
+
+Bagian mana yang ingin Anda prioritaskan untuk kita bedah rancangan teknisnya terlebih dahulu: penyelesaian hutang teknis kanvas graf (Horizon 1) atau langsung menyusun spesifikasi komponen Public Reader 2.0 & Interactive LMS Engine (Horizon 2 & 3)?

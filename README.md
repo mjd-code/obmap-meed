@@ -1,72 +1,76 @@
----
-id: DOC-META-000
-title: Portal Dokumentasi Sistem ObMap
-type: index
-status: [IMPLEMENTED]
-owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
-audience: both
-related:
-  - DOC-META-001
-  - DOC-META-002
-  - ARCH-STRUCT-001
-  - ARCH-DOM-001
-  - ENG-RULES-001
-source_of_truth: src/
----
+# ObMap — Observable Knowledge Mapping Platform
 
-# Portal Dokumentasi Enterprise ObMap
+[![Stack](https://img.shields.io/badge/Stack-React_18_+_Vite_5_+_TypeScript_5-61dafb.svg)](https://react.dev/)
+[![Tailwind](https://img.shields.io/badge/UI-Tailwind_CSS_+_Radix_UI-38bdf8.svg)](https://tailwindcss.com/)
+[![Testing](https://img.shields.io/badge/Tests-Vitest_Automated-success.svg)](https://vitest.dev/)
+[![Architecture](https://img.shields.io/badge/Architecture-DDD_12_Domains-blueviolet.svg)](docs/03-architecture/domain-map.md)
 
-## Ringkasan 3 Baris
-- ObMap adalah workspace pengetahuan *local-first* berbasis Markdown yang menggabungkan visualisasi graf interaktif (XMind/Obsidian) dengan kolaborasi dan publikasi instan (Notion/Wikipedia).
-- Dokumentasi ini disusun dengan prinsip *Human + AI friendly* menggunakan skema identifikasi stabil, front-matter terstruktur, dan validasi langsung ke kode sumber (`src/domains/*`).
-- Repositori telah bermigrasi ke arsitektur Domain-Driven Design (DDD) dengan 12 domain independen, Orchestrator pattern, dan Zustand scoped stores.
+> **ObMap** adalah workspace visual *local-first* berbasis Markdown yang memadukan graf interaktif multi-model (Mindmap, Org Chart, Timeline, D3 Force) dengan penerbitan web instan dan kolaborasi tim.
 
 ---
 
-## 1. Peta Navigasi Dokumentasi
+## 1. Quickstart Pengembang
 
-```mermaid
-graph TD
-    README[docs/README.md] --> M0[00-Meta: Konvensi, Glosarium, Status]
-    README --> V1[01-Vision: Visi, Filosofi, Komparasi]
-    README --> P2[02-Planning: PRD, BRD, SRS, Personas]
-    README --> A3[03-Architecture: Domain Map, Storage, ADR]
-    README --> F4[04-Features: Katalog Modul & Fitur]
-    README --> E5[05-Engineering: Rules, Standards, Tech Debt]
-    README --> L6[06-LMS: Visi Platform Edukasi]
-    README --> MC[_machine: Machine Readable JSON Index]
+### Kebutuhan Lingkungan
+- **Node.js:** v18.x atau v20.x
+- **Package Manager:** `bun` (direkomendasikan) atau `npm`
+
+### Perintah Utama
+```bash
+Instalasi dependensi
+bun install
+
+Menjalankan server dev lokal (Port 8080)
+bun run dev
+
+Menjalankan suite pengujian otomatis (Wajib Vitest)
+npx vitest run
+
+Pemeriksaan tipe data TypeScript
+npx tsc --noEmit
+
+Build produksi
+bun run build
 ```
 
 ---
 
-## 2. Panduan Membaca Berdasarkan Peran (Audience)
+## 2. Arsitektur Domain-Driven Design (`src/domains/`)
 
-| Peran | Tujuan Utama | Titik Masuk yang Direkomendasikan |
-| :--- | :--- | :--- |
-| **Software Engineer / AI Agent** | Memahami batas domain, aturan impor, pola store, dan tech debt | `05-engineering/repository-rules.md`, `03-architecture/domain-map.md` |
-| **System Architect** | Menelaah arsitektur C4, strategi hybrid storage, dan ADR | `03-architecture/system-overview.md`, `03-architecture/data-and-storage.md` |
-| **Product Manager / Owner** | Memvalidasi fitur berstatus implemented vs planned, persona, dan PRD | `02-planning/prd.md`, `04-features/feature-catalog.md` |
-| **Business / Domain Lead** | Mengevaluasi positioning pasar, use-case LMS, dan model nilai | `01-vision/positioning.md`, `06-lms/lms-vision.md` |
+Sistem disusun dalam **12 domain terisolasi**, di mana setiap domain mengikuti pola tiga lapis yang ketat:
 
----
-
-## 3. Struktur Dokumen Fase 1
-
-- `docs/00-meta/doc-conventions.md`: Aturan penulisan, struktur front-matter, dan taksonomi ID.
-- `docs/00-meta/glossary.md`: Glosarium istilah domain ObMap.
-- `docs/00-meta/status-legend.md`: Definisi label status `[IMPLEMENTED]`, `[PARTIAL]`, `[PLANNED]`, `[VISION]`.
-- `docs/00-meta/changelog.md`: Riwayat evolusi dan restrukturisasi arsitektur.
-- `docs/03-architecture/repository-structure.md`: Pemetaan hierarki repositori level 1–3.
-- `docs/03-architecture/domain-map.md`: Matriks 12 domain bisnis, tanggung jawab, dan dependensi.
-- `docs/05-engineering/doc-drift-log.md`: Log perbedaan antara asumsi rencana terdahulu dengan kode aktual.
-- `docs/05-engineering/repository-rules.md`: Aturan batas domain, pola orchestrator, dan konvensi penamaan.
-
----
-
-## Terkait
-- [Aturan Dokumentasi](00-meta/doc-conventions.md)
-- [Peta Domain](03-architecture/domain-map.md)
-- [Aturan Repositori](05-engineering/repository-rules.md)
+```text
+src/domains/<domain>/
+├── <Domain>Orchestrator.tsx    # Domain Façade & Macro Context Conductor
+├── components/                 # Pure View Components (Markup JSX murni)
+│   ├── <Feature>.tsx
+│   └── use<Feature>Controller.ts # Headless Controller Hook (Otak & Wiring)
+└── shared/                     # Modul Privat Domain
+    ├── api/                    # Remote client & Web Workers
+    ├── hooks/                  # Sub-hooks terisolasi
+    ├── stores/                 # Scoped Zustand Stores
+    └── utils/                  # Algoritma deterministik & mappers
 ```
+
+---
+
+## 3. Aturan Baku Pengembangan (Ringkasan)
+
+1. **Path Alias Wajib:** Selalu gunakan `@/` untuk impor modul internal (misal `@/domains/graph/...`).
+2. **Deterministic Solvers:** Hanya *Free-Force* yang menjalankan simulasi D3 berkelanjutan; layout Mindmap, Org, Timeline, dan Fishbone bersifat deterministik (`layoutCategory.ts`).
+3. **Pemisahan Headless Controller:** Komponen kanvas dan UI kompleks dilarang memuat logika kalkulasi langsung; seluruh state, resize observer, dan handlers diletakkan di controller hook pendamping.
+4. **Isolasi Frontmatter:** Body markdown wajib bersih dari YAML; properti diedit eksklusif via `EditorPropertiesPanel.tsx`.
+
+---
+
+## 4. Indeks Dokumentasi Sistem
+
+Dokumentasi lengkap enterprise dikelola di bawah folder `docs/`:
+
+- **[Portal Dokumentasi Utama](docs/README.md)**
+- **[Visi & Filosofi Produk](docs/01-visions/vision-mission.md)**
+- **[Katalog Fitur Lengkap](docs/04-features/feature-catalog.md)**
+- **[Peta Domain DDD](docs/03-architecture/domain-map.md)**
+- **[Standar Penulisan Kode](docs/05-engineering/coding-standards.md)**
+- **[Register Hutang Teknis](docs/05-engineering/tech-debt-register.md)**
+- **[Daftar Rujukan Cepat LLM](llms.txt)**
