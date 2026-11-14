@@ -28,6 +28,8 @@ source_of_truth: src/
 2. **Leaf-Scoped Store Registry:** Store interaksi kanvas wajib diakses melalui registry terisolasi per *leaf* (`getOrCreateLeafInteractionStore`) untuk mencegah siklus render kaskade lintas tab.
 3. **Purity of Actions:** Seluruh mutasi catatan wajib melalui fungsi aksi murni di `vaultSessionActions.ts`.
 4. **Store Selector Granularity:** Hindari mengekstrak seluruh state store dalam satu objek bila hanya membutuhkan satu nilai. Gunakan atomic selector `useStore((s) => s.property)` untuk meminimalkan re-render.
+5. **Single Source of Truth & Unidirectional Sync:** Dilarang menduplikasi state store ke `useState` lokal UI. Dilarang membuat *cyclic bidirectional `useEffect`* antar-store; gunakan *Unidirectional Action Dispatch* dan `prevPropRef` untuk sinkronisasi prop eksternal.
+6. **Zero-Regression Headless Extraction & Canvas Invalidation:** Ekstraksi *God Component* wajib mempertahankan paritas fitur 100%, dan mutasi visual pada Canvas2D statis (`cooldownTicks === 0`) wajib memicu `graphRef.current?.refresh?.()`.
 
 ---
 

@@ -36,10 +36,11 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
       displayData,
       theme,
       visibleDepths,
+      atmosphere,
       dragReparent,
       gestureBridge,
       isPhysicsActive,
-      layoutMode,
+      minZoomLimit,
       canvasMode,
       subtreeLayoutOverrides,
       focusedRootId,
@@ -58,7 +59,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
           width={size.width}
           height={size.height}
           backgroundColor={theme.card}
-          minZoom={0.05}
+          minZoom={minZoomLimit}
           maxZoom={8}
           nodeRelSize={props.graphConfig.nodes.relSize}
           nodeCanvasObject={actions.paintNode as any}
@@ -70,13 +71,25 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
           onZoomEnd={actions.handleZoomEnd}
           onNodeClick={gestureBridge.handleClick}
           onNodeRightClick={gestureBridge.handleNodeRightClick}
+          onNodeHover={actions.handleHover as any}
           enableNodeDrag={true}
           enablePanInteraction={true}
           onNodeDrag={dragReparent.handleNodeDrag}
           onNodeDragEnd={dragReparent.handleNodeDragEnd}
+          dagMode={
+            isPhysicsActive && props.graphConfig.forces.dagMode !== 'null'
+              ? (props.graphConfig.forces.dagMode as any)
+              : undefined
+          }
+          dagLevelDistance={props.graphConfig.forces.dagLevelDistance}
+          warmupTicks={isPhysicsActive ? props.graphConfig.forces.warmupTicks : 0}
+          cooldownTicks={isPhysicsActive ? props.graphConfig.forces.cooldownTicks : 0}
+          cooldownTime={isPhysicsActive ? props.graphConfig.forces.cooldownTime : 0}
+          d3AlphaDecay={props.graphConfig.forces.alphaDecay}
+          d3VelocityDecay={props.graphConfig.forces.velocityDecay}
           onBackgroundClick={gestureBridge.handleBackgroundClick}
           onBackgroundRightClick={gestureBridge.handleBackgroundRightClick}
-          cooldownTicks={isPhysicsActive ? props.graphConfig.forces.cooldownTicks : 0}
+          autoPauseRedraw={atmosphere.autoPauseRedraw}
           onRenderFramePre={actions.renderDecorations}
         />
 

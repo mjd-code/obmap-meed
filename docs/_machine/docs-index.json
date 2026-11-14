@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
-  "generated_at": "2026-11-10",
-  "documents_count": 35,
+  "version": "1.1.0",
+  "generated_at": "2026-11-14",
+  "documents_count": 36,
   "documents": [
     {
       "id": "DOC-META-000",
@@ -197,6 +197,13 @@
       "id": "ADR-0005",
       "path": "docs/03-architecture/adr/ADR-0005-in-browser-vcs-for-markdown-collaboration.md",
       "title": "Sistem Kontrol Versi Internal Berbasis Mikro-Revisi",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "ADR-0006",
+      "path": "docs/03-architecture/adr/ADR-0006-reactive-state-and-headless-controller-governance.md",
+      "title": "Tata Kelola State Reaktif, Store Bridge, dan Zero-Regression Headless Controller",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },

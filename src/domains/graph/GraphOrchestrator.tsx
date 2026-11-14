@@ -68,49 +68,52 @@ function GraphSurface({
     setCanvasMode,
   } = useGraphInteractionStore();
 
-  // Guard: Mencegah siklus update timbal-balik antar-tab
-  const isSyncingRef = useRef<boolean>(false);
+  // Guard satu arah: membedakan perubahan prop `view.canvasMode` eksternal vs perubahan store lokal
+  const prevViewCanvasModeRef = useRef<ViewState["canvasMode"] | undefined>(undefined);
+  const prevStoreCanvasModeRef = useRef(canvasMode);
+  const syncingFromPropRef = useRef<ViewState["canvasMode"] | null>(null);
 
-  // Ingest mode dari view prop hanya jika berbeda dan tidak sedang dalam sinkronisasi
+  // Sinkronisasi satu arah: hanya ingest prop `view.canvasMode` jika prop eksternal berubah
   useEffect(() => {
-    if (view?.canvasMode && view.canvasMode !== canvasMode) {
-      isSyncingRef.current = true;
-      setCanvasMode(view.canvasMode);
-      // Lepaskan lock pada microtask berikutnya
-      Promise.resolve().then(() => {
-        isSyncingRef.current = false;
-      });
+    if (view?.canvasMode && view.canvasMode !== prevViewCanvasModeRef.current) {
+      prevViewCanvasModeRef.current = view.canvasMode;
+      if (view.canvasMode !== canvasMode) {
+        syncingFromPropRef.current = view.canvasMode;
+        setCanvasMode(view.canvasMode);
+      }
     }
   }, [view?.canvasMode, canvasMode, setCanvasMode]);
 
-  // Sinkronkan judul tab ke WorkspaceStore HANYA untuk leafId spesifik ini (BUKAN getActiveLeaf)
-  const currentViewTitle = view?.title;
-  const currentViewCanvasMode = view?.canvasMode;
-
+  // Sinkronisasi judul & mode tab ke WorkspaceStore KHUSUS untuk leafId spesifik ini
   useEffect(() => {
-    if (isSyncingRef.current) return;
+    if (syncingFromPropRef.current !== null) {
+      if (canvasMode === syncingFromPropRef.current) {
+        syncingFromPropRef.current = null;
+      }
+      prevStoreCanvasModeRef.current = canvasMode;
+      return;
+    }
 
     const expectedTitle = canvasMode === "mindmap" ? "Mindmap View" : "Graph View";
-    if (currentViewTitle !== expectedTitle || currentViewCanvasMode !== canvasMode) {
-      // Ambil view KHUSUS milik leafId ini dari root tree
-      const targetLeaf = useWorkspaceStore.getState().findLeafById(leafId);
-      if (!targetLeaf) return;
+    const targetLeaf = useWorkspaceStore.getState().findLeafById(leafId);
+    const cur = targetLeaf?.view;
+    const isOutOfSync = cur ? cur.title !== expectedTitle || cur.canvasMode !== canvasMode : false;
 
-      const currentTargetView = targetLeaf.view;
-      if (
-        currentTargetView.title === expectedTitle &&
-        currentTargetView.canvasMode === canvasMode
-      ) {
-        return; // Sudah sama, cegah re-render loop
-      }
-
-      useWorkspaceStore.getState().setLeafView(leafId, {
-        ...currentTargetView,
-        title: expectedTitle,
-        canvasMode,
-      });
+    if (prevStoreCanvasModeRef.current === canvasMode && !isOutOfSync) {
+      return;
     }
-  }, [canvasMode, leafId, currentViewTitle, currentViewCanvasMode]);
+
+    prevStoreCanvasModeRef.current = canvasMode;
+    prevViewCanvasModeRef.current = canvasMode;
+
+    if (!targetLeaf || !cur || !isOutOfSync) return;
+
+    useWorkspaceStore.getState().setLeafView(leafId, {
+      ...cur,
+      title: expectedTitle,
+      canvasMode,
+    });
+  }, [canvasMode, leafId]);
 
   const [search, setSearch] = useState("");
   const [minDepth, setMinDepth] = useState(0);
@@ -161,6 +164,7 @@ function GraphSurface({
       />
 
       <GraphWorkspaceControls
+        leafId={leafId}
         layout={layoutMode}
         canvasMode={canvasMode}
         onCanvasModeChange={setCanvasMode}
@@ -199,7 +203,13 @@ export const GraphOrchestrator: React.FC<GraphOrchestratorProps> = ({
   className,
 }) => {
   const configStore = useLeafGraphConfigStore(leafId);
-  const interactionStore = useLeafGraphInteractionStore(leafId);
+  const initialLayout =
+    view?.canvasMode === "graph"
+      ? "free-force"
+      : view?.canvasMode === "mindmap"
+        ? "mindmap"
+        : undefined;
+  const interactionStore = useLeafGraphInteractionStore(leafId, initialLayout);
 
   return (
     <LeafGraphConfigProvider store={configStore}>

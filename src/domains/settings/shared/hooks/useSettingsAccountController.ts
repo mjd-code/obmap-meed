@@ -63,6 +63,9 @@ export function useSettingsAccountController(initialTab = "profile") {
   const [activeTab, setActiveTab] = useState<string>(
     initialTab === "security" ? "security" : "profile",
   );
+  useEffect(() => {
+    setActiveTab(initialTab === "security" ? "security" : "profile");
+  }, [initialTab]);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // State Modal Keamanan

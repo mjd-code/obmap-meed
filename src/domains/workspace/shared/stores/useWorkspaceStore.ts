@@ -216,7 +216,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             activeLeaf &&
             activeLeaf.view.type === view.type &&
             activeLeaf.view.canvasMode === view.canvasMode &&
-            activeLeaf.view.nodeId === view.nodeId
+            activeLeaf.view.nodeId === view.nodeId &&
+            activeLeaf.view.settingsSection === view.settingsSection
           ) {
             return;
           }
@@ -418,7 +419,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
               target.view.type === view.type &&
               target.view.title === view.title &&
               target.view.canvasMode === view.canvasMode &&
-              target.view.nodeId === view.nodeId
+              target.view.nodeId === view.nodeId &&
+              target.view.settingsSection === view.settingsSection
             ) {
               return n; // Kembalikan node asli tanpa re-alokasi referensi
             }
@@ -430,9 +432,9 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             };
           });
 
-          // HANYA trigger re-render jika benar-benar ada perubahan data
+          // HANYA trigger re-render & commit ke layout per-vault jika benar-benar ada perubahan data
           if (hasChanged) {
-            set({ root });
+            commit(root);
           }
         },
 

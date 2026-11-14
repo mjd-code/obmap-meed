@@ -79,12 +79,18 @@ export function useWorkspaceSidebarController({
   onImportComplete,
 }: UseWorkspaceSidebarControllerParams) {
   const openView = useWorkspaceStore((state) => state.openView);
+  const activeLeafSettingsSection = useWorkspaceStore((state) => {
+    const leaf = state.getActiveLeaf();
+    return leaf?.view.type === "settings" ? leaf.view.settingsSection : undefined;
+  });
   const setExpandedFolderIds = useUIStore((state) => state.setExpandedFolderIds);
   const setActiveTool = useUIStore((state) => state.setActiveTool);
   const { expandedFolders } = useFolderNavigation();
 
-  const [activeSettingsSection, setActiveSettingsSection] =
+  const [lastSettingsSection, setLastSettingsSection] =
     useState<SettingsSectionId>("account");
+  const activeSettingsSection: SettingsSectionId =
+    activeLeafSettingsSection ?? lastSettingsSection;
   const [settingsSearch, setSettingsSearch] = useState("");
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
@@ -116,12 +122,16 @@ export function useWorkspaceSidebarController({
 
   const handleOpenSettings = useCallback(() => {
     setActiveTool("settings");
-    openView({ type: "settings", title: "Settings", settingsSection: "account" });
-  }, [setActiveTool, openView]);
+    openView({
+      type: "settings",
+      title: "Settings",
+      settingsSection: activeSettingsSection,
+    });
+  }, [setActiveTool, openView, activeSettingsSection]);
 
   const selectSettingsSection = useCallback(
     (section: SettingsSectionId, label: string) => {
-      setActiveSettingsSection(section);
+      setLastSettingsSection(section);
       openView({ type: "settings", title: label, settingsSection: section });
     },
     [openView],

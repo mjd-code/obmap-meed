@@ -24,6 +24,7 @@ Data dan Storage: docs/03-architecture/data-and-storage.md — Arsitektur hybrid
 Mesin Tata Letak Graf: docs/03-architecture/layout-engine.md — Algoritma deterministik Mindmap, Org Chart, Timeline, Radial, dan D3 simulation.
 Kolaborasi & Publikasi: docs/03-architecture/collaboration-and-publishing.md — Model hak akses berjenjang, publikasi web statis instan, dan alur kolaborasi.
 Indeks ADR Arsitektur: docs/03-architecture/adr/README.md — Katalog indeks catatan keputusan arsitektur sistem.
+ADR-0006 Tata Kelola State Reaktif: docs/03-architecture/adr/ADR-0006-reactive-state-and-headless-controller-governance.md — Prinsip Single Source of Truth, Unidirectional Sync, Hierarchical Store Bridge, dan Canvas Frame Invalidation.
 Katalog Fitur Master: docs/04-features/feature-catalog.md — Katalog 44 fitur sistem terverifikasi dengan matriks status dan referensi sumber.
 Standar Penulisan Kode: docs/05-engineering/coding-standards.md — Pedoman TypeScript strict, isolasi store Zustand, dan pola Headless Component Controller.
 Register Hutang Teknis: docs/05-engineering/tech-debt-register.md — Katalog aktif hutang teknis sistem (TD-001 hingga TD-006) beserta mitigasi modularisasinya.

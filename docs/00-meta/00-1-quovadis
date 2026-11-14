@@ -117,11 +117,12 @@ gantt
     Skill Tree Graph Mode (RPG Progression UI) :h3_3, after h3_2, 7d
 ```
 
-Horizon 1: Stabilitas & Resolusi Hutang Teknis Kritis (Fondasi)
-Tujuan: Memastikan aplikasi bebas flicker, tahan uji beban, dan modularitas komponen graf bersih.
-1. Pecah `GraphCanvas.tsx` (`TD-002`): Pisahkan layer gesture/interaction, paint loop (Canvas2D), dan HTML overlays/toolbars ke dalam hook dan controller independen.
-2. Pecah `GraphWorkspaceControls.tsx` (`TD-001`): Bagi menjadi 3 sub-panel terisolasi: `LayoutSettingsTab`, `AppearanceTab`, dan `AtmosphereTab`.
-3. Perbaiki Kegagalan Uji `VaultManager.test.ts` (`TD-004`): Pastikan 100% test lulus (`vitest run` mencapai 94/94).
+Horizon 1: Stabilitas & Resolusi Hutang Teknis Kritis (Fondasi — Selesai & Hardening Reaktivitas)
+Tujuan: Memastikan aplikasi bebas flicker, reaktif instan di seluruh tab/kanvas, tahan uji beban, dan modularitas komponen graf bersih.
+1. Pecah `GraphCanvas.tsx` (`TD-002`): Pisahkan layer gesture/interaction, paint loop (Canvas2D), dan HTML overlays/toolbars ke dalam hook dan controller independen dengan paritas fitur 100%.
+2. Pecah `GraphWorkspaceControls.tsx` (`TD-001`): Bagi menjadi sub-panel terisolasi dan dual-mode toolbar (`horizontal_toolbar` & `gear_button`).
+3. Perbaiki Kegagalan Uji `VaultManager.test.ts` (`TD-004`): Pastikan 100% test lulus (`vitest run` mencapai 100%).
+4. Tata Kelola State Reaktif (`ADR-0006`): Terapkan *Unidirectional Action Dispatch* dan *Hierarchical Store Bridge* agar perpindahan tab Settings dan mode layout graf berjalan real-time.
 
 Horizon 2: Mempertajam Taji Disrupsi Publik (Pilar A & B: Wikipedia & Portofolio)
 Tujuan: Menjadikan tautan publik ObMap viral dan membuat orang berkata: "Bagaimana cara membuat halaman seindah ini?"

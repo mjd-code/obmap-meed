@@ -40,7 +40,8 @@ source_of_truth: src/
 
 ### C. State Management & Re-render Waterfall
 1. **Zustand Murni:** State workspace dan mutasi dokumen wajib menggunakan store Zustand melalui aksi murni (`vaultSessionActions.ts`), dilarang menggunakan React Context Provider untuk data hierarki yang sering berubah.
-2. **Leaf-Scoped Interaction:** Engine interaksi graf wajib di-scope per leaf ID menggunakan factory `createGraphInteractionStore(initialLayout)` untuk menghindari polusi state lintas tab.
+2. **Leaf-Scoped Interaction & Store Bridge:** Engine interaksi dan konfigurasi graf per-tab (`LeafGraphConfigStore`, `LeafGraphInteractionStore`) wajib di-scope per leaf ID dan dihubungkan melalui *Write-Through & Broadcast Bridge* ke store globalnya (`useGraphStore`, `globalGraphInteractionStore`) agar persistensi dan sinkronisasi Settings tetap berjalan real-time.
+3. **Larangan Cyclic `useEffect` Sync:** Sinkronisasi lintas-store wajib dilakukan secara satu arah melalui *action dispatch*, bukan dua `useEffect` yang saling memantau.
 
 ### D. Skema Database & Supabase Migrations
 1. **Integritas SQL:** Dilarang membuat skema SQL paralel secara ad-hoc. Sumber kebenaran mutlak skema adalah berkas di `supabase/migrations/`.

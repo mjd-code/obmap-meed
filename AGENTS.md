@@ -29,6 +29,9 @@
    - **Domain Orchestrator** (`<Domain>Orchestrator.tsx`): Menghubungkan domain ke workspace & tab context.
    - **View Component** (`<Feature>.tsx`): Murni JSX/styling deklaratif (~50–150 baris).
    - **Headless Controller Hook** (`use<Feature>Controller.ts`): Menampung seluruh `useEffect`, `useMemo`, store subscriptions, dan event handlers tanpa merender markup.
+8. **Single Source of Truth & Unidirectional Store Sync:** Dilarang menduplikasi state store ke dalam `useState` lokal UI (gunakan *derived state* atau selector Zustand langsung). Dilarang membuat *cyclic bidirectional `useEffect`* antar-store; gunakan *Unidirectional Action Dispatch* dan *previous-value ref guard* (`prevPropRef`) untuk sinkronisasi prop eksternal.
+9. **Hierarchical Store Bridge (Global <-> Leaf):** Setiap *per-leaf store* (`LeafGraphConfigStore`, `LeafGraphInteractionStore`) wajib menerapkan *Write-Through & Broadcast Bridge* terhadap store globalnya (`useGraphStore`, `globalGraphInteractionStore`) agar preferensi tetap tersimpan dan perubahan dari Settings langsung terefleksi di seluruh tab aktif.
+10. **Zero-Regression Headless Extraction & Canvas Frame Invalidation:** Ekstraksi *God Component* ke pola Headless Controller adalah operasi isomorfik perilaku (paritas fitur 100%, tanpa memangkas `useEffect`, filter, atau opsi UI). Setiap mutasi visual pada komponen Canvas2D statis (`cooldownTicks === 0`) wajib memicu `graphRef.current?.refresh?.()` secara reaktif.
 
 ## 5. Documentation Source of Truth
 - System Portal: `docs/README.md`

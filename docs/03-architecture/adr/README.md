@@ -30,3 +30,4 @@ source_of_truth: docs/03-architecture/adr/
 | `ADR-0003` | [Solver Deterministik vs Simulasi D3 Terus-menerus](ADR-0003-deterministic-layout-solvers-vs-force.md) | `[IMPLEMENTED]` | 2026-10-28 | Domain Graph (`src/domains/graph/`) |
 | `ADR-0004` | [Isolasi Strategi Penyimpanan Multi-Tenant](ADR-0004-multi-strategy-storage-isolation.md) | `[IMPLEMENTED]` | 2026-10-15 | Domain Vault & Auth |
 | `ADR-0005` | [In-Browser VCS untuk Kolaborasi Berbasis Teks](ADR-0005-in-browser-vcs-for-markdown-collaboration.md) | `[IMPLEMENTED]` | 2026-11-01 | Domain VCS & Collaboration |
+| `ADR-0006` | [Tata Kelola State Reaktif & Headless Controller](ADR-0006-reactive-state-and-headless-controller-governance.md) | `[IMPLEMENTED]` | 2026-11-14 | Seluruh Domain (`workspace`, `graph`, `settings`, `editor`) |

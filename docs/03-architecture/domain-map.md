@@ -65,10 +65,10 @@ graph TD
    Bertindak sebagai penghubung makro antara domain dengan *workspace layout* dan *leaf store*. Orchestrator tidak mengurusi kalkulasi kalkulasi detail UI individual.
 2. **Headless Component Controller Pattern:**
    Komponen visual yang memiliki kerumitan grafis atau manipulasi data (seperti `GraphCanvas` atau `EditorMarkdownView`) mendelegasikan seluruh efek samping (`useEffect`), kalkulasi geometri (`useMemo`), dan *subscriptions* ke hook pendamping berawalan `use<Component>Controller.ts`.
-3. **Leaf-Scoped Store Registry:**
-   State interaksi kanvas (`useGraphInteractionStore`) dikelola secara independen per leaf workspace melalui *leaf registry* untuk mencegah mutasi kaskade antar-tab.
-4. **Decoupled Event Bus:**
-   Komunikasi tak langsung lintas domain disalurkan melalui `DomainEvents.ts` untuk menjaga batas isolasi modul.
+3. **Leaf-Scoped Store Registry & Bridge:**
+   State interaksi dan konfigurasi kanvas dikelola secara independen per leaf workspace melalui *leaf registry* dengan *Write-Through & Broadcast Bridge* ke store global (`useGraphStore`, `globalGraphInteractionStore`) agar tetap persisten dan sinkron dengan Settings.
+4. **Decoupled Event Bus & Unidirectional Sync:**
+   Komunikasi tak langsung lintas domain disalurkan melalui `DomainEvents.ts`, dan sinkronisasi antar-store wajib mengikuti pola *Unidirectional Action Dispatch* (lihat `ADR-0006`).
 
 ---
 

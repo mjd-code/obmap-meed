@@ -142,6 +142,7 @@ export function useEditorMarkdownViewController({
           onTagClick: (t) => handlersRef.current.onTagClick?.(t),
         },
         onChange: (nextCleanBody) => {
+          isInternalChangeRef.current = true;
           cleanBodyRef.current = nextCleanBody;
           const bodyWithFootnotes = assembleDocumentWithFootnotes(
             nextCleanBody,

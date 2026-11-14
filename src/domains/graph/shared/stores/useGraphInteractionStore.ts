@@ -209,6 +209,60 @@ export const globalGraphInteractionStore = createStore<GraphInteractionState>()(
   })
 );
 
+const BRIDGED_INTERACTION_KEYS = [
+  'layoutMode',
+  'canvasMode',
+  'lastGraphLayout',
+  'lastMindmapLayout',
+  'orientation',
+  'highlightMode',
+  'layoutArrangement',
+  'isTimeLapseActive',
+  'timeLapseStep',
+  'timeLapseTotal',
+] as const;
+
+let isBridgingInteraction = false;
+
+function extractChangedBridgePatch(
+  next: GraphInteractionState,
+  prev: GraphInteractionState,
+  target: GraphInteractionState,
+): Partial<GraphInteractionState> | null {
+  const patch: Partial<Record<(typeof BRIDGED_INTERACTION_KEYS)[number], unknown>> = {};
+  let hasChange = false;
+  for (const key of BRIDGED_INTERACTION_KEYS) {
+    if (next[key] !== prev[key] && next[key] !== target[key]) {
+      patch[key] = next[key];
+      hasChange = true;
+    }
+  }
+  if (patch.layoutMode) {
+    const derivedCanvasMode = canvasModeOf(patch.layoutMode as LayoutMode);
+    if (target.canvasMode !== derivedCanvasMode) {
+      patch.canvasMode = derivedCanvasMode;
+    }
+  }
+  return hasChange ? (patch as Partial<GraphInteractionState>) : null;
+}
+
+const leafStoreRegistry = new Map<string, StoreApi<GraphInteractionState>>();
+const leafStoreUnsubscribes = new Map<string, () => void>();
+
+// Broadcast perubahan dari global store (mis. Settings / StatusBar) ke seluruh tab leaf aktif
+globalGraphInteractionStore.subscribe((next, prev) => {
+  if (isBridgingInteraction) return;
+  isBridgingInteraction = true;
+  try {
+    for (const leafStore of leafStoreRegistry.values()) {
+      const patch = extractChangedBridgePatch(next, prev, leafStore.getState());
+      if (patch) leafStore.setState(patch);
+    }
+  } finally {
+    isBridgingInteraction = false;
+  }
+});
+
 /** A fresh, leaf-scoped instance seeded from the app-wide defaults. */
 export const createGraphInteractionStore = (
   initialLayout?: LayoutMode
@@ -223,6 +277,7 @@ export const createGraphInteractionStore = (
     lastMindmapLayout: defaults.lastMindmapLayout ?? 'mindmap',
     orientation: defaults.orientation,
     highlightMode: defaults.highlightMode,
+    layoutArrangement: defaults.layoutArrangement,
   });
   return store;
 };
@@ -239,8 +294,6 @@ export function GraphInteractionProvider({
   return createElement(GraphInteractionContext.Provider, { value: store }, children);
 }
 
-const leafStoreRegistry = new Map<string, StoreApi<GraphInteractionState>>();
-
 /** Creates (and memoises) one store per graph leaf id. */
 export function getOrCreateLeafInteractionStore(
   leafId: string,
@@ -249,18 +302,35 @@ export function getOrCreateLeafInteractionStore(
   let store = leafStoreRegistry.get(leafId);
   if (!store) {
     store = createGraphInteractionStore(initialLayout);
+    const unsub = store.subscribe((next, prev) => {
+      if (isBridgingInteraction) return;
+      const patch = extractChangedBridgePatch(next, prev, globalGraphInteractionStore.getState());
+      if (!patch) return;
+      isBridgingInteraction = true;
+      try {
+        globalGraphInteractionStore.setState(patch);
+      } finally {
+        isBridgingInteraction = false;
+      }
+    });
     leafStoreRegistry.set(leafId, store);
+    leafStoreUnsubscribes.set(leafId, unsub);
   }
   return store;
 }
 
 export function disposeLeafInteractionStore(leafId: string): void {
+  leafStoreUnsubscribes.get(leafId)?.();
+  leafStoreUnsubscribes.delete(leafId);
   leafStoreRegistry.delete(leafId);
 }
 
 /** Hook: Memoisasi satu store interaksi per graph leaf id */
-export function useLeafGraphInteractionStore(leafId: string): StoreApi<GraphInteractionState> {
-  return useMemo(() => getOrCreateLeafInteractionStore(leafId), [leafId]);
+export function useLeafGraphInteractionStore(
+  leafId: string,
+  initialLayout?: LayoutMode,
+): StoreApi<GraphInteractionState> {
+  return useMemo(() => getOrCreateLeafInteractionStore(leafId, initialLayout), [leafId]);
 }
 
 export function useGraphInteractionStoreApi(): StoreApi<GraphInteractionState> {
