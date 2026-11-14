@@ -1,126 +1,45 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/global/ui/tabs";
 import { Button } from "@/global/ui/button";
 import { Badge } from "@/global/ui/badge";
 import { ScrollArea } from "@/global/ui/scroll-area";
 import {
-  GitBranch,
-  GitCommit,
   GitPullRequest,
-  History,
   Plus,
   Shield,
   RotateCcw,
-  CheckCircle,
   Download,
   Loader2,
 } from "lucide-react";
-import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
-import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
-import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
-import { useVcsStore } from "@/domains/vcs/shared/stores/useVcsStore";
-import { VcsCloudService } from "@/domains/vcs/shared/api/VcsCloudService";
 import { BranchSelector } from "@/domains/vcs/components/VcsBranchSelector";
 import { VcsCreateBranchModal } from "@/domains/vcs/components/VcsCreateBranchModal";
 import { VcsCreateMergeRequestModal } from "@/domains/vcs/components/VcsCreateMergeRequestModal";
-import { VcsCommit, VcsMergeRequest } from "@/domains/vcs/shared/utils/vcs.types";
-import { toast } from "sonner";
+import { useVcsSidebarController } from "@/domains/vcs/shared/hooks/useVcsSidebarController";
 
+/**
+ * Pure declarative sidebar panel for browsing branches, reviewing commit history,
+ * exporting audit trails, and initiating merge requests.
+ */
 export const VcsSidebarPanel: React.FC = () => {
-  const { user } = useAuth();
-  const currentVaultId = useVaultStore((s) => s.currentVaultId);
-  const permissions = useVaultPermission();
-  const canManage =
-    permissions.role === "owner" ||
-    permissions.role === "superadmin" ||
-    permissions.role === "admin";
-
-  const { branches, activeBranchId, activeBranchName, loadBranches } = useVcsStore();
-
-  const [activeTab, setActiveTab] = useState<"branches" | "history" | "merges">("branches");
-  const [commits, setCommits] = useState<VcsCommit[]>([]);
-  const [mergeRequests, setMergeRequests] = useState<VcsMergeRequest[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
-  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
-
-  // Muat data saat tab aktif berubah
-  useEffect(() => {
-    if (!currentVaultId || !user) return;
-    loadBranches(currentVaultId, user.id);
-  }, [currentVaultId, user?.id]);
-
-  useEffect(() => {
-    if (!currentVaultId || !activeBranchId) return;
-
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        if (activeTab === "history") {
-          const list = await VcsCloudService.listCommitHistory({
-            vaultId: currentVaultId,
-            branchId: activeBranchId,
-            limit: 40,
-          });
-          setCommits(list);
-        }
-      } catch (err) {
-        console.warn("Gagal memuat riwayat:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [activeTab, currentVaultId, activeBranchId]);
-
-  const handleRevertCommit = async (commitId: string) => {
-    if (!currentVaultId || !activeBranchId || !user) return;
-    if (
-      !confirm(
-        "Revert commit ini? Sistem akan membuat commit baru yang mengembalikan konten ke versi tersebut.",
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await VcsCloudService.revertCommit({
-        targetCommitId: commitId,
-        vaultId: currentVaultId,
-        branchId: activeBranchId,
-        authorId: user.id,
-      });
-
-      toast.success("Revert berhasil dieksekusi sebagai commit baru");
-      const updated = await VcsCloudService.listCommitHistory({
-        vaultId: currentVaultId,
-        branchId: activeBranchId,
-        limit: 40,
-      });
-      setCommits(updated);
-    } catch (err: any) {
-      toast.error(err.message || "Gagal merevert commit");
-    }
-  };
-
-  const handleExportAuditTrail = () => {
-    if (commits.length === 0) {
-      toast.info("Belum ada riwayat commit untuk diekspor");
-      return;
-    }
-
-    const jsonStr = JSON.stringify(commits, null, 2);
-    const blob = new Blob([jsonStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vcs-audit-${activeBranchName}-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Audit trail berhasil diunduh sebagai JSON");
-  };
+  const {
+    user,
+    currentVaultId,
+    canManage,
+    branches,
+    activeBranchId,
+    activeBranchName,
+    activeTab,
+    setActiveTab,
+    commits,
+    isLoading,
+    isBranchModalOpen,
+    setIsBranchModalOpen,
+    isMergeModalOpen,
+    setIsMergeModalOpen,
+    handleRevertCommit,
+    handleExportAuditTrail,
+    handleSwitchBranch,
+  } = useVcsSidebarController();
 
   if (!currentVaultId || !user) {
     return (
@@ -151,7 +70,7 @@ export const VcsSidebarPanel: React.FC = () => {
       {/* Tabs Pusat Kendali */}
       <Tabs
         value={activeTab}
-        onValueChange={(v: any) => setActiveTab(v)}
+        onValueChange={(v) => setActiveTab(v as "branches" | "history" | "merges")}
         className="flex-1 flex flex-col min-h-0"
       >
         <div className="px-2 pt-1.5 border-b border-sidebar-border">
@@ -204,7 +123,7 @@ export const VcsSidebarPanel: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => useVcsStore.getState().setActiveBranch(b.id, b.name)}
+                      onClick={() => handleSwitchBranch(b.id, b.name)}
                       className="h-6 text-[10px] px-1.5 text-muted-foreground hover:text-foreground"
                     >
                       Beralih

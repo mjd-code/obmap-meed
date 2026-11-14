@@ -1,8 +1,6 @@
-import React, { useState } from "react";
-import type { UserWithRole, AccountStatus } from "@/types/admin";
+import React from "react";
+import type { UserWithRole } from "@/types/admin";
 import type { AppRole } from "@/types/collaboration";
-import { AdminService } from "@/domains/admin/shared/api/AdminService";
-import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/global/ui/table";
 import { Badge } from "@/global/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/global/ui/select";
@@ -10,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/global/ui/avatar";
 import { Input } from "@/global/ui/input";
 import { Button } from "@/global/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/global/ui/dialog";
-import { toast } from "sonner";
+import { useAdminUserManagementController } from "@/domains/admin/shared/hooks/useAdminUserManagementController";
 import {
   ShieldCheck,
   UserCheck,
@@ -28,74 +26,24 @@ interface Props {
   onRefresh: () => void;
 }
 
+/**
+ * Pure declarative user and platform-role table for platform administrators.
+ */
 export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefresh }) => {
-  const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState<UserWithRole[]>(initialUsers);
-  const [search, setSearch] = useState("");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [inspectUser, setInspectUser] = useState<UserWithRole | null>(null);
-
-  React.useEffect(() => {
-    setUsers(initialUsers);
-  }, [initialUsers]);
-
-  const filteredUsers = users.filter((u) => {
-    const q = search.toLowerCase();
-    return (
-      (u.email || "").toLowerCase().includes(q) ||
-      (u.display_name || "").toLowerCase().includes(q) ||
-      u.role.toLowerCase().includes(q)
-    );
+  const {
+    currentUser,
+    filteredUsers,
+    search,
+    setSearch,
+    updatingId,
+    inspectUser,
+    setInspectUser,
+    handleRoleChange,
+    handleToggleSuspension,
+  } = useAdminUserManagementController({
+    users: initialUsers,
+    onRefresh,
   });
-
-  // Optimistic UI untuk Perubahan Role
-  const handleRoleChange = async (targetUserId: string, newRole: AppRole) => {
-    if (!currentUser) return;
-    const previousUsers = [...users];
-
-    setUsers((prev) =>
-      prev.map((u) => (u.id === targetUserId ? { ...u, role: newRole } : u))
-    );
-    setUpdatingId(targetUserId);
-
-    const res = await AdminService.updateUserRole(targetUserId, newRole, currentUser.id);
-
-    setUpdatingId(null);
-    if (!res.success) {
-      setUsers(previousUsers); // Rollback jika gagal
-      toast.error(res.error || "Gagal memperbarui peran pengguna.");
-      return;
-    }
-
-    toast.success(`Peran berhasil diubah menjadi "${newRole}".`);
-    onRefresh();
-  };
-
-  // Optimistic UI untuk Toggle Penangguhan Akun
-  const handleToggleSuspension = async (targetUserId: string, currentStatus: AccountStatus = "active") => {
-    if (!currentUser) return;
-    const nextStatus: AccountStatus = currentStatus === "suspended" ? "active" : "suspended";
-    const previousUsers = [...users];
-
-    setUsers((prev) =>
-      prev.map((u) => (u.id === targetUserId ? { ...u, status: nextStatus } : u))
-    );
-
-    const res = await AdminService.toggleUserSuspension(targetUserId, nextStatus, currentUser.id);
-
-    if (!res.success) {
-      setUsers(previousUsers); // Rollback
-      toast.error(res.error || "Gagal memperbarui status akun.");
-      return;
-    }
-
-    toast.success(
-      nextStatus === "suspended"
-        ? "Akun pengguna berhasil ditangguhkan."
-        : "Akun pengguna berhasil diaktifkan kembali."
-    );
-    onRefresh();
-  };
 
   return (
     <div className="space-y-4">

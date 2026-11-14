@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { usePWA } from "@/domains/sync/shared/hooks/usePWA";
+import { useSyncPWAInstallPromptController } from "@/domains/sync/shared/hooks/useSyncPWAInstallPromptController";
 import { Button } from "@/global/ui/button";
 import {
   Card,
@@ -21,12 +21,15 @@ import {
   Share,
 } from "lucide-react";
 
-interface PWAInstallPromptProps {
+export interface PWAInstallPromptProps {
   variant?: "banner" | "card" | "minimal";
   showOfflineStatus?: boolean;
   onDismiss?: () => void;
 }
 
+/**
+ * Pure declarative PWA install, update, offline banner, and iOS manual setup prompt.
+ */
 export function PWAInstallPrompt({
   variant = "banner",
   showOfflineStatus = true,
@@ -38,44 +41,15 @@ export function PWAInstallPrompt({
     isOnline,
     isUpdateAvailable,
     platform,
-    installApp,
     updateApp,
-    getInstallInstructions,
-  } = usePWA();
+    dismissed,
+    showInstructions,
+    setShowInstructions,
+    instructions,
+    handleDismiss,
+    handleInstall,
+  } = useSyncPWAInstallPromptController({ onDismiss });
 
-  const [dismissed, setDismissed] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(false);
-
-  // Check localStorage for dismissal
-  useEffect(() => {
-    const dismissedUntil = localStorage.getItem("pwa-prompt-dismissed");
-    if (dismissedUntil) {
-      const dismissedDate = new Date(dismissedUntil);
-      if (dismissedDate > new Date()) {
-        setDismissed(true);
-      }
-    }
-  }, []);
-
-  const handleDismiss = () => {
-    // Dismiss for 7 days
-    const dismissUntil = new Date();
-    dismissUntil.setDate(dismissUntil.getDate() + 7);
-    localStorage.setItem("pwa-prompt-dismissed", dismissUntil.toISOString());
-    setDismissed(true);
-    onDismiss?.();
-  };
-
-  const handleInstall = async () => {
-    const result = await installApp();
-    if (!result.success && (platform === "ios" || !canInstall)) {
-      setShowInstructions(true);
-    }
-  };
-
-  const instructions = getInstallInstructions();
-
-  // Update available notification
   if (isUpdateAvailable) {
     return (
       <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-4">
@@ -83,9 +57,7 @@ export function PWAInstallPrompt({
           <CardContent className="p-4 flex items-center gap-4">
             <RefreshCw className="w-5 h-5 text-primary" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">
-                Update available
-              </p>
+              <p className="text-sm font-medium text-foreground">Update available</p>
               <p className="text-xs text-muted-foreground">
                 Click to refresh and get the latest version
               </p>
@@ -99,7 +71,6 @@ export function PWAInstallPrompt({
     );
   }
 
-  // Offline status indicator
   if (showOfflineStatus && !isOnline) {
     return (
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2">
@@ -114,17 +85,10 @@ export function PWAInstallPrompt({
     );
   }
 
-  // Already installed
-  if (isInstalled) {
+  if (isInstalled || dismissed || (!canInstall && platform !== "ios")) {
     return null;
   }
 
-  // Dismissed or not installable
-  if (dismissed || (!canInstall && platform !== "ios")) {
-    return null;
-  }
-
-  // Manual instructions modal for iOS
   if (showInstructions) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
@@ -174,7 +138,6 @@ export function PWAInstallPrompt({
     );
   }
 
-  // Banner variant
   if (variant === "banner") {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-background via-background to-transparent">
@@ -190,9 +153,7 @@ export function PWAInstallPrompt({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground">
-                    Install VaultGraph
-                  </h3>
+                  <h3 className="font-semibold text-foreground">Install VaultGraph</h3>
                   <p className="text-sm text-muted-foreground">
                     Get quick access from your home screen. Works offline!
                   </p>
@@ -214,7 +175,6 @@ export function PWAInstallPrompt({
     );
   }
 
-  // Card variant
   if (variant === "card") {
     return (
       <Card className="bg-card border-border">
@@ -258,20 +218,17 @@ export function PWAInstallPrompt({
     );
   }
 
-  // Minimal variant
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleInstall}
-      className="gap-2"
-    >
+    <Button variant="outline" size="sm" onClick={handleInstall} className="gap-2">
       <Download className="w-4 h-4" />
       Install
     </Button>
   );
 }
 
+/**
+ * Pure declarative connectivity and installation badge.
+ */
 export function PWAStatusBadge() {
   const { isOnline, isInstalled } = usePWA();
 

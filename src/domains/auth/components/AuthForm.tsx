@@ -1,9 +1,3 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
-import { ProfileService } from "@/domains/settings/shared/api/ProfileService";
 import { Button } from "@/global/ui/button";
 import { Input } from "@/global/ui/input";
 import { Label } from "@/global/ui/label";
@@ -16,159 +10,45 @@ import {
   CardTitle,
 } from "@/global/ui/card";
 import { PasswordStrengthIndicator } from "@/domains/auth/components/AuthPasswordStrengthIndicator";
-import { Loader2, Mail, Lock, User, Eye, EyeOff, CheckCircle2, XCircle, AtSign } from "lucide-react";
-import { toast } from "sonner";
+import { AuthRegisterForm } from "@/domains/auth/components/AuthRegisterForm";
+import {
+  useAuthFormController,
+  type AuthMode,
+} from "@/domains/auth/shared/hooks/useAuthFormController";
+import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-const loginSchema = z.object({
-  email: z.string().email("Format email tidak valid").max(255),
-  password: z.string().min(1, "Kata sandi wajib diisi"),
-});
+export type { AuthMode };
 
-const registerSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Username minimal 3 karakter")
-    .max(30, "Username maksimal 30 karakter")
-    .regex(/^[a-z0-9_-]+$/, "Hanya huruf kecil, angka, underscore (_), atau hyphen (-)"),
-  email: z.string().email("Format email tidak valid").max(255),
-  password: z.string().min(8, "Kata sandi minimal 8 karakter").max(72),
-  displayName: z.string().min(2, "Nama minimal 2 karakter").max(100).optional(),
-});
-
-const resetSchema = z.object({
-  email: z.string().email("Format email tidak valid").max(255),
-});
-
-const updatePasswordSchema = z
-  .object({
-    password: z.string().min(8, "Kata sandi minimal 8 karakter").max(72),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Kata sandi konfirmasi tidak cocok",
-    path: ["confirmPassword"],
-  });
-
-type AuthMode = "login" | "register" | "reset" | "update-password";
-
-interface AuthFormProps {
+export interface AuthFormProps {
   initialMode?: AuthMode;
   onSuccess?: () => void;
 }
 
+/**
+ * Pure declarative authentication card handling login, registration, password reset,
+ * password update, and Google OAuth entry points.
+ */
 export function AuthForm({ initialMode = "login", onSuccess }: AuthFormProps) {
-  const [mode, setMode] = useState<AuthMode>(initialMode);
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp, signInWithGoogle, resetPassword, updatePassword } = useAuth();
-
-  // State ketersediaan username saat registrasi
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
-  const [usernameMessage, setUsernameMessage] = useState<string>("");
-
-  const loginForm = useForm({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
-  });
-
-  const registerForm = useForm({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { username: "", email: "", password: "", displayName: "" },
-    mode: "onChange",
-  });
-
-  const resetForm = useForm({
-    resolver: zodResolver(resetSchema),
-    defaultValues: { email: "" },
-  });
-
-  const updatePasswordForm = useForm({
-    resolver: zodResolver(updatePasswordSchema),
-    defaultValues: { password: "", confirmPassword: "" },
-  });
-
-  // Debounce check ketersediaan username
-  const watchedUsername = registerForm.watch("username");
-  useEffect(() => {
-    if (!watchedUsername || watchedUsername.length < 3) {
-      setUsernameAvailable(null);
-      setUsernameMessage("");
-      setIsCheckingUsername(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsCheckingUsername(true);
-      const res = await ProfileService.checkUsernameAvailability(watchedUsername);
-      setIsCheckingUsername(false);
-      setUsernameAvailable(res.available);
-      setUsernameMessage(res.available ? "Username tersedia!" : (res.reason || "Username tidak tersedia"));
-    }, 450);
-
-    return () => clearTimeout(timer);
-  }, [watchedUsername]);
-
-  const handleLogin = async (data: z.infer<typeof loginSchema>) => {
-    setIsLoading(true);
-    const { error } = await signIn(data.email, data.password);
-    setIsLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Selamat datang kembali!");
-      onSuccess?.();
-    }
-  };
-
-  const handleRegister = async (data: z.infer<typeof registerSchema>) => {
-    if (usernameAvailable === false) {
-      toast.error("Silakan pilih username lain yang masih tersedia.");
-      return;
-    }
-
-    setIsLoading(true);
-    const { error } = await signUp(data.email, data.password, data.displayName, data.username);
-    setIsLoading(false);
-
-    if (error) {
-      if (error.message.includes("already registered")) {
-        toast.error("Email ini sudah terdaftar. Silakan login.");
-      } else {
-        toast.error(error.message);
-      }
-    } else {
-      toast.success("Pendaftaran berhasil! Silakan periksa email Anda untuk verifikasi.");
-      setMode("login");
-    }
-  };
-
-  const handleReset = async (data: z.infer<typeof resetSchema>) => {
-    setIsLoading(true);
-    const { error } = await resetPassword(data.email);
-    setIsLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Tautan reset kata sandi telah dikirim ke email Anda.");
-      setMode("login");
-    }
-  };
-
-  const handleUpdatePassword = async (data: z.infer<typeof updatePasswordSchema>) => {
-    setIsLoading(true);
-    const { error } = await updatePassword(data.password);
-    setIsLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Kata sandi berhasil diperbarui!");
-      onSuccess?.();
-    }
-  };
+  const {
+    mode,
+    setMode,
+    showPassword,
+    toggleShowPassword,
+    isLoading,
+    signInWithGoogle,
+    loginForm,
+    registerForm,
+    resetForm,
+    updatePasswordForm,
+    watchedUsername,
+    isCheckingUsername,
+    usernameAvailable,
+    usernameMessage,
+    handleLogin,
+    handleRegister,
+    handleReset,
+    handleUpdatePassword,
+  } = useAuthFormController({ initialMode, onSuccess });
 
   return (
     <Card className="w-full max-w-md mx-auto shadow-lg border-border">
@@ -194,7 +74,13 @@ export function AuthForm({ initialMode = "login", onSuccess }: AuthFormProps) {
               <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="nama@email.com" className="pl-9" {...loginForm.register("email")} />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nama@email.com"
+                  className="pl-9"
+                  {...loginForm.register("email")}
+                />
               </div>
               {loginForm.formState.errors.email && (
                 <p className="text-xs text-destructive">{loginForm.formState.errors.email.message}</p>
@@ -204,7 +90,11 @@ export function AuthForm({ initialMode = "login", onSuccess }: AuthFormProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Kata Sandi</Label>
-                <button type="button" onClick={() => setMode("reset")} className="text-xs text-primary hover:underline">
+                <button
+                  type="button"
+                  onClick={() => setMode("reset")}
+                  className="text-xs text-primary hover:underline"
+                >
                   Lupa kata sandi?
                 </button>
               </div>
@@ -219,14 +109,16 @@ export function AuthForm({ initialMode = "login", onSuccess }: AuthFormProps) {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={toggleShowPassword}
                   className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {loginForm.formState.errors.password && (
-                <p className="text-xs text-destructive">{loginForm.formState.errors.password.message}</p>
+                <p className="text-xs text-destructive">
+                  {loginForm.formState.errors.password.message}
+                </p>
               )}
             </div>
 
@@ -238,93 +130,17 @@ export function AuthForm({ initialMode = "login", onSuccess }: AuthFormProps) {
         )}
 
         {mode === "register" && (
-          <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
-            {/* Input Username Wajib */}
-            <div className="space-y-2">
-              <Label htmlFor="register-username">Username Publik <span className="text-destructive">*</span></Label>
-              <div className="relative">
-                <AtSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="register-username"
-                  placeholder="username_anda"
-                  className="pl-9 pr-10 font-mono text-sm"
-                  {...registerForm.register("username", {
-                    onChange: (e) => {
-                      e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-                    },
-                  })}
-                />
-                <div className="absolute right-3 top-3">
-                  {isCheckingUsername && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-                  {!isCheckingUsername && usernameAvailable === true && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                  {!isCheckingUsername && usernameAvailable === false && <XCircle className="w-4 h-4 text-destructive" />}
-                </div>
-              </div>
-              {usernameMessage && (
-                <p className={`text-xs ${usernameAvailable ? "text-emerald-500" : "text-destructive"}`}>
-                  {usernameMessage}
-                </p>
-              )}
-              {registerForm.formState.errors.username && (
-                <p className="text-xs text-destructive">{registerForm.formState.errors.username.message}</p>
-              )}
-              <p className="text-[11px] text-muted-foreground">
-                Digunakan untuk alamat URL publik Anda: /p/<span className="text-foreground font-mono">{watchedUsername || "username"}</span>
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Nama Tampilan</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="displayName" placeholder="Mada Bajaka" className="pl-9" {...registerForm.register("displayName")} />
-              </div>
-              {registerForm.formState.errors.displayName && (
-                <p className="text-xs text-destructive">{registerForm.formState.errors.displayName.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="register-email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="register-email" type="email" placeholder="nama@email.com" className="pl-9" {...registerForm.register("email")} />
-              </div>
-              {registerForm.formState.errors.email && (
-                <p className="text-xs text-destructive">{registerForm.formState.errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="register-password">Kata Sandi</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="register-password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="pl-9 pr-9"
-                  {...registerForm.register("password")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <PasswordStrengthIndicator password={registerForm.watch("password") || ""} />
-              {registerForm.formState.errors.password && (
-                <p className="text-xs text-destructive">{registerForm.formState.errors.password.message}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading || usernameAvailable === false}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Daftar Sekarang
-            </Button>
-          </form>
+          <AuthRegisterForm
+            form={registerForm}
+            watchedUsername={watchedUsername}
+            isCheckingUsername={isCheckingUsername}
+            usernameAvailable={usernameAvailable}
+            usernameMessage={usernameMessage}
+            showPassword={showPassword}
+            onToggleShowPassword={toggleShowPassword}
+            isLoading={isLoading}
+            onSubmit={handleRegister}
+          />
         )}
 
         {mode === "reset" && (
@@ -333,7 +149,13 @@ export function AuthForm({ initialMode = "login", onSuccess }: AuthFormProps) {
               <Label htmlFor="reset-email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="reset-email" type="email" placeholder="nama@email.com" className="pl-9" {...resetForm.register("email")} />
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="nama@email.com"
+                  className="pl-9"
+                  {...resetForm.register("email")}
+                />
               </div>
               {resetForm.formState.errors.email && (
                 <p className="text-xs text-destructive">{resetForm.formState.errors.email.message}</p>
@@ -357,7 +179,11 @@ export function AuthForm({ initialMode = "login", onSuccess }: AuthFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Konfirmasi Kata Sandi</Label>
-              <Input id="confirm-password" type="password" {...updatePasswordForm.register("confirmPassword")} />
+              <Input
+                id="confirm-password"
+                type="password"
+                {...updatePasswordForm.register("confirmPassword")}
+              />
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>

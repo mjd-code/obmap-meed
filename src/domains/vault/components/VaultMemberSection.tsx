@@ -1,18 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Users,
-  UserPlus,
-  Shield,
-  ShieldCheck,
-  Edit3,
-  Eye,
-  Trash2,
-  Loader2,
-  Cloud,
-  ArrowUpRight,
-  Search,
-  Check,
-} from "lucide-react";
+import React from "react";
+import { UserPlus, Trash2, Loader2, Cloud, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/global/ui/avatar";
 import { Badge } from "@/global/ui/badge";
 import { Button } from "@/global/ui/button";
@@ -24,12 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/global/ui/select";
-import { toast } from "sonner";
-import { VaultMemberService, type UserSearchResult } from "@/domains/vault/shared/api/VaultMemberService";
+import {
+  VAULT_MEMBER_ROLE_CONFIG,
+  useVaultMemberController,
+} from "@/domains/vault/shared/hooks/useVaultMemberController";
 import type { VaultMemberRole } from "@/types/collaboration";
-import type { VaultMemberWithProfile } from "@/types/admin";
 
-interface VaultMemberSectionProps {
+export interface VaultMemberSectionProps {
   vaultId: string;
   vaultName: string;
   isCloud: boolean;
@@ -38,33 +26,11 @@ interface VaultMemberSectionProps {
   onCloudSyncEnable?: () => void;
 }
 
-const ROLE_CONFIG: Record<VaultMemberRole, { label: string; icon: React.ElementType; color: string; desc: string }> = {
-  admin: {
-    label: "Admin",
-    icon: ShieldCheck,
-    color: "bg-red-500/10 text-red-500 border-red-500/20",
-    desc: "Kelola anggota, sunting, dan hapus catatan",
-  },
-  editor: {
-    label: "Editor",
-    icon: Edit3,
-    color: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    desc: "Sunting, buat, dan publikasikan catatan",
-  },
-  contributor: {
-    label: "Contributor",
-    icon: Shield,
-    color: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    desc: "Buat draft dan ajukan review catatan",
-  },
-  viewer: {
-    label: "Viewer",
-    icon: Eye,
-    color: "bg-muted text-muted-foreground border-border",
-    desc: "Hanya dapat membaca catatan graf",
-  },
-};
+const INVITABLE_ROLES: VaultMemberRole[] = ["admin", "editor", "contributor", "viewer"];
 
+/**
+ * Pure declarative collaborator management panel for a cloud vault.
+ */
 export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
   vaultId,
   vaultName,
@@ -73,123 +39,25 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
   isOwnerOrAdmin,
   onCloudSyncEnable,
 }) => {
-  const [members, setMembers] = useState<VaultMemberWithProfile[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // State Input & Auto-suggestion
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<UserSearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-  const [selectedRole, setSelectedRole] = useState<VaultMemberRole>("editor");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const searchBoxRef = useRef<HTMLDivElement>(null);
-
-  // Muat daftar anggota
-  const loadMembers = async () => {
-    if (!isCloud || !vaultId) return;
-    setLoading(true);
-    try {
-      const data = await VaultMemberService.getVaultMembers(vaultId);
-      setMembers(data);
-    } catch (err) {
-      console.error("[VaultMemberSection] Gagal memuat anggota:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadMembers();
-  }, [vaultId, isCloud]);
-
-  // Handle outside click untuk menutup auto-suggestion popover
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Debounced auto-suggestion
-  useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2 || selectedUser) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearching(true);
-      const existingUserIds = members.map((m) => m.user_id);
-      if (currentUserId) existingUserIds.push(currentUserId);
-
-      const results = await VaultMemberService.searchUsers(searchQuery, existingUserIds);
-      setSuggestions(results);
-      setShowSuggestions(true);
-      setIsSearching(false);
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, members, currentUserId, selectedUser]);
-
-  const handleSelectUser = (user: UserSearchResult) => {
-    setSelectedUser(user);
-    setSearchQuery(user.email || user.display_name || user.id);
-    setShowSuggestions(false);
-  };
-
-  const handleInvite = async () => {
-    if (!selectedUser || !currentUserId) {
-      toast.error("Pilih pengguna dari daftar saran terlebih dahulu");
-      return;
-    }
-
-    setIsSubmitting(true);
-    const result = await VaultMemberService.addOrUpdateMember(
-      vaultId,
-      selectedUser.id,
-      selectedRole,
-      currentUserId
-    );
-    setIsSubmitting(false);
-
-    if (result.success) {
-      toast.success(`${selectedUser.display_name || selectedUser.email} ditambahkan sebagai ${selectedRole}`);
-      setSelectedUser(null);
-      setSearchQuery("");
-      loadMembers();
-    } else {
-      toast.error(result.error || "Gagal mengundang anggota");
-    }
-  };
-
-  const handleRoleChange = async (memberUserId: string, newRole: VaultMemberRole) => {
-    if (!currentUserId) return;
-    const res = await VaultMemberService.addOrUpdateMember(vaultId, memberUserId, newRole, currentUserId);
-    if (res.success) {
-      toast.success("Peran anggota diperbarui");
-      loadMembers();
-    } else {
-      toast.error("Gagal memperbarui peran");
-    }
-  };
-
-  const handleRemoveMember = async (memberUserId: string) => {
-    if (!currentUserId) return;
-    const res = await VaultMemberService.removeMember(vaultId, memberUserId, currentUserId);
-    if (res.success) {
-      toast.success("Akses anggota dicabut");
-      loadMembers();
-    } else {
-      toast.error("Gagal mencabut akses");
-    }
-  };
+  const {
+    members,
+    loading,
+    searchQuery,
+    suggestions,
+    isSearching,
+    showSuggestions,
+    selectedUser,
+    selectedRole,
+    setSelectedRole,
+    isSubmitting,
+    searchBoxRef,
+    handleSearchChange,
+    handleSearchFocus,
+    handleSelectUser,
+    handleInvite,
+    handleRoleChange,
+    handleRemoveMember,
+  } = useVaultMemberController({ vaultId, isCloud, currentUserId });
 
   // 1. Kondisi jika Local Vault: Tampilkan Ajakan Cloud Sync yang Ramah
   if (!isCloud) {
@@ -231,13 +99,8 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                 <Input
                   placeholder="Ketik Gmail atau User ID..."
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    if (selectedUser) setSelectedUser(null);
-                  }}
-                  onFocus={() => {
-                    if (suggestions.length > 0) setShowSuggestions(true);
-                  }}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={handleSearchFocus}
                   className="h-8 text-xs pl-8 pr-7 bg-background"
                 />
                 <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-2.5" />
@@ -286,8 +149,8 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(["admin", "editor", "contributor", "viewer"] as VaultMemberRole[]).map((r) => {
-                  const cfg = ROLE_CONFIG[r];
+                {INVITABLE_ROLES.map((r) => {
+                  const cfg = VAULT_MEMBER_ROLE_CONFIG[r];
                   const Icon = cfg.icon;
                   return (
                     <SelectItem key={r} value={r} className="text-xs">
@@ -330,9 +193,9 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
           <div className="divide-y divide-border/40 rounded-md border border-border/50 bg-background/50 overflow-hidden">
             {members.map((member) => {
               const isOwnerRow = member.id.startsWith("owner-");
-              const cfg = isOwnerRow 
+              const cfg = isOwnerRow
                 ? { label: "Pemilik", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" }
-                : (ROLE_CONFIG[member.role] || ROLE_CONFIG.viewer);
+                : VAULT_MEMBER_ROLE_CONFIG[member.role] || VAULT_MEMBER_ROLE_CONFIG.viewer;
               const isSelf = member.user_id === currentUserId;
 
               return (
@@ -354,7 +217,6 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    {/* Jika ini baris Pemilik Utama, selalu tampilkan badge statis */}
                     {isOwnerRow ? (
                       <Badge variant="outline" className={`text-[10px] h-5 px-1.5 font-medium ${cfg.color}`}>
                         Pemilik Utama
@@ -369,9 +231,9 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {(["admin", "editor", "contributor", "viewer"] as VaultMemberRole[]).map((r) => (
+                            {INVITABLE_ROLES.map((r) => (
                               <SelectItem key={r} value={r} className="text-[11px]">
-                                {ROLE_CONFIG[r].label}
+                                {VAULT_MEMBER_ROLE_CONFIG[r].label}
                               </SelectItem>
                             ))}
                           </SelectContent>

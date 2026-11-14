@@ -4,8 +4,8 @@ title: Register Hutang Teknis Sistem (Technical Debt Register)
 type: engineering
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 1.2.0
-last_reviewed: 2026-11-12
+version: 1.3.0
+last_reviewed: 2026-11-14
 audience: both
 related:
   - DOC-ENG-001
@@ -32,6 +32,7 @@ source_of_truth: src/
 | `TD-004` | Regresi Assertasi Pengujian Vault Rename | `src/domains/vault/__tests__/VaultManager.test.ts` | Test mengharapkan nilai boolean murni `true`, padahal method mengembalikan `{ success: true }`. | Rendah | `[IMPLEMENTED]` | Diperbarui assertasi test menjadi `expect(result.success).toBe(true)` (97/97 test hijau). |
 | `TD-005` | Untyped Supabase Client Shim | `src/global/api/untypedSupabase.ts` | Tipe basis data Supabase out-of-sync dengan migrasi SQL V4. | Sedang | `[PLANNED]` | Regenerasi skema TypeScript Supabase dari migrasi resmi dan terapkan di client. |
 | `TD-006` | Bounding Box Collision pada Mode Fishbone/Timeline | `src/domains/graph/shared/utils/textLayout.ts` | Teks simpul yang sangat panjang berpotensi tumpang tindih pada zoom rapat. | Sedang | `[IMPLEMENTED]` | Ditambahkan deteksi `boxesOverlap`, margin dinamis berbasis kedalaman, dan kompensasi tinggi kartu di `fishbone.ts` & `timeline.ts`. |
+| `TD-007` | Akumulasi God Components Lintas Domain (`>300` baris) | `src/domains/*/components/*.tsx` | Puluhan komponen di domain `graph`, `editor`, `workspace`, `collaboration`, `settings`, `vault`, `vcs`, `public-reader`, `auth`, `admin`, dan `sync` mencampur JSX dengan logika state/efek. | Tinggi | `[IMPLEMENTED]` | Ekstraksi bertahap (Fase 2–4) ke pola **Headless Controller Hook** (`shared/hooks/use*Controller.ts`) dan sub-view deklaratif. Seluruh 157 berkas `.tsx` di `src/domains/*/components/` kini berada di bawah batas <= 300 baris (`OVER_300=0`). |
 
 ---
 

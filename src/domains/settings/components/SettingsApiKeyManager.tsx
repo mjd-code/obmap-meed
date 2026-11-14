@@ -1,9 +1,5 @@
-import { useState, useEffect } from "react";
-import {
-  apiKeyService,
-  type ApiKey,
-  type ApiKeyPermission,
-} from "@/domains/settings/shared/api/ApiKeyService";
+import { format } from "date-fns";
+import { Key, Plus, Copy, Trash2, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/global/ui/button";
 import { Input } from "@/global/ui/input";
 import { Label } from "@/global/ui/label";
@@ -35,118 +31,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/global/ui/alert-dialog";
-import { Key, Plus, Copy, Trash2, Eye, EyeOff, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { format } from "date-fns";
+import {
+  API_KEY_PERMISSION_OPTIONS,
+  useSettingsApiKeyController,
+} from "@/domains/settings/shared/hooks/useSettingsApiKeyController";
 
-const PERMISSION_OPTIONS: {
-  value: ApiKeyPermission;
-  label: string;
-  description: string;
-}[] = [
-  { value: "read", label: "Read", description: "View vault data" },
-  { value: "write", label: "Write", description: "Create and update data" },
-  { value: "delete", label: "Delete", description: "Delete vault data" },
-  {
-    value: "admin",
-    label: "Admin",
-    description: "Full access including API key management",
-  },
-];
-
+/** Declarative view for creating, listing, and revoking vault API keys. */
 export function ApiKeyManager() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newKeySecret, setNewKeySecret] = useState<string | null>(null);
-  const [showSecret, setShowSecret] = useState(false);
+  const ctrl = useSettingsApiKeyController();
 
-  // Create form state
-  const [newKeyName, setNewKeyName] = useState("");
-  const [newKeyPermissions, setNewKeyPermissions] = useState<
-    ApiKeyPermission[]
-  >(["read"]);
-  const [newKeyExpiresDays, setNewKeyExpiresDays] = useState<string>("");
-
-  useEffect(() => {
-    loadApiKeys();
-  }, []);
-
-  const loadApiKeys = async () => {
-    setIsLoading(true);
-    const { data, error } = await apiKeyService.getApiKeys();
-    if (error) {
-      toast.error("Failed to load API keys");
-    } else {
-      setApiKeys(data || []);
-    }
-    setIsLoading(false);
-  };
-
-  const handleCreateKey = async () => {
-    if (!newKeyName.trim()) {
-      toast.error("Please enter a name for the API key");
-      return;
-    }
-
-    setIsCreating(true);
-    const expiresInDays = newKeyExpiresDays
-      ? parseInt(newKeyExpiresDays)
-      : undefined;
-
-    const { data, error } = await apiKeyService.createApiKey(
-      newKeyName.trim(),
-      newKeyPermissions,
-      expiresInDays,
-    );
-
-    if (error) {
-      toast.error("Failed to create API key");
-    } else if (data) {
-      setNewKeySecret(data.secret);
-      setApiKeys((prev) => [data, ...prev]);
-      toast.success("API key created successfully");
-    }
-
-    setIsCreating(false);
-  };
-
-  const handleCopySecret = () => {
-    if (newKeySecret) {
-      navigator.clipboard.writeText(newKeySecret);
-      toast.success("API key copied to clipboard");
-    }
-  };
-
-  const handleCloseCreateDialog = () => {
-    setShowCreateDialog(false);
-    setNewKeyName("");
-    setNewKeyPermissions(["read"]);
-    setNewKeyExpiresDays("");
-    setNewKeySecret(null);
-    setShowSecret(false);
-  };
-
-  const handleDeleteKey = async (keyId: string) => {
-    const { error } = await apiKeyService.deleteApiKey(keyId);
-    if (error) {
-      toast.error("Failed to delete API key");
-    } else {
-      setApiKeys((prev) => prev.filter((k) => k.id !== keyId));
-      toast.success("API key deleted");
-    }
-  };
-
-  const handleTogglePermission = (permission: ApiKeyPermission) => {
-    setNewKeyPermissions((prev) =>
-      prev.includes(permission)
-        ? prev.filter((p) => p !== permission)
-        : [...prev, permission],
-    );
-  };
-
-  if (isLoading) {
+  if (ctrl.isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -169,7 +63,10 @@ export function ApiKeyManager() {
               Manage API keys for programmatic access to your vaults
             </CardDescription>
           </div>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <Dialog
+            open={ctrl.showCreateDialog}
+            onOpenChange={ctrl.setShowCreateDialog}
+          >
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="mr-2 h-4 w-4" />
@@ -179,28 +76,30 @@ export function ApiKeyManager() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {newKeySecret ? "API Key Created" : "Create New API Key"}
+                  {ctrl.newKeySecret
+                    ? "API Key Created"
+                    : "Create New API Key"}
                 </DialogTitle>
                 <DialogDescription>
-                  {newKeySecret
+                  {ctrl.newKeySecret
                     ? "Copy this key now. You won't be able to see it again."
                     : "Create a new API key with specific permissions."}
                 </DialogDescription>
               </DialogHeader>
 
-              {newKeySecret ? (
+              {ctrl.newKeySecret ? (
                 <div className="space-y-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="flex items-center gap-2">
                       <code className="flex-1 text-sm break-all">
-                        {showSecret ? newKeySecret : "•".repeat(40)}
+                        {ctrl.showSecret ? ctrl.newKeySecret : "•".repeat(40)}
                       </code>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setShowSecret(!showSecret)}
+                        onClick={() => ctrl.setShowSecret(!ctrl.showSecret)}
                       >
-                        {showSecret ? (
+                        {ctrl.showSecret ? (
                           <EyeOff className="h-4 w-4" />
                         ) : (
                           <Eye className="h-4 w-4" />
@@ -209,13 +108,16 @@ export function ApiKeyManager() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={handleCopySecret}
+                        onClick={ctrl.handleCopySecret}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                  <Button onClick={handleCloseCreateDialog} className="w-full">
+                  <Button
+                    onClick={ctrl.handleCloseCreateDialog}
+                    className="w-full"
+                  >
                     Done
                   </Button>
                 </div>
@@ -226,26 +128,26 @@ export function ApiKeyManager() {
                     <Input
                       id="key-name"
                       placeholder="e.g., Production API Key"
-                      value={newKeyName}
-                      onChange={(e) => setNewKeyName(e.target.value)}
+                      value={ctrl.newKeyName}
+                      onChange={(e) => ctrl.setNewKeyName(e.target.value)}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label>Permissions</Label>
                     <div className="space-y-2">
-                      {PERMISSION_OPTIONS.map((permission) => (
+                      {API_KEY_PERMISSION_OPTIONS.map((permission) => (
                         <div
                           key={permission.value}
                           className="flex items-center space-x-2"
                         >
                           <Checkbox
                             id={`perm-${permission.value}`}
-                            checked={newKeyPermissions.includes(
+                            checked={ctrl.newKeyPermissions.includes(
                               permission.value,
                             )}
                             onCheckedChange={() =>
-                              handleTogglePermission(permission.value)
+                              ctrl.handleTogglePermission(permission.value)
                             }
                           />
                           <label
@@ -270,17 +172,19 @@ export function ApiKeyManager() {
                       id="expires-days"
                       type="number"
                       placeholder="Leave empty for no expiration"
-                      value={newKeyExpiresDays}
-                      onChange={(e) => setNewKeyExpiresDays(e.target.value)}
+                      value={ctrl.newKeyExpiresDays}
+                      onChange={(e) =>
+                        ctrl.setNewKeyExpiresDays(e.target.value)
+                      }
                     />
                   </div>
 
                   <Button
-                    onClick={handleCreateKey}
+                    onClick={ctrl.handleCreateKey}
                     className="w-full"
-                    disabled={isCreating}
+                    disabled={ctrl.isCreating}
                   >
-                    {isCreating && (
+                    {ctrl.isCreating && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
                     Create API Key
@@ -292,7 +196,7 @@ export function ApiKeyManager() {
         </div>
       </CardHeader>
       <CardContent>
-        {apiKeys.length === 0 ? (
+        {ctrl.apiKeys.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Key className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No API keys yet</p>
@@ -302,7 +206,7 @@ export function ApiKeyManager() {
           </div>
         ) : (
           <div className="space-y-3">
-            {apiKeys.map((key) => (
+            {ctrl.apiKeys.map((key) => (
               <div
                 key={key.id}
                 className="flex items-center justify-between p-3 border rounded-lg"
@@ -359,7 +263,7 @@ export function ApiKeyManager() {
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={() => handleDeleteKey(key.id)}
+                        onClick={() => ctrl.handleDeleteKey(key.id)}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         Delete

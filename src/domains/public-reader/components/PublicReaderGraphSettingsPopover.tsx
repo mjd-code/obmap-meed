@@ -9,85 +9,22 @@
 import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/global/ui/popover";
 import { Button } from "@/global/ui/button";
-import { Slider } from "@/global/ui/slider";
-import { Switch } from "@/global/ui/switch";
-import { Label } from "@/global/ui/label";
 import { Separator } from "@/global/ui/separator";
 import { Badge } from "@/global/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/global/ui/tooltip";
 import type { GraphConfigState } from "@/domains/graph/shared/stores/useGraphStore";
 import type { LayoutMode } from "@/domains/graph/shared/utils/graph.types";
 import {
-  Settings2,
-  RotateCcw,
-  Maximize2,
-  Type,
-  Palette,
-  Network,
-  Filter,
-  Sliders,
-  Sparkles,
-} from "lucide-react";
+  AVAILABLE_LAYOUTS,
+  GRAPH_THEME_PRESETS,
+  type ColorThemePreset,
+  usePublicReaderGraphSettingsController,
+} from "@/domains/public-reader/shared/hooks/usePublicReaderGraphSettingsController";
+import { PublicReaderGraphSettingsSections } from "@/domains/public-reader/components/PublicReaderGraphSettingsSections";
+import { Settings2, RotateCcw, Maximize2, Palette, Network, Sparkles } from "lucide-react";
 
-export interface ColorThemePreset {
-  id: string;
-  name: string;
-  fileColor: string;
-  folderColor: string;
-  linkColor: string;
-  accentColor: string;
-}
-
-export const GRAPH_THEME_PRESETS: ColorThemePreset[] = [
-  {
-    id: "default",
-    name: "Classic ObMap",
-    fileColor: "#3b82f6",
-    folderColor: "#eab308",
-    linkColor: "#60a5fa",
-    accentColor: "#2563eb",
-  },
-  {
-    id: "obsidian",
-    name: "Obsidian Violet",
-    fileColor: "#a855f7",
-    folderColor: "#ec4899",
-    linkColor: "#c084fc",
-    accentColor: "#9333ea",
-  },
-  {
-    id: "emerald",
-    name: "Cyber Emerald",
-    fileColor: "#10b981",
-    folderColor: "#06b6d4",
-    linkColor: "#34d399",
-    accentColor: "#059669",
-  },
-  {
-    id: "sunset",
-    name: "Warm Sunset",
-    fileColor: "#f97316",
-    folderColor: "#ef4444",
-    linkColor: "#fb923c",
-    accentColor: "#ea580c",
-  },
-  {
-    id: "slate",
-    name: "Monochrome Slate",
-    fileColor: "#94a3b8",
-    folderColor: "#cbd5e1",
-    linkColor: "#64748b",
-    accentColor: "#475569",
-  },
-];
-
-export const AVAILABLE_LAYOUTS: Array<{ id: LayoutMode; label: string; desc: string }> = [
-  { id: "free-force", label: "Free Force", desc: "Simulasi pegas dinamis" },
-  { id: "fr-radial", label: "Radial Spread", desc: "Penyebaran konsentris teratur" },
-  { id: "kamada-kawai", label: "Kamada-Kawai", desc: "Keseimbangan topologis global" },
-  { id: "mindmap", label: "Mindmap Tree", desc: "Pohon hierarki seimbang" },
-  { id: "timeline", label: "Timeline", desc: "Urutan kronologis waktu" },
-];
+export { AVAILABLE_LAYOUTS, GRAPH_THEME_PRESETS };
+export type { ColorThemePreset };
 
 export interface PublicGraphSettingsPopoverProps {
   config: GraphConfigState;
@@ -98,6 +35,9 @@ export interface PublicGraphSettingsPopoverProps {
   onFitCamera: () => void;
 }
 
+/**
+ * Pure declarative floating popover for public graph layout, theme preset, and visual controls.
+ */
 export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProps> = ({
   config,
   onConfigChange,
@@ -106,24 +46,17 @@ export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProp
   onResetDefaults,
   onFitCamera,
 }) => {
-  const [activeThemeId, setActiveThemeId] = React.useState<string>("default");
-
-  // Terapkan Palet Preset
-  const handleApplyTheme = (preset: ColorThemePreset) => {
-    setActiveThemeId(preset.id);
-    onConfigChange((prev) => ({
-      ...prev,
-      nodes: {
-        ...prev.nodes,
-        fileColor: preset.fileColor,
-        folderColor: preset.folderColor,
-      },
-      links: {
-        ...prev.links,
-        color: preset.linkColor,
-      },
-    }));
-  };
+  const {
+    activeThemeId,
+    activeThemeName,
+    handleApplyTheme,
+    handleReset,
+    updateNodeOption,
+    updateForceOption,
+  } = usePublicReaderGraphSettingsController({
+    onConfigChange,
+    onResetDefaults,
+  });
 
   return (
     <TooltipProvider delayDuration={250}>
@@ -178,10 +111,7 @@ export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProp
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => {
-                      setActiveThemeId("default");
-                      onResetDefaults();
-                    }}
+                    onClick={handleReset}
                     className="h-6 w-6 text-muted-foreground hover:text-foreground"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -232,7 +162,7 @@ export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProp
                   <span>Tema Warna</span>
                 </div>
                 <Badge variant="outline" className="text-[9px] h-4 font-normal px-1.5">
-                  {GRAPH_THEME_PRESETS.find((p) => p.id === activeThemeId)?.name || "Kustom"}
+                  {activeThemeName}
                 </Badge>
               </div>
               <div className="flex items-center gap-2 pt-0.5">
@@ -261,152 +191,11 @@ export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProp
               </div>
             </div>
 
-            <Separator className="bg-border/50" />
-
-            {/* 3. Label Catatan */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 font-medium text-foreground text-[11px]">
-                <Type className="w-3 h-3 text-primary" />
-                <span>Label Catatan</span>
-              </div>
-
-              <div className="flex items-center justify-between py-0.5">
-                <Label className="text-xs text-muted-foreground cursor-pointer">
-                  Tampilkan Nama Catatan
-                </Label>
-                <Switch
-                  checked={config.nodes.showLabels}
-                  onCheckedChange={(checked) =>
-                    onConfigChange((prev) => ({
-                      ...prev,
-                      nodes: { ...prev.nodes, showLabels: checked },
-                    }))
-                  }
-                />
-              </div>
-
-              {config.nodes.showLabels && (
-                <>
-                  <div className="flex items-center justify-between py-0.5">
-                    <Label className="text-xs text-muted-foreground cursor-pointer">
-                      Kotak Latar Label (Card Pill)
-                    </Label>
-                    <Switch
-                      checked={config.nodes.labelBox}
-                      onCheckedChange={(checked) =>
-                        onConfigChange((prev) => ({
-                          ...prev,
-                          nodes: { ...prev.nodes, labelBox: checked },
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-1 pt-1">
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                      <span>Ukuran Teks Label</span>
-                      <span className="font-mono">{config.nodes.labelSize}px</span>
-                    </div>
-                    <Slider
-                      min={8}
-                      max={18}
-                      step={1}
-                      value={[config.nodes.labelSize]}
-                      onValueChange={([val]) =>
-                        onConfigChange((prev) => ({
-                          ...prev,
-                          nodes: { ...prev.nodes, labelSize: val },
-                        }))
-                      }
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-
-            <Separator className="bg-border/50" />
-
-            {/* 4. Filter Jenis Node */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 font-medium text-foreground text-[11px]">
-                <Filter className="w-3 h-3 text-primary" />
-                <span>Filter Jenis Node</span>
-              </div>
-              <div className="flex items-center justify-between py-0.5">
-                <Label className="text-xs text-muted-foreground cursor-pointer">
-                  Catatan Teks (Files)
-                </Label>
-                <Switch
-                  checked={config.nodes.showFileNodes}
-                  onCheckedChange={(checked) =>
-                    onConfigChange((prev) => ({
-                      ...prev,
-                      nodes: { ...prev.nodes, showFileNodes: checked },
-                    }))
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between py-0.5">
-                <Label className="text-xs text-muted-foreground cursor-pointer">
-                  Folder / Kategori Hub
-                </Label>
-                <Switch
-                  checked={config.nodes.showFolderNodes}
-                  onCheckedChange={(checked) =>
-                    onConfigChange((prev) => ({
-                      ...prev,
-                      nodes: { ...prev.nodes, showFolderNodes: checked },
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            <Separator className="bg-border/50" />
-
-            {/* 5. Jarak & Peregangan Fisika */}
-            <div className="space-y-2.5 pb-1">
-              <div className="flex items-center gap-1.5 font-medium text-foreground text-[11px]">
-                <Sliders className="w-3 h-3 text-primary" />
-                <span>Jarak Node & Keregangan</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span>Panjang Relasi</span>
-                  <span className="font-mono">{config.forces.linkDistance}px</span>
-                </div>
-                <Slider
-                  min={30}
-                  max={250}
-                  step={5}
-                  value={[config.forces.linkDistance]}
-                  onValueChange={([val]) =>
-                    onConfigChange((prev) => ({
-                      ...prev,
-                      forces: { ...prev.forces, linkDistance: val },
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span>Gaya Tolak Antar Node</span>
-                  <span className="font-mono">{Math.abs(config.forces.chargeStrength)}</span>
-                </div>
-                <Slider
-                  min={50}
-                  max={500}
-                  step={10}
-                  value={[Math.abs(config.forces.chargeStrength)]}
-                  onValueChange={([val]) =>
-                    onConfigChange((prev) => ({
-                      ...prev,
-                      forces: { ...prev.forces, chargeStrength: -val },
-                    }))
-                  }
-                />
-              </div>
-            </div>
+            <PublicReaderGraphSettingsSections
+              config={config}
+              onUpdateNodeOption={updateNodeOption}
+              onUpdateForceOption={updateForceOption}
+            />
           </div>
         </PopoverContent>
       </Popover>

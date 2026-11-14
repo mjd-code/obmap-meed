@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -11,185 +11,39 @@ import {
   DialogTitle,
 } from "@/global/ui/dialog";
 import { Badge } from "@/global/ui/badge";
-import { NoteRecord } from "@/types/collaboration";
-import { NoteService } from "@/domains/vault/shared/api/NoteService";
-import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
-import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
 import { TwoStageLinterModal } from "@/domains/collaboration/components/CollabTwoStageLinterModal";
 import { DiffViewer } from "@/domains/collaboration/components/CollabDiffViewer";
+import { ClaimUsernameModal } from "@/domains/settings/components/SettingsClaimUsernameModal";
 import {
   Globe,
   Send,
   Eye,
-  ExternalLink,
   CheckCircle,
   Clock,
   BookOpen,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
-import { ClaimUsernameModal } from "@/domains/settings/components/SettingsClaimUsernameModal";
-import { getPublicNoteUrl } from "@/domains/collaboration/shared/utils/publicUrlHelper";
+import {
+  useCollabNoteWorkflowController,
+  type NoteWorkflowMenuSectionProps,
+} from "@/domains/collaboration/shared/hooks/useCollabNoteWorkflowController";
 
+export type { NoteWorkflowMenuSectionProps };
 
-export interface NoteWorkflowMenuSectionProps {
-  nodeId: string;
-  nodeTitle: string;
-  currentContent: string;
-}
-
+/** Declarative dropdown menu section displaying publication status and workflow actions. */
 export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = ({
   nodeId,
   nodeTitle,
   currentContent,
 }) => {
-  const currentVaultId = useVaultStore((s) => s.currentVaultId);
-  const permissions = useVaultPermission();
-  const [noteRecord, setNoteRecord] = useState<NoteRecord | null>(null);
-  const [publishedContent, setPublishedContent] = useState<string>("");
-  const [linterOpen, setLinterOpen] = useState(false);
-  const [linterAction, setLinterAction] = useState<"publish" | "review">("publish");
-  const [diffOpen, setDiffOpen] = useState(false);
-  const [processing, setProcessing] = useState(false);
-   const { profile } = useAuth();
-   const [claimModalOpen, setClaimModalOpen] = useState(false);
+  const controller = useCollabNoteWorkflowController({
+    nodeId,
+    nodeTitle,
+    currentContent,
+  });
 
-  useEffect(() => {
-    if (!currentVaultId || !nodeId) return;
+  if (!controller.isReady || !controller.noteRecord) return null;
 
-    let isMounted = true;
-    const loadNoteData = async () => {
-      try {
-        const existing = await NoteService.findNoteInVault(
-          currentVaultId,
-          nodeId,
-          nodeTitle,
-        );
-        if (!isMounted) return;
-
-        if (existing) {
-          setNoteRecord(existing);
-          if (existing.published_at) {
-            const revisions = await NoteService.getRevisions(existing.id);
-            const pubTime = new Date(existing.published_at).getTime();
-            const lastPub =
-              revisions.find((r) => new Date(r.created_at).getTime() <= pubTime) ??
-              revisions[0];
-            if (lastPub && isMounted) {
-              setPublishedContent(lastPub.content);
-            }
-          }
-        } else {
-          setNoteRecord({
-            id: nodeId,
-            vault_id: currentVaultId,
-            author_id: "",
-            title: nodeTitle || "Untitled",
-            slug: NoteService.slugify(nodeTitle || nodeId) || "untitled",
-            content: currentContent,
-            frontmatter: { local_node_id: nodeId },
-            status: "draft",
-            version: 1,
-            published_at: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
-          setPublishedContent("");
-        }
-      } catch {
-        if (isMounted) {
-          setNoteRecord({
-            id: nodeId,
-            vault_id: currentVaultId,
-            author_id: "",
-            title: nodeTitle || "Untitled",
-            slug: NoteService.slugify(nodeTitle || nodeId) || "untitled",
-            content: currentContent,
-            frontmatter: { local_node_id: nodeId },
-            status: "draft",
-            version: 1,
-            published_at: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
-        }
-      }
-    };
-
-    loadNoteData();
-    return () => {
-      isMounted = false;
-    };
-  }, [nodeId, currentVaultId, nodeTitle, currentContent]);
-
-  if (!currentVaultId || !noteRecord) return null;
-
-  const isPublished = noteRecord.status === "published";
-  const hasDiff =
-    Boolean(publishedContent) &&
-    publishedContent.trim() !== currentContent.trim();
-      const handleStartPublish = () => {
-    // Jika akun belum punya username, minta klaim terlebih dahulu
-    if (!profile?.username) {
-      setClaimModalOpen(true);
-      return;
-    }
-    setLinterAction("publish");
-    setLinterOpen(true);
-  };
-
-  const handlePublishExecution = async (bundledContent: string) => {
-    setProcessing(true);
-    try {
-      const updated = await NoteService.publishOrUpdateNote({
-        vaultId: currentVaultId,
-        nodeId: noteRecord.id,
-        title: noteRecord.title,
-        content: bundledContent,
-        status: "published",
-        frontmatter: noteRecord.frontmatter as Record<string, any>,
-      });
-
-      setNoteRecord(updated);
-      setPublishedContent(updated.content);
-      toast.success(`Catatan "${updated.title}" berhasil dipublikasikan ke Web!`, {
-        action: {
-          label: "Buka Pembaca",
-          onClick: async () => {
-            const url = await getPublicNoteUrl(currentVaultId, updated.slug);
-            window.open(url, "_blank");
-          },
-        },
-      });
-    } catch (err: any) {
-      toast.error(err?.message || "Gagal mempublikasikan catatan.");
-      throw err;
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleReviewSubmission = async (bundledContent: string) => {
-    setProcessing(true);
-    try {
-      const updated = await NoteService.publishOrUpdateNote({
-        vaultId: currentVaultId,
-        nodeId: noteRecord.id,
-        title: noteRecord.title,
-        content: bundledContent,
-        status: "in_review",
-        frontmatter: noteRecord.frontmatter as Record<string, any>,
-      });
-
-      setNoteRecord(updated);
-      toast.success("Catatan berhasil diajukan untuk ditinjau editor.");
-    } catch (err: any) {
-      toast.error(err?.message || "Gagal mengajukan review.");
-      throw err;
-    } finally {
-      setProcessing(false);
-    }
-  };
+  const { noteRecord, permissions } = controller;
 
   return (
     <>
@@ -201,7 +55,7 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
       {/* Baris Status Publikasi */}
       <div className="flex items-center justify-between px-2 py-1.5 text-xs">
         <span className="text-muted-foreground">Status</span>
-        {isPublished ? (
+        {controller.isPublished ? (
           <Badge className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 text-[10px] px-1.5 py-0 font-medium gap-1">
             <CheckCircle className="w-2.5 h-2.5" />
             Terbit v{noteRecord.version}
@@ -212,18 +66,21 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
             In Review
           </Badge>
         ) : (
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 text-muted-foreground">
+          <Badge
+            variant="secondary"
+            className="text-[10px] px-1.5 py-0 text-muted-foreground"
+          >
             Draf Lokal
           </Badge>
         )}
       </div>
 
       {/* Aksi Diff jika konten telah berubah dari versi terbit */}
-      {hasDiff && (
+      {controller.hasDiff && (
         <DropdownMenuItem
           onSelect={(e) => {
             e.preventDefault();
-            setDiffOpen(true);
+            controller.setDiffOpen(true);
           }}
           className="text-xs"
         >
@@ -237,14 +94,13 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
         <DropdownMenuItem
           onSelect={(e) => {
             e.preventDefault();
-            setLinterAction("publish");
-            setLinterOpen(true);
+            controller.handleOpenPublishLinter();
           }}
-          disabled={processing}
+          disabled={controller.processing}
           className="text-xs font-medium text-primary focus:text-primary"
         >
           <Globe className="w-3.5 h-3.5 mr-2" />
-          {isPublished ? "Perbarui di Web..." : "Publikasikan ke Web..."}
+          {controller.isPublished ? "Perbarui di Web..." : "Publikasikan ke Web..."}
         </DropdownMenuItem>
       )}
 
@@ -256,10 +112,9 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
           <DropdownMenuItem
             onSelect={(e) => {
               e.preventDefault();
-              setLinterAction("review");
-              setLinterOpen(true);
+              controller.handleOpenReviewLinter();
             }}
-            disabled={processing}
+            disabled={controller.processing}
             className="text-xs"
           >
             <Send className="w-3.5 h-3.5 mr-2 text-amber-500" />
@@ -268,14 +123,8 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
         )}
 
       {/* Aksi Buka Halaman Publik jika sudah terbit */}
-      {isPublished && (
-        <DropdownMenuItem
-          onSelect={async () => {
-            const url = await getPublicNoteUrl(currentVaultId, noteRecord.slug);
-            window.open(url, "_blank");
-          }}
-          className="text-xs"
-        >
+      {controller.isPublished && (
+        <DropdownMenuItem onSelect={controller.handleOpenPublicPage} className="text-xs">
           <BookOpen className="h-3.5 w-3.5 mr-2 text-primary" />
           Buka Halaman Web
         </DropdownMenuItem>
@@ -283,43 +132,39 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
 
       {/* Modal Linter */}
       <TwoStageLinterModal
-        open={linterOpen}
-        onOpenChange={setLinterOpen}
-        vaultId={currentVaultId}
+        open={controller.linterOpen}
+        onOpenChange={controller.setLinterOpen}
+        vaultId={controller.currentVaultId}
         noteId={noteRecord.id}
         noteTitle={noteRecord.title}
         content={currentContent}
-        actionType={linterAction}
+        actionType={controller.linterAction}
         onConfirmPublish={
-          linterAction === "publish"
-            ? handlePublishExecution
-            : handleReviewSubmission
+          controller.linterAction === "publish"
+            ? controller.handlePublishExecution
+            : controller.handleReviewSubmission
         }
       />
 
       {/* Modal Diff Viewer Terbungkus Dialog */}
-      <Dialog open={diffOpen} onOpenChange={setDiffOpen}>
+      <Dialog open={controller.diffOpen} onOpenChange={controller.setDiffOpen}>
         <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Tinjauan Perubahan: {noteRecord.title}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-hidden py-2">
             <DiffViewer
-              originalContent={publishedContent}
+              originalContent={controller.publishedContent}
               modifiedContent={currentContent}
             />
           </div>
         </DialogContent>
       </Dialog>
 
-            <ClaimUsernameModal
-        open={claimModalOpen}
-        onOpenChange={setClaimModalOpen}
-        onSuccess={() => {
-          // Setelah username berhasil diklaim, langsung lanjutkan alur linter/publish
-          setLinterAction("publish");
-          setLinterOpen(true);
-        }}
+      <ClaimUsernameModal
+        open={controller.claimModalOpen}
+        onOpenChange={controller.setClaimModalOpen}
+        onSuccess={controller.handleClaimSuccess}
       />
     </>
   );
