@@ -54,5 +54,5 @@ graph LR
 ---
 
 ## Terkait
-- [Empat Pilar Kasus Penggunaan](../01-vision/use-case-pillars.md)
+- [Empat Pilar Kasus Penggunaan](../01-visions/use-case-pillars.md)
 - [Peta Jalan Pengembangan Produk](../02-planning/roadmap.md)

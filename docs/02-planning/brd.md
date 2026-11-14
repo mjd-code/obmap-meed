@@ -87,6 +87,6 @@ Rasio Efisiensi Modal = LTV / CAC (Target Sehat: >= 3.0x)
 ---
 
 ## Terkait
-- [Positioning Produk](../01-vision/positioning.md)
+- [Positioning Produk](../01-visions/positioning.md)
 - [Product Requirements Document (PRD)](prd.md)
 - [Statement of Work (SoW)](sow.md)

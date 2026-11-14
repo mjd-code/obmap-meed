@@ -42,11 +42,19 @@ export function fishboneLayout({ ids, roots, childrenOf, context }: FishboneInpu
     (width, id) => Math.max(width, context.nodeMetrics.get(id)?.width ?? 120),
     120
   );
-  const L = Math.max(700, context.width * 1.25, categories.length * (maxCardWidth + context.siblingGap * 3));
+  const maxCardHeight = ids.reduce(
+    (height, id) => Math.max(height, context.nodeMetrics.get(id)?.height ?? 36),
+    36
+  );
+  const L = Math.max(
+    700,
+    context.width * 1.25,
+    categories.length * (maxCardWidth + context.levelGap + context.siblingGap * 3)
+  );
   const x1 = x0 + L;
 
   const effectWidth = effect ? context.nodeMetrics.get(effect)?.width ?? 120 : 0;
-  if (effect) targets.set(effect, { x: x1 + effectWidth / 2, y: y0, side: 0 });
+  if (effect) targets.set(effect, { x: x1 + effectWidth / 2 + context.siblingGap, y: y0, side: 0 });
   decorations.push({
     kind: 'fishbone-spine',
     x1: x0,
@@ -61,9 +69,15 @@ export function fishboneLayout({ ids, roots, childrenOf, context }: FishboneInpu
     const anchorX = x0 + ((index + 1) * L) / (count + 1);
     const sign: 1 | -1 = index % 2 === 0 ? -1 : 1;
     const categoryMetric = context.nodeMetrics.get(categoryId) ?? { width: 120, height: 36 };
+    const kids = children(categoryId);
+    const m = kids.length;
+    const childSpanAlongRib = m * (maxCardHeight + context.siblingGap * 1.5);
     const ribLength = Math.max(
       context.levelGap * 2.5,
-      categoryMetric.width + context.levelGap + Math.sqrt(weights.get(categoryId) ?? 1) * context.siblingGap * 2
+      categoryMetric.width +
+        context.levelGap +
+        childSpanAlongRib +
+        Math.sqrt(weights.get(categoryId) ?? 1) * context.siblingGap * 2
     );
     const cx = anchorX - ribLength * Math.cos(alpha);
     const cy = y0 + sign * ribLength * Math.sin(alpha);
@@ -79,8 +93,6 @@ export function fishboneLayout({ ids, roots, childrenOf, context }: FishboneInpu
       targetId: categoryId,
     } as FishboneRib);
 
-    const kids = children(categoryId);
-    const m = kids.length;
     kids.forEach((kid, k) => {
       // Keep attachments away from the category card at the rib tip.
       const t = 0.18 + (k * 0.62) / Math.max(1, m - 1);
@@ -117,8 +129,9 @@ export function fishboneLayout({ ids, roots, childrenOf, context }: FishboneInpu
     const tangentX = -Math.cos(alpha);
     const tangentY = sign * Math.sin(alpha);
     const metric = context.nodeMetrics.get(id) ?? { width: 120, height: 36 };
-    const offset = context.levelGap * 0.85 + metric.height / 2 + depth * context.siblingGap * 0.45;
-    const siblingOffset = siblingIndex * (metric.width + context.siblingGap) * 0.55;
+    const diagClearance = metric.width * Math.abs(outwardX) * 0.5 + metric.height * Math.abs(outwardY) * 0.5;
+    const offset = context.levelGap * 0.85 + diagClearance + depth * context.siblingGap * 0.45;
+    const siblingOffset = siblingIndex * (metric.width + metric.height * 0.5 + context.siblingGap) * 0.65;
     const x = baseX + offset * outwardX + siblingOffset * tangentX;
     const y = baseY + offset * outwardY + siblingOffset * tangentY;
     targets.set(id, { x, y, side: sign });
@@ -126,9 +139,12 @@ export function fishboneLayout({ ids, roots, childrenOf, context }: FishboneInpu
     kids.forEach((kid, index) => {
       const parentMetric = context.nodeMetrics.get(id) ?? { width: 120, height: 36 };
       const childMetric = context.nodeMetrics.get(kid) ?? { width: 120, height: 36 };
-      const branchStep = parentMetric.height / 2 + childMetric.height / 2 + context.siblingGap;
-      const childBaseX = x + branchStep * outwardX + index * context.siblingGap * tangentX;
-      const childBaseY = y + branchStep * outwardY + index * context.siblingGap * tangentY;
+      const branchStep =
+        (parentMetric.width + childMetric.width) * Math.abs(outwardX) * 0.5 +
+        (parentMetric.height + childMetric.height) * Math.abs(outwardY) * 0.5 +
+        context.siblingGap * 1.25;
+      const childBaseX = x + branchStep * outwardX + index * (childMetric.height + context.siblingGap) * tangentX;
+      const childBaseY = y + branchStep * outwardY + index * (childMetric.height + context.siblingGap) * tangentY;
       placeSubBranch(
         kid,
         childBaseX,

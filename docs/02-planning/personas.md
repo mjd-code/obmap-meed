@@ -67,6 +67,6 @@ source_of_truth: src/domains/
 ---
 
 ## Terkait
-- [Pilar Kasus Penggunaan](../01-vision/use-case-pillars.md)
+- [Pilar Kasus Penggunaan](../01-visions/use-case-pillars.md)
 - [Product Requirements Document (PRD)](prd.md)
 - [Software Requirements Specification (SRS)](srs.md)

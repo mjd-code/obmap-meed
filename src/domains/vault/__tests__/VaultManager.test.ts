@@ -147,9 +147,9 @@ describe('VaultManager Characterization Tests', () => {
 
   it('renames an existing vault', async () => {
     const vaultId = await vaultManager.createCloudVault('Old Name', false);
-    const success = await vaultManager.renameVault(vaultId, 'New Shiny Name');
+    const result = await vaultManager.renameVault(vaultId, 'New Shiny Name');
 
-    expect(success).toBe(true);
+    expect(result.success).toBe(true);
     expect(vaultManager.getVault(vaultId)?.name).toBe('New Shiny Name');
   });
 

@@ -16,20 +16,17 @@ import {
 import {
   Circle,
   Eye,
-  Palette,
-  Type,
   Sparkles,
   Shapes,
   Square,
   Diamond,
   Triangle,
   Hexagon,
-  GitBranch,
-} from 'lucide-react';
-import { NodeConfig, useGraphStore } from "@/domains/graph/shared/stores/useGraphStore";
-import { ColorPicker } from '@/domains/graph/components/GraphColorPicker';
-import { ColorEngineControls } from '@/domains/graph/components/GraphColorEngineControls';
-import { CollapsibleSection } from '@/domains/graph/components/GraphCollapsibleSection';
+} from "lucide-react";
+import type { NodeConfig } from "@/domains/graph/shared/stores/useGraphStore";
+import { CollapsibleSection } from "@/domains/graph/components/GraphCollapsibleSection";
+import { GraphNodeLabelSection } from "@/domains/graph/components/GraphNodeLabelSection";
+import { useGraphNodeStylingController } from "@/domains/graph/shared/hooks/useGraphNodeStylingController";
 
 interface NodeStylingTabProps {
   config: NodeConfig;
@@ -38,9 +35,7 @@ interface NodeStylingTabProps {
 }
 
 export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) {
-
-  const hierarchy = useGraphStore((s) => s.config.hierarchy);
-  const updateHierarchyConfig = useGraphStore((s) => s.updateHierarchyConfig);
+  const ctrl = useGraphNodeStylingController({ config, onUpdate });
 
   return (
     <div className="space-y-4">
@@ -53,12 +48,7 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
         <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Shape</Label>
-            <Select
-              value={config.shape}
-              onValueChange={(value: NodeConfig['shape']) =>
-                onUpdate({ shape: value })
-              }
-            >
+            <Select value={config.shape} onValueChange={ctrl.handleShapeChange}>
               <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>
@@ -95,9 +85,7 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Visual shape for all nodes
-            </p>
+            <p className="text-xs text-muted-foreground">Visual shape for all nodes</p>
           </div>
         </div>
       </CollapsibleSection>
@@ -109,7 +97,6 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
         defaultOpen={false}
       >
         <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
-          {/* Relative Size */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm">Relative Size</Label>
@@ -119,24 +106,24 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
             </div>
             <Slider
               value={[config.relSize]}
-              onValueChange={([value]) => onUpdate({ relSize: value })}
+              onValueChange={ctrl.handleRelSizeChange}
               min={1}
               max={70}
               step={1}
             />
-            <p className="text-xs text-muted-foreground">
-              Base node size (nodeRelSize)
-            </p>
+            <p className="text-xs text-muted-foreground">Base node size (nodeRelSize)</p>
           </div>
 
           <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
             <div>
               <Label className="text-sm font-medium">Size by hierarchy level</Label>
-              <p className="text-xs text-muted-foreground">Make deeper nodes progressively smaller</p>
+              <p className="text-xs text-muted-foreground">
+                Make deeper nodes progressively smaller
+              </p>
             </div>
             <Switch
               checked={config.sizeByDepth}
-              onCheckedChange={(checked) => onUpdate({ sizeByDepth: checked })}
+              onCheckedChange={ctrl.handleSizeByDepthChange}
             />
           </div>
 
@@ -150,7 +137,7 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
               </div>
               <Slider
                 value={[config.depthSizeInterval]}
-                onValueChange={([value]) => onUpdate({ depthSizeInterval: value })}
+                onValueChange={ctrl.handleDepthIntervalChange}
                 min={0.25}
                 max={4}
                 step={0.25}
@@ -158,7 +145,6 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
             </div>
           )}
 
-          {/* Resolution (3D only) */}
           {is3D && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -169,7 +155,7 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
               </div>
               <Slider
                 value={[config.resolution]}
-                onValueChange={([value]) => onUpdate({ resolution: value })}
+                onValueChange={ctrl.handleResolutionChange}
                 min={4}
                 max={32}
                 step={2}
@@ -192,12 +178,11 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-sm font-medium">Glowing nodes</Label>
-              <p className="text-xs text-muted-foreground">Soft pulsing halo in each node's color</p>
+              <p className="text-xs text-muted-foreground">
+                Soft pulsing halo in each node's color
+              </p>
             </div>
-            <Switch
-              checked={config.glow}
-              onCheckedChange={(checked) => onUpdate({ glow: checked })}
-            />
+            <Switch checked={config.glow} onCheckedChange={ctrl.handleGlowChange} />
           </div>
 
           {config.glow && (
@@ -211,7 +196,7 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
                 </div>
                 <Slider
                   value={[config.glowIntensity]}
-                  onValueChange={([value]) => onUpdate({ glowIntensity: value })}
+                  onValueChange={ctrl.handleGlowIntensityChange}
                   min={0.1}
                   max={1}
                   step={0.05}
@@ -221,12 +206,12 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
                 <div className="flex items-center justify-between">
                   <Label className="text-sm">Pulse speed</Label>
                   <Badge variant="outline" className="font-mono text-xs">
-                    {config.glowSpeed === 0 ? 'Static' : `${config.glowSpeed.toFixed(1)}x`}
+                    {config.glowSpeed === 0 ? "Static" : `${config.glowSpeed.toFixed(1)}x`}
                   </Badge>
                 </div>
                 <Slider
                   value={[config.glowSpeed]}
-                  onValueChange={([value]) => onUpdate({ glowSpeed: value })}
+                  onValueChange={ctrl.handleGlowSpeedChange}
                   min={0}
                   max={3}
                   step={0.1}
@@ -247,19 +232,14 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
         defaultOpen={false}
       >
         <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
-          {/* Node Visibility */}
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-sm font-medium">Node Visibility</Label>
               <p className="text-xs text-muted-foreground">Show/hide all nodes</p>
             </div>
-            <Switch
-              checked={config.visible}
-              onCheckedChange={(checked) => onUpdate({ visible: checked })}
-            />
+            <Switch checked={config.visible} onCheckedChange={ctrl.handleVisibleChange} />
           </div>
 
-          {/* Opacity */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm">Opacity</Label>
@@ -269,7 +249,7 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
             </div>
             <Slider
               value={[config.opacity]}
-              onValueChange={([value]) => onUpdate({ opacity: value })}
+              onValueChange={ctrl.handleOpacityChange}
               min={0.1}
               max={1}
               step={0.05}
@@ -278,294 +258,12 @@ export function NodeStylingTab({ config, is3D, onUpdate }: NodeStylingTabProps) 
         </div>
       </CollapsibleSection>
 
-      {/* Color Management */}
-      <CollapsibleSection
-        icon={<Palette className="w-4 h-4 text-primary" />}
-        title="Color Management"
-        defaultOpen={false}
-      >
-        <div className="p-3 rounded-lg bg-card border border-border">
-          <ColorEngineControls
-            hierarchy={hierarchy}
-            nodeConfig={config}
-            onHierarchyUpdate={updateHierarchyConfig}
-            onNodeConfigUpdate={onUpdate}
-          />
-        </div>
-
-        <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
-          {/* Auto-Color Toggle */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Auto-Color By</Label>
-            <Select
-              value={config.autoColorBy}
-              onValueChange={(value: NodeConfig['autoColorBy']) =>
-                onUpdate({ autoColorBy: value })
-              }
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-muted" />
-                    Manual Colors
-                  </div>
-                </SelectItem>
-                <SelectItem value="type">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" />
-                    Node Type (file/folder)
-                  </div>
-                </SelectItem>
-                <SelectItem value="depth">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" />
-                    Depth Level
-                  </div>
-                </SelectItem>
-                <SelectItem value="branch">
-                  <div className="flex items-center gap-2">
-                    <GitBranch className="w-3 h-3" />
-                    Branch (Inheritance)
-                  </div>
-                </SelectItem>
-                <SelectItem value="tags">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" />
-                    First Tag
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Color Pickers */}
-          <div className="grid grid-cols-1 gap-3">
-            <ColorPicker
-              label="Folder Color"
-              value={config.folderColor}
-              onChange={(color) => onUpdate({ folderColor: color })}
-            />
-            <ColorPicker
-              label="File Color"
-              value={config.fileColor}
-              onChange={(color) => onUpdate({ fileColor: color })}
-            />
-            <ColorPicker
-              label="Selected Color"
-              value={config.selectedColor}
-              onChange={(color) => onUpdate({ selectedColor: color })}
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
-
-      {/* Labels Configuration */}
-      <CollapsibleSection
-        icon={<Type className="w-4 h-4 text-primary" />}
-        title="Label Configuration"
-        defaultOpen={false}
-      >
-        <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
-          {/* Show Labels */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">Show Labels</Label>
-              <p className="text-xs text-muted-foreground">Display node names</p>
-            </div>
-            <Switch
-              checked={config.showLabels}
-              onCheckedChange={(checked) => onUpdate({ showLabels: checked })}
-            />
-          </div>
-
-          {/* Label Source Field */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Label Source Field</Label>
-            <Select
-              value={config.labelField}
-              onValueChange={(value: NodeConfig['labelField']) =>
-                onUpdate({ labelField: value })
-              }
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Node Name</SelectItem>
-                <SelectItem value="id">Node ID</SelectItem>
-                <SelectItem value="custom">Custom Field</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Label Size */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">Label Size</Label>
-              <Badge variant="outline" className="font-mono text-xs">
-                {config.labelSize}px
-              </Badge>
-            </div>
-            <Slider
-              value={[config.labelSize]}
-              onValueChange={([value]) => onUpdate({ labelSize: value })}
-              min={8}
-              max={32}
-              step={1}
-            />
-          </div>
-
-          {/* Label Font Style */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Font Style</Label>
-            <Select
-              value={config.labelFontStyle}
-              onValueChange={(value: NodeConfig['labelFontStyle']) =>
-                onUpdate({ labelFontStyle: value })
-              }
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="normal">
-                  <span>Normal</span>
-                </SelectItem>
-                <SelectItem value="bold">
-                  <span className="font-bold">Bold</span>
-                </SelectItem>
-                <SelectItem value="italic">
-                  <span className="italic">Italic</span>
-                </SelectItem>
-                <SelectItem value="bold-italic">
-                  <span className="font-bold italic">Bold Italic</span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Label Text Color */}
-          <ColorPicker
-            label="Label Text Color"
-            value={config.labelColor}
-            onChange={(color) => onUpdate({ labelColor: color })}
-          />
-
-          {/* Label Box Toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">Label Box</Label>
-              <p className="text-xs text-muted-foreground">
-                Off shows only the node shape
-              </p>
-            </div>
-            <Switch
-              checked={config.labelBox}
-              onCheckedChange={(checked) => onUpdate({ labelBox: checked })}
-            />
-          </div>
-
-          {/* Label Background Toggle */}
-          {config.labelBox && (
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium">Label Background</Label>
-                <p className="text-xs text-muted-foreground">Show background behind text</p>
-              </div>
-              <Switch
-                checked={config.labelBackground}
-                onCheckedChange={(checked) => onUpdate({ labelBackground: checked })}
-              />
-            </div>
-          )}
-
-          {/* Label Background Color */}
-          {config.labelBox && config.labelBackground && (
-            <ColorPicker
-              label="Background Color"
-              value={config.labelBackgroundColor}
-              onChange={(color) => onUpdate({ labelBackgroundColor: color })}
-            />
-          )}
-        </div>
-      </CollapsibleSection>
-
-      // src/domains/graph/config-panel/NodeStylingTab.tsx
-
-      {/* Shape Configuration */}
-      <CollapsibleSection
-        icon={<Shapes className="w-4 h-4 text-primary" />}
-        title="Node Shape"
-        defaultOpen={true}
-      >
-        <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
-          {/* Toggle Auto Shape by Format */}
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <Label className="text-sm font-medium">Auto shape by format</Label>
-              <p className="text-xs text-muted-foreground">
-                Bentuk mewakili format item, warna mewakili hierarki/tags
-              </p>
-            </div>
-            <Switch
-              checked={config.autoShapeByFormat ?? true}
-              onCheckedChange={(checked) => onUpdate({ autoShapeByFormat: checked })}
-            />
-          </div>
-
-          {/* Legend / Info saat Auto Shape aktif */}
-          {config.autoShapeByFormat ? (
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50 text-xs">
-              <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
-                <Hexagon className="w-3.5 h-3.5 text-amber-500" />
-                <span>Folder: Hexagon</span>
-              </div>
-              <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
-                <Circle className="w-3.5 h-3.5 text-primary" />
-                <span>Note: Circle</span>
-              </div>
-              <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
-                <Square className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Image: Square</span>
-              </div>
-              <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
-                <Triangle className="w-3.5 h-3.5 text-purple-500" />
-                <span>Sound/Voice: Triangle</span>
-              </div>
-              <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40 col-span-2">
-                <Diamond className="w-3.5 h-3.5 text-rose-500" />
-                <span>PDF Document: Diamond</span>
-              </div>
-            </div>
-          ) : (
-            /* Selector manual jika opsi otomatis dimatikan */
-            <div className="space-y-2 pt-2 border-t border-border/50 animate-fade-in">
-              <Label className="text-sm font-medium">Uniform Shape</Label>
-              <Select
-                value={config.shape}
-                onValueChange={(value: NodeConfig['shape']) =>
-                  onUpdate({ shape: value })
-                }
-              >
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="circle">Circle</SelectItem>
-                  <SelectItem value="square">Square</SelectItem>
-                  <SelectItem value="diamond">Diamond</SelectItem>
-                  <SelectItem value="triangle">Triangle</SelectItem>
-                  <SelectItem value="hexagon">Hexagon</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-      </CollapsibleSection>
-
+      <GraphNodeLabelSection
+        config={config}
+        hierarchy={ctrl.hierarchy}
+        onUpdate={onUpdate}
+        onHierarchyUpdate={ctrl.updateHierarchyConfig}
+      />
     </div>
   );
 }

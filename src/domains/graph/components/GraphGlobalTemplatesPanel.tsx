@@ -1,19 +1,13 @@
-import { useState } from 'react';
-import { Bookmark, Check, Plus, Star, Trash2, Globe, Activity, RotateCcw } from 'lucide-react';
-import { toast } from 'sonner';
-import { Button } from '@/global/ui/button';
-import { Input } from '@/global/ui/input';
-import { Badge } from '@/global/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/global/ui/tooltip';
-import { cn } from '@/global/utils/cn';
-import { useGraphStore } from '@/global/stores';
-import { SectionHeaderWithReset } from '@/global/ui/SectionHeaderWithReset';
-import {
-  useGraphTemplatesStore,
-  type GraphTemplate,
-} from '@/domains/graph/shared/stores/useGraphTemplatesStore';
-import type { GraphConfigState } from '@/domains/graph/shared/stores/useGraphStore';
-import type { LayoutMode, MindmapOrientation } from '@/domains/graph/shared/utils/graph.types';
+import { Bookmark, Check, Plus, Star, Trash2, Globe, Activity, RotateCcw } from "lucide-react";
+import { Button } from "@/global/ui/button";
+import { Input } from "@/global/ui/input";
+import { Badge } from "@/global/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/global/ui/tooltip";
+import { cn } from "@/global/utils/cn";
+import { SectionHeaderWithReset } from "@/global/ui/SectionHeaderWithReset";
+import type { GraphConfigState } from "@/domains/graph/shared/stores/useGraphStore";
+import type { LayoutMode, MindmapOrientation } from "@/domains/graph/shared/utils/graph.types";
+import { useGraphGlobalTemplatesController } from "@/domains/graph/shared/hooks/useGraphGlobalTemplatesController";
 
 export interface GlobalTemplatesPanelProps {
   config: GraphConfigState;
@@ -34,64 +28,14 @@ export function GlobalTemplatesPanel({
   setConfig,
   resetConfig,
 }: GlobalTemplatesPanelProps) {
-  const [templateName, setTemplateName] = useState('');
-  const templates = useGraphTemplatesStore((s) => s.templates);
-  const defaultTemplateId = useGraphTemplatesStore((s) => s.defaultTemplateId);
-  const saveTemplate = useGraphTemplatesStore((s) => s.saveTemplate);
-  const deleteTemplate = useGraphTemplatesStore((s) => s.deleteTemplate);
-  const setDefaultTemplate = useGraphTemplatesStore((s) => s.setDefaultTemplate);
-  const stats = useGraphStore((s) => s.stats);
-
-  const handleSaveTemplate = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const trimmed = templateName.trim();
-    if (!trimmed) {
-      toast.error('Masukkan nama template terlebih dahulu');
-      return;
-    }
-
-    try {
-      saveTemplate(trimmed, config, layout, orientation);
-      setTemplateName('');
-      toast.success(`Template "${trimmed}" berhasil disimpan`);
-    } catch {
-      toast.error('Gagal menyimpan template graph');
-    }
-  };
-
-  const handleApplyTemplate = (template: GraphTemplate) => {
-    try {
-      setConfig(template.config);
-      if (template.layoutMode) {
-        onLayoutChange(template.layoutMode);
-      }
-      if (template.orientation) {
-        onOrientationChange(template.orientation);
-      }
-      toast.success(`Template "${template.name}" diterapkan`);
-    } catch {
-      toast.error('Gagal menerapkan template');
-    }
-  };
-
-  const handleToggleDefault = (template: GraphTemplate) => {
-    const isCurrentDefault = defaultTemplateId === template.id;
-    const nextDefault = isCurrentDefault ? null : template.id;
-    setDefaultTemplate(nextDefault);
-
-    if (nextDefault) {
-      toast.success(`"${template.name}" dijadikan template default`);
-    } else {
-      toast.info('Template default dihapus');
-    }
-  };
-
-  const handleDeleteTemplate = (template: GraphTemplate) => {
-    deleteTemplate(template.id);
-    toast.info(`Template "${template.name}" telah dihapus`);
-  };
-
-  const templateCount = Object.keys(templates).length;
+  const ctrl = useGraphGlobalTemplatesController({
+    config,
+    layout,
+    orientation,
+    onLayoutChange,
+    onOrientationChange,
+    setConfig,
+  });
 
   return (
     <div className="grid grid-cols-1 gap-3.5">
@@ -104,10 +48,10 @@ export function GlobalTemplatesPanel({
             description="Abadikan snapshot layout, warna, dan gaya saat ini"
           />
 
-          <form onSubmit={handleSaveTemplate} className="space-y-2">
+          <form onSubmit={ctrl.handleSaveTemplate} className="space-y-2">
             <Input
-              value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
+              value={ctrl.templateName}
+              onChange={(e) => ctrl.setTemplateName(e.target.value)}
               placeholder="Nama template (e.g. Focus Minimal)..."
               className="h-8 text-xs bg-background/50"
             />
@@ -115,7 +59,7 @@ export function GlobalTemplatesPanel({
               type="submit"
               size="sm"
               className="w-full h-8 text-xs gap-1.5"
-              disabled={!templateName.trim()}
+              disabled={!ctrl.templateName.trim()}
             >
               <Plus className="h-3.5 w-3.5" />
               Simpan Template Baru
@@ -146,18 +90,18 @@ export function GlobalTemplatesPanel({
           <SectionHeaderWithReset
             icon={Globe}
             title="Pustaka Template"
-            badge={templateCount}
+            badge={ctrl.templateCount}
             description="Koleksi preset tersimpan yang dapat diterapkan instan"
           />
 
           <div className="max-h-[220px] space-y-1.5 overflow-y-auto pr-1">
-            {templateCount === 0 ? (
+            {ctrl.templateCount === 0 ? (
               <div className="rounded-lg border border-dashed border-border/60 p-4 text-center text-xs text-muted-foreground">
                 Belum ada template tersimpan. Masukkan nama dan simpan di kartu sebelah kiri.
               </div>
             ) : (
-              Object.values(templates).map((tmpl) => {
-                const isDefault = defaultTemplateId === tmpl.id;
+              ctrl.templateList.map((tmpl) => {
+                const isDefault = ctrl.defaultTemplateId === tmpl.id;
                 return (
                   <div
                     key={tmpl.id}
@@ -178,7 +122,7 @@ export function GlobalTemplatesPanel({
                         )}
                       </div>
                       <div className="text-[10px] text-muted-foreground">
-                        {tmpl.layoutMode || 'free-force'} •{' '}
+                        {tmpl.layoutMode || "free-force"} •{" "}
                         {new Date(tmpl.updatedAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -191,7 +135,7 @@ export function GlobalTemplatesPanel({
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                            onClick={() => handleApplyTemplate(tmpl)}
+                            onClick={() => ctrl.handleApplyTemplate(tmpl)}
                           >
                             <Check className="h-3 w-3" />
                           </Button>
@@ -206,23 +150,18 @@ export function GlobalTemplatesPanel({
                             variant="ghost"
                             size="icon"
                             className={cn(
-                              'h-6 w-6',
+                              "h-6 w-6",
                               isDefault
-                                ? 'text-primary hover:text-amber-500'
-                                : 'text-muted-foreground hover:text-foreground',
+                                ? "text-primary hover:text-amber-500"
+                                : "text-muted-foreground hover:text-foreground",
                             )}
-                            onClick={() => handleToggleDefault(tmpl)}
+                            onClick={() => ctrl.handleToggleDefault(tmpl)}
                           >
-                            <Star
-                              className={cn(
-                                'h-3 w-3',
-                                isDefault && 'fill-current',
-                              )}
-                            />
+                            <Star className={cn("h-3 w-3", isDefault && "fill-current")} />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top">
-                          {isDefault ? 'Hapus Default' : 'Jadikan Default'}
+                          {isDefault ? "Hapus Default" : "Jadikan Default"}
                         </TooltipContent>
                       </Tooltip>
 
@@ -233,7 +172,7 @@ export function GlobalTemplatesPanel({
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                            onClick={() => handleDeleteTemplate(tmpl)}
+                            onClick={() => ctrl.handleDeleteTemplate(tmpl)}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -260,30 +199,36 @@ export function GlobalTemplatesPanel({
 
           <div className="grid grid-cols-2 gap-1.5 text-center">
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
-              <div className="text-sm font-bold text-foreground">{stats.totalCount}</div>
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Koneksi</div>
+              <div className="text-sm font-bold text-foreground">{ctrl.stats.totalCount}</div>
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                Koneksi
+              </div>
             </div>
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
-              <div className="text-sm font-bold text-foreground">{stats.hierarchyCount}</div>
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Hierarki</div>
+              <div className="text-sm font-bold text-foreground">{ctrl.stats.hierarchyCount}</div>
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                Hierarki
+              </div>
             </div>
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
-              <div className="text-sm font-bold text-foreground">{stats.backlinkCount}</div>
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Backlinks</div>
+              <div className="text-sm font-bold text-foreground">{ctrl.stats.backlinkCount}</div>
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                Backlinks
+              </div>
             </div>
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
-              <div className="text-sm font-bold text-foreground">{stats.tagCount}</div>
+              <div className="text-sm font-bold text-foreground">{ctrl.stats.tagCount}</div>
               <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Tags</div>
             </div>
           </div>
 
-          {stats.topHubs.length > 0 && (
+          {ctrl.stats.topHubs.length > 0 && (
             <div className="space-y-1 pt-1">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Top Connected Hubs
               </span>
               <div className="space-y-1 max-h-[85px] overflow-y-auto pr-0.5">
-                {stats.topHubs.slice(0, 3).map((hub, index) => (
+                {ctrl.stats.topHubs.slice(0, 3).map((hub, index) => (
                   <div
                     key={hub.nodeId}
                     className="flex items-center justify-between gap-2 rounded-md border border-border/50 bg-secondary/20 px-2 py-1"
@@ -292,9 +237,7 @@ export function GlobalTemplatesPanel({
                       <span className="text-[9px] font-mono text-muted-foreground">
                         #{index + 1}
                       </span>
-                      <span className="truncate text-xs text-foreground">
-                        {hub.nodeName}
-                      </span>
+                      <span className="truncate text-xs text-foreground">{hub.nodeName}</span>
                     </div>
                     <span className="shrink-0 text-[10px] font-mono font-semibold text-primary">
                       {hub.connectionCount}

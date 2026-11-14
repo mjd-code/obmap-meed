@@ -1,7 +1,7 @@
 # ObMap LLM Documentation Index
 # Format: <Document Title>: <Relative Path> — <One-line Description>
 
-Portal Dokumentasi ObMap: docs/README.md — Pintu masuk navigasi, panduan peran pengguna, dan peta arsitektur dokumentasi sistem.
+Portal Dokumentasi ObMap: docs/SUMMARY.md — Pintu masuk navigasi, panduan peran pengguna, dan peta arsitektur dokumentasi sistem.
 Konvensi Dokumentasi: docs/00-meta/doc-conventions.md — Standar format Markdown, skema metadata YAML front-matter, dan aturan penamaan ID stabil.
 Glosarium Istilah: docs/00-meta/glossary.md — Glosarium komprehensif definisi teknis istilah inti ObMap (Vault, Leaf, Node, Solver, Headless Controller).
 Legenda Status Fitur: docs/00-meta/status-legend.md — Definisi taksonomi status fitur IMPLEMENTED, PARTIAL, PLANNED, dan VISION.

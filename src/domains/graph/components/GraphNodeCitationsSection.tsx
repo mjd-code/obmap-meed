@@ -1,5 +1,3 @@
-// src/domains/graph/node-panel/NodeCitationsSection.tsx
-import { useState, useMemo, useEffect } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -18,11 +16,7 @@ import {
   Check,
   Edit2,
 } from "lucide-react";
-import {
-  parseFootnotes,
-  upsertFootnoteDefinition,
-  deleteFootnoteDefinition,
-} from "@/domains/editor/shared/utils/footnoteParser";
+import { useGraphNodeCitationsController } from "@/domains/graph/shared/hooks/useGraphNodeCitationsController";
 
 export interface NodeCitationsSectionProps {
   content: string;
@@ -37,110 +31,20 @@ export const NodeCitationsSection = ({
   onChange,
   onCitationClick,
 }: NodeCitationsSectionProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [editingLabel, setEditingLabel] = useState<string | null>(null);
-  const [draftText, setDraftText] = useState("");
+  const ctrl = useGraphNodeCitationsController({ content, onContentChange, onChange });
 
-  const handleUpdate = onContentChange || onChange;
-
-  const { definitions, unresolved, nextNumber } = useMemo(
-    () => parseFootnotes(content),
-    [content]
-  );
-
-  const totalCount = definitions.length + unresolved.length;
-
-  // Handler lompat yang 100% AMAN terhadap layout (tidak menggeser window / tab bar)
-  useEffect(() => {
-    const handleJumpEvent = (e: Event) => {
-      const customEvt = e as CustomEvent<{ label?: string }>;
-      const targetLabel = customEvt.detail?.label;
-
-      // 1. Pastikan collapsible terbuka terlebih dahulu
-      setIsOpen(true);
-
-      // 2. Beri waktu DOM merender daftar kartu
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const target = targetLabel
-            ? document.getElementById(`citation-def-${targetLabel}`) ||
-              document.getElementById("node-citations-section")
-            : document.getElementById("node-citations-section");
-
-          if (!target) return;
-
-          // Cari viewport Radix ScrollArea terdekat
-          const viewport = target.closest(
-            "[data-radix-scroll-area-viewport]"
-          ) as HTMLElement | null;
-
-          if (viewport) {
-            const targetRect = target.getBoundingClientRect();
-            const viewportRect = viewport.getBoundingClientRect();
-            const relativeOffset = targetRect.top - viewportRect.top + viewport.scrollTop;
-
-            // Scroll HANYA viewport internal Radix, WINDOW TIDAK AKAN PERNAH BERGESER
-            viewport.scrollTo({
-              top: Math.max(0, relativeOffset - 24),
-              behavior: "smooth",
-            });
-          }
-
-          // Efek kilau highlight visual yang lembut
-          target.classList.add("ring-2", "ring-primary/60", "bg-primary/10");
-          setTimeout(() => {
-            target.classList.remove("ring-2", "ring-primary/60", "bg-primary/10");
-          }, 1500);
-        }, 60);
-      });
-    };
-
-    window.addEventListener("jump-to-citation-section", handleJumpEvent);
-    return () => {
-      window.removeEventListener("jump-to-citation-section", handleJumpEvent);
-    };
-  }, []);
-
-  if (totalCount === 0 && !isOpen) return null;
-
-  const handleStartEdit = (label: string, text: string) => {
-    setEditingLabel(label);
-    setDraftText(text);
-  };
-
-  const handleSaveEdit = (label: string) => {
-    if (handleUpdate) {
-      const nextContent = upsertFootnoteDefinition(content, label, draftText);
-      handleUpdate(nextContent);
-    }
-    setEditingLabel(null);
-  };
-
-  const handleDelete = (label: string) => {
-    if (handleUpdate) {
-      const nextContent = deleteFootnoteDefinition(content, label);
-      handleUpdate(nextContent);
-    }
-    if (editingLabel === label) setEditingLabel(null);
-  };
-
-  const handleAddNew = () => {
-    const label = String(nextNumber);
-    setEditingLabel(label);
-    setDraftText("");
-    setIsOpen(true);
-  };
+  if (ctrl.totalCount === 0 && !ctrl.isOpen) return null;
 
   return (
     <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
+      open={ctrl.isOpen}
+      onOpenChange={ctrl.setIsOpen}
       className="mt-2 pt-2 border-t border-border/30"
       id="node-citations-section"
     >
       <CollapsibleTrigger className="flex items-center justify-between w-full py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group">
         <div className="flex items-center gap-1.5">
-          {isOpen ? (
+          {ctrl.isOpen ? (
             <ChevronDown className="w-3.5 h-3.5 transition-transform" />
           ) : (
             <ChevronRight className="w-3.5 h-3.5 transition-transform" />
@@ -149,24 +53,24 @@ export const NodeCitationsSection = ({
           <span>Footnotes & Citations</span>
         </div>
         <div className="flex items-center gap-1.5">
-          {unresolved.length > 0 && (
+          {ctrl.unresolved.length > 0 && (
             <span
-              title={`${unresolved.length} kutipan belum memiliki definisi`}
+              title={`${ctrl.unresolved.length} kutipan belum memiliki definisi`}
               className="flex items-center text-[10px] text-amber-500 font-normal gap-1"
             >
               <AlertCircle className="w-3 h-3" />
-              <span>{unresolved.length} pending</span>
+              <span>{ctrl.unresolved.length} pending</span>
             </span>
           )}
           <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">
-            {totalCount}
+            {ctrl.totalCount}
           </Badge>
         </div>
       </CollapsibleTrigger>
 
       <CollapsibleContent className="pt-2 space-y-1.5">
-        {definitions.map((def) => {
-          const isCurrentlyEditing = editingLabel === def.label;
+        {ctrl.definitions.map((def) => {
+          const isCurrentlyEditing = ctrl.editingLabel === def.label;
 
           return (
             <div
@@ -207,8 +111,8 @@ export const NodeCitationsSection = ({
                     size="sm"
                     onClick={() =>
                       isCurrentlyEditing
-                        ? handleSaveEdit(def.label)
-                        : handleStartEdit(def.label, def.text)
+                        ? ctrl.handleSaveEdit(def.label)
+                        : ctrl.handleStartEdit(def.label, def.text)
                     }
                     className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
                     title={isCurrentlyEditing ? "Simpan" : "Edit Cepat"}
@@ -222,7 +126,7 @@ export const NodeCitationsSection = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(def.label)}
+                    onClick={() => ctrl.handleDelete(def.label)}
                     className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
                     title="Hapus"
                   >
@@ -234,11 +138,11 @@ export const NodeCitationsSection = ({
               {isCurrentlyEditing && (
                 <div className="space-y-1 pt-1">
                   <textarea
-                    value={draftText}
-                    onChange={(e) => setDraftText(e.target.value)}
+                    value={ctrl.draftText}
+                    onChange={(e) => ctrl.setDraftText(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                        handleSaveEdit(def.label);
+                        ctrl.handleSaveEdit(def.label);
                       }
                     }}
                     placeholder="Tulis definisi kutipan / footnote..."
@@ -249,7 +153,7 @@ export const NodeCitationsSection = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setEditingLabel(null)}
+                      onClick={() => ctrl.setEditingLabel(null)}
                       className="h-5 text-[10px] px-2"
                     >
                       Batal
@@ -257,7 +161,7 @@ export const NodeCitationsSection = ({
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => handleSaveEdit(def.label)}
+                      onClick={() => ctrl.handleSaveEdit(def.label)}
                       className="h-5 text-[10px] px-2"
                     >
                       Simpan
@@ -269,15 +173,15 @@ export const NodeCitationsSection = ({
           );
         })}
 
-        {unresolved.length > 0 && (
+        {ctrl.unresolved.length > 0 && (
           <div className="pt-1 flex flex-wrap gap-1 items-center">
             <span className="text-[10px] text-muted-foreground/70 mr-1">Belum terisi:</span>
-            {unresolved.map((u) => (
+            {ctrl.unresolved.map((u) => (
               <Badge
                 key={u.label}
                 variant="outline"
                 className="text-[10px] h-4 px-1 text-amber-500 border-amber-500/30 cursor-pointer hover:bg-amber-500/10"
-                onClick={() => handleStartEdit(u.label, "")}
+                onClick={() => ctrl.handleStartEdit(u.label, "")}
               >
                 [^{u.label}] +
               </Badge>
@@ -289,11 +193,11 @@ export const NodeCitationsSection = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleAddNew}
+            onClick={ctrl.handleAddNew}
             className="w-full h-6 text-[10px] text-muted-foreground hover:text-foreground justify-center gap-1 border border-dashed border-border/40"
           >
             <Plus className="w-3 h-3" />
-            Tambah Kutipan [^{nextNumber}]
+            Tambah Kutipan [^{ctrl.nextNumber}]
           </Button>
         </div>
       </CollapsibleContent>

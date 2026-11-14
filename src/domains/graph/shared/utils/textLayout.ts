@@ -8,7 +8,12 @@ const widthCache = new Map<string, number>();
 function ctx(): CanvasRenderingContext2D | null {
   if (measureCtx) return measureCtx;
   if (typeof document === 'undefined') return null;
-  measureCtx = document.createElement('canvas').getContext('2d');
+  if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) return null;
+  try {
+    measureCtx = document.createElement('canvas').getContext('2d');
+  } catch {
+    measureCtx = null;
+  }
   return measureCtx;
 }
 
@@ -88,6 +93,20 @@ export interface CardLayout extends NodeMetric {
   textWidth?: number;
 }
 
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Checks whether two center-anchored node bounding boxes overlap (with optional padding). */
+export function boxesOverlap(a: BoundingBox, b: BoundingBox, padding = 0): boolean {
+  const halfW = (a.width + b.width) / 2 + padding;
+  const halfH = (a.height + b.height) / 2 + padding;
+  return Math.abs(a.x - b.x) < halfW && Math.abs(a.y - b.y) < halfH;
+}
+
 /** Stable, zoom-independent card geometry derived from the label. */
 export function cardLayout(
   label: string,
@@ -97,6 +116,7 @@ export function cardLayout(
     fontSize?: number;
     maxTextWidth?: number;
     maxLines?: number;
+    depth?: number;
   } = {}
 ): CardLayout {
   const fontSize = options.fontSize ?? (options.root ? CARD_FONT_SIZE + 2 : CARD_FONT_SIZE);
@@ -104,11 +124,18 @@ export function cardLayout(
   const maxTextWidth = options.maxTextWidth ?? (options.root ? 200 : 160);
   const maxLines = options.maxLines ?? (options.root ? 3 : 4);
   const lines = wrapText(label || 'Untitled', font, maxTextWidth, maxLines);
-  const textWidth = Math.max(...lines.map((line) => measureText(line, font)));
+  const textWidth = Math.min(
+    maxTextWidth,
+    Math.max(...lines.map((line) => measureText(line, font)))
+  );
   const paddingX = 12;
   const iconWidth = 16;
   const badgeWidth = options.badge ? 20 : 0;
-  const width = Math.max(72, Math.ceil(textWidth + paddingX * 2 + iconWidth + badgeWidth));
+  const depthMargin = options.depth ? Math.min(options.depth * 2, 12) : 0;
+  const width = Math.max(
+    72,
+    Math.ceil(textWidth + paddingX * 2 + iconWidth + badgeWidth + depthMargin)
+  );
   const height = Math.ceil(lines.length * (fontSize + 4) + 14);
   return { width, height, lines, textWidth };
 }

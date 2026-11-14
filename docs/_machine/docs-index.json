@@ -6,7 +6,7 @@
   "documents": [
     {
       "id": "DOC-META-000",
-      "path": "docs/README.md",
+      "path": "docs/SUMMARY.md",
       "title": "Portal Dokumentasi ObMap",
       "category": "meta",
       "status": "IMPLEMENTED"
@@ -41,28 +41,28 @@
     },
     {
       "id": "DOC-VIS-001",
-      "path": "docs/01-vision/vision-mission.md",
+      "path": "docs/01-visions/vision-mission.md",
       "title": "Visi, Misi, dan Pernyataan Nilai Inti",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-002",
-      "path": "docs/01-vision/product-philosophy.md",
+      "path": "docs/01-visions/product-philosophy.md",
       "title": "Filosofi Produk: 5 Pilar Desain Sistem",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-003",
-      "path": "docs/01-vision/positioning.md",
+      "path": "docs/01-visions/positioning.md",
       "title": "Analisis Posisi Kompetitif Produk",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-004",
-      "path": "docs/01-vision/use-case-pillars.md",
+      "path": "docs/01-visions/use-case-pillars.md",
       "title": "Empat Pilar Kasus Penggunaan Utama",
       "category": "vision",
       "status": "IMPLEMENTED"
@@ -167,36 +167,36 @@
     },
     {
       "id": "ADR-0001",
-      "path": "docs/03-architecture/adr/ADR-0001-multi-storage-strategy.md",
-      "title": "Driver Multi-Penyimpanan Per-Vault Terisolasi",
-      "category": "architecture",
-      "status": "IMPLEMENTED"
-    },
-    {
-      "id": "ADR-0002",
-      "path": "docs/03-architecture/adr/ADR-0002-deterministic-layout-solvers.md",
-      "title": "Pemisahan Solver Deterministik dari D3 Simulation",
-      "category": "architecture",
-      "status": "IMPLEMENTED"
-    },
-    {
-      "id": "ADR-0003",
-      "path": "docs/03-architecture/adr/ADR-0003-domain-driven-restructuring.md",
+      "path": "docs/03-architecture/adr/ADR-0001-domain-driven-design-restructuring.md",
       "title": "Restrukturisasi Arsitektur ke Domain-Driven Design",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
+      "id": "ADR-0002",
+      "path": "docs/03-architecture/adr/ADR-0002-codemirror-6-markdown-editor.md",
+      "title": "Adopsi CodeMirror 6 untuk Editor Markdown Terisolasi",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "ADR-0003",
+      "path": "docs/03-architecture/adr/ADR-0003-deterministic-layout-solvers-vs-force.md",
+      "title": "Pemisahan Solver Deterministik dari D3 Simulation",
+      "category": "architecture",
+      "status": "IMPLEMENTED"
+    },
+    {
       "id": "ADR-0004",
-      "path": "docs/03-architecture/adr/ADR-0004-internal-vcs-engine.md",
-      "title": "Sistem Kontrol Versi Internal Berbasis Mikro-Revisi",
+      "path": "docs/03-architecture/adr/ADR-0004-multi-strategy-storage-isolation.md",
+      "title": "Driver Multi-Penyimpanan Per-Vault Terisolasi",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
       "id": "ADR-0005",
-      "path": "docs/03-architecture/adr/ADR-0005-web-worker-metadata-indexing.md",
-      "title": "Ekstraksi Mention Asinkron Menggunakan Web Worker",
+      "path": "docs/03-architecture/adr/ADR-0005-in-browser-vcs-for-markdown-collaboration.md",
+      "title": "Sistem Kontrol Versi Internal Berbasis Mikro-Revisi",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },

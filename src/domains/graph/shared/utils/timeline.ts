@@ -192,10 +192,10 @@ export function timelineLayout({
 
     let currentY: number;
     if (lane === -1) {
-      const safeFirstSlotY = -minBaselineClearance - l2Boxes[0].spanY;
-      currentY = Math.min(mY - 28 - l2Boxes[0].spanY, safeFirstSlotY);
+      const safeFirstSlotY = -minBaselineClearance - mMetric.height / 2 - l2Boxes[0].spanY;
+      currentY = Math.min(mY - mMetric.height / 2 - 20 - l2Boxes[0].spanY, safeFirstSlotY);
     } else {
-      currentY = Math.max(mY + 28, minBaselineClearance);
+      currentY = Math.max(mY + mMetric.height / 2 + 20, minBaselineClearance + mMetric.height / 2);
     }
 
     for (let i = 0; i < l2Kids.length; i++) {

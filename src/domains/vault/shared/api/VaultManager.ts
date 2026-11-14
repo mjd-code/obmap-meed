@@ -16,7 +16,6 @@ import { VaultBackupService } from "@/domains/vault/shared/api/VaultBackupServic
 import type { FileSystemService } from "@/domains/vault/shared/api/FileSystemService";
 import { getFileSystemService } from "@/domains/vault/shared/api/FileSystemServiceSingleton";
 import { directoryHandleStore } from "@/domains/vault/shared/api/directoryHandleStore";
-import { hasGrantedPermission } from "@/domains/vault/shared/api/repositoryCapabilities";
 import { writeVaultConfigFile } from "@/domains/settings/shared/api/VaultConfigFile";
 import {
   BackupConfig,
@@ -33,7 +32,14 @@ import {
 } from "@/global/stores/events";
 import { VaultValidationService } from "@/domains/vault/shared/api/VaultValidationService";
 import { cloudVaultService } from "@/domains/vault/shared/api/CloudVaultService";
-
+import { calculateVaultStats } from "@/domains/vault/shared/utils/vaultStatsCalculator";
+import {
+  buildStoragePayloadForVault,
+  flushVaultNodesToDirectory,
+  hydrateVaultFromStorageRecord,
+  readFolderIntoVault,
+  tryRestoreFolderVaultFromHandle,
+} from "@/domains/vault/shared/api/vaultFolderHydrator";
 
 export interface Vault {
   id: string;
@@ -57,10 +63,6 @@ export interface Vault {
   workspaceLayout?: any;
 }
 
-/**
- * A vault id is a UUID that doubles as the primary key of its cloud row
- * (`user_vaults.id`), so one vault is the same identity on every device.
- */
 const newVaultId = (): string =>
   typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
@@ -111,23 +113,23 @@ export class VaultManager {
       const resolvedLocation: VaultLocation =
         (metadata as any).location ?? location;
 
-      // Folder vaults reopen through their remembered directory handle
-      // (with a permission prompt on the next click when access expired).
       if (resolvedLocation === "folder") {
-        const restored = await this.tryRestoreFolderVault(metadata);
+        const restored = await tryRestoreFolderVaultFromHandle(
+          metadata,
+          this.storage,
+        );
         if (restored) this.vaults.set(restored.id, restored);
         continue;
       }
 
       const vaultData = await this.storage.getVault(metadata.id);
       if (vaultData) {
-        const vault = await this.restoreVault(vaultData);
+        const vault = hydrateVaultFromStorageRecord(vaultData);
         this.vaults.set(vault.id, vault);
       }
     }
   }
 
-  /** Reopen the vault the user was last working in, when it is still available. */
   private restoreActiveVault(): void {
     try {
       const saved = localStorage.getItem(VaultManager.ACTIVE_KEY);
@@ -152,120 +154,16 @@ export class VaultManager {
     }
   }
 
-  private async restoreVault(vaultData: any): Promise<Vault> {
-    const graphService = new GraphService();
-    graphService.initialize();
-
-    (vaultData.graphData?.nodes ?? []).forEach((node: any) =>
-      graphService.setNode(node),
-    );
-    graphService.setLinks(vaultData.graphData?.links || []);
-
-    const history = new VaultHistory();
-    history.setState(vaultData.history);
-
-    const legacy = migrateLegacyStrategy(
-      vaultData.metadata.storageStrategy,
-      vaultData.metadata.type,
-    );
-    const location: VaultLocation =
-      vaultData.metadata.location ?? legacy.location;
-    const cloudSync: boolean = vaultData.metadata.cloudSync ?? legacy.cloudSync;
-
-    return {
-      id: vaultData.metadata.id,
-      name: vaultData.metadata.name,
-      location,
-      cloudSync,
-      type: location === "folder" ? "local-folder" : "in-memory",
-      cloudId: vaultData.metadata.cloudId,
-      graphService,
-      history,
-      graphConfig: vaultData.graphConfig || null,
-      backupConfig: vaultData.backupConfig || null,
-      settings: vaultData.settings || {},
-      workspaceLayout: vaultData.workspaceLayout || null,
-      createdAt: vaultData.metadata.createdAt,
-      lastModified: vaultData.metadata.lastModified,
-    };
-  }
-
-  /**
-   * Rebuild a folder vault from its remembered directory handle. When the
-   * browser still grants read/write access the notes are read immediately;
-   * otherwise the vault comes back as a shell and `switchVault` asks for
-   * permission again on the user's next click.
-   */
-  private async tryRestoreFolderVault(metadata: any): Promise<Vault | null> {
-    try {
-      const handle = await directoryHandleStore.get(metadata.id);
-      if (!handle) return null;
-      const vaultData = await this.storage.getVault(metadata.id);
-      if (!vaultData) return null;
-
-      const graphService = new GraphService();
-      graphService.initialize();
-
-      const vault: Vault = {
-        id: vaultData.metadata.id,
-        name: vaultData.metadata.name,
-        location: "folder",
-        cloudSync: vaultData.metadata.cloudSync ?? false,
-        type: "local-folder",
-        cloudId: vaultData.metadata.cloudId,
-        graphService,
-        history: new VaultHistory(),
-        directoryHandle: handle,
-        graphConfig: vaultData.graphConfig || null,
-        backupConfig: vaultData.backupConfig || null,
-        settings: vaultData.settings || {},
-        workspaceLayout: vaultData.workspaceLayout || null,
-        createdAt: vaultData.metadata.createdAt,
-        lastModified: vaultData.metadata.lastModified,
-      };
-
-      if (await hasGrantedPermission(handle)) {
-        await this.readFolderInto(vault);
-      }
-      return vault;
-    } catch (error) {
-      console.warn(
-        "VaultManager: could not restore folder vault",
-        metadata?.id,
-        error,
-      );
-      return null;
-    }
-  }
-
-  /**
-   * Attach the shared file service to a vault's folder and read its notes.
-   * `verifyPermission` prompts when access was not granted yet, so this must
-   * only run inside a user gesture (or right after the picker).
-   */
-  private async readFolderInto(vault: Vault): Promise<boolean> {
-    if (!vault.directoryHandle) return false;
-    const fs = getFileSystemService();
-    if (!(await fs.verifyPermission(vault.directoryHandle))) return false;
-    fs.attach(vault.directoryHandle);
-    vault.persistenceService = fs;
-    await fs.readVaultStructure(vault.directoryHandle);
-    vault.graphService.finalizeGraph();
-    return true;
-  }
-
-  /** Re-ask permission for a folder vault whose notes have not been read. */
   async reconnectFolderVault(vaultId: string): Promise<boolean> {
     const vault = this.vaults.get(vaultId);
     if (!vault) return false;
-    const ok = await this.readFolderInto(vault);
+    const ok = await readFolderIntoVault(vault);
     if (ok) await this.persistVault(vault);
     return ok;
   }
 
   // ---------------------------------------------------------------- creation
 
-  /** A vault that lives in the user's account (no folder on this computer). */
   async createCloudVault(
     name: string,
     cloudSync = true,
@@ -296,11 +194,6 @@ export class VaultManager {
     return vaultId;
   }
 
-  /**
-   * Attach an already-picked folder handle as a vault.
-   * `createSubfolder` creates a new folder with that name inside the handle.
-   * Exactly one folder prompt happens in the caller — never here.
-   */
   async openFolderVault(
     handle: FileSystemDirectoryHandle,
     options: { createSubfolder?: string; cloudSync?: boolean } = {},
@@ -338,7 +231,6 @@ export class VaultManager {
       directoryHandle: root,
       createdAt: Date.now(),
       lastModified: Date.now(),
-      // Settings are owned by ConfigService; the file is a derived export.
       graphConfig: null,
       backupConfig: null,
       settings: {},
@@ -358,7 +250,6 @@ export class VaultManager {
     return vaultId;
   }
 
-  /** Attach a folder to an existing cloud vault so its notes are written to disk. */
   async attachFolder(
     vaultId: string,
     handle: FileSystemDirectoryHandle,
@@ -366,28 +257,8 @@ export class VaultManager {
     const vault = this.vaults.get(vaultId);
     if (!vault) return false;
 
-    const persistenceService = getFileSystemService();
-    persistenceService.attach(handle);
-    if (!(await persistenceService.verifyPermission(handle))) return false;
-
-    vault.persistenceService = persistenceService;
-    vault.directoryHandle = handle;
-    vault.location = "folder";
-    vault.type = "local-folder";
-    vault.lastModified = Date.now();
-
-    // Write current notes out to the folder.
-    const { nodes } = vault.graphService.getGraphData();
-    for (const node of nodes as any[]) {
-      if (node.type === "folder" && node.path) {
-        await persistenceService.ensureDirectory(node.path);
-      }
-    }
-    for (const node of nodes as any[]) {
-      if (node.type === "file" && node.path) {
-        await persistenceService.saveFile(node.path, node.content ?? "");
-      }
-    }
+    const ok = await flushVaultNodesToDirectory(vault, handle);
+    if (!ok) return false;
 
     await this.writeConfigExport(vault);
     await this.persistVault(vault);
@@ -397,7 +268,6 @@ export class VaultManager {
 
   // ------------------------------------------------------------ cloud toggle
 
-  /** Turn cloud sync on or off for a vault, regardless of where its files live. */
   async setCloudSync(
     vaultId: string,
     enabled: boolean,
@@ -436,8 +306,6 @@ export class VaultManager {
       if (current) await this.persistVault(current);
     }
 
-    // `.vault-config.json` is a derived export, never a source of truth:
-    // settings always come from ConfigService.
     if (vault.directoryHandle) {
       const granted = await vault.persistenceService?.verifyPermission(
         vault.directoryHandle,
@@ -445,14 +313,12 @@ export class VaultManager {
       if (granted) await this.writeConfigExport(vault);
     }
 
-    // A folder vault restored from its handle may not have read its notes
-    // yet; asking for permission now is fine because the user just clicked.
     if (
       vault.location === "folder" &&
       vault.directoryHandle &&
       !vault.persistenceService
     ) {
-      const reconnected = await this.readFolderInto(vault);
+      const reconnected = await readFolderIntoVault(vault);
       if (reconnected) await this.persistVault(vault);
     }
 
@@ -472,12 +338,12 @@ export class VaultManager {
     const wasCloudVault = vault.cloudSync;
     const cloudId = vault.cloudId;
 
-    // Remove the cloud copy too, so a vault deleted on one device does not
-    // reappear on another. Best-effort: offline deletion is left to the caller.
     if (cloudId && wasCloudVault && navigator.onLine) {
       try {
-        const { cloudVaultService } = await import("@/domains/vault/shared/api/CloudVaultService");
-        await cloudVaultService.deleteVault(cloudId);
+        const { cloudVaultService: cloudSvc } = await import(
+          "@/domains/vault/shared/api/CloudVaultService"
+        );
+        await cloudSvc.deleteVault(cloudId);
       } catch (error) {
         console.warn("Cloud vault deletion failed:", error);
       }
@@ -511,17 +377,14 @@ export class VaultManager {
     return Array.from(this.vaults.values());
   }
 
-  // Alias defensif agar pemanggilan getVaults() tidak pernah melempar TypeError
   getVaults(): Vault[] {
     return this.getAllVaults();
   }
 
-    // TAMBAHAN METHOD: Ambil satu instance vault berdasarkan ID
   getVault(vaultId: string): Vault | null {
     return this.vaults.get(vaultId) || null;
   }
 
-  // TAMBAHAN METHOD: Ambil data graph (nodes & links) dari vault
   getVaultGraphData(vaultId: string) {
     const vault = this.vaults.get(vaultId);
     return vault ? vault.graphService.getGraphData() : null;
@@ -530,41 +393,7 @@ export class VaultManager {
   getVaultStats(vaultId: string) {
     const vault = this.vaults.get(vaultId);
     if (!vault) return null;
-
-    const graphData = vault.graphService.getGraphData();
-    const files = graphData.nodes.filter((n) => n.type === "file");
-    const folders = graphData.nodes.filter((n) => n.type === "folder");
-
-    const allTags = new Set<string>();
-    graphData.nodes.forEach((node) =>
-      node.tags?.forEach((tag) => allTags.add(tag)),
-    );
-
-    const connectedNodes = new Set<string>();
-    graphData.links.forEach((link) => {
-      const sourceId =
-        typeof link.source === "string" ? link.source : (link.source as any).id;
-      const targetId =
-        typeof link.target === "string" ? link.target : (link.target as any).id;
-      connectedNodes.add(sourceId);
-      connectedNodes.add(targetId);
-    });
-    const orphanedNodes = graphData.nodes.filter(
-      (n) => !connectedNodes.has(n.id) && n.type === "file",
-    ).length;
-
-    const avgConnections =
-      graphData.nodes.length > 0
-        ? (graphData.links.length * 2) / graphData.nodes.length
-        : 0;
-
-    return {
-      fileCount: files.length,
-      folderCount: folders.length,
-      tagCount: allTags.size,
-      orphanedNodes,
-      avgConnections,
-    };
+    return calculateVaultStats(vault.graphService.getGraphData());
   }
 
   canUndo(vaultId: string): boolean {
@@ -604,7 +433,7 @@ export class VaultManager {
   async renameVault(
     vaultId: string,
     newName: string,
-    userId?: string
+    userId?: string,
   ): Promise<{ success: boolean; error?: string }> {
     const vault = this.vaults.get(vaultId);
     if (!vault) {
@@ -613,10 +442,9 @@ export class VaultManager {
 
     const trimmed = newName.trim();
     if (trimmed === vault.name) {
-      return { success: true }; // Tidak ada perubahan nama
+      return { success: true };
     }
 
-    // Validasi keunikan nama dan slug
     const check = await VaultValidationService.checkAvailability({
       name: trimmed,
       excludeVaultId: vaultId,
@@ -637,7 +465,6 @@ export class VaultManager {
     await this.writeConfigExport(vault);
     await this.persistVault(vault);
 
-    // Sinkronkan ke cloud jika vault terhubung ke cloud
     if (vault.cloudSync || vault.cloudId || vault.location === "cloud") {
       try {
         await cloudVaultService.updateVault(vault.cloudId || vault.id, {
@@ -645,7 +472,10 @@ export class VaultManager {
           slug: check.slug,
         } as any);
       } catch (cloudErr) {
-        console.warn("VaultManager: Gagal memperbarui nama di cloud:", cloudErr);
+        console.warn(
+          "VaultManager: Gagal memperbarui nama di cloud:",
+          cloudErr,
+        );
       }
     }
 
@@ -656,32 +486,9 @@ export class VaultManager {
   // ----------------------------------------------------------- persistence
 
   private async persistVault(vault: Vault): Promise<void> {
-    const graphData = vault.graphService.getGraphData();
-    const isFolder = vault.location === "folder";
-
-    await this.storage.saveVault({
-      metadata: {
-        id: vault.id,
-        name: vault.name,
-        location: vault.location,
-        cloudSync: vault.cloudSync,
-        cloudId: vault.cloudId,
-        createdAt: vault.createdAt,
-        lastModified: vault.lastModified,
-        nodeCount: graphData.nodes.length,
-        linkCount: graphData.links.length,
-      },
-      // Folder vaults keep their notes on disk; only metadata is cached.
-      graphData: isFolder ? { nodes: [], links: [] } : graphData,
-      history: isFolder ? { past: [], future: [] } : vault.history.getState(),
-      graphConfig: vault.graphConfig || undefined,
-      backupConfig: vault.backupConfig || undefined,
-      settings: vault.settings || undefined,
-      workspaceLayout: vault.workspaceLayout || undefined,
-    });
+    await this.storage.saveVault(buildStoragePayloadForVault(vault));
   }
 
-  /** Write the derived `.vault-config.json` export for folder vaults. */
   private async writeConfigExport(vault: Vault): Promise<void> {
     await writeVaultConfigFile(vault.directoryHandle);
   }
@@ -694,7 +501,6 @@ export class VaultManager {
     await this.persistVault(vault);
   }
 
-  /** Full portable config for a vault (used by settings and the workspace). */
   getVaultConfig(vaultId: string): VaultConfigSnapshot | null {
     const vault = this.vaults.get(vaultId);
     if (!vault) return null;

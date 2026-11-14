@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fishboneLayout } from '@/domains/graph/shared/utils/fishbone';
+import { boxesOverlap, cardLayout } from '@/domains/graph/shared/utils/textLayout';
 import { context, deepTree, starTree } from '@/domains/graph/__tests__/fixtures';
 
 describe('fishboneLayout', () => {
@@ -77,6 +78,39 @@ describe('fishboneLayout', () => {
       const dot = (c.x - p.x) * ribX + (c.y - p.y) * ribY;
       const length = Math.hypot(c.x - p.x, c.y - p.y);
       expect(Math.abs(dot) / length).toBeLessThan(1);
+    }
+  });
+
+  it('prevents bounding-box collisions when nodes have very long multi-line titles (TD-006)', () => {
+    const tree = deepTree();
+    const longMetrics = new Map(
+      tree.ids.map((id, idx) => [
+        id,
+        cardLayout(
+          `Long Cause Analysis Title ${id} — Detailed Root Cause Investigation Step ${idx + 1} with Extensive Notes`,
+          { root: id === 'root', depth: idx }
+        ),
+      ])
+    );
+    const geo = fishboneLayout({
+      ...tree,
+      context: context({ nodeMetrics: longMetrics }),
+    });
+
+    for (let i = 0; i < tree.ids.length; i++) {
+      for (let j = i + 1; j < tree.ids.length; j++) {
+        const idA = tree.ids[i];
+        const idB = tree.ids[j];
+        const tA = geo.targets.get(idA)!;
+        const tB = geo.targets.get(idB)!;
+        const mA = longMetrics.get(idA)!;
+        const mB = longMetrics.get(idB)!;
+        const overlap = boxesOverlap(
+          { x: tA.x, y: tA.y, width: mA.width, height: mA.height },
+          { x: tB.x, y: tB.y, width: mB.width, height: mB.height }
+        );
+        expect(overlap).toBe(false);
+      }
     }
   });
 });

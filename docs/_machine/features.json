@@ -12,14 +12,14 @@
       "source_of_truth": "src/domains/vault/shared/api/VaultManager.ts",
       "persona": ["PER-01", "PER-03", "PER-04"],
       "requirements": ["FR-VAULT-001"],
-      "tests": ["src/domains/vault/shared/api/__tests__/VaultManager.test.ts"]
+      "tests": ["src/domains/vault/__tests__/VaultManager.test.ts"]
     },
     {
       "id": "FEAT-VAULT-002",
       "name": "Auto-Save Engine & Indicator",
-      "domain": "vault",
+      "domain": "workspace",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/vault/shared/hooks/useVaultLifecycle.ts",
+      "source_of_truth": "src/domains/workspace/shared/hooks/useVaultLifecycle.ts",
       "persona": ["PER-01", "PER-04"],
       "requirements": ["FR-VAULT-002"],
       "tests": []
@@ -32,7 +32,7 @@
       "source_of_truth": "src/domains/vault/shared/api/ImportExportService.ts",
       "persona": ["PER-01", "PER-03"],
       "requirements": ["FR-VAULT-003"],
-      "tests": []
+      "tests": ["src/domains/vault/__tests__/ImportExportService.test.ts"]
     },
     {
       "id": "FEAT-EDITOR-001",
@@ -59,10 +59,10 @@
       "name": "Multi-Model Layout Solver & Canvas",
       "domain": "graph",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/graph/shared/utils/layoutAlgorithms.ts",
+      "source_of_truth": "src/domains/graph/shared/utils/treeLayouts.ts",
       "persona": ["PER-01", "PER-02", "PER-03"],
       "requirements": ["FR-GRAPH-001"],
-      "tests": ["src/domains/graph/shared/utils/__tests__/layoutAlgorithms.test.ts"]
+      "tests": ["src/domains/graph/__tests__/newLayouts.test.ts"]
     },
     {
       "id": "FEAT-GRAPH-002",
@@ -72,17 +72,17 @@
       "source_of_truth": "src/domains/graph/components/GraphAtmosphereControls.tsx",
       "persona": ["PER-01", "PER-03"],
       "requirements": ["FR-GRAPH-002"],
-      "tests": ["src/domains/graph/shared/utils/__tests__/hierarchyColors.test.ts"]
+      "tests": ["src/domains/graph/__tests__/hierarchyColors.test.ts"]
     },
     {
       "id": "FEAT-GRAPH-003",
       "name": "Subtree Structure Override & Dynamic Relayout",
       "domain": "graph",
-      "status": "PARTIAL",
+      "status": "IMPLEMENTED",
       "source_of_truth": "src/domains/graph/shared/utils/subtreeCompose.ts",
       "persona": ["PER-01", "PER-02"],
       "requirements": ["FR-GRAPH-003"],
-      "tests": []
+      "tests": ["src/domains/graph/__tests__/subtreeOverride.test.ts"]
     },
     {
       "id": "FEAT-META-001",
@@ -99,7 +99,7 @@
       "name": "Instant Web Publishing & Public URL Slug",
       "domain": "collaboration",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/collaboration/shared/api/PublishingService.ts",
+      "source_of_truth": "src/domains/collaboration/shared/api/BulkPublishService.ts",
       "persona": ["PER-03", "PER-05"],
       "requirements": ["FR-PUB-001"],
       "tests": []
@@ -109,7 +109,7 @@
       "name": "Inherited Hierarchical Permissions & RLS",
       "domain": "collaboration",
       "status": "PARTIAL",
-      "source_of_truth": "supabase/migrations/20261001000000_storage_and_permissions.sql",
+      "source_of_truth": "supabase/migrations/20261031000000_v4_collaboration_and_publishing.sql",
       "persona": ["PER-04", "PER-06"],
       "requirements": ["FR-PUB-002"],
       "tests": []
