@@ -1,10 +1,23 @@
-/** Card node renderer with level-of-detail and a collapse toggle hit region. */
+/** Card node renderer with XMind TopicShapes, internal Flexbox attachments, LoD, and collapse toggle hit region. */
 
 import type { RenderNode } from '@/domains/graph/shared/utils/graph.types';
 import type { NodeConfig } from '@/domains/graph/shared/stores/useGraphStore';
-import { cardFont, cardLayout, CARD_FONT_SIZE } from '@/domains/graph/shared/utils/textLayout';
+import {
+  cardFont,
+  cardLayout,
+  CARD_FONT_SIZE,
+  resolveFooterLabels,
+} from '@/domains/graph/shared/utils/textLayout';
 import { accentFor, dim, type GraphTheme } from '@/domains/graph/shared/utils/theme';
-
+import type { ResolvedNodePaint } from '@/domains/graph/shared/utils/cascadingStyleResolver';
+import {
+  drawFooterTagPills,
+  drawLeftSlotAttachments,
+  drawRightSlotBadges,
+  drawTopicShapeBox,
+  resolveEffectiveTopicShape,
+  traceRoundedRectPath,
+} from '@/domains/graph/shared/utils/drawAttachments';
 
 export type FormatItemType = 'folder' | 'pdf' | 'image' | 'audio' | 'video' | 'file';
 
@@ -33,19 +46,19 @@ export function formatColorForNode(format: FormatItemType, fallbackAccent: strin
 // Cache objek Path2D Lucide (viewBox 24x24)
 const ICON_PATHS = {
   folder: new Path2D(
-    "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+    'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z',
   ),
   fileText: new Path2D(
-    "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"
+    'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8',
   ),
   image: new Path2D(
-    "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"
+    'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21',
   ),
   music: new Path2D(
-    "M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+    'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
   ),
   video: new Path2D(
-    "M4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM16 13l5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"
+    'M4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM16 13l5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5',
   ),
 };
 
@@ -56,46 +69,37 @@ function drawFormatIcon(
   y: number,
   radius: number,
   color: string,
-  boxed: boolean,
-  isSelected: boolean
+  _boxed: boolean,
+  isSelected: boolean,
 ) {
   const path =
     format === 'folder'
       ? ICON_PATHS.folder
       : format === 'image'
-      ? ICON_PATHS.image
-      : format === 'audio'
-      ? ICON_PATHS.music
-      : format === 'video'
-      ? ICON_PATHS.video
-      : ICON_PATHS.fileText;
+        ? ICON_PATHS.image
+        : format === 'audio'
+          ? ICON_PATHS.music
+          : format === 'video'
+            ? ICON_PATHS.video
+            : ICON_PATHS.fileText;
 
-  // Ukuran icon proporsional terhadap radius node
   const iconSize = Math.max(12, radius * 2.2);
   const scale = iconSize / 24;
 
   ctx.save();
-
-  // Reset shadow agar tidak ada bayangan lingkaran atau blur yang bocor ke icon
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
-
-  // Translasi ke titik tengah dan skalakan ke 24x24
   ctx.translate(x - iconSize / 2, y - iconSize / 2);
   ctx.scale(scale, scale);
-
-  // Stroke icon murni tanpa lingkaran disc di belakangnya
   ctx.strokeStyle = isSelected ? '#ffffff' : color;
   ctx.lineWidth = isSelected ? 2.2 : 1.8;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke(path);
-
   ctx.restore();
 }
-
 
 export interface DrawNodeState {
   theme: GraphTheme;
@@ -114,9 +118,9 @@ export interface DrawNodeState {
   isDragged?: boolean;
   isDropTarget?: boolean;
   dropTargetValid?: boolean;
+  /** Optional 4-level resolved cascade paint from cascadingStyleResolver. */
+  resolvedPaint?: ResolvedNodePaint;
 }
-
-// src/domains/graph/render/drawNode.ts
 
 /**
  * Menghasilkan bentuk geometris node secara dinamis berdasarkan format berkas.
@@ -124,18 +128,16 @@ export interface DrawNodeState {
  */
 export function resolveNodeShape(
   node: RenderNode,
-  config: NodeConfig
+  config: NodeConfig,
 ): NodeConfig['shape'] {
   if (!config.autoShapeByFormat) {
     return config.shape;
   }
 
-  // 1. Wadah Folder
   if (node.type === 'folder') {
     return 'hexagon';
   }
 
-  // 2. Format Media (Gambar, Audio/Voice, PDF)
   if (node.type === 'media') {
     if (node.mediaType === 'image') return 'square';
     if (node.mediaType === 'audio') return 'triangle';
@@ -144,10 +146,8 @@ export function resolveNodeShape(
     return 'square';
   }
 
-  // 3. Catatan File Markdown / Text biasa
   return 'circle';
 }
-
 
 /** Soft radial halo around a node marker, drawn beneath the node itself. */
 function drawGlow(
@@ -158,7 +158,7 @@ function drawGlow(
   color: string,
   intensity: number,
   phase: number,
-  boost: number
+  boost: number,
 ) {
   const pulse = 0.65 + 0.35 * Math.sin(phase * Math.PI * 2);
   const strength = Math.max(0, Math.min(1, intensity)) * pulse * boost;
@@ -187,7 +187,7 @@ function drawShape(
   shape: NodeConfig['shape'],
   x: number,
   y: number,
-  radius: number
+  radius: number,
 ) {
   ctx.beginPath();
   if (shape === 'circle') {
@@ -208,52 +208,30 @@ function drawShape(
   }
 }
 
-function roundedRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-) {
-  ctx.beginPath();
-  if (typeof ctx.roundRect === 'function') {
-    ctx.roundRect(x, y, w, h, r);
-    return;
-  }
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-}
-
 export function drawNode(
   ctx: CanvasRenderingContext2D,
   node: RenderNode,
-  state: DrawNodeState
+  state: DrawNodeState,
 ) {
   const { theme, zoom } = state;
   if (!state.config.visible) {
     node.toggle = null;
     return;
   }
-  const accent = accentFor(node, theme, state.selected);
+  const paint = state.resolvedPaint;
+  const accent = state.selected
+    ? theme.selected
+    : paint?.accentColor ?? accentFor(node, theme, state.selected);
   const x = node.x ?? 0;
   const y = node.y ?? 0;
   const alpha = state.dimmed ? 0.18 : theme.nodeOpacity;
-
   const resolvedShape = resolveNodeShape(node, state.config);
 
-  // Keep the configured node appearance at a stable screen size. Canvas
-  // coordinates are normally scaled by the camera, so counter-scale around
-  // the node while leaving its graph position unchanged.
   const detailScale = state.preserveDetail ? 1 / Math.max(0.05, zoom) : 1;
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(detailScale, detailScale);
-  ctx.translate(-x, -y)
+  ctx.translate(-x, -y);
 
   if (state.isDragged) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
@@ -262,14 +240,25 @@ export function drawNode(
     ctx.shadowOffsetY = 6;
   }
 
-
   const label = labelForNode(node, state.config);
-  const fontSize = state.config.labelSize + (state.isRoot ? 2 : 0);
+  const fontSize = state.config.labelSize + (paint ? paint.fontSizeDelta : state.isRoot ? 2 : 0);
   const boxed = state.config.labelBox;
+  const topicShape = boxed
+    ? resolveEffectiveTopicShape(node, state.config, paint?.topicShape)
+    : undefined;
+  const showMarkers = state.config.showMarkers !== false;
+  const showTagPills = state.config.showTagPills !== false;
   const layout = cardLayout(label, {
     root: state.isRoot,
     badge: node.childCount > 0,
     fontSize,
+    attachments: node.attachments,
+    tags: node.tags,
+    topicShape,
+    wikilinkCount: node.wikilinkCount,
+    hasNoteBody: Boolean(node.content && node.content.trim().length > 0),
+    showMarkers,
+    showTagPills,
   });
 
   const depthScale = state.config.sizeByDepth
@@ -279,56 +268,63 @@ export function drawNode(
 
   const w = boxed ? layout.width : markerRadius * 2;
   const h = boxed ? layout.height : markerRadius * 2;
+  const innerLeft = x - w / 2 + (boxed ? layout.shapePaddingX / 2 : 0);
+  const innerRight = x + w / 2 - (boxed ? layout.shapePaddingX / 2 : 0);
+  const mainRowCenterY = boxed
+    ? y - layout.footerLabelsHeight / 2
+    : y;
 
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // ============= NODE DEPTH & ELEVATION (SOFT GLOW & GLASSMORPHISM) =============
-  const isElevated = state.selected || state.hovered;
-
-  if (isElevated) {
-    // Multi-layer ambient drop shadow (Physical depth)
+  // Ambient elevation shadow on hover/selection
+  if (state.selected || state.hovered) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
     ctx.shadowBlur = 22;
   }
 
-  if (boxed) {
-    roundedRect(ctx, x - w / 2, y - h / 2, w, h, 8);
-    
-    // Background fill stabil
-    ctx.fillStyle = state.config.labelBackground
-      ? dim(theme.labelBackground, state.selected ? 0.95 : Math.max(0.72, state.config.opacity))
-      : dim(accent, state.selected ? 0.35 : state.hovered ? 0.25 : 0.16);
-    ctx.fill();
+  const useCascadePaint =
+    Boolean(paint) &&
+    (Boolean(paint?.hasExplicitCascade) ||
+      theme.autoColorBy === 'branch' ||
+      Boolean(theme.hierarchy?.skeletonPreset) ||
+      Boolean(node.branchColor) ||
+      Boolean(node.styleOverride) ||
+      (boxed && topicShape === 'underline'));
 
-    // Reset shadow blur
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-
-    // Outer border stroke: pertegas saat dipilih/di-hover tanpa mengubah ketebalan geometri
-    ctx.lineWidth = state.selected ? 2 : 1;
-    ctx.strokeStyle = state.selected 
-      ? accent 
-      : state.hovered 
-        ? dim(accent, 0.85) 
-        : dim(accent, 0.5);
-    ctx.stroke();
+  if (boxed && topicShape) {
+    const fillStyle = useCascadePaint && paint
+      ? dim(paint.fillColor, state.selected ? 0.96 : Math.max(0.84, state.config.opacity))
+      : state.config.labelBackground
+        ? dim(theme.labelBackground, state.selected ? 0.95 : Math.max(0.72, state.config.opacity))
+        : dim(accent, state.selected ? 0.35 : state.hovered ? 0.25 : 0.16);
+    const strokeStyle = state.selected
+      ? accent
+      : state.hovered
+        ? dim(paint?.borderColor ?? accent, 0.92)
+        : paint?.borderColor ?? dim(accent, 0.5);
+    drawTopicShapeBox(ctx, topicShape, x, y, w, h, {
+      fillStyle,
+      strokeStyle,
+      lineWidth: state.selected ? 2 : 1,
+      selected: state.selected,
+      hovered: state.hovered,
+      dashedBorder: paint?.dashedBorder,
+    });
   }
 
-
-  // Configurable node marker.
-  const markerX = boxed ? x - w / 2 + 9 : x;
+  // Format marker / geometric dot on left edge of Row 1
+  const markerX = boxed ? innerLeft + 9 : x;
   if (state.config.glow && !state.dimmed) {
     drawGlow(
       ctx,
       markerX,
-      y,
+      mainRowCenterY,
       markerRadius,
       accent,
       state.config.glowIntensity,
       state.glowPhase ?? 0,
-      state.selected || state.hovered ? 1.35 : 1
+      state.selected || state.hovered ? 1.35 : 1,
     );
   }
 
@@ -339,21 +335,19 @@ export function drawNode(
   const iconColor = formatColorForNode(nodeFormat, accent);
 
   if (useFormatIcons) {
-    // Render ikon Lucide asli yang identik dengan File Explorer
     drawFormatIcon(
       ctx,
       nodeFormat,
       markerX,
-      y,
+      mainRowCenterY,
       markerRadius,
       iconColor,
       boxed,
-      state.selected
+      state.selected,
     );
   } else {
-    // Render bentuk geometri
     ctx.fillStyle = accent;
-    drawShape(ctx, resolvedShape, markerX, y, markerRadius);
+    drawShape(ctx, resolvedShape, markerX, mainRowCenterY, markerRadius);
     ctx.fill();
     if (!boxed && state.selected) {
       ctx.lineWidth = 2;
@@ -363,11 +357,9 @@ export function drawNode(
   }
   ctx.shadowBlur = 0;
 
-
-    // Indikator target folder reparenting
+  // Indikator target folder reparenting
   if (state.isDropTarget && state.dropTargetValid) {
     ctx.save();
-    // Glow ring warna aksen
     ctx.strokeStyle = accent;
     ctx.lineWidth = 2.5;
     ctx.setLineDash([4, 4]);
@@ -375,14 +367,13 @@ export function drawNode(
     ctx.arc(x, y, Math.max(w, h) / 2 + 10, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Badge kecil "masuk ke folder" di atas kartu
-    const badgeText = "masuk ke folder";
+    const badgeText = 'masuk ke folder';
     ctx.font = cardFont(9, '600');
     const badgeW = ctx.measureText(badgeText).width + 12;
     const badgeY = y - h / 2 - 14;
 
     ctx.fillStyle = accent;
-    roundedRect(ctx, x - badgeW / 2, badgeY - 8, badgeW, 16, 4);
+    traceRoundedRectPath(ctx, x - badgeW / 2, badgeY - 8, badgeW, 16, 4);
     ctx.fill();
 
     ctx.fillStyle = theme.card;
@@ -392,14 +383,12 @@ export function drawNode(
     ctx.restore();
   }
 
-    // ============= COLLAPSE BADGE (TAHAP 6) =============
-  // — saat terbuka, pill +N saat tertutup
+  // Collapse toggle badge (— when open, +N pill when collapsed)
   if (node.childCount > 0) {
     ctx.save();
     ctx.globalAlpha = state.dimmed ? 0.25 : 1;
 
     if (state.collapsed) {
-      // 1. TAMPILAN PILL "+N" SAAT TERTUTUP
       const pillText = `+${node.childCount}`;
       ctx.font = cardFont(9, '700');
       const textMetrics = ctx.measureText(pillText);
@@ -408,29 +397,25 @@ export function drawNode(
       const tx = x + (boxed ? w / 2 : markerRadius) + pillW / 2 + 3;
       const ty = y;
 
-      // Gambar kapsul pill
       ctx.fillStyle = theme.card;
-      roundedRect(ctx, tx - pillW / 2, ty - pillH / 2, pillW, pillH, pillH / 2);
+      traceRoundedRectPath(ctx, tx - pillW / 2, ty - pillH / 2, pillW, pillH, pillH / 2);
       ctx.fill();
 
       ctx.lineWidth = 1.2;
       ctx.strokeStyle = accent;
       ctx.stroke();
 
-      // Tulisan teks +N
       ctx.fillStyle = accent;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(pillText, tx, ty);
 
-      // Hit-area collapse toggle
       node.toggle = {
         x: x + (tx - x) * detailScale,
         y: y + (ty - y) * detailScale,
         r: Math.max(pillW / 2, 10) * detailScale,
       };
     } else {
-      // 2. TAMPILAN CIRCLE MINUS "—" SAAT TERBUKA
       const r = 6;
       const tx = x + (boxed ? w / 2 : markerRadius) + r + 2;
       const ty = y;
@@ -443,7 +428,6 @@ export function drawNode(
       ctx.strokeStyle = dim(accent, 0.7);
       ctx.stroke();
 
-      // Garis minus —
       ctx.strokeStyle = accent;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -451,7 +435,6 @@ export function drawNode(
       ctx.lineTo(tx + 3, ty);
       ctx.stroke();
 
-      // Hit-area collapse toggle
       node.toggle = {
         x: x + (tx - x) * detailScale,
         y: y + (ty - y) * detailScale,
@@ -464,50 +447,104 @@ export function drawNode(
     node.toggle = null;
   }
 
-  
-  // Selalu tampilkan label teks jika diaktifkan
+  // Internal Flexbox Row 1 Left Slot: Markers & Stickers (inside boxed cards)
+  const leftSlotStartX = boxed ? innerLeft + Math.max(18, markerRadius * 2 + 7) : 0;
+  let titleX = leftSlotStartX;
+  if (boxed && showMarkers && node.attachments) {
+    titleX = drawLeftSlotAttachments(
+      ctx,
+      leftSlotStartX,
+      mainRowCenterY,
+      node.attachments,
+      accent,
+      theme,
+    );
+  } else if (boxed) {
+    titleX = leftSlotStartX;
+  }
+
+  // Title text
   if (state.showLabels) {
     const italic = state.config.labelFontStyle.includes('italic') ? 'italic ' : '';
-    const weight = state.config.labelFontStyle.includes('bold') || state.isRoot ? '600' : '500';
+    const weight =
+      state.config.labelFontStyle.includes('bold')
+        ? '700'
+        : paint?.fontWeight ?? (state.isRoot ? '600' : '500');
     ctx.font = `${italic}${cardFont(fontSize, weight)}`;
-    ctx.fillStyle = theme.label;
+    ctx.fillStyle = useCascadePaint && paint ? paint.textColor : theme.label;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    const lineHeight = fontSize + 4;
-    const startY = y - ((layout.lines.length - 1) * lineHeight) / 2;
+    const lineHeight = layout.lineHeight;
+    const startY = mainRowCenterY - ((layout.lines.length - 1) * lineHeight) / 2;
 
-    // Hitung offset ruang tombol collapse agar tidak menutupi huruf awal
     let toggleOffset = 0;
     if (!boxed && node.childCount > 0) {
       toggleOffset = state.collapsed ? 28 : 18;
     }
 
-    const textX = boxed
-      ? x - w / 2 + Math.max(18, markerRadius * 2 + 7)
+    const effectiveTextX = boxed
+      ? titleX
       : markerX + markerRadius + 5 + toggleOffset;
 
     layout.lines.forEach((line, index) => {
-      ctx.fillText(line, textX, startY + index * lineHeight);
+      ctx.fillText(line, effectiveTextX, startY + index * lineHeight);
     });
   }
 
-  // Child-count badge.
+  // Row 1 Right Slot & Child Count Badge
+  if (boxed && (state.preserveDetail || zoom >= state.labelThreshold)) {
+    if (node.childCount > 0) {
+      ctx.font = cardFont(9, '600');
+      ctx.fillStyle = dim(accent, 0.9);
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(
+        String(node.childCount),
+        innerRight - 10,
+        y - h / 2 + layout.shapePaddingY / 2 + 8,
+      );
+    }
+
+    const wikilinkCount = layout.wikilinkCount;
+    const hasNoteBody = layout.hasNoteBody;
+    if (wikilinkCount > 0 || hasNoteBody) {
+      const rightEdge = node.childCount > 0 ? innerRight - 22 : innerRight - 8;
+      drawRightSlotBadges(
+        ctx,
+        rightEdge,
+        mainRowCenterY,
+        wikilinkCount,
+        hasNoteBody,
+        accent,
+        theme,
+      );
+    }
+  }
+
+  // Internal Flexbox Row 2: Footer Tag/Label Pills
   if (
     boxed &&
-    node.childCount > 0 &&
-    (state.preserveDetail || zoom >= state.labelThreshold)
+    showTagPills &&
+    layout.resolvedLabels.length > 0 &&
+    (state.preserveDetail || zoom >= state.labelThreshold * 0.85)
   ) {
-    ctx.font = cardFont(9, '600');
-    ctx.fillStyle = dim(accent, 0.9);
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(node.childCount), x + w / 2 - 14, y - h / 2 + 8);
+    const footerRowCenterY = y + (h - layout.shapePaddingY) / 2 - 11;
+    drawFooterTagPills(
+      ctx,
+      leftSlotStartX,
+      footerRowCenterY,
+      resolveFooterLabels(node.attachments, node.tags, 4),
+      layout.pillWidths,
+      accent,
+      theme,
+    );
   }
 
   ctx.restore();
+  ctx.restore();
 }
 
-/** Pointer area covers the card plus its toggle. */
+/** Pointer area covers the rich card plus its collapse toggle. */
 export function paintNodePointerArea(
   ctx: CanvasRenderingContext2D,
   node: RenderNode,
@@ -515,19 +552,27 @@ export function paintNodePointerArea(
   isRoot: boolean,
   config?: NodeConfig,
   zoom = 1,
-  preserveDetail = false
+  preserveDetail = false,
 ) {
   if (config && !config.visible) return;
   const label = config ? labelForNode(node, config) : node.name;
+  const boxed = config ? config.labelBox : true;
+  const topicShape = boxed ? resolveEffectiveTopicShape(node, config) : undefined;
   const layout = cardLayout(label, {
     root: isRoot,
     badge: node.childCount > 0,
     fontSize: (config?.labelSize ?? CARD_FONT_SIZE) + (isRoot ? 2 : 0),
+    attachments: node.attachments,
+    tags: node.tags,
+    topicShape,
+    wikilinkCount: node.wikilinkCount,
+    hasNoteBody: Boolean(node.content && node.content.trim().length > 0),
+    showMarkers: config?.showMarkers ?? true,
+    showTagPills: config?.showTagPills ?? true,
   });
   const x = node.x ?? 0;
   const y = node.y ?? 0;
   const extra = node.childCount > 0 ? 32 : 0;
-  const boxed = config ? config.labelBox : true;
   const markerRadius = Math.max(3, config?.relSize ?? 6);
   const width = boxed ? layout.width : markerRadius * 2;
   const height = boxed ? layout.height : markerRadius * 2;

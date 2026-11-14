@@ -7,15 +7,15 @@
 import type {
   LayoutContext,
   LayoutGeometry,
+  LayoutMode,
   MindmapLayoutMode,
-  NodeTarget,
   SubtreeLayoutMap,
 } from '@/domains/graph/shared/utils/graph.types';
-import { boundsOf } from '@/domains/graph/shared/utils/layoutMath';
-import { mindmapLayout } from '@/domains/graph/shared/utils/mindmap';
-import { orgChartLayout, braceMapLayout } from '@/domains/graph/shared/utils/treeLayouts';
-import { timelineLayout } from '@/domains/graph/shared/utils/timeline';
-import { fishboneLayout } from '@/domains/graph/shared/utils/fishbone';
+import {
+  computeCompositeMindmapLayout,
+  runSingleMindmapSolver,
+} from '@/domains/graph/shared/utils/compositeLayoutEngine';
+import { MINDMAP_LAYOUT_MODES } from '@/domains/graph/shared/utils/graph.types';
 
 export interface TreeData {
   ids: string[];
@@ -24,7 +24,7 @@ export interface TreeData {
   context: LayoutContext;
   projection?: {
     byId: Map<string, { time?: number }>;
-    parentByChild: Map<string, string>;
+    parentByChild: Map<string, string | null>;
   };
 }
 
@@ -58,44 +58,32 @@ export function collectSubtreeIds(
 /**
  * Menjalankan layout struktural tertentu untuk subtree yang terisolasi.
  */
-function runSubtreeLayout(
-  mode: MindmapLayoutMode,
-  subtreeIds: string[],
-  rootId: string,
-  childrenOf: (id: string) => string[],
-  context: LayoutContext,
-  projection?: TreeData['projection']
-): LayoutGeometry {
-  const treeInput = {
-    ids: subtreeIds,
-    roots: [rootId],
-    childrenOf,
-    context,
-  };
+export { runSingleMindmapSolver };
 
-  switch (mode) {
-    case 'org-chart':
-      return orgChartLayout(treeInput);
-    case 'brace-map':
-      return braceMapLayout(treeInput);
-    case 'timeline':
-      return timelineLayout({
-        ids: subtreeIds,
-        roots: [rootId],
-        childrenOf,
-        parentOf: (id) => projection?.parentByChild.get(id) ?? null,
-        context,
-      });
-    case 'fishbone':
-      return fishboneLayout(treeInput);
-    case 'mindmap':
-    default:
-      return mindmapLayout(treeInput);
+/**
+ * Resolves the effective layout mode for a node by walking up ancestors for the nearest subtree override.
+ */
+export function resolveNodeSubtreeMode(
+  nodeId: string,
+  baseMode: LayoutMode,
+  parentByChild: Map<string, string | null>,
+  overrides?: SubtreeLayoutMap,
+): LayoutMode {
+  if (!overrides || Object.keys(overrides).length === 0) return baseMode;
+  let current: string | null | undefined = nodeId;
+  const visited = new Set<string>();
+  while (current && !visited.has(current)) {
+    const override = overrides[current];
+    if (override) return override;
+    visited.add(current);
+    current = parentByChild.get(current) ?? null;
   }
+  return baseMode;
 }
 
 /**
- * Menggabungkan layout dasar dengan subtree yang memiliki layout override.
+ * Menggabungkan layout dasar dengan subtree yang memiliki layout override
+ * menggunakan Two-Pass Bottom-Up Encapsulation Engine.
  */
 export function composeSubtreeLayouts(
   baseGeometry: LayoutGeometry,
@@ -106,72 +94,9 @@ export function composeSubtreeLayouts(
     return baseGeometry;
   }
 
-  const visible = new Set(tree.ids);
-  const finalTargets = new Map<string, NodeTarget>(baseGeometry.targets);
-  const decorations = [...baseGeometry.decorations];
+  const rootMode: MindmapLayoutMode = (MINDMAP_LAYOUT_MODES as string[]).includes(baseGeometry.mode)
+    ? (baseGeometry.mode as MindmapLayoutMode)
+    : 'mindmap';
 
-  for (const [overrideRootId, overrideMode] of Object.entries(overrides)) {
-    // Pastikan node override ada di kanvas dan punya koordinat anchor
-    if (!visible.has(overrideRootId) || !finalTargets.has(overrideRootId)) {
-      continue;
-    }
-
-    const anchorTarget = finalTargets.get(overrideRootId)!;
-    const subtreeIds = collectSubtreeIds(overrideRootId, tree.childrenOf, visible);
-    if (subtreeIds.length <= 1) continue; // Tidak ada child untuk di-layout ulang
-
-    // 1. Hitung layout terisolasi untuk subtree
-    const isolatedGeo = runSubtreeLayout(
-      overrideMode,
-      subtreeIds,
-      overrideRootId,
-      tree.childrenOf,
-      tree.context,
-      tree.projection
-    );
-
-    const isolatedRootTarget = isolatedGeo.targets.get(overrideRootId);
-    if (!isolatedRootTarget) continue;
-
-    // 2. Tentukan pergeseran koordinat (offset delta)
-    const deltaX = anchorTarget.x - isolatedRootTarget.x;
-    const deltaY = anchorTarget.y - isolatedRootTarget.y;
-
-    // 3. Jika induk berada di cabang kiri (side === -1), balik arah horizontal subtree
-    const flipHorizontal = anchorTarget.side === -1 && overrideMode === 'brace-map';
-
-    // 4. Update posisi seluruh keturunan dalam subtree
-    for (const subId of subtreeIds) {
-      if (subId === overrideRootId) continue; // Posisi anchor root tetap di posisi induknya
-      const localTarget = isolatedGeo.targets.get(subId);
-      if (!localTarget) continue;
-
-      let adjustedX = localTarget.x - isolatedRootTarget.x;
-      if (flipHorizontal) adjustedX = -adjustedX;
-
-      const finalX = anchorTarget.x + adjustedX;
-      const finalY = anchorTarget.y + (localTarget.y - isolatedRootTarget.y);
-
-      finalTargets.set(subId, {
-        ...localTarget,
-        x: finalX,
-        y: finalY,
-        side: anchorTarget.side ?? localTarget.side,
-      });
-    }
-
-    // 5. Tambahkan dekorasi dari subtree jika ada
-    if (isolatedGeo.decorations.length > 0) {
-      for (const dec of isolatedGeo.decorations) {
-        decorations.push(dec);
-      }
-    }
-  }
-
-  return {
-    mode: baseGeometry.mode,
-    targets: finalTargets,
-    bounds: boundsOf(finalTargets, tree.context.nodeMetrics),
-    decorations,
-  };
+  return computeCompositeMindmapLayout(rootMode, tree, overrides);
 }

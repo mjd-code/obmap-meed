@@ -18,11 +18,16 @@ import {
   canvasModeOf,
   GRAPH_LAYOUT_MODES,
   MINDMAP_LAYOUT_MODES,
+  type BoundaryGroup,
   type CanvasMode,
   type GraphLayoutMode,
   type LayoutMode,
+  type ManualNodeOffset,
   type MindmapLayoutMode,
   type MindmapOrientation,
+  type NodeStyleOverride,
+  type RelationshipEdge,
+  type SummaryGroup,
   type TimelineStructure,
 } from '@/domains/graph/shared/utils/graph.types';
 
@@ -62,9 +67,26 @@ export interface GraphInteractionState {
   timelineStructure: TimelineStructure;
   subtreeLayoutOverrides: Record<string, MindmapLayoutMode>;
   branchColorOverrides: Record<string, string>;
+  nodeStyleOverrides: Record<string, NodeStyleOverride>;
+  boundaries: BoundaryGroup[];
+  summaries: SummaryGroup[];
+  relationships: RelationshipEdge[];
+  manualNodeOffsets: Record<string, ManualNodeOffset>;
+  showMindmapRelationships: boolean;
 
   setSubtreeLayoutOverride: (nodeId: string, layout: MindmapLayoutMode | null) => void;
   setBranchColorOverride: (nodeId: string, color: string | null) => void;
+  setNodeStyleOverride: (nodeId: string, override: NodeStyleOverride | null) => void;
+  promoteColorToBranch: (branchRootId: string, color: string) => void;
+  upsertBoundary: (boundary: BoundaryGroup) => void;
+  removeBoundary: (id: string) => void;
+  upsertSummary: (summary: SummaryGroup) => void;
+  removeSummary: (id: string) => void;
+  upsertRelationship: (edge: RelationshipEdge) => void;
+  removeRelationship: (id: string) => void;
+  setShowMindmapRelationships: (show: boolean) => void;
+  setManualNodeOffset: (nodeId: string, offset: ManualNodeOffset | null) => void;
+  tidyUpLayout: () => void;
   clearSubtreeOverrides: () => void;
 
   isTimeLapseActive: boolean;
@@ -101,6 +123,17 @@ const layoutPatch = (layoutMode: LayoutMode): Partial<GraphInteractionState> => 
     : { layoutMode, canvasMode, lastMindmapLayout: layoutMode as MindmapLayoutMode };
 };
 
+const upsertById = <T extends { id: string }>(items: T[], nextItem: T): T[] => {
+  const idx = items.findIndex((item) => item.id === nextItem.id);
+  if (idx === -1) return [...items, nextItem];
+  const copy = [...items];
+  copy[idx] = nextItem;
+  return copy;
+};
+
+const removeById = <T extends { id: string }>(items: T[], id: string): T[] =>
+  items.filter((item) => item.id !== id);
+
 const creator: StateCreator<GraphInteractionState> = (set) => ({
   layoutMode: 'mindmap',
   canvasMode: 'mindmap',
@@ -118,6 +151,12 @@ const creator: StateCreator<GraphInteractionState> = (set) => ({
   timelineStructure: 'off-axis',
   subtreeLayoutOverrides: {},
   branchColorOverrides: {},
+  nodeStyleOverrides: {},
+  boundaries: [],
+  summaries: [],
+  relationships: [],
+  manualNodeOffsets: {},
+  showMindmapRelationships: true,
 
     isTimeLapseActive: false,
   timeLapseStep: 0,
@@ -146,8 +185,70 @@ const creator: StateCreator<GraphInteractionState> = (set) => ({
       return { branchColorOverrides: next };
     }),
 
+  setNodeStyleOverride: (nodeId, override) =>
+    set((state) => {
+      const next = { ...state.nodeStyleOverrides };
+      if (!override || Object.keys(override).length === 0) {
+        delete next[nodeId];
+      } else {
+        next[nodeId] = { ...(next[nodeId] ?? {}), ...override };
+      }
+      return { nodeStyleOverrides: next };
+    }),
+
+  promoteColorToBranch: (branchRootId, color) =>
+    set((state) => {
+      const nextBranch = { ...state.branchColorOverrides, [branchRootId]: color };
+      const nextNode = { ...state.nodeStyleOverrides };
+      if (nextNode[branchRootId]) {
+        const { fillColor: _f, borderColor: _b, textColor: _t, lineColor: _l, ...rest } =
+          nextNode[branchRootId];
+        if (Object.keys(rest).length === 0) delete nextNode[branchRootId];
+        else nextNode[branchRootId] = rest;
+      }
+      return { branchColorOverrides: nextBranch, nodeStyleOverrides: nextNode };
+    }),
+
+  upsertBoundary: (boundary) =>
+    set((state) => ({ boundaries: upsertById(state.boundaries, boundary) })),
+  removeBoundary: (id) =>
+    set((state) => ({ boundaries: removeById(state.boundaries, id) })),
+
+  upsertSummary: (summary) =>
+    set((state) => ({ summaries: upsertById(state.summaries, summary) })),
+  removeSummary: (id) =>
+    set((state) => ({ summaries: removeById(state.summaries, id) })),
+
+  upsertRelationship: (edge) =>
+    set((state) => ({ relationships: upsertById(state.relationships, edge) })),
+  removeRelationship: (id) =>
+    set((state) => ({ relationships: removeById(state.relationships, id) })),
+
+  setShowMindmapRelationships: (showMindmapRelationships) => set({ showMindmapRelationships }),
+
+  setManualNodeOffset: (nodeId, offset) =>
+    set((state) => {
+      const next = { ...state.manualNodeOffsets };
+      if (!offset || (offset.dx === 0 && offset.dy === 0)) {
+        delete next[nodeId];
+      } else {
+        next[nodeId] = offset;
+      }
+      return { manualNodeOffsets: next };
+    }),
+
+  tidyUpLayout: () => set({ manualNodeOffsets: {}, layoutArrangement: 'auto' }),
+
   clearSubtreeOverrides: () =>
-    set({ subtreeLayoutOverrides: {}, branchColorOverrides: {} }),
+    set({
+      subtreeLayoutOverrides: {},
+      branchColorOverrides: {},
+      nodeStyleOverrides: {},
+      boundaries: [],
+      summaries: [],
+      relationships: [],
+      manualNodeOffsets: {},
+    }),
 
 
   setLayoutMode: (value) => set(layoutPatch(normalizeLayoutMode(value))),
@@ -189,6 +290,7 @@ export const globalGraphInteractionStore = createStore<GraphInteractionState>()(
       orientation: state.orientation,
       highlightMode: state.highlightMode,
       collapsedIds: state.collapsedIds,
+      showMindmapRelationships: state.showMindmapRelationships,
     }) as GraphInteractionState,
     migrate: (persisted) => {
       const state = (persisted ?? {}) as Partial<GraphInteractionState>;
@@ -204,6 +306,7 @@ export const globalGraphInteractionStore = createStore<GraphInteractionState>()(
         orientation: state.orientation ?? 'balanced',
         highlightMode: state.highlightMode ?? 'pathway',
         collapsedIds: state.collapsedIds ?? [],
+        showMindmapRelationships: state.showMindmapRelationships ?? true,
       } as GraphInteractionState;
     },
   })
@@ -217,6 +320,7 @@ const BRIDGED_INTERACTION_KEYS = [
   'orientation',
   'highlightMode',
   'layoutArrangement',
+  'showMindmapRelationships',
   'isTimeLapseActive',
   'timeLapseStep',
   'timeLapseTotal',
@@ -278,6 +382,7 @@ export const createGraphInteractionStore = (
     orientation: defaults.orientation,
     highlightMode: defaults.highlightMode,
     layoutArrangement: defaults.layoutArrangement,
+    showMindmapRelationships: defaults.showMindmapRelationships,
   });
   return store;
 };

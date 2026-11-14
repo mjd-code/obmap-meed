@@ -8,10 +8,26 @@
 import {
   parseHsl,
   formatHsl,
+  hslToRgb,
+  parseColorToRgb,
+  relativeLuminance,
+  contrastRatio,
+  isDarkSurface,
+  pickContrastTextColor,
   type Hsl,
 } from '@/global/utils/color-engine';
 
-export { parseHsl, formatHsl, type Hsl };
+export {
+  parseHsl,
+  formatHsl,
+  hslToRgb,
+  parseColorToRgb,
+  relativeLuminance,
+  contrastRatio,
+  isDarkSurface,
+  pickContrastTextColor,
+  type Hsl,
+};
 export type HierarchyOverflow = 'loop' | 'gradient';
 export type HierarchyLinkColorMode = 'parent' | 'child' | 'level';
 export type HierarchyPresetId =
@@ -34,6 +50,8 @@ export interface HierarchyColorConfig {
   linkColorMode: HierarchyLinkColorMode;
   /** Per-level link opacity, only used by the `level` link mode. */
   levelOpacity: number[];
+  /** Optional XMind skeleton preset id overriding branch seed defaults. */
+  skeletonPreset?: string;
 }
 
 export interface HierarchyPreset {
@@ -298,5 +316,101 @@ export function mergeHierarchyColorConfig(
     levelOpacity: Array.isArray(raw.levelOpacity) && raw.levelOpacity.length > 0
       ? raw.levelOpacity
       : [...defaultHierarchyColorConfig.levelOpacity],
+    ...(typeof raw.skeletonPreset === 'string' ? { skeletonPreset: raw.skeletonPreset } : {}),
   };
+}
+
+export interface SmartBranchColors {
+  fill: string;
+  border: string;
+  line: string;
+  accent: string;
+}
+
+/**
+ * Computes harmonious depth-gradated branch colors sharing the parent branch hue H_k.
+ * Dark and light canvases shift saturation & lightness deterministically per DOC-PLAN-009 §3.1.
+ */
+export function resolveSmartBranchHsl(
+  seedColor: string,
+  depth: number,
+  isDark: boolean,
+): SmartBranchColors {
+  const parsed = parseHsl(seedColor) ?? { h: 210, s: 75, l: 55 };
+  const safeDepth = Math.max(0, Math.floor(depth));
+
+  if (safeDepth === 0) {
+    const accentL = isDark ? clamp(parsed.l, 45, 58) : clamp(parsed.l, 38, 50);
+    const fillL = isDark ? clamp(parsed.l - 12, 26, 44) : clamp(parsed.l + 18, 65, 82);
+    return {
+      fill: formatHsl({ h: parsed.h, s: clamp(parsed.s, 45, 88), l: fillL }),
+      border: formatHsl({ h: parsed.h, s: clamp(parsed.s + 6, 55, 95), l: accentL }),
+      line: formatHsl({ h: parsed.h, s: clamp(parsed.s, 55, 92), l: isDark ? 64 : 46 }),
+      accent: formatHsl({ h: parsed.h, s: clamp(parsed.s, 55, 92), l: accentL }),
+    };
+  }
+
+  if (safeDepth === 1) {
+    const fillS = isDark ? clamp(parsed.s - 8, 34, 78) : clamp(parsed.s, 36, 82);
+    const fillL = isDark ? clamp(parsed.l - 22, 18, 32) : clamp(parsed.l + 28, 82, 92);
+    const lineL = isDark ? clamp(parsed.l + 4, 52, 76) : clamp(parsed.l - 6, 34, 56);
+    return {
+      fill: formatHsl({ h: parsed.h, s: fillS, l: fillL }),
+      border: formatHsl({ h: parsed.h, s: parsed.s, l: lineL }),
+      line: formatHsl({ h: parsed.h, s: parsed.s, l: lineL }),
+      accent: formatHsl({ h: parsed.h, s: parsed.s, l: isDark ? clamp(parsed.l, 52, 74) : clamp(parsed.l, 36, 54) }),
+    };
+  }
+
+  // Depth >= 2 subtopic gradation (DOC-PLAN-009 §3.1)
+  if (isDark) {
+    const sFill = Math.max(28, parsed.s - safeDepth * 4);
+    const lFill = clamp(16 + (safeDepth - 2) * 3, 14, 28);
+    const lLine = clamp(parsed.l + (safeDepth - 1) * 4, 52, 80);
+    return {
+      fill: formatHsl({ h: parsed.h, s: sFill, l: lFill }),
+      border: formatHsl({ h: parsed.h, s: clamp(parsed.s - 6, 35, 88), l: lLine }),
+      line: formatHsl({ h: parsed.h, s: parsed.s, l: lLine }),
+      accent: formatHsl({ h: parsed.h, s: parsed.s, l: lLine }),
+    };
+  }
+
+  const sFill = Math.min(75, parsed.s);
+  const lFill = clamp(91 + (safeDepth - 2) * 2, 88, 97);
+  const lLine = clamp(parsed.l - (safeDepth - 1) * 5, 30, 58);
+  return {
+    fill: formatHsl({ h: parsed.h, s: sFill, l: lFill }),
+    border: formatHsl({ h: parsed.h, s: clamp(parsed.s - 5, 35, 85), l: lLine }),
+    line: formatHsl({ h: parsed.h, s: parsed.s, l: lLine }),
+    accent: formatHsl({ h: parsed.h, s: parsed.s, l: lLine }),
+  };
+}
+
+/**
+ * Walks ancestors to resolve a branch color override or YAML `branchColor`,
+ * falling back deterministically to the Skeleton seed palette by branch root id.
+ */
+export function resolveEffectiveBranchColor(
+  nodeId: string,
+  branchId: string | undefined,
+  parentByChild: Map<string, string | null>,
+  branchColorOverrides: Record<string, string>,
+  nodeBranchColorById: Map<string, string | undefined>,
+  seedPalette: string[],
+): string {
+  let current: string | null | undefined = nodeId;
+  const visited = new Set<string>();
+  while (current && !visited.has(current)) {
+    const storeColor = branchColorOverrides[current];
+    if (storeColor) return storeColor;
+    const nodeColor = nodeBranchColorById.get(current);
+    if (nodeColor) return nodeColor;
+    visited.add(current);
+    current = parentByChild.get(current) ?? null;
+  }
+
+  const safePalette = seedPalette.length > 0 ? seedPalette : HIERARCHY_PRESETS[0].colors;
+  const seedKey = branchId || nodeId;
+  const hash = seedKey.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return safePalette[hash % safePalette.length];
 }

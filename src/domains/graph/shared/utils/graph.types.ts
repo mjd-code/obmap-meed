@@ -5,7 +5,47 @@
  * render model and computes deterministic coordinates for it.
  */
 
-export type { Link, Node, GraphData, Backlink, SaveStatus } from '@/global/types/graph.types';
+import type {
+  Link,
+  Node,
+  GraphData,
+  Backlink,
+  SaveStatus,
+  TopicShape,
+  BranchLineStyle,
+  NodeMarker,
+  NodeAttachments,
+  TopicRole,
+  SkeletonPresetId,
+  NodeStyleOverride,
+  BoundaryShape,
+  BoundaryGroup,
+  SummaryBraceStyle,
+  SummaryGroup,
+  RelationshipEdge,
+  ManualNodeOffset,
+} from '@/global/types/graph.types';
+
+export type {
+  Link,
+  Node,
+  GraphData,
+  Backlink,
+  SaveStatus,
+  TopicShape,
+  BranchLineStyle,
+  NodeMarker,
+  NodeAttachments,
+  TopicRole,
+  SkeletonPresetId,
+  NodeStyleOverride,
+  BoundaryShape,
+  BoundaryGroup,
+  SummaryBraceStyle,
+  SummaryGroup,
+  RelationshipEdge,
+  ManualNodeOffset,
+};
 
 export type GraphLayoutMode = 'free-force' | 'fr-standard' | 'fr-radial' | 'kamada-kawai' | 'grid';
 export type MindmapLayoutMode = 'mindmap' | 'org-chart' | 'brace-map' | 'timeline' | 'fishbone';
@@ -75,7 +115,45 @@ export interface FishboneRib {
   targetId?: string;
 }
 
-export type LayoutDecoration = TimelineAxis | FishboneSpine | FishboneRib;
+export interface BoundaryDecoration {
+  kind: 'boundary';
+  id: string;
+  title?: string;
+  nodeIds: string[];
+  shape: BoundaryShape;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  padding: number;
+  headerHeight: number;
+  fillColor?: string;
+  strokeColor?: string;
+}
+
+export interface SummaryBraceDecoration {
+  kind: 'summary-brace';
+  id: string;
+  parentId: string;
+  summaryNodeId: string;
+  braceStyle: SummaryBraceStyle;
+  direction: 'right' | 'left' | 'down' | 'up';
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  apexX: number;
+  apexY: number;
+  color?: string;
+  label?: string;
+}
+
+export type LayoutDecoration =
+  | TimelineAxis
+  | FishboneSpine
+  | FishboneRib
+  | BoundaryDecoration
+  | SummaryBraceDecoration;
 
 export interface LayoutGeometry {
   mode: LayoutMode;
@@ -87,6 +165,25 @@ export interface LayoutGeometry {
 export interface NodeMetric {
   width: number;
   height: number;
+}
+
+export interface RichNodeMetric extends NodeMetric {
+  lines: string[];
+  textWidth?: number;
+  fontSize: number;
+  lineHeight: number;
+  leftSlotWidth: number;
+  rightSlotWidth: number;
+  footerLabelsHeight: number;
+  shapePaddingX: number;
+  shapePaddingY: number;
+  textBlockWidth: number;
+  pillWidths: number[];
+  resolvedLabels: string[];
+  markersCount: number;
+  hasSticker: boolean;
+  wikilinkCount: number;
+  hasNoteBody: boolean;
 }
 
 export interface LayoutContext {
@@ -117,6 +214,10 @@ export interface RenderNode {
   childCount: number;
   branchId?: string;
   branchColor?: string;
+  attachments?: NodeAttachments;
+  topicShape?: TopicShape;
+  styleOverride?: NodeStyleOverride;
+  wikilinkCount?: number;
   x?: number;
   y?: number;
   vx?: number;
@@ -130,8 +231,9 @@ export interface RenderNode {
 export interface RenderLink {
   source: string | RenderNode;
   target: string | RenderNode;
-  type?: Link['type'];
-  role?: 'hierarchy' | 'milestone' | 'rib';
+  type?: Link['type'] | 'relationship';
+  role?: 'hierarchy' | 'milestone' | 'rib' | 'relationship';
+  relationship?: RelationshipEdge;
 }
 
 export interface GraphProjection {

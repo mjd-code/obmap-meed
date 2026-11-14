@@ -116,7 +116,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
           currentOverride={subtreeLayoutOverrides?.[props.selectedNode?.id ?? '']}
           isFocused={focusedRootId === props.selectedNode?.id}
           onSetStructure={(mode: MindmapLayoutMode | null) => {
-            if (props.selectedNode && mode) {
+            if (props.selectedNode) {
               actions.setSubtreeLayoutOverride(props.selectedNode.id, mode);
             }
           }}

@@ -101,6 +101,8 @@ export function accentFor(
 ): string {
   if (selected) return theme.selected;
   if (overrideColor) return overrideColor;
+  if (node.styleOverride?.borderColor) return node.styleOverride.borderColor;
+  if (node.branchColor) return node.branchColor;
 
   // Branch Color Inheritance: Turunan mewarisi warna cabang dari preset hierarchy
   if (theme.autoColorBy === 'branch' && theme.hierarchy?.levelColors?.length) {

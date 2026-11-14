@@ -33,7 +33,7 @@ source_of_truth: docs/
 
 ## 2. Visi & Perencanaan (`01-visions/` & `02-planning/`)
 - Visi: [Vision & Mission](01-visions/vision-mission.md) · [Product Philosophy](01-visions/product-philosophy.md) · [Positioning](01-visions/positioning.md) · [Use Case Pillars](01-visions/use-case-pillars.md).
-- Perencanaan & Eksekusi Bertahap: [**Planning Playbook (`STEP-01.1`–`05.4`)**](02-planning/README.md) · [PRD](02-planning/prd.md) · [BRD](02-planning/brd.md) · [SRS](02-planning/srs.md) · [SoW](02-planning/sow.md) · [Personas](02-planning/personas.md) · [Roadmap](02-planning/roadmap.md) · [Traceability Matrix](02-planning/traceability-matrix.md).
+- Perencanaan & Eksekusi Bertahap: [**Planning Playbook (`STEP-01.1`–`05.4`)**](02-planning/README.md) · [UI/UX & Universal Design System Plan](02-planning/ui-ux-and-universal-design-system-plan.md) · [XMind Visual Engine & Obsidian Synthesis Plan](02-planning/xmind-obsidian-visual-engine-plan.md) · [PRD](02-planning/prd.md) · [BRD](02-planning/brd.md) · [SRS](02-planning/srs.md) · [SoW](02-planning/sow.md) · [Personas](02-planning/personas.md) · [Roadmap](02-planning/roadmap.md) · [Traceability Matrix](02-planning/traceability-matrix.md).
 
 ## 3. Arsitektur, Fitur, Engineering, LMS & Developer SDK (`03-architecture/` s/d `07-developers/`)
 - Arsitektur: [System Overview](03-architecture/system-overview.md) · [Repository Structure](03-architecture/repository-structure.md) · [Domain Map](03-architecture/domain-map.md) · [Data & Storage](03-architecture/data-and-storage.md) · [Layout Engine](03-architecture/layout-engine.md) · [Collaboration & Publishing](03-architecture/collaboration-and-publishing.md) · [ADR Index](03-architecture/adr/README.md).

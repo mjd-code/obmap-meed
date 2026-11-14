@@ -4,22 +4,24 @@
  */
 
 import { useMemo } from 'react';
-import type {
-  GraphProjection,
-  LayoutContext,
-  LayoutGeometry,
-  LayoutMode,
-  MindmapOrientation,
-  NodeMetric,
-  SubtreeLayoutMap,
+import {
+  MINDMAP_LAYOUT_MODES,
+  type BoundaryGroup,
+  type GraphProjection,
+  type LayoutContext,
+  type LayoutGeometry,
+  type LayoutMode,
+  type ManualNodeOffset,
+  type MindmapLayoutMode,
+  type MindmapOrientation,
+  type NodeMetric,
+  type SubtreeLayoutMap,
+  type SummaryGroup,
 } from '@/domains/graph/shared/utils/graph.types';
-import { mindmapLayout } from '@/domains/graph/shared/utils/mindmap';
-import { timelineLayout } from '@/domains/graph/shared/utils/timeline';
-import { fishboneLayout } from '@/domains/graph/shared/utils/fishbone';
+import { computeCompositeMindmapLayout } from '@/domains/graph/shared/utils/compositeLayoutEngine';
+import { buildLayoutSignature } from '@/domains/graph/shared/utils/cascadingStyleResolver';
 import { freeForceLayout } from '@/domains/graph/shared/utils/freeForce';
 import { fruchtermanReingoldLayout, gridLayout, kamadaKawaiLayout } from '@/domains/graph/shared/utils/networkLayouts';
-import { braceMapLayout, orgChartLayout } from '@/domains/graph/shared/utils/treeLayouts';
-import { composeSubtreeLayouts } from '@/domains/graph/shared/utils/subtreeCompose';
 
 export interface LayoutEngineOptions {
   mode: LayoutMode;
@@ -34,6 +36,9 @@ export interface LayoutEngineOptions {
   visibleIds: string[];
   nodeMetrics: Map<string, NodeMetric>;
   subtreeOverrides?: SubtreeLayoutMap;
+  boundaries?: BoundaryGroup[];
+  summaries?: SummaryGroup[];
+  manualOffsets?: Record<string, ManualNodeOffset>;
 }
 
 export function computeLayout(
@@ -69,86 +74,86 @@ export function computeLayout(
       .filter(([a, b]) => visible.has(a) && visible.has(b)),
     context,
   });
-  const tree = { ids: options.visibleIds, roots, childrenOf, context };
+  const tree = {
+    ids: options.visibleIds,
+    roots,
+    childrenOf,
+    context,
+    projection: {
+      byId: projection.byId,
+      parentByChild: projection.parentByChild,
+    },
+  };
 
-  let baseGeometry: LayoutGeometry;
-
-  switch (options.mode) {
-    case 'fr-standard':
-      baseGeometry = fruchtermanReingoldLayout(network(), false);
-      break;
-    case 'fr-radial':
-      baseGeometry = fruchtermanReingoldLayout(network(), true);
-      break;
-    case 'kamada-kawai':
-      baseGeometry = kamadaKawaiLayout(network());
-      break;
-    case 'grid':
-      baseGeometry = gridLayout(network(), (id) => projection.byId.get(id)?.name ?? id);
-      break;
-    case 'org-chart':
-      baseGeometry = orgChartLayout(tree);
-      break;
-    case 'brace-map':
-      baseGeometry = braceMapLayout(tree);
-      break;
-    case 'timeline':
-      baseGeometry = timelineLayout({
-        ids: options.visibleIds,
-        roots,
-        childrenOf,
-        parentOf: (id) => projection.parentByChild.get(id) ?? null,
-        context,
-      });
-      break;
-    case 'fishbone':
-      baseGeometry = fishboneLayout({ ids: options.visibleIds, roots, childrenOf, context });
-      break;
-    case 'free-force':
-      baseGeometry = freeForceLayout();
-      break;
-    case 'mindmap':
-    default:
-      baseGeometry = mindmapLayout({ ids: options.visibleIds, roots, childrenOf, context });
-      break;
-  }
-
-  // Jika ada subtree overrides, gabungkan komposisinya
-  if (options.subtreeOverrides && Object.keys(options.subtreeOverrides).length > 0) {
-    return composeSubtreeLayouts(
-      baseGeometry,
+  if ((MINDMAP_LAYOUT_MODES as string[]).includes(options.mode)) {
+    return computeCompositeMindmapLayout(
+      options.mode as MindmapLayoutMode,
+      tree,
+      options.subtreeOverrides,
       {
-        ...tree,
-        projection: {
-          byId: projection.byId,
-          parentByChild: projection.parentByChild,
-        },
+        boundaries: options.boundaries,
+        summaries: options.summaries,
+        manualOffsets: options.manualOffsets,
       },
-      options.subtreeOverrides
     );
   }
 
-  return baseGeometry;
+  switch (options.mode) {
+    case 'fr-standard':
+      return fruchtermanReingoldLayout(network(), false);
+    case 'fr-radial':
+      return fruchtermanReingoldLayout(network(), true);
+    case 'kamada-kawai':
+      return kamadaKawaiLayout(network());
+    case 'grid':
+      return gridLayout(network(), (id) => projection.byId.get(id)?.name ?? id);
+    case 'free-force':
+      return freeForceLayout();
+    default:
+      return computeCompositeMindmapLayout('mindmap', tree, options.subtreeOverrides, {
+        boundaries: options.boundaries,
+        summaries: options.summaries,
+        manualOffsets: options.manualOffsets,
+      });
+  }
+}
+
+function digestMetrics(ids: string[], nodeMetrics: Map<string, NodeMetric>): string {
+  let wSum = 0;
+  let hSum = 0;
+  for (let i = 0; i < ids.length; i += 1) {
+    const m = nodeMetrics.get(ids[i]);
+    if (m) {
+      wSum += Math.round(m.width) * ((i % 7) + 1);
+      hSum += Math.round(m.height) * ((i % 5) + 1);
+    }
+  }
+  return `${nodeMetrics.size}:${wSum}:${hSum}`;
 }
 
 export function useLayoutEngine(
   projection: GraphProjection,
   options: LayoutEngineOptions
 ): LayoutGeometry {
-  const signature = [
-    options.mode,
-    options.orientation,
-    options.rootId ?? '',
-    Math.round(options.width),
-    Math.round(options.height),
-    options.levelGap,
-    options.siblingGap,
-    options.laneGap,
-    options.ribAngle.toFixed(3),
-    options.visibleIds.join(','),
-    projection.links.length,
-    JSON.stringify(options.subtreeOverrides ?? {}),
-  ].join('|');
+  const metricDigest = digestMetrics(options.visibleIds, options.nodeMetrics);
+  const signature = buildLayoutSignature({
+    mode: options.mode,
+    orientation: options.orientation,
+    rootId: options.rootId,
+    width: options.width,
+    height: options.height,
+    levelGap: options.levelGap,
+    siblingGap: options.siblingGap,
+    laneGap: options.laneGap,
+    ribAngle: options.ribAngle,
+    visibleIds: options.visibleIds,
+    linksCount: projection.links.length,
+    metricDigest,
+    subtreeOverrides: options.subtreeOverrides,
+    boundaries: options.boundaries,
+    summaries: options.summaries,
+    manualOffsets: options.manualOffsets,
+  });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => computeLayout(projection, options), [signature, projection]);

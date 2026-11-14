@@ -253,9 +253,10 @@ export function timelineLayout({
 
   milestones.forEach((mId, index) => {
     const lane: -1 | 1 = index % 2 === 0 ? -1 : 1;
+    const mMetric = metric(mId);
 
-    // Syarat 1: Membersihkan pohon milestone sebelumnya pada jalur yang sama
-    const minFromSameLane = lastSameLaneMaxX[lane] + sameLaneClearance;
+    // Syarat 1: Membersihkan pohon milestone sebelumnya pada jalur yang sama (memperhitungkan setengah lebar kartu)
+    const minFromSameLane = lastSameLaneMaxX[lane] + mMetric.width / 2 + sameLaneClearance;
     // Syarat 2: Menjaga langkah ritmis minimum dari milestone sebelumnya
     const minFromPrev = lastAnyMilestoneX + minAlternatingStep;
 

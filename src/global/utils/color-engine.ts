@@ -180,3 +180,112 @@ export function colorWithOpacity(color: string, opacity: number): string {
 
   return resolved;
 }
+
+/** Mengonversi HSL (H: 0-360, S: 0-100, L: 0-100) ke RGB (0-255). */
+export function hslToRgb(h: number, s: number, l: number): Rgb {
+  const hNorm = (((h % 360) + 360) % 360) / 360;
+  const sNorm = clamp(s, 0, 100) / 100;
+  const lNorm = clamp(l, 0, 100) / 100;
+
+  if (sNorm === 0) {
+    const gray = Math.round(lNorm * 255);
+    return { r: gray, g: gray, b: gray };
+  }
+
+  const hue2rgb = (p: number, q: number, t: number) => {
+    let wrapped = t;
+    if (wrapped < 0) wrapped += 1;
+    if (wrapped > 1) wrapped -= 1;
+    if (wrapped < 1 / 6) return p + (q - p) * 6 * wrapped;
+    if (wrapped < 1 / 2) return q;
+    if (wrapped < 2 / 3) return p + (q - p) * (2 / 3 - wrapped) * 6;
+    return p;
+  };
+
+  const q = lNorm < 0.5 ? lNorm * (1 + sNorm) : lNorm + sNorm - lNorm * sNorm;
+  const p = 2 * lNorm - q;
+
+  return {
+    r: Math.round(hue2rgb(p, q, hNorm + 1 / 3) * 255),
+    g: Math.round(hue2rgb(p, q, hNorm) * 255),
+    b: Math.round(hue2rgb(p, q, hNorm - 1 / 3) * 255),
+  };
+}
+
+/** Parsing string warna apapun (HEX, RGB/RGBA, HSL/HSLA, bare HSL, var()) menjadi Rgb. */
+export function parseColorToRgb(color: string): Rgb | null {
+  if (!color || typeof color !== 'string') return null;
+  const resolved = resolveColor(color).trim();
+
+  const hexRgb = parseHex(resolved);
+  if (hexRgb) return hexRgb;
+
+  const rgbMatch = resolved.match(
+    /^rgba?\(\s*([\d.]+)\s*[, ]\s*([\d.]+)\s*[, ]\s*([\d.]+)/i,
+  );
+  if (rgbMatch) {
+    return {
+      r: clamp(Math.round(Number(rgbMatch[1])), 0, 255),
+      g: clamp(Math.round(Number(rgbMatch[2])), 0, 255),
+      b: clamp(Math.round(Number(rgbMatch[3])), 0, 255),
+    };
+  }
+
+  const hsl = parseHsl(resolved);
+  if (hsl) return hslToRgb(hsl.h, hsl.s, hsl.l);
+
+  return null;
+}
+
+/** Menghitung relative luminance WCAG 2.1 dalam rentang [0, 1]. */
+export function relativeLuminance({ r, g, b }: Rgb): number {
+  const linearize = (channel: number) => {
+    const c = clamp(channel, 0, 255) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+}
+
+/** Rasio kontras WCAG 2.1 antara dua warna CSS (1..21). Mengembalikan 4.5 bila gagal parse. */
+export function contrastRatio(foreground: string, background: string): number {
+  const fgRgb = parseColorToRgb(foreground);
+  const bgRgb = parseColorToRgb(background);
+  if (!fgRgb || !bgRgb) return 4.5;
+  const l1 = relativeLuminance(fgRgb);
+  const l2 = relativeLuminance(bgRgb);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/** Menentukan apakah suatu permukaan berlatar gelap (threshold luminansi relatif 0.28). */
+export function isDarkSurface(background: string): boolean {
+  const rgb = parseColorToRgb(background);
+  if (!rgb) return true;
+  return relativeLuminance(rgb) < 0.28;
+}
+
+/** Memilih warna teks dengan kontras minimal WCAG AA (`>= minRatio`, bawaan 4.5:1) terhadap latar. */
+export function pickContrastTextColor(
+  bgColor: string,
+  lightText = '#F8FAFC',
+  darkText = '#0F172A',
+  minRatio = 4.5,
+): string {
+  const lightRatio = contrastRatio(lightText, bgColor);
+  const darkRatio = contrastRatio(darkText, bgColor);
+
+  if (lightRatio >= minRatio && darkRatio >= minRatio) {
+    return lightRatio >= darkRatio ? lightText : darkText;
+  }
+  if (lightRatio >= minRatio) return lightText;
+  if (darkRatio >= minRatio) return darkText;
+
+  // Fallback ekstrem agar tetap mencapai kontras tertinggi jika kandidat kustom kurang kontras
+  const pureWhiteRatio = contrastRatio('#FFFFFF', bgColor);
+  const pureBlackRatio = contrastRatio('#020617', bgColor);
+  if (pureWhiteRatio >= minRatio || pureWhiteRatio >= pureBlackRatio) {
+    return pureWhiteRatio >= pureBlackRatio ? '#FFFFFF' : '#020617';
+  }
+  return '#020617';
+}

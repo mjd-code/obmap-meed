@@ -6,7 +6,12 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Node, Link } from '@/domains/graph/shared/utils/graph.types';
+import type {
+  Node,
+  Link,
+  TopicShape,
+  BranchLineStyle,
+} from '@/domains/graph/shared/utils/graph.types';
 import { mergeAtmosphereConfig, defaultAtmosphereConfig, type AtmosphereConfig } from '@/domains/graph/shared/utils/atmosphereConfig';
 import {
   defaultHierarchyColorConfig,
@@ -28,6 +33,12 @@ export interface NodeConfig {
   /** Show file/note nodes on the canvas. */
   showFileNodes: boolean;
   shape: 'circle' | 'square' | 'diamond' | 'triangle' | 'hexagon';
+  /** XMind topic container geometry when `labelBox` is active. */
+  topicShape?: TopicShape;
+  /** Render markers (Priority, Progress Ring, Checkbox, Flag/Star) & stickers inside topic cards. */
+  showMarkers?: boolean;
+  /** Render footer tag/label pills inside topic cards. */
+  showTagPills?: boolean;
   autoShapeByFormat: boolean; 
   formatMarkerStyle?: 'shapes' | 'icons';
   visible: boolean;
@@ -71,6 +82,10 @@ export interface LinkConfig {
   particleWidth: number;
   particleColor: string;
   showParticles: boolean;
+  /** XMind branch connector geometry style. */
+  branchLineStyle?: BranchLineStyle;
+  /** Render thicker tapered Bezier trunks leaving Central/Main topics. */
+  taperedTrunk?: boolean;
 }
 
 export interface TopologyConfig {
@@ -134,6 +149,9 @@ export const defaultNodeConfig: NodeConfig = {
   showFolderNodes: true,
   showFileNodes: true,
   shape: 'circle',
+  topicShape: 'rounded-rect',
+  showMarkers: true,
+  showTagPills: true,
   autoShapeByFormat: true,
   formatMarkerStyle: 'shapes',
   visible: true,
@@ -170,6 +188,8 @@ export const defaultLinkConfig: LinkConfig = {
   particleWidth: 4,
   particleColor: 'hsl(var(--accent))',
   showParticles: false,
+  branchLineStyle: 'cubic-bezier',
+  taperedTrunk: true,
 };
 
 export const defaultTopologyConfig: TopologyConfig = {

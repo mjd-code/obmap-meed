@@ -1,7 +1,12 @@
 import { usesPhysicsSimulation, isDeterministicLayout } from '@/domains/graph/shared/utils/layoutCategory';
 import { useCallback, useEffect, useRef } from 'react';
 import type { LayoutArrangement } from '@/domains/graph/shared/stores/useGraphInteractionStore';
-import type { LayoutMode, NodeTarget, RenderNode } from '@/domains/graph/shared/utils/graph.types';
+import type {
+  LayoutMode,
+  ManualNodeOffset,
+  NodeTarget,
+  RenderNode,
+} from '@/domains/graph/shared/utils/graph.types';
 import {
   findHoveredDropTarget,
   validateReparent,
@@ -26,6 +31,8 @@ export interface UseCanvasDragReparentOptions {
   layoutTargets: Map<string, NodeTarget>;
   transitionRef: React.RefObject<LayoutTransitionController>;
   graphRef: React.RefObject<GraphHandleLike | undefined>;
+  manualNodeOffsets?: Record<string, ManualNodeOffset>;
+  onManualOffsetChange?: (nodeId: string, offset: ManualNodeOffset | null) => void;
   onNodeMove?: (nodeId: string, newParentId: string | null) => Promise<void> | void;
 }
 
@@ -38,6 +45,8 @@ export function useCanvasDragReparent({
   layoutTargets,
   transitionRef,
   graphRef,
+  manualNodeOffsets,
+  onManualOffsetChange,
   onNodeMove,
 }: UseCanvasDragReparentOptions) {
   // Simpan state drag di Ref agar tidak memicu re-render canvas loop pada 60fps mouse drag
@@ -49,11 +58,25 @@ export function useCanvasDragReparent({
   });
 
   const customPositions = useRef<Map<string, { x: number; y: number }>>(new Map());
+  const prevOffsetsCountRef = useRef(Object.keys(manualNodeOffsets ?? {}).length);
 
   // Reset custom manual positions saat mode layout berganti
   useEffect(() => {
     customPositions.current.clear();
   }, [layoutMode]);
+
+  // Saat Tidy Up mengosongkan manualNodeOffsets, lepaskan pin fx/fy agar node kembali mulus
+  useEffect(() => {
+    const nextCount = Object.keys(manualNodeOffsets ?? {}).length;
+    if (prevOffsetsCountRef.current > 0 && nextCount === 0) {
+      customPositions.current.clear();
+      for (const node of nodes) {
+        delete node.fx;
+        delete node.fy;
+      }
+    }
+    prevOffsetsCountRef.current = nextCount;
+  }, [manualNodeOffsets, nodes]);
 
   const handleNodeDrag = useCallback(
     (node: RenderNode) => {
@@ -124,6 +147,16 @@ export function useCanvasDragReparent({
           node.fy = node.y;
           if (node.x !== undefined && node.y !== undefined) {
             customPositions.current.set(node.id, { x: node.x, y: node.y });
+            if (isDeterministicLayout(layoutMode)) {
+              const currentTarget = layoutTargets.get(node.id);
+              const prevOffset = manualNodeOffsets?.[node.id] ?? { dx: 0, dy: 0 };
+              const strictX = (currentTarget?.x ?? node.x) - prevOffset.dx;
+              const strictY = (currentTarget?.y ?? node.y) - prevOffset.dy;
+              onManualOffsetChange?.(node.id, {
+                dx: node.x - strictX,
+                dy: node.y - strictY,
+              });
+            }
           }
         }
       }
@@ -140,7 +173,17 @@ export function useCanvasDragReparent({
       // Segarkan tampilan kanvas
       graphRef.current?.refresh?.();
     },
-    [layoutMode, layoutArrangement, layoutTargets, onNodeMove, nodes, transitionRef, graphRef]
+    [
+      layoutMode,
+      layoutArrangement,
+      layoutTargets,
+      manualNodeOffsets,
+      onManualOffsetChange,
+      onNodeMove,
+      nodes,
+      transitionRef,
+      graphRef,
+    ]
   );
 
   return {

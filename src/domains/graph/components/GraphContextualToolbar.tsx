@@ -109,7 +109,7 @@ export function ContextualToolbar({
           <div className="h-4 w-px bg-border/60 mx-0.5" />
 
           {/* Structure Override Dropdown (HANYA tampil di Mindmap View, tanpa multi/mix layout di Graph View) */}
-          {/* {canvasMode === "mindmap" && (
+          {canvasMode === "mindmap" && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -117,6 +117,7 @@ export function ContextualToolbar({
                   size="sm"
                   className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-foreground"
                   title="Change Subtree Structure"
+                  aria-label="Change Subtree Structure"
                 >
                   <GitBranch className="h-3.5 w-3.5 text-primary" />
                 </Button>
@@ -148,7 +149,7 @@ export function ContextualToolbar({
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-          )} */}
+          )}
 
           {/* Add Sub Dropdown (Sub-note & Sub-folder) */}
           <DropdownMenu>

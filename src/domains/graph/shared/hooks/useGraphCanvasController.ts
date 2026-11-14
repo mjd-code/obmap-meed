@@ -21,7 +21,18 @@ import { useThemeStore } from '@/domains/settings/shared/stores/useThemeStore';
 import { defaultLinkConfig, defaultTopologyConfig } from '@/domains/graph/shared/stores/useGraphStore';
 import { buildGraphProjection } from '@/domains/graph/shared/utils/buildGraphProjection';
 import { buildTheme } from '@/domains/graph/shared/utils/theme';
-import { cardLayout } from '@/domains/graph/shared/utils/textLayout';
+import { measureRichNodeMetrics } from '@/domains/graph/shared/utils/textLayout';
+import { resolveEffectiveTopicShape } from '@/domains/graph/shared/utils/drawAttachments';
+import { resolveNodeSubtreeMode } from '@/domains/graph/shared/utils/subtreeCompose';
+import {
+  buildPaintSignature,
+  resolveCascadingPaintMap,
+} from '@/domains/graph/shared/utils/cascadingStyleResolver';
+import {
+  routeObstacleAvoidingRelationship,
+  type ObstacleBox,
+  type RoutedRelationshipGeometry,
+} from '@/domains/graph/shared/utils/relationshipRouter';
 import { hiddenByCollapse, pathwayOf, subtreeOf } from '@/domains/graph/shared/utils/graphTraversal';
 import { resolveHierarchyLinkPaint, uniqueDepths } from '@/domains/graph/shared/utils/hierarchyColors';
 import { useLayoutEngine } from '@/domains/graph/shared/hooks/useLayoutEngine';
@@ -83,7 +94,25 @@ export function useGraphCanvasController(
     hoveredId,
     focusedRootId,
     subtreeLayoutOverrides,
+    branchColorOverrides,
+    nodeStyleOverrides,
+    boundaries,
+    summaries,
+    relationships,
+    manualNodeOffsets,
+    showMindmapRelationships,
     setSubtreeLayoutOverride,
+    setBranchColorOverride,
+    setNodeStyleOverride,
+    upsertBoundary,
+    removeBoundary,
+    upsertSummary,
+    removeSummary,
+    upsertRelationship,
+    removeRelationship,
+    setShowMindmapRelationships,
+    setManualNodeOffset,
+    tidyUpLayout,
     setFocusedRoot,
     toggleCollapsed,
     setCollapsed,
@@ -144,24 +173,47 @@ export function useGraphCanvasController(
     return { ...next, nodes, byId: new Map(nodes.map((node) => [node.id, node])) };
   }, [props.graphData.nodes, props.graphData.links, engine.timeField]);
 
-  // Metrik Kartu Node (mengikuti opsi labelBox, showLabels, relSize)
+  // Metrik Kartu Node (mengikuti opsi labelBox, showLabels, relSize & rich XMind metadata)
+  const {
+    labelBox,
+    showLabels,
+    labelField,
+    labelSize,
+    relSize,
+    sizeByDepth,
+    depthSizeInterval,
+    topicShape,
+    showMarkers,
+    showTagPills,
+  } = props.graphConfig.nodes;
+
+  const shapeOverrideSignature = Object.entries(nodeStyleOverrides)
+    .filter(([, ov]) => Boolean(ov?.topicShape))
+    .map(([id, ov]) => `${id}:${ov.topicShape}`)
+    .sort()
+    .join(',');
+
   const metrics = useMemo(() => {
     const map = new Map<string, NodeMetric>();
-    const showLabels = props.graphConfig.nodes.showLabels;
-    const labelBox = props.graphConfig.nodes.labelBox;
+    const nodeMetricConfig = {
+      labelField,
+      labelSize,
+      topicShape,
+      showMarkers,
+      showTagPills,
+    };
 
     for (const node of projection.nodes) {
-      const label = props.graphConfig.nodes.labelField === 'id' ? node.id : node.name;
-      const depthScale = props.graphConfig.nodes.sizeByDepth
-        ? Math.max(0.45, 1 - node.depth * props.graphConfig.nodes.depthSizeInterval * 0.08)
+      const storeShape = nodeStyleOverrides[node.id]?.topicShape;
+      const effectiveNode =
+        storeShape && storeShape !== node.styleOverride?.topicShape
+          ? { ...node, styleOverride: { ...node.styleOverride, topicShape: storeShape } }
+          : node;
+      const depthScale = sizeByDepth
+        ? Math.max(0.45, 1 - node.depth * depthSizeInterval * 0.08)
         : 1;
-      const diameter = Math.max(3, props.graphConfig.nodes.relSize * depthScale) * 2;
-
-      const layout = cardLayout(label, {
-        root: node.parentId === null,
-        badge: node.childCount > 0,
-        fontSize: props.graphConfig.nodes.labelSize + (node.parentId === null ? 2 : 0),
-      });
+      const diameter = Math.max(3, relSize * depthScale) * 2;
+      const layout = measureRichNodeMetrics(effectiveNode, nodeMetricConfig);
 
       if (labelBox) {
         map.set(node.id, { width: layout.width, height: layout.height });
@@ -175,15 +227,20 @@ export function useGraphCanvasController(
       }
     }
     return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     projection.nodes,
-    props.graphConfig.nodes.labelBox,
-    props.graphConfig.nodes.showLabels,
-    props.graphConfig.nodes.labelField,
-    props.graphConfig.nodes.labelSize,
-    props.graphConfig.nodes.relSize,
-    props.graphConfig.nodes.sizeByDepth,
-    props.graphConfig.nodes.depthSizeInterval,
+    labelBox,
+    showLabels,
+    labelField,
+    labelSize,
+    relSize,
+    sizeByDepth,
+    depthSizeInterval,
+    topicShape,
+    showMarkers,
+    showTagPills,
+    shapeOverrideSignature,
   ]);
 
   const metricOf = useCallback(
@@ -285,6 +342,9 @@ export function useGraphCanvasController(
     visibleIds,
     nodeMetrics: metrics,
     subtreeOverrides: subtreeLayoutOverrides,
+    boundaries,
+    summaries,
+    manualOffsets: layoutArrangement === 'custom' ? manualNodeOffsets : undefined,
   });
 
   // Display Data untuk ForceGraph2D (dengan initial seeding & filter topologi + mode mindmap)
@@ -300,18 +360,85 @@ export function useGraphCanvasController(
       layoutMode,
     );
 
-    const links = projection.links.filter((l) => {
+    const links: RenderLink[] = projection.links.filter((l) => {
       const s = typeof l.source === 'object' ? (l.source as RenderNode).id : l.source;
       const t = typeof l.target === 'object' ? (l.target as RenderNode).id : l.target;
 
-      if (canvasMode === 'mindmap' && l.type !== 'hierarchy') {
+      if (canvasMode === 'mindmap' && l.type !== 'hierarchy' && !showMindmapRelationships) {
         return false;
       }
 
       return visible.has(s) && visible.has(t) && topologyEnabled(l.type, props.graphConfig);
     });
+
+    if (canvasMode === 'mindmap' && showMindmapRelationships) {
+      for (const rel of relationships) {
+        if (visible.has(rel.sourceId) && visible.has(rel.targetId)) {
+          links.push({
+            source: rel.sourceId,
+            target: rel.targetId,
+            type: 'relationship',
+            role: 'relationship',
+            relationship: rel,
+          });
+        }
+      }
+    }
+
     return { nodes, links };
-  }, [projection, visibleIds, timeLapseVisibleIds, props.graphConfig, geometry.targets, layoutMode, canvasMode]);
+  }, [
+    projection,
+    visibleIds,
+    timeLapseVisibleIds,
+    props.graphConfig,
+    geometry.targets,
+    layoutMode,
+    canvasMode,
+    showMindmapRelationships,
+    relationships,
+  ]);
+
+  // Obstacle-Avoiding Relationships & [[Wikilinks]] Router saat berada di Mindmap Mode
+  const routedRelationshipsMap = useMemo(() => {
+    const map = new Map<string, RoutedRelationshipGeometry>();
+    if (canvasMode !== 'mindmap' || !showMindmapRelationships) return map;
+
+    const obstacles: ObstacleBox[] = displayData.nodes.map((node) => {
+      const t = geometry.targets.get(node.id);
+      const m = metrics.get(node.id) ?? { width: 140, height: 38 };
+      return {
+        id: node.id,
+        x: t?.x ?? node.x ?? 0,
+        y: t?.y ?? node.y ?? 0,
+        width: m.width,
+        height: m.height,
+      };
+    });
+    const obstacleById = new Map(obstacles.map((o) => [o.id, o]));
+
+    for (const l of displayData.links) {
+      if ((l.type ?? 'hierarchy') === 'hierarchy') continue;
+      const sId = typeof l.source === 'object' ? (l.source as RenderNode).id : l.source;
+      const tId = typeof l.target === 'object' ? (l.target as RenderNode).id : l.target;
+      const sourceBox = obstacleById.get(sId);
+      const targetBox = obstacleById.get(tId);
+      if (!sourceBox || !targetBox) continue;
+
+      const key = l.relationship?.id ?? `${sId}->${tId}:${l.type ?? 'link'}`;
+      map.set(
+        key,
+        routeObstacleAvoidingRelationship({
+          source: sourceBox,
+          target: targetBox,
+          obstacles,
+          clearance: 24,
+          curvatureOffset: l.relationship?.curvatureOffset,
+        }),
+      );
+    }
+
+    return map;
+  }, [canvasMode, showMindmapRelationships, displayData.nodes, displayData.links, geometry.targets, metrics]);
 
   // Eksekutor Transisi Layout & Animasi Deterministik <-> Free-Force
   useEffect(() => {
@@ -397,6 +524,38 @@ export function useGraphCanvasController(
     () => buildTheme(props.graphConfig),
     [props.graphConfig, appTheme, customCssSnippet]
   );
+
+  // Visual-Only Dual Pipeline (XMIND-STEP-03): resolusi 4-lapis warna & kontras terpisah dari geometry layout
+  const paintSignature = buildPaintSignature({
+    skeletonPreset: props.graphConfig.hierarchy?.skeletonPreset,
+    canvasBackground: theme.canvasBackground,
+    labelBackground: theme.labelBackground,
+    autoColorBy: props.graphConfig.nodes.autoColorBy,
+    hierarchy: props.graphConfig.hierarchy,
+    branchLineStyle: props.graphConfig.links.branchLineStyle,
+    taperedTrunk: props.graphConfig.links.taperedTrunk,
+    branchColorOverrides,
+    nodeStyleOverrides,
+    appTheme,
+    customCssSnippet,
+  });
+
+  const resolvedPaintMap = useMemo(() => {
+    const nodeBranchColorById = new Map<string, string | undefined>();
+    for (const n of projection.nodes) {
+      nodeBranchColorById.set(n.id, n.branchColor);
+    }
+    return resolveCascadingPaintMap(projection.nodes, {
+      theme,
+      config: props.graphConfig,
+      parentByChild: projection.parentByChild,
+      branchColorOverrides,
+      nodeStyleOverrides,
+      nodeBranchColorById,
+      summaries,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projection.nodes, projection.parentByChild, paintSignature, summaries]);
 
   // Pathway Highlight (menggabungkan hover canvas & hover File Explorer)
   const activeHoverId = explorerHoveredNodeId ?? hoveredId;
@@ -504,6 +663,8 @@ export function useGraphCanvasController(
     layoutTargets: geometry.targets,
     transitionRef: transition,
     graphRef,
+    manualNodeOffsets,
+    onManualOffsetChange: setManualNodeOffset,
     onNodeMove: props.onNodeMove,
   });
 
@@ -522,13 +683,18 @@ export function useGraphCanvasController(
     onCanvasInteraction: () => clearExplorerHoveredNode(),
   });
 
-  // Reactive Canvas Frame Invalidation (Rule 10): paksa repaint Canvas2D dalam mode statis
+  // Reactive Canvas Frame Invalidation (Rule 10): paksa repaint Canvas2D dalam mode statis (< 2ms Visual-Only path)
   useEffect(() => {
     graphRef.current?.refresh?.();
   }, [
     props.graphConfig,
     engine,
     theme,
+    resolvedPaintMap,
+    routedRelationshipsMap,
+    boundaries,
+    summaries,
+    showMindmapRelationships,
     activeHoverId,
     props.selectedNode?.id,
     collapsedIds,
@@ -564,10 +730,28 @@ export function useGraphCanvasController(
     layoutMode,
     canvasMode,
     subtreeLayoutOverrides,
+    branchColorOverrides,
+    nodeStyleOverrides,
+    boundaries,
+    summaries,
+    relationships,
+    manualNodeOffsets,
+    showMindmapRelationships,
     focusedRootId,
     actions: {
       setFocusedRoot,
       setSubtreeLayoutOverride,
+      setBranchColorOverride,
+      setNodeStyleOverride,
+      upsertBoundary,
+      removeBoundary,
+      upsertSummary,
+      removeSummary,
+      upsertRelationship,
+      removeRelationship,
+      setShowMindmapRelationships,
+      setManualNodeOffset,
+      tidyUpLayout,
       toggleCollapsed: handleSmoothToggleCollapse,
       handleHover: (node: RenderNode | null) => {
         if (node) clearExplorerHoveredNode();
@@ -591,6 +775,7 @@ export function useGraphCanvasController(
           isDragged: dragReparent.dragRef.current.draggedNodeId === node.id,
           isDropTarget: dragReparent.dragRef.current.hoveredTargetId === node.id,
           dropTargetValid: dragReparent.dragRef.current.isValidDrop,
+          resolvedPaint: resolvedPaintMap.get(node.id),
         });
       },
       paintPointer: (node: RenderNode, color: string, ctx: CanvasRenderingContext2D, globalScale: number) => {
@@ -609,41 +794,116 @@ export function useGraphCanvasController(
         const target = link.target as RenderNode;
         if (typeof source !== 'object' || typeof target !== 'object') return;
 
-        if (layoutMode === 'fishbone' && (link.type ?? 'hierarchy') === 'hierarchy') return;
+        const sourceMode = resolveNodeSubtreeMode(
+          source.id,
+          layoutMode,
+          projection.parentByChild,
+          subtreeLayoutOverrides,
+        );
+        const targetMode = resolveNodeSubtreeMode(
+          target.id,
+          layoutMode,
+          projection.parentByChild,
+          subtreeLayoutOverrides,
+        );
 
+        if (
+          sourceMode === 'fishbone' &&
+          targetMode === 'fishbone' &&
+          (link.type ?? 'hierarchy') === 'hierarchy'
+        ) {
+          return;
+        }
+
+        const linkTypeKey = (link.type ?? 'hierarchy') as keyof typeof props.graphConfig.topology.styles;
         const style =
-          props.graphConfig.topology.styles[
-            (link.type ?? 'hierarchy') as keyof typeof props.graphConfig.topology.styles
-          ] ?? props.graphConfig.topology.styles.hierarchy;
-        const type = (link.type ?? 'hierarchy') as keyof typeof props.graphConfig.topology.styles;
+          props.graphConfig.topology.styles[linkTypeKey] ??
+          props.graphConfig.topology.styles.backlink ??
+          props.graphConfig.topology.styles.hierarchy;
+        const type = link.type ?? 'hierarchy';
         const defaultTypeStyle =
-          defaultTopologyConfig.styles[type] ?? defaultTopologyConfig.styles.hierarchy;
+          defaultTopologyConfig.styles[linkTypeKey] ??
+          defaultTopologyConfig.styles.backlink ??
+          defaultTopologyConfig.styles.hierarchy;
         const widthScale = props.graphConfig.links.width / defaultLinkConfig.width;
         const opacityScale = props.graphConfig.links.opacity / defaultLinkConfig.opacity;
         const usesDefaultTypeColor = style.color === defaultTypeStyle.color;
+
+        const targetPaint = resolvedPaintMap.get(target.id);
+        const sourcePaint = resolvedPaintMap.get(source.id);
+        const useCascadeLinkPaint =
+          type === 'hierarchy' && Boolean(targetPaint?.hasExplicitCascade);
 
         const hierarchyPaint =
           props.graphConfig.hierarchy.enabled && type === 'hierarchy'
             ? resolveHierarchyLinkPaint(source.depth, target.depth, props.graphConfig.hierarchy)
             : null;
-        const strokeColor = hierarchyPaint
-          ? hierarchyPaint.color
-          : usesDefaultTypeColor
-            ? theme.link
-            : style.color;
+        const rel = link.relationship;
+        const isMindmapNonHierarchy = canvasMode === 'mindmap' && type !== 'hierarchy';
+        const routedKey = rel?.id ?? `${source.id}->${target.id}:${type}`;
+        const routedRelationship = isMindmapNonHierarchy
+          ? routedRelationshipsMap.get(routedKey)
+          : undefined;
+        const isRelationshipFocused =
+          activeHoverId === source.id ||
+          activeHoverId === target.id ||
+          props.selectedNode?.id === source.id ||
+          props.selectedNode?.id === target.id;
+
+        const strokeColor =
+          rel?.color ??
+          (useCascadeLinkPaint && targetPaint
+            ? targetPaint.lineColor
+            : hierarchyPaint
+              ? hierarchyPaint.color
+              : usesDefaultTypeColor
+                ? isMindmapNonHierarchy
+                  ? theme.accent || theme.link
+                  : theme.link
+                : style.color);
+
+        const relDash =
+          rel?.dashStyle === 'solid'
+            ? []
+            : rel?.dashStyle === 'dotted'
+              ? [2, 4]
+              : isMindmapNonHierarchy
+                ? [6, 4]
+                : style.lineStyle === 'solid'
+                  ? parseDash(props.graphConfig.links.dashArray, style.width * widthScale)
+                  : dashFor(style.lineStyle, style.width * widthScale);
 
         drawLink(ctx, source, target, {
           mode: layoutMode,
+          sourceMode,
+          targetMode,
+          branchLineStyle: props.graphConfig.links.branchLineStyle,
+          taperedTrunk: props.graphConfig.links.taperedTrunk,
+          sourceTopicShape:
+            sourcePaint?.topicShape ?? resolveEffectiveTopicShape(source, props.graphConfig.nodes),
+          targetTopicShape:
+            targetPaint?.topicShape ?? resolveEffectiveTopicShape(target, props.graphConfig.nodes),
+          linkType: type,
+          routedRelationship,
+          arrowMode: rel?.arrowMode ?? (isMindmapNonHierarchy ? 'forward' : undefined),
+          relationshipLabel: rel?.label,
+          boxed: props.graphConfig.nodes.labelBox,
           theme,
           color: strokeColor,
-          width: Math.max(0.25, style.width * widthScale),
-          opacity: hierarchyPaint?.opacity ?? Math.min(1, style.opacity * opacityScale),
-          dash:
-            style.lineStyle === 'solid'
-              ? parseDash(props.graphConfig.links.dashArray, style.width * widthScale)
-              : dashFor(style.lineStyle, style.width * widthScale),
+          width:
+            useCascadeLinkPaint && sourcePaint
+              ? Math.max(0.25, sourcePaint.lineWidth * widthScale)
+              : Math.max(0.25, style.width * widthScale),
+          opacity: isMindmapNonHierarchy
+            ? isRelationshipFocused
+              ? 0.85
+              : 0.35
+            : hierarchyPaint?.opacity ?? Math.min(1, style.opacity * opacityScale),
+          dash: relDash,
           dimmed: pathway.size > 0 && !(pathway.has(source.id) && pathway.has(target.id)),
-          showArrow: props.graphConfig.links.showArrows,
+          showArrow: isMindmapNonHierarchy
+            ? (rel?.arrowMode ?? 'forward') !== 'none'
+            : props.graphConfig.links.showArrows,
           arrowLength: props.graphConfig.links.arrowLength,
           arrowRelPos: props.graphConfig.links.arrowRelPos,
           curvature: props.graphConfig.links.curvature,

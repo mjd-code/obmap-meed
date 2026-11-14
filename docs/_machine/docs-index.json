@@ -181,6 +181,20 @@
       "status": "PLANNED"
     },
     {
+      "id": "DOC-PLAN-008",
+      "path": "docs/02-planning/ui-ux-and-universal-design-system-plan.md",
+      "title": "Master Plan Audit UI/UX, Standar Desain Frontend & Universal Dynamic Settings Engine ObMap v2.0",
+      "category": "planning",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-PLAN-009",
+      "path": "docs/02-planning/xmind-obsidian-visual-engine-plan.md",
+      "title": "Master Plan XMind-Grade Visual Layout Engine, Rich Mindmap Customization & Obsidian Vault Synthesis ObMap v2.0",
+      "category": "planning",
+      "status": "PLANNED"
+    },
+    {
       "id": "DOC-ARCH-001",
       "path": "docs/03-architecture/system-overview.md",
       "title": "Tinjauan Arsitektur Sistem ObMap v2.0 (System Overview)",
