@@ -1,124 +1,186 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
-  "domains_count": 12,
+  "version": "2.0.0",
+  "last_updated": "2026-11-14",
+  "architecture": "Domain-Driven Design (12 Current Isolated Domains -> 13 Target Domains v2.0)",
+  "source_root": "src/domains/",
   "domains": [
     {
-      "name": "admin",
-      "path": "src/domains/admin",
-      "orchestrator": "AdminOrchestrator.tsx",
-      "responsibility": "Administrasi sistem, analitik penggunaan, log audit, dan manajemen pengguna multi-tenant.",
-      "stores": [],
-      "dependencies": ["auth", "workspace"],
-      "stability": "STABLE"
-    },
-    {
-      "name": "auth",
-      "path": "src/domains/auth",
-      "orchestrator": "AuthOrchestrator.tsx",
-      "responsibility": "Autentikasi Supabase, proteksi rute, manajemen sesi, profil, dan token anonim.",
-      "stores": [],
-      "dependencies": [],
-      "stability": "CORE"
-    },
-    {
-      "name": "collaboration",
-      "path": "src/domains/collaboration",
-      "orchestrator": "CollaborationOrchestrator.tsx",
-      "responsibility": "Publikasi web instan, kontrol akses bertingkat, bulk publishing, dan presence.",
-      "stores": [],
-      "dependencies": ["vault", "workspace", "auth"],
-      "stability": "STABLE"
+      "name": "workspace",
+      "path": "src/domains/workspace/",
+      "status": "IMPLEMENTED",
+      "orchestrator": "WorkspaceOrchestrator.tsx",
+      "key_modules": [
+        "src/domains/workspace/components/WorkspaceViewRegistry.tsx",
+        "src/domains/workspace/shared/api/CommandRegistry.ts",
+        "src/domains/workspace/shared/hooks/useVaultLifecycle.ts",
+        "src/domains/workspace/shared/stores/useWorkspaceStore.ts"
+      ],
+      "responsibility": "Multi-pane workspace shell (/app), command palette, view registry, dan vault lifecycle."
     },
     {
       "name": "editor",
-      "path": "src/domains/editor",
+      "path": "src/domains/editor/",
+      "status": "IMPLEMENTED",
       "orchestrator": "EditorOrchestrator.tsx",
-      "responsibility": "Editor teks CodeMirror 6, live preview, syntax highlighting, properties panel, slash commands.",
-      "stores": ["useEditorSettingsStore.ts"],
-      "dependencies": ["metadata", "workspace"],
-      "stability": "CORE"
+      "key_modules": [
+        "src/domains/editor/components/EditorMarkdownView.tsx",
+        "src/domains/editor/components/EditorPropertiesPanel.tsx",
+        "src/domains/editor/shared/hooks/useEditorMarkdownViewController.ts",
+        "src/domains/editor/shared/hooks/useEditorPropertiesController.ts"
+      ],
+      "responsibility": "Editor Markdown CodeMirror 6 terpisah dari YAML frontmatter properties terstruktur."
     },
     {
       "name": "graph",
-      "path": "src/domains/graph",
+      "path": "src/domains/graph/",
+      "status": "IMPLEMENTED",
       "orchestrator": "GraphOrchestrator.tsx",
-      "responsibility": "Visual engine 2D/3D (XMind + Force), pemecah layout pohon/timeline, atmosphere, styling warna.",
-      "stores": [
-        "useExplorerGraphSyncStore.ts",
-        "useGraphEngineStore.ts",
-        "useGraphTemplatesStore.ts",
-        "useGraphToolbarStore.ts",
-        "useLeafGraphConfigStore.ts",
-        "useGraphStore.ts",
-        "useNodeStore.ts",
-        "useGraphInteractionStore.ts"
+      "key_modules": [
+        "src/domains/graph/components/GraphCanvas.tsx",
+        "src/domains/graph/components/GraphWorkspaceControls.tsx",
+        "src/domains/graph/shared/hooks/useGraphCanvasController.ts",
+        "src/domains/graph/shared/utils/layoutCategory.ts",
+        "src/domains/graph/shared/utils/theme.ts"
       ],
-      "dependencies": ["vault", "workspace"],
-      "stability": "CORE"
+      "responsibility": "Canvas2D rendering, solver deterministik vs Free-Force, Per-Leaf Store Bridge, dan Theme bridge."
     },
     {
       "name": "metadata",
-      "path": "src/domains/metadata",
+      "path": "src/domains/metadata/",
+      "status": "IMPLEMENTED",
       "orchestrator": "MetadataOrchestrator.tsx",
-      "responsibility": "Ekstraksi wikilinks, indexing unlinked mentions via Aho-Corasick worker, tag graph.",
-      "stores": [],
-      "dependencies": ["vault"],
-      "stability": "STABLE"
-    },
-    {
-      "name": "public-reader",
-      "path": "src/domains/public-reader",
-      "orchestrator": "PublicReaderOrchestrator.tsx",
-      "responsibility": "Portal baca publik anonim (/p/:user/:vault/:slug) berkinerja tinggi tanpa login.",
-      "stores": [],
-      "dependencies": ["graph", "collaboration"],
-      "stability": "STABLE"
-    },
-    {
-      "name": "settings",
-      "path": "src/domains/settings",
-      "orchestrator": "SettingsOrchestrator.tsx",
-      "responsibility": "Preferensi pengguna, tema gelap kosmik, sinkronisasi cloud config, dan skema.",
-      "stores": ["CloudConfigStore.ts", "LocalConfigStore.ts", "useSchemaStore.ts", "useThemeStore.ts"],
-      "dependencies": ["auth"],
-      "stability": "STABLE"
-    },
-    {
-      "name": "sync",
-      "path": "src/domains/sync",
-      "orchestrator": "SyncOrchestrator.tsx",
-      "responsibility": "Sinkronisasi offline, penanganan antrean mutasi IndexedDB, dan rekonsiliasi remote.",
-      "stores": ["useOfflineStore.ts"],
-      "dependencies": ["vault"],
-      "stability": "STABLE"
+      "key_modules": [
+        "src/domains/metadata/shared/api/mentions.worker.ts",
+        "src/domains/metadata/shared/api/MetadataCache.ts",
+        "src/domains/metadata/shared/utils/aho-corasick.ts"
+      ],
+      "responsibility": "Web Worker pengindeksan wikilinks, backlinks, unlinked mentions, & federated citations terencana."
     },
     {
       "name": "vault",
-      "path": "src/domains/vault",
+      "path": "src/domains/vault/",
+      "status": "IMPLEMENTED",
       "orchestrator": "VaultOrchestrator.tsx",
-      "responsibility": "Driver penyimpanan berkas (FS API, IndexedDB, Supabase), impor/ekspor akumulatif, backup.",
-      "stores": ["useBackupConfigStore.ts", "useVaultStore.ts"],
-      "dependencies": ["auth"],
-      "stability": "CORE"
+      "key_modules": [
+        "src/domains/vault/shared/api/VaultManager.ts",
+        "src/domains/vault/shared/api/IVaultStorageDriver.ts",
+        "src/domains/vault/shared/api/FileSystemService.ts",
+        "src/domains/vault/shared/api/IndexedDbVaultDriver.ts",
+        "src/domains/vault/shared/api/CloudVaultService.ts",
+        "src/domains/vault/shared/api/ImportExportService.ts",
+        "src/domains/vault/shared/api/VaultMemberService.ts"
+      ],
+      "responsibility": "Manajemen vault multi-strategi penyimpanan (FS API, IndexedDB, Cloud, & In-Memory Sandbox terencana)."
+    },
+    {
+      "name": "sync",
+      "path": "src/domains/sync/",
+      "status": "IMPLEMENTED",
+      "orchestrator": "SyncOrchestrator.tsx",
+      "key_modules": [
+        "src/domains/sync/shared/api/SyncCoordinator.ts",
+        "src/domains/sync/shared/api/SyncEngine.ts",
+        "src/domains/sync/shared/api/syncQueue.ts"
+      ],
+      "responsibility": "Koordinasi antrean sinkronisasi cloud-lokal dan dukungan PWA offline."
     },
     {
       "name": "vcs",
-      "path": "src/domains/vcs",
+      "path": "src/domains/vcs/",
+      "status": "IMPLEMENTED",
       "orchestrator": "VcsOrchestrator.tsx",
-      "responsibility": "Sistem kontrol versi internal (mikro-revisi, stashing, branching, 3-way conflict resolver).",
-      "stores": ["useVcsStore.ts"],
-      "dependencies": ["vault"],
-      "stability": "STABLE"
+      "key_modules": [
+        "src/domains/vcs/shared/utils/vcsDiffEngine.ts",
+        "src/domains/vcs/components/VcsCreateMergeRequestModal.tsx",
+        "src/domains/vcs/components/VcsInteractiveMergeModal.tsx",
+        "src/domains/vcs/components/VcsCoPresenceAvatars.tsx"
+      ],
+      "responsibility": "In-browser micro-VCS branches, diff resolution, co-presence, & Fork/Merge Request lintas pengguna."
     },
     {
-      "name": "workspace",
-      "path": "src/domains/workspace",
-      "orchestrator": "WorkspaceOrchestrator.tsx",
-      "responsibility": "Manajemen tata letak VS Code-style (tabs, split panes, ribbons, sidebars, context menus).",
-      "stores": ["useUIStore.ts", "useWorkspaceStore.ts"],
-      "dependencies": [],
-      "stability": "CORE"
+      "name": "collaboration",
+      "path": "src/domains/collaboration/",
+      "status": "PARTIAL",
+      "orchestrator": "CollaborationOrchestrator.tsx",
+      "key_modules": [
+        "src/domains/collaboration/components/CollabDocumentSharePopover.tsx",
+        "src/domains/collaboration/components/CollabBulkPublishModal.tsx",
+        "src/domains/collaboration/shared/utils/publicUrlHelper.ts"
+      ],
+      "responsibility": "Share workflow, 4 state visibilitas terencana, Teamspaces, dan CRDT Yjs multi-kursor."
+    },
+    {
+      "name": "community",
+      "path": "src/domains/community/",
+      "legacy_shim_path": "src/domains/public-reader/",
+      "status": "IMPLEMENTED",
+      "orchestrator": "CommunityOrchestrator.tsx",
+      "target_step": "STEP-01.2",
+      "key_modules": [
+        "src/domains/community/CommunityOrchestrator.tsx",
+        "src/domains/community/components/PublicReaderInteractiveGraph.tsx",
+        "src/domains/community/components/PublicReaderMarkdownReader.tsx",
+        "src/domains/community/shared/api/PublicReaderService.ts",
+        "src/domains/community/shared/utils/reservedSlugs.ts"
+      ],
+      "responsibility": "Menggantikan public-reader/ melalui hard cutover ke root /:username, /@:username, /explore, Cite (CC BY-SA 4.0), & Fork/MR."
+    },
+    {
+      "name": "dashboard",
+      "path": "src/domains/dashboard/",
+      "status": "VISION",
+      "orchestrator": "DashboardOrchestrator.tsx",
+      "target_step": "STEP-02.1",
+      "key_modules": [
+        "src/domains/vault/components/VaultCard.tsx",
+        "src/domains/vault/components/VaultModeSelector.tsx"
+      ],
+      "responsibility": "Domain baru ke-13 pengelola /vaults dengan 5 derived frontmatter views (Grid, Tree, Kanban, Calendar, Analytics) & Community Feed."
+    },
+    {
+      "name": "auth",
+      "path": "src/domains/auth/",
+      "status": "PARTIAL",
+      "orchestrator": "AuthOrchestrator.tsx",
+      "key_modules": [
+        "src/domains/auth/shared/hooks/useAuth.tsx",
+        "src/domains/auth/shared/hooks/useVaultPermission.ts",
+        "src/domains/auth/shared/api/ReleaseStageService.ts",
+        "src/domains/auth/shared/api/policyEngine.ts",
+        "src/domains/auth/components/AuthProtectedRoute.tsx"
+      ],
+      "responsibility": "Autentikasi Supabase, ReleaseStageGate (Stage 1-3), dan PolicyEngine simetris dengan Postgres RLS can_access_resource()."
+    },
+    {
+      "name": "admin",
+      "path": "src/domains/admin/",
+      "status": "PARTIAL",
+      "orchestrator": "AdminOrchestrator.tsx",
+      "key_modules": [
+        "src/domains/admin/components/AdminFirstTimeSetupWizard.tsx",
+        "src/domains/admin/components/AdminReleaseStageBar.tsx",
+        "src/domains/admin/components/AdminUserManagementTab.tsx",
+        "src/domains/admin/shared/api/AdminService.ts"
+      ],
+      "responsibility": "Konsol /admin untuk switch release stage, partner invites, approval per-user Stage 2, kurasi manual Verified Scholar (terencana), & kuota dinamis (terencana)."
+    },
+    {
+      "name": "settings",
+      "path": "src/domains/settings/",
+      "status": "PARTIAL",
+      "orchestrator": "SettingsOrchestrator.tsx",
+      "key_modules": [
+        "src/domains/settings/components/SettingsHub.tsx",
+        "src/domains/settings/components/SettingsConfigurationSection.tsx",
+        "src/domains/settings/shared/api/ConfigService.ts",
+        "src/domains/settings/shared/api/ProfileService.ts",
+        "src/domains/settings/shared/api/configRegistry.ts",
+        "src/domains/settings/shared/api/pluginRegistry.ts",
+        "src/domains/settings/shared/api/schemaRegistry.ts",
+        "src/domains/settings/shared/api/VaultConfigFile.ts",
+        "src/domains/settings/shared/stores/useThemeStore.ts"
+      ],
+      "responsibility": "Klaim username & RESERVED_SLUGS, konfigurasi 6-lapis (Org-Lock), Unified --ob-* Theme Engine + CSS sanitizer, dan host @obmap/sdk sandbox (terencana)."
     }
   ]
 }

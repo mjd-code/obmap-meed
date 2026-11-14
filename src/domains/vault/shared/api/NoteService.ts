@@ -6,8 +6,12 @@
  * revision history, and seamless publishing transitions for local & cloud notes.
  */
 
-import { supabase } from "@/global/api/untypedSupabase";
-import type { Json } from "@/global/api/supabaseTypes";
+import { supabase } from "@/global/api/supabaseClient";
+import type { Json, TablesInsert, TablesUpdate } from "@/global/api/supabaseTypes";
+import {
+  ensurePublicNoteLicense,
+  isNoteExcludedFromPublic,
+} from "@/domains/auth/shared/api/policyEngine";
 import type {
   NoteRecord,
   NoteRevisionRecord,
@@ -171,17 +175,34 @@ export class NoteService {
   static async publishOrUpdateNote(input: PublishNoteInput): Promise<NoteRecord> {
     const { data: userData } = await supabase.auth.getUser();
     const currentUserId = userData?.user?.id;
-    const resolvedVaultId = await this.ensureVaultRegistered(input.vaultId, currentUserId);
-
     if (!currentUserId) {
       throw new Error("Anda harus masuk (login) untuk mempublikasikan catatan.");
     }
+
+    await this.ensureVaultRegistered(input.vaultId, currentUserId);
 
     const targetStatus = input.status || "published";
     const nowIso = new Date().toISOString();
 
     // 1. Cari apakah catatan sudah terdaftar sebelumnya di database
     const existing = await this.findNoteInVault(input.vaultId, input.nodeId, input.title);
+
+    const mergedRawFrontmatter: Record<string, unknown> = {
+      ...((existing?.frontmatter as Record<string, unknown>) || {}),
+      ...(input.frontmatter || {}),
+      local_node_id: input.nodeId,
+    };
+
+    if (targetStatus === "published" && isNoteExcludedFromPublic(mergedRawFrontmatter)) {
+      throw new Error(
+        "Catatan dengan frontmatter 'visibility: private' dikecualikan dari publikasi publik."
+      );
+    }
+
+    const finalFrontmatter =
+      targetStatus === "published"
+        ? ensurePublicNoteLicense(mergedRawFrontmatter)
+        : mergedRawFrontmatter;
 
     if (existing) {
       // Perbarui catatan yang sudah ada
@@ -196,11 +217,7 @@ export class NoteService {
           published_at:
             targetStatus === "published" ? existing.published_at || nowIso : existing.published_at,
           updated_at: nowIso,
-          frontmatter: {
-            ...((existing.frontmatter as Record<string, any>) || {}),
-            ...(input.frontmatter || {}),
-            local_node_id: input.nodeId,
-          } as Json,
+          frontmatter: finalFrontmatter as Json,
         })
         .eq("id", existing.id)
         .select()
@@ -243,7 +260,7 @@ export class NoteService {
         finalSlug = `${baseSlug}-${counter++}`;
       }
 
-      const insertPayload: Record<string, any> = {
+      const insertPayload: TablesInsert<"notes"> = {
         vault_id: input.vaultId,
         slug: finalSlug,
         title: input.title || "Untitled",
@@ -252,10 +269,7 @@ export class NoteService {
         version: 1,
         author_id: currentUserId,
         published_at: targetStatus === "published" ? nowIso : null,
-        frontmatter: {
-          ...(input.frontmatter || {}),
-          local_node_id: input.nodeId,
-        } as Json,
+        frontmatter: finalFrontmatter as Json,
       };
 
       // Gunakan ID node jika sudah merupakan UUID valid
@@ -306,7 +320,8 @@ export class NoteService {
     const nowIso = new Date().toISOString();
     const status = input.status || "draft";
 
-    const { data, error } = await (supabase.from("notes") as any)
+    const { data, error } = await supabase
+      .from("notes")
       .insert({
         vault_id: input.vaultId,
         title: input.title,
@@ -354,7 +369,7 @@ export class NoteService {
     const nowIso = new Date().toISOString();
     const newStatus = updates.status || existing.status;
 
-    const updatePayload: Record<string, any> = {
+    const updatePayload: TablesUpdate<"notes"> = {
       version: nextVersion,
       updated_at: nowIso,
     };
@@ -379,7 +394,8 @@ export class NoteService {
       }
     }
 
-    const { data, error } = await (supabase.from("notes") as any)
+    const { data, error } = await supabase
+      .from("notes")
       .update(updatePayload)
       .eq("id", noteId)
       .select()

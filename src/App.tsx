@@ -111,13 +111,11 @@ const App = () => (
             {/* <DevAuthBanner /> */}
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
-                {/* Public landing page */}
+                {/* Public & Community routes */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/install" element={<Install />} />
-                <Route path="/p/:username/:vaultSlug/:noteSlug" element={<PublicReader />} />
-                <Route path="/p/:username/:vaultSlug" element={<PublicReader />} />
-                <Route path="/p/:vaultSlug" element={<PublicReader />} />
+                <Route path="/explore" element={<PublicReader mode="explore" />} />
                 <Route path="/admin" element={<Admin />} />
 
                 {/* Protected routes */}
@@ -129,6 +127,19 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/vaults"
+                  element={
+                    <ProtectedRoute>
+                      <Index />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Canonical Scholar Handle & Community Reader routes (matches both /username and /@username) */}
+                <Route path="/:username/:vaultSlug/:noteSlug" element={<PublicReader />} />
+                <Route path="/:username/:vaultSlug" element={<PublicReader />} />
+                <Route path="/:username" element={<PublicReader />} />
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

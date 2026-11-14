@@ -1,9 +1,9 @@
-import { PublicReaderService } from "@/domains/public-reader/shared/api/PublicReaderService";
+import { PublicReaderService } from "@/domains/community/shared/api/PublicReaderService";
 import { supabase } from "@/global/api/supabaseClient";
 
 /**
  * Mengambil username pemilik vault untuk membentuk tautan publik kanonikal yang valid:
- * /p/:username/:vaultSlug/:noteSlug
+ * /:username/:vaultSlug/:noteSlug
  */
 export async function getPublicNoteUrl(vaultId: string, noteSlug: string): Promise<string> {
   try {
@@ -15,11 +15,12 @@ export async function getPublicNoteUrl(vaultId: string, noteSlug: string): Promi
       .maybeSingle();
 
     if (!vault) {
-      return `/p/${vaultId}/${PublicReaderService.slugify(noteSlug)}`;
+      return `/${vaultId}/${PublicReaderService.slugify(noteSlug)}`;
     }
 
     // 2. Ambil username pemilik vault
-    const { data: profile } = await (supabase.from("profiles") as any)
+    const { data: profile } = await supabase
+      .from("profiles")
       .select("username")
       .eq("user_id", vault.user_id)
       .maybeSingle();
@@ -34,9 +35,9 @@ export async function getPublicNoteUrl(vaultId: string, noteSlug: string): Promi
     }
 
     // Fallback: jika profil belum menentukan username, tetap arahkan via UUID resolver
-    return `/p/${vaultId}/${cleanNoteSlug}`;
+    return `/${vaultId}/${cleanNoteSlug}`;
   } catch (err) {
     console.error("[publicUrlHelper] Gagal membuat URL publik:", err);
-    return `/p/${vaultId}/${PublicReaderService.slugify(noteSlug)}`;
+    return `/${vaultId}/${PublicReaderService.slugify(noteSlug)}`;
   }
 }

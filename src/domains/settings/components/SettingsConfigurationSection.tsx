@@ -12,6 +12,7 @@ import {
   CloudOff,
   Download,
   Loader2,
+  Lock,
   RotateCcw,
   TriangleAlert,
   Upload,
@@ -147,18 +148,32 @@ export function ConfigurationSettings() {
       </div>
 
       <div className="rounded-lg border border-border divide-y divide-border">
-        {sections.map((section) => (
-          <div
-            key={section.id}
-            className="flex items-center justify-between gap-3 px-3 py-2"
-          >
-            <span className="text-sm">{section.label}</span>
-            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              {section.scope === "vault" ? "Per vault" : "Account-wide"} · v
-              {section.version}
-            </span>
-          </div>
-        ))}
+        {sections.map((section) => {
+          const resolved = configService.resolveSection(section.id);
+          return (
+            <div
+              key={section.id}
+              className="flex items-center justify-between gap-3 px-3 py-2"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-sm truncate">{section.label}</span>
+                {resolved.isLockedByAdmin && (
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600"
+                  >
+                    <Lock className="w-2.5 h-2.5" />
+                    Locked by Admin
+                  </Badge>
+                )}
+              </div>
+              <span className="text-[11px] uppercase tracking-wide text-muted-foreground shrink-0">
+                {resolved.sourceLayer} · {section.scope === "vault" ? "Per vault" : "Account-wide"} · v
+                {section.version}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

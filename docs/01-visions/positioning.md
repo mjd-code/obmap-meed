@@ -1,74 +1,75 @@
 ---
 id: DOC-VIS-003
-title: Posisi Pasar dan Analisis Komparatif
+title: Positioning Strategis & Matriks Kompetitif ObMap v2.0
 type: vision
 status: [IMPLEMENTED]
-owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
+owner: Chief Product Officer & Growth Lead
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
+  - DOC-META-000
   - DOC-VIS-001
-  - DOC-VIS-002
-  - DOC-PLAN-001
+  - DOC-VIS-004
   - DOC-PLAN-002
-source_of_truth: src/domains/
+source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ---
 
-# Analisis Posisi Pasar (Market Positioning)
+# Positioning Strategis & Matriks Kompetitif ObMap v2.0
 
 ## Ringkasan 3 Baris
-- ObMap menempati ruang persilangan unik antara Obsidian (PKM lokal), Notion (kolaborasi/publikasi), XMind (diagram visual), dan Wikipedia (akses pengetahuan terbuka).
-- Keunggulan kompetitif utama terletak pada rendering graf multi-model langsung dari hierarki folder Markdown murni.
-- Menyediakan mesin VCS terintegrasi di dalam peramban untuk kolaborasi tanpa merusak kedaulatan data lokal.
+- Memosisikan ObMap v2.0 di kuadran unik yang menyatukan **Topologi Pengetahuan Visual + Kedaulatan Markdown** dengan **Kolaborasi Tim & Jejaring Sosial Cendekiawan (`/:username`)**.
+- Mengadopsi strategi monetisasi hibrida **XMind + Notion** yang dikelola secara dinamis oleh Admin di `/admin`, sambil menolak model berbayar Obsidian untuk publikasi dan sinkronisasi dasar.
+- Mendefinisikan pembeda rute kanonik root `/:username` & `/@:username` (*hard cutover* tanpa `/p/*`) serta prioritas pembayaran lokal **Xendit/Midtrans** terlebih dahulu sebelum **Stripe**.
 
 ---
 
-## 1. Matriks Perbandingan Fitur Jujur (Honest Comparison Matrix)
-
-| Dimensi Evaluasi | Obsidian | Notion | XMind | Wikipedia | **ObMap (Aplikasi Ini)** |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Kedaulatan Data** | Sangat Tinggi (Lokal) | Rendah (Cloud Silo) | Tinggi (File Lokal) | Publik / Server Yayasan | **Sangat Tinggi (FS API + Local DB)** `[IMPLEMENTED]` |
-| **Format Inti** | Markdown Plaintext | Blok Proprietary JSON | File Proprietary (.xmind) | MediaWiki Wikitext | **Markdown Plaintext + Frontmatter** `[IMPLEMENTED]` |
-| **Visualisasi Graf** | Force-directed 2D/3D | Tidak ada | Mindmap / Tree terpisah | Hanya teks linier berpranala | **Multi-Model: Force, Tree, Fishbone, Timeline** `[IMPLEMENTED]` |
-| **Kolaborasi Tim** | Berbayar (Obsidian Sync) | Sangat Kuat (Real-time) | Lemah (Share File) | Terbuka (Wiki Edit History) | **Hybrid: VCS Micro-commits + RLS** `[PARTIAL]` |
-| **Publikasi Web** | Berbayar (Obsidian Publish) | Mudah (Share to Web) | Ekspor Gambar/PDF | Selalu Publik | **Gratis / Sekali Klik (`/p/*`)** `[IMPLEMENTED]` |
-| **Struktur Kurikulum/LMS** | Plugin Komunitas | Template Manual | Tidak ada | Navigasi Kategori | **Native Graph Prerequisites & Tracking** `[VISION]` |
-
----
-
-## 2. Parit Pertahanan Strategis (Strategic Moats)
+## 1. Peta Posisi Produk Ekosistem Pengetahuan
 
 ```mermaid
-quadrantChart
-    title Peta Diferensiasi Pasar ObMap
-    x-axis Pengetahuan Terisolasi --> Pengetahuan Kolaboratif Publik
-    y-axis Dokumen Teks Linier --> Pemetaan Graf Multi-Model
-    quadrant-1 ObMap
-    quadrant-2 XMind
-    quadrant-3 Obsidian
-    quadrant-4 Notion / Wikipedia
-    "Obsidian": [0.25, 0.40]
-    "Notion": [0.80, 0.25]
-    "XMind": [0.20, 0.85]
-    "Wikipedia": [0.90, 0.15]
-    "ObMap": [0.82, 0.88]
+flowchart TD
+    subgraph PRIVATE ["Orientasi Ruang Privat & Tim"]
+        XM["XMind: Visual Deterministik Tinggi / Teks Terbatas"]
+        OBS["Obsidian: PKM Markdown Tinggi / Kolaborasi & Visual Terstruktur Terbatas"]
+        NOT["Notion: Kolaborasi & Views Tinggi / Vendor Lock-In Tanpa Graph"]
+    end
+    subgraph PUBLIC ["Orientasi Publik & Jejaring Cendekiawan"]
+        WIK["Wikipedia: Indeks Pengetahuan Terbuka / Tanpa PKM Privat"]
+        LRG["LinkedIn & ResearchGate: Jejaring & Sitasi / Bukan Workspace Pengetahuan"]
+        OBM["ObMap v2.0: PKM Local-First + Deterministic Solvers + Notion Views + /:username & Fork/MR"]
+    end
+    XM --> OBM
+    OBS --> OBM
+    NOT --> OBM
+    WIK --> OBM
+    LRG --> OBM
 ```
-
-1. **Dualitas File-Tree dan Graph Engine:** Setiap folder dan file otomatis menjadi simpul mindmap yang rapi tanpa perlu ditata ulang dari nol.
-2. **In-Browser Git-like VCS:** Menghadirkan *branching*, *stashing*, dan *3-way merge* di atas Markdown tanpa mewajibkan pengguna menguasai CLI Git.
-3. **Subtree Layout Overrides:** Kemampuan menerapkan algoritma tata letak berbeda (misal: Fishbone di cabang akar, Timeline di cabang implementasi) dalam satu kanvas visual yang sama.
 
 ---
 
-## 3. Batasan dan Kompromi Sadar (Conscious Trade-offs)
+## 2. Matriks Perbandingan Enam Kolom
 
-- **Tidak Ada Editor WYSIWYG Blok Kompleks:** ObMap setia pada CodeMirror 6 Markdown live preview; tidak mengorbankan portabilitas Markdown demi blok database kustom ala Notion.
-- **Keterbatasan File System API:** Akses native folder membutuhkan peramban modern berbasis Chromium; pengguna peramban lain beralih secara transparan ke IndexedDB.
+| Dimensi Produk & Teknis | Obsidian | Notion | XMind | Wikipedia | LinkedIn / RG | **ObMap v2.0** |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Kedaulatan File (`.md` Lokal)** | Tinggi | Tidak | Biner `.xmind` | Wiki markup | Tidak | **Tinggi (FS API + IndexedDB)** `[IMPLEMENTED]` |
+| **Kognisi Graf Deterministik** | Force 2D saja | Tidak ada | Deterministik | Tidak ada | Tidak ada | **Multi-Solver Deterministik + Force** `[IMPLEMENTED]` |
+| **Teamspace & Derived Views** | Add-on Sync | Sangat Kuat | Minimal | Diskusi wiki | Minimal | **VCS + RBAC + Views dari Frontmatter** `[PARTIAL]`/`[VISION]` |
+| **Identitas Sosial Kanonik** | Publish berbayar | Link acak | Ekspor statis | Halaman user | Profil profesional | **`/:username` Gratis + Verified Scholar** `[VISION]` |
+| **Sitasi & Kolaborasi Terbuka** | Eksternal | Komentar tim | Tidak ada | Referensi manual | Sitasi PDF pasif | **`[[@user/vault/note]]` + Fork & Merge Request (`CC BY-SA 4.0`)** `[VISION]` |
+| **Kurikulum Interaktif (LMS)** | Plugin | Manual | Tidak ada | Kategori statis | Kursus video pasif | **Native Skill Tree DAG & Mastery State** `[VISION]` |
+
+---
+
+## 3. Positioning Model Komersial & Ekosistem
+
+1. **Gratis Sebagai Penggerak Jaringan (Network-Effect Engine):** Penyimpanan lokal tak terbatas, identitas publik `/:username`, lisensi terbuka `CC BY-SA 4.0`, tombol sitasi, dan *Fork* terbuka gratis guna memaksimalkan *K-Factor* komunitas cendekiawan.
+2. **Diferensiasi Berbayar ala XMind + Notion:** Fitur Pro berfokus pada produktivitas visual tingkat lanjut (semua solver analitik, *Pitch Mode*, ekspor PDF/SVG/OPML, tema premium, analitik sitasi, cloud quota lebih besar), sedangkan Team/Lab berfokus pada Teamspaces, *Admin-Locked Policies*, CRDT multi-kursor, dan manajemen kursi (*seat management*).
+3. **Konfigurasi Tarif & Kuota Dinamis + Payment Lokal First:** Seluruh parameter harga dan kuota dikelola di `/admin` (`plans`, `plan_entitlements`, `plan_quotas`), dengan gerbang pembayaran utama **Xendit / Midtrans** (QRIS, VA, e-Wallet IDR) disusul adapter **Stripe**.
 
 ---
 
 ## Terkait
-- [Visi dan Misi](vision-mission.md)
-- [Pilar Kasus Penggunaan](use-case-pillars.md)
+- [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
+- [Visi & Misi v2.0](vision-mission.md)
 - [Business Requirements Document (BRD)](../02-planning/brd.md)
+- [Lima Pilar Use-Case](use-case-pillars.md)

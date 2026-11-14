@@ -69,7 +69,7 @@ export function AuthRegisterForm({
           <p className="text-xs text-destructive">{form.formState.errors.username.message}</p>
         )}
         <p className="text-[11px] text-muted-foreground">
-          Digunakan untuk alamat URL publik Anda: /p/
+          Digunakan untuk alamat URL publik Anda: /@
           <span className="text-foreground font-mono">{watchedUsername || "username"}</span>
         </p>
       </div>

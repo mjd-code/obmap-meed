@@ -6,7 +6,7 @@
  * paths with public CDN URLs before publication. Also provides ghost-link auditing.
  */
 
-import { supabase } from "@/global/api/untypedSupabase";
+import { supabase } from "@/global/api/supabaseClient";
 import { NoteService } from "@/domains/vault/shared/api/NoteService";
 import type { NoteRecord } from "@/types/collaboration";
 

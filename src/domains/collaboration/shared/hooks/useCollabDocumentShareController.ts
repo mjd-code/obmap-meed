@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/global/api/untypedSupabase";
+import { supabase } from "@/global/api/supabaseClient";
 import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
 import { useVaultPermission } from "@/domains/auth/shared/hooks/useVaultPermission";
 import { useVcsStore } from "@/domains/vcs/shared/stores/useVcsStore";
 import { NoteService } from "@/domains/vault/shared/api/NoteService";
-import type { NoteRecord } from "@/types/collaboration";
+import { PublicReaderService } from "@/domains/community/shared/api/PublicReaderService";
+import { DEFAULT_PUBLIC_LICENSE } from "@/domains/auth/shared/api/policyEngine";
+import type { NoteRecord, VaultVisibility } from "@/types/collaboration";
 import { getPublicNoteUrl } from "@/domains/collaboration/shared/utils/publicUrlHelper";
 import { VcsCloudService } from "@/domains/vcs/shared/api/VcsCloudService";
 import { VcsMicroRevisionService } from "@/domains/vcs/shared/api/VcsMicroRevisionService";
@@ -66,6 +68,10 @@ export function useCollabDocumentShareController({
   const [noteRecord, setNoteRecord] = useState<NoteRecord | null>(null);
   const [publishedContent, setPublishedContent] = useState<string>("");
   const [publicUrl, setPublicUrl] = useState<string>("");
+  const [vaultVisibility, setVaultVisibility] = useState<VaultVisibility>(
+    permissions.vaultVisibility
+  );
+  const [noteLicense, setNoteLicense] = useState<string>(DEFAULT_PUBLIC_LICENSE);
   const [isCopied, setIsCopied] = useState(false);
   const [processing, setProcessing] = useState(false);
 
@@ -91,14 +97,21 @@ export function useCollabDocumentShareController({
   const loadNoteData = useCallback(async () => {
     if (!currentVaultId || !noteId) return;
     try {
-      const existing = await NoteService.findNoteInVault(
-        currentVaultId,
-        noteId,
-        noteTitle,
-      );
+      const [existing, visMeta] = await Promise.all([
+        NoteService.findNoteInVault(currentVaultId, noteId, noteTitle),
+        PublicReaderService.getVaultVisibility(currentVaultId),
+      ]);
+      setVaultVisibility(visMeta.visibility);
 
       if (existing) {
         setNoteRecord(existing);
+        const existingLicense = (existing.frontmatter as Record<string, unknown> | undefined)
+          ?.license;
+        setNoteLicense(
+          typeof existingLicense === "string" && existingLicense.trim()
+            ? existingLicense
+            : visMeta.defaultLicense
+        );
         if (existing.published_at) {
           const revisions = await NoteService.getRevisions(existing.id);
           const pubTime = new Date(existing.published_at).getTime();
@@ -224,6 +237,18 @@ export function useCollabDocumentShareController({
 
       setNoteRecord(updated);
       setPublishedContent(updated.content);
+      const updatedLicense = (updated.frontmatter as Record<string, unknown> | undefined)?.license;
+      if (typeof updatedLicense === "string" && updatedLicense.trim()) {
+        setNoteLicense(updatedLicense);
+      }
+      if (vaultVisibility === "private") {
+        await PublicReaderService.updateVaultVisibility(
+          currentVaultId,
+          "public_unlisted",
+          noteLicense
+        );
+        setVaultVisibility("public_unlisted");
+      }
       const newUrl = await getPublicNoteUrl(currentVaultId, updated.slug);
       setPublicUrl(newUrl);
 
@@ -461,10 +486,29 @@ export function useCollabDocumentShareController({
     setLinterOpen(true);
   };
 
+  const handleVaultVisibilityChange = async (nextVisibility: VaultVisibility) => {
+    if (!currentVaultId) return;
+    setProcessing(true);
+    const ok = await PublicReaderService.updateVaultVisibility(
+      currentVaultId,
+      nextVisibility,
+      noteLicense
+    );
+    setProcessing(false);
+    if (!ok) {
+      toast.error("Gagal memperbarui visibilitas vault.");
+      return;
+    }
+    setVaultVisibility(nextVisibility);
+    toast.success(`Visibilitas vault diubah ke ${nextVisibility}.`);
+  };
+
   return {
     isReady: Boolean(currentVaultId && user),
     currentVaultId: currentVaultId || "",
     permissions,
+    vaultVisibility,
+    noteLicense,
     pendingSyncCount,
     activeBranchName,
     noteRecord,
@@ -507,5 +551,6 @@ export function useCollabDocumentShareController({
     handleRestoreLocalRevision,
     handleOpenPublicUrl,
     handleClaimSuccess,
+    handleVaultVisibilityChange,
   };
 }

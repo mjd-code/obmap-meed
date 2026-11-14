@@ -10,6 +10,7 @@ import { supabase } from "@/global/api/supabaseClient";
 import { toast } from "sonner";
 import type { Json } from "@/global/api/supabaseTypes";
 import { vaultSyncService } from "@/domains/vault/shared/api/VaultSyncService";
+import type { AccountLifecycleStatus } from "@/types/collaboration";
 
 interface Profile {
   id: string;
@@ -20,6 +21,7 @@ interface Profile {
   avatar_url: string | null;
   bio: string | null;
   is_public: boolean;
+  account_status?: AccountLifecycleStatus;
   preferences: Json;
   email_verified: boolean;
   created_at: string;

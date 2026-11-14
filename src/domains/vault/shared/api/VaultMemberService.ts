@@ -1,4 +1,4 @@
-import { supabase } from "@/global/api/untypedSupabase";
+import { supabase } from "@/global/api/supabaseClient";
 import type { VaultMemberRole } from "@/types/collaboration";
 import type { VaultMemberWithProfile } from "@/types/admin";
 

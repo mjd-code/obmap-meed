@@ -1,33 +1,38 @@
-# ObMap LLM Documentation Index
-# Format: <Document Title>: <Relative Path> — <One-line Description>
+# ObMap System Documentation Index (for LLMs & Coding Agents)
 
-Portal Dokumentasi ObMap: docs/SUMMARY.md — Pintu masuk navigasi, panduan peran pengguna, dan peta arsitektur dokumentasi sistem.
-Konvensi Dokumentasi: docs/00-meta/doc-conventions.md — Standar format Markdown, skema metadata YAML front-matter, dan aturan penamaan ID stabil.
-Glosarium Istilah: docs/00-meta/glossary.md — Glosarium komprehensif definisi teknis istilah inti ObMap (Vault, Leaf, Node, Solver, Headless Controller).
-Legenda Status Fitur: docs/00-meta/status-legend.md — Definisi taksonomi status fitur IMPLEMENTED, PARTIAL, PLANNED, dan VISION.
-Changelog Dokumentasi: docs/00-meta/changelog.md — Catatan riwayat revisi dan garis waktu transisi Wave 1, 2, dan 3.
-Visi dan Misi Sistem: docs/01-visions/vision-mission.md — Deklarasi visi ObMap sebagai platform pengetahuan visual terpadu local-first.
-Filosofi Produk: docs/01-visions/product-philosophy.md — Lima prinsip desain fundamental arsitektur sistem ObMap.
-Posisi Kompetitif: docs/01-visions/positioning.md — Analisis diferensiasi jujur dibandingkan Obsidian, Notion, XMind, dan Wikipedia.
-Pilar Kasus Penggunaan: docs/01-visions/use-case-pillars.md — Detail 4 pilar aplikasi: ensiklopedia publik, portofolio visual, pemetaan ide, dan LMS.
-PRD Produk: docs/02-planning/prd.md — Product Requirements Document mencakup target audiens, problem statements, dan metrik sukses.
-BRD Bisnis: docs/02-planning/brd.md — Business Requirements Document mencakup model komersial, estimasi pasar, dan proyeksi ROI.
-SRS Spesifikasi: docs/02-planning/srs.md — Software Requirements Specification merinci kebutuhan fungsional (FR) dan non-fungsional (NFR).
-SoW Pernyataan Kerja: docs/02-planning/sow.md — Statement of Work mendefinisikan batasan in-scope, out-of-scope, dependensi, dan kriteria selesai.
-Persona Pengguna: docs/02-planning/personas.md — Profil 6 arketipe pengguna utama ObMap dari akademisi hingga tim enterprise.
-Peta Jalan Produk: docs/02-planning/roadmap.md — Roadmap fase Now, Next, dan Later berlandaskan verifikasi status implementasi nyata.
-Matriks Keterlacakan: docs/02-planning/traceability-matrix.md — Traceability matrix Persona -> FR -> FEAT -> Kode Sumber -> Test.
-Ikhtisar Arsitektur: docs/03-architecture/system-overview.md — Diagram arsitektur C4 Context dan Container dengan diagram Mermaid.
-Struktur Repositori: docs/03-architecture/repository-structure.md — Struktur pohon direktori level 1–3 beranotasi lengkap tujuan tiap modul.
-Peta Domain Sistem: docs/03-architecture/domain-map.md — Spesifikasi 12 domain DDD mencakup dependensi, API publik, dan pola 3 lapis Orchestrator-View-Controller.
-Data dan Storage: docs/03-architecture/data-and-storage.md — Arsitektur hybrid multi-storage (FS API, IndexedDB, Supabase RLS).
-Mesin Tata Letak Graf: docs/03-architecture/layout-engine.md — Algoritma deterministik Mindmap, Org Chart, Timeline, Radial, dan D3 simulation.
-Kolaborasi & Publikasi: docs/03-architecture/collaboration-and-publishing.md — Model hak akses berjenjang, publikasi web statis instan, dan alur kolaborasi.
-Indeks ADR Arsitektur: docs/03-architecture/adr/README.md — Katalog indeks catatan keputusan arsitektur sistem.
-ADR-0006 Tata Kelola State Reaktif: docs/03-architecture/adr/ADR-0006-reactive-state-and-headless-controller-governance.md — Prinsip Single Source of Truth, Unidirectional Sync, Hierarchical Store Bridge, dan Canvas Frame Invalidation.
-Katalog Fitur Master: docs/04-features/feature-catalog.md — Katalog 44 fitur sistem terverifikasi dengan matriks status dan referensi sumber.
-Standar Penulisan Kode: docs/05-engineering/coding-standards.md — Pedoman TypeScript strict, isolasi store Zustand, dan pola Headless Component Controller.
-Register Hutang Teknis: docs/05-engineering/tech-debt-register.md — Katalog aktif hutang teknis sistem (TD-001 hingga TD-006) beserta mitigasi modularisasinya.
-Strategi Pengujian: docs/05-engineering/testing-strategy.md — Panduan pengujian Vitest, batas toleransi regresi, dan mocking storage.
-Aturan Baku Repositori: docs/05-engineering/repository-rules.md — Aturan mutlak tata kelola kode, larangan impor sirkular, dan konvensi penamaan berkas.
-Visi Kurikulum LMS: docs/06-lms/lms-vision.md — Konsep interaktif node prerequisite DAG, checkpoint tugas, dan gamifikasi portofolio.
+> Visual Knowledge Operating System & High-Signal Social Knowledge Network combining Obsidian (local-first `.md` + `@obmap/sdk`), XMind (deterministic Canvas2D solvers), Notion (RBAC + derived views), Wikipedia (`/explore` open index), and LinkedIn × ResearchGate × GitHub (`/:username` profile, citations, Fork & Merge Request).
+
+## Essential Constitution & Entrypoints
+- [Repository Rules & Guidelines (AGENTS.md)](AGENTS.md): Stack, 13 target domains (`community` replacing `public-reader` + `dashboard`), 11 Mandatory Architectural Rules (Rule 11 = Changelog Sync).
+- [Documentation Portal](docs/README.md): Role-based reading paths and full directory map.
+- [Navigation Summary](docs/SUMMARY.md): Compact topic tree across all folders.
+- [Master Blueprint v2.0](docs/00-meta/00-0-master-blueprint.md): Authoritative product, UX, routing, RBAC, dynamic monetization (`Xendit/Midtrans` first), and extensibility architecture.
+- [Quo Vadis v2.0](docs/00-meta/00-2-quovadis.md): 20-dimension readiness audit, 3-Stage Progressive Shipping Gate, `EPIC-01`–`15`, and §6 Locked Architectural Decisions.
+- [Step-by-Step Execution Playbook](docs/02-planning/README.md): Ordered agent execution queue (`STEP-01.1` through `STEP-05.4`) with prerequisites and verification gates.
+
+## Modular Changelog System (Read Last 15 Lines First)
+- [Machine Changelog Stream (JSONL)](docs/_machine/changelog.jsonl): Append-only JSON Lines stream (token-efficient recent context).
+- [Modular Changelog Hub](docs/changelogs/README.md): Rolling Top-10 summary and mandatory 3-step update SOP.
+- [Monthly Changelog (2026-11)](docs/changelogs/2026-11.md): Structured entries (`CHG-YYYYMMDD-NNN`).
+- [Archive Wave 1-3](docs/changelogs/archive-wave-1-to-3.md): Historical Wave 1–3 summary.
+
+## Vision & Planning (`docs/01-visions/`, `docs/02-planning/`)
+- [Vision & Mission v2.0](docs/01-visions/vision-mission.md) · [Product Philosophy](docs/01-visions/product-philosophy.md) · [Strategic Positioning](docs/01-visions/positioning.md) · [5 Use-Case Pillars](docs/01-visions/use-case-pillars.md)
+- [PRD](docs/02-planning/prd.md) · [BRD (Dynamic Quotas & Xendit/Midtrans)](docs/02-planning/brd.md) · [SRS (`FR-*`, `NFR-*`)](docs/02-planning/srs.md) · [SoW](docs/02-planning/sow.md) · [Personas (`PER-01`–`09`)](docs/02-planning/personas.md) · [Roadmap](docs/02-planning/roadmap.md) · [Traceability Matrix](docs/02-planning/traceability-matrix.md)
+
+## Architecture & ADRs (`docs/03-architecture/`)
+- [System Overview](docs/03-architecture/system-overview.md) · [13-Domain Map](docs/03-architecture/domain-map.md) · [Repository Structure](docs/03-architecture/repository-structure.md) · [Data & 6-Layer Config](docs/03-architecture/data-and-storage.md) · [Layout Engine](docs/03-architecture/layout-engine.md) · [Collaboration & `/:username`](docs/03-architecture/collaboration-and-publishing.md)
+- [ADR Index (`ADR-0001`–`0012`)](docs/03-architecture/adr/README.md): `community` & `/:username` hard cutover (`ADR-0007`), `dashboard` (`ADR-0008`), `ReleaseStageGate` & dynamic billing (`ADR-0009`), visibility & `CC BY-SA 4.0` (`ADR-0010`), 6-layer config & theme (`ADR-0011`), `@obmap/sdk` (`ADR-0012`).
+
+## Engineering, Features, LMS & Developer SDK (`04`–`07`)
+- [Feature Catalog](docs/04-features/feature-catalog.md) · [LMS Skill Tree Vision](docs/06-lms/lms-vision.md)
+- [Coding Standards](docs/05-engineering/coding-standards.md) · [Testing Strategy](docs/05-engineering/testing-strategy.md) · [Repository Rules](docs/05-engineering/repository-rules.md) · [Tech Debt Register](docs/05-engineering/tech-debt-register.md) · [Doc Drift Log](docs/05-engineering/doc-drift-log.md)
+- [Developer SDK Portal (`@obmap/sdk`)](docs/07-developers/README.md): [SDK Quickstart](docs/07-developers/plugin-sdk-quickstart.md) · [12 Extension Points](docs/07-developers/extension-points-reference.md) · [Theme Guide](docs/07-developers/theme-authoring-guide.md) · [Sandbox Security](docs/07-developers/security-and-sandbox.md)
+
+## Machine-Readable Metadata (`docs/_machine/`)
+- `docs/_machine/docs-index.json` · `docs/_machine/domains.json` · `docs/_machine/features.json` · `docs/_machine/requirements.json` · `docs/_machine/repo-map.json`
+
+# AGENT OPERATING DIRECTIVE
+1. Read `AGENTS.md`, `tail -n 15 docs/_machine/changelog.jsonl`, and `docs/02-planning/README.md` before coding to pick the next `[NEXT]`/`[PLANNED]` step (`STEP-01.1`..`05.4`).
+2. Enforce all 8 locked decisions (`community` refactor, `/p/*` hard cutover without redirect, Stage 2 individual `/admin` user approval, dynamic DB quotas/pricing in `/admin`, Xendit/Midtrans first, manual Verified Scholar curation, default `CC BY-SA 4.0`, Headless Controller `<= 300` lines).
+3. Before ending ANY task touching code, SQL, config, or architecture docs, update `docs/02-planning/README.md` status (if applicable) and perform all 3 atomic changelog updates required by `AGENTS.md` Rule 11 (`docs/_machine/changelog.jsonl`, `docs/changelogs/YYYY-MM.md`, `docs/changelogs/README.md`).

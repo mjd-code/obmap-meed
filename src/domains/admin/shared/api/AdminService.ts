@@ -1,5 +1,5 @@
-import { supabase } from "@/global/api/untypedSupabase";
-import type { AppRole, AuditLogRecord } from "@/types/collaboration";
+import { supabase } from "@/global/api/supabaseClient";
+import type { AccountLifecycleStatus, AppRole, AuditLogRecord } from "@/types/collaboration";
 import type {
   UserWithRole,
   SystemMetrics,
@@ -120,7 +120,7 @@ export class AdminService {
     // 3. Ambil seluruh profil
     const { data: profiles, error: pError } = await supabase
       .from("profiles")
-      .select("id, user_id, email, display_name, avatar_url, created_at");
+      .select("id, user_id, email, display_name, avatar_url, account_status, created_at");
 
     if (pError) {
       console.warn("[AdminService] Peringatan saat mengambil profiles:", pError.message);
@@ -146,25 +146,37 @@ export class AdminService {
       vaultCountMap.set(v.user_id, (vaultCountMap.get(v.user_id) || 0) + 1);
     });
 
-    // 6. Ambil status penangguhan akun
+    // 6. Ambil status penangguhan/persetujuan akun dari audit log sebagai fallback historis
     const { data: suspensionLogs } = await supabase
       .from("audit_logs")
       .select("resource_id, action, created_at")
-      .in("action", ["SUSPEND_USER_ACCOUNT", "ACTIVATE_USER_ACCOUNT"])
+      .in("action", [
+        "SUSPEND_USER_ACCOUNT",
+        "REJECT_USER_ACCOUNT",
+        "ACTIVATE_USER_ACCOUNT",
+        "APPROVE_USER_ACCOUNT",
+      ])
       .order("created_at", { ascending: true });
 
     const statusMap = new Map<string, AccountStatus>();
     (suspensionLogs || []).forEach((log) => {
-      statusMap.set(
-        log.resource_id,
-        log.action === "SUSPEND_USER_ACCOUNT" ? "suspended" : "active"
-      );
+      const isSuspended =
+        log.action === "SUSPEND_USER_ACCOUNT" || log.action === "REJECT_USER_ACCOUNT";
+      statusMap.set(log.resource_id, isSuspended ? "suspended" : "active");
     });
 
     // 7. Jika tabel profiles ada datanya, gunakan data tersebut
     const userMap = new Map<string, UserWithRole>();
 
     (profiles || []).forEach((p) => {
+      const lifecycle = (p.account_status as AccountLifecycleStatus | undefined) || "approved";
+      const mappedStatus: AccountStatus =
+        lifecycle === "pending_approval"
+          ? "pending_approval"
+          : lifecycle === "suspended"
+          ? "suspended"
+          : statusMap.get(p.user_id) || "active";
+
       userMap.set(p.user_id, {
         id: p.user_id,
         email: p.email,
@@ -172,7 +184,8 @@ export class AdminService {
         avatar_url: p.avatar_url,
         created_at: p.created_at,
         role: roleMap.get(p.user_id) || "member",
-        status: statusMap.get(p.user_id) || "active",
+        status: mappedStatus,
+        account_status: lifecycle,
         vault_count: vaultCountMap.get(p.user_id) || 0,
       });
     });
@@ -244,6 +257,75 @@ export class AdminService {
   }
 
   /**
+   * Menyetujui akun pengguna secara individual (Stage 2 approval queue)
+   */
+  static async approveUserAccount(
+    targetUserId: string,
+    currentUserId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const nowIso = new Date().toISOString();
+    const { error: updateErr } = await supabase
+      .from("profiles")
+      .update({ account_status: "approved", updated_at: nowIso })
+      .eq("user_id", targetUserId);
+
+    if (updateErr) {
+      return { success: false, error: updateErr.message };
+    }
+
+    const { error: logErr } = await supabase.from("audit_logs").insert({
+      actor_id: currentUserId,
+      action: "APPROVE_USER_ACCOUNT",
+      resource_type: "user_account",
+      resource_id: targetUserId,
+      metadata: { updated_to: "approved", timestamp: nowIso },
+    });
+
+    if (logErr) {
+      return { success: false, error: logErr.message };
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Menolak atau menangguhkan akun pengguna secara individual
+   */
+  static async rejectOrSuspendUserAccount(
+    targetUserId: string,
+    currentUserId: string,
+    reason?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    if (targetUserId === currentUserId) {
+      return { success: false, error: "Operasi ditolak: Anda tidak dapat menangguhkan akun Anda sendiri." };
+    }
+
+    const nowIso = new Date().toISOString();
+    const { error: updateErr } = await supabase
+      .from("profiles")
+      .update({ account_status: "suspended", updated_at: nowIso })
+      .eq("user_id", targetUserId);
+
+    if (updateErr) {
+      return { success: false, error: updateErr.message };
+    }
+
+    const { error: logErr } = await supabase.from("audit_logs").insert({
+      actor_id: currentUserId,
+      action: "REJECT_USER_ACCOUNT",
+      resource_type: "user_account",
+      resource_id: targetUserId,
+      metadata: { updated_to: "suspended", reason: reason || null, timestamp: nowIso },
+    });
+
+    if (logErr) {
+      return { success: false, error: logErr.message };
+    }
+
+    return { success: true };
+  }
+
+  /**
    * Menangguhkan atau mengaktifkan kembali akun pengguna
    */
   static async toggleUserSuspension(
@@ -255,6 +337,23 @@ export class AdminService {
       return { success: false, error: "Operasi ditolak: Anda tidak dapat menangguhkan akun Anda sendiri." };
     }
 
+    const nowIso = new Date().toISOString();
+    const nextLifecycle: AccountLifecycleStatus =
+      newStatus === "suspended"
+        ? "suspended"
+        : newStatus === "pending_approval"
+        ? "pending_approval"
+        : "approved";
+
+    const { error: profileErr } = await supabase
+      .from("profiles")
+      .update({ account_status: nextLifecycle, updated_at: nowIso })
+      .eq("user_id", targetUserId);
+
+    if (profileErr) {
+      return { success: false, error: profileErr.message };
+    }
+
     const action = newStatus === "suspended" ? "SUSPEND_USER_ACCOUNT" : "ACTIVATE_USER_ACCOUNT";
 
     const { error } = await supabase.from("audit_logs").insert({
@@ -262,7 +361,7 @@ export class AdminService {
       action,
       resource_type: "user_account",
       resource_id: targetUserId,
-      metadata: { updated_to: newStatus, timestamp: new Date().toISOString() },
+      metadata: { updated_to: nextLifecycle, timestamp: nowIso },
     });
 
     if (error) {
@@ -414,12 +513,12 @@ export class AdminService {
       },
       {
         id: "public-portal",
-        name: "Public Reader (/p/)",
+        name: "Community Reader (/:username)",
         category: "network",
         status: "healthy",
         latencyMs: 18,
         uptimePercent: 99.97,
-        description: "Portal rendering Notion-like bersih untuk artikel terbit tanpa otentikasi.",
+        description: "Portal pembaca publik & jejaring pengetahuan cendekiawan tanpa otentikasi.",
         dependencies: ["db-rls", "layout-engine", "media-storage"],
         enabled: true,
       },

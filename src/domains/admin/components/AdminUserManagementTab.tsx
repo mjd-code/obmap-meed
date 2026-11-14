@@ -9,6 +9,7 @@ import { Input } from "@/global/ui/input";
 import { Button } from "@/global/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/global/ui/dialog";
 import { useAdminUserManagementController } from "@/domains/admin/shared/hooks/useAdminUserManagementController";
+import { AdminReleaseStageBar } from "@/domains/admin/components/AdminReleaseStageBar";
 import {
   ShieldCheck,
   UserCheck,
@@ -16,6 +17,7 @@ import {
   ShieldAlert,
   Ban,
   CheckCircle,
+  Clock,
   Eye,
   Database,
   Calendar,
@@ -33,11 +35,23 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
   const {
     currentUser,
     filteredUsers,
+    pendingCount,
     search,
     setSearch,
+    statusFilter,
+    setStatusFilter,
     updatingId,
     inspectUser,
     setInspectUser,
+    releaseStage,
+    stageUpdating,
+    handleStageChange,
+    inviteEmail,
+    setInviteEmail,
+    creatingInvite,
+    invitations,
+    handleCreateInvite,
+    handleApproveUser,
     handleRoleChange,
     handleToggleSuspension,
   } = useAdminUserManagementController({
@@ -47,6 +61,19 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
 
   return (
     <div className="space-y-4">
+      <AdminReleaseStageBar
+        releaseStage={releaseStage}
+        stageUpdating={stageUpdating}
+        onStageChange={handleStageChange}
+        inviteEmail={inviteEmail}
+        onInviteEmailChange={setInviteEmail}
+        creatingInvite={creatingInvite}
+        onCreateInvite={handleCreateInvite}
+        invitations={invitations}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        pendingCount={pendingCount}
+      />
       {/* Top Filter Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -139,6 +166,13 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
                         <Badge variant="destructive" className="text-[10px] gap-1">
                           <Ban className="w-2.5 h-2.5" /> Ditangguhkan
                         </Badge>
+                      ) : u.status === "pending_approval" ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] gap-1 text-amber-600 border-amber-500/40"
+                        >
+                          <Clock className="w-2.5 h-2.5" /> Pending Approval
+                        </Badge>
                       ) : (
                         <Badge variant="outline" className="text-[10px] gap-1 text-emerald-600 border-emerald-500/30">
                           <CheckCircle className="w-2.5 h-2.5" /> Aktif
@@ -150,6 +184,17 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
 
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {u.status === "pending_approval" && (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            disabled={updatingId === u.id}
+                            className="h-8 text-xs"
+                            onClick={() => handleApproveUser(u.id)}
+                          >
+                            Approve
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"

@@ -1,64 +1,63 @@
 ---
 id: DOC-VIS-002
-title: Filosofi Arsitektur dan Desain Produk
+title: Filosofi Produk & Prinsip Rekayasa ObMap v2.0
 type: vision
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
+  - DOC-META-000
   - DOC-VIS-001
   - DOC-VIS-003
-  - DOC-PLAN-001
-source_of_truth: PHILOSOPHY.md
+  - DOC-ARCH-ADR-0003
+  - DOC-ARCH-ADR-0004
+source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ---
 
-# Filosofi Desain dan Arsitektur Produk
+# Filosofi Produk & Prinsip Rekayasa ObMap v2.0
 
 ## Ringkasan 3 Baris
-- Fondasi filosofis ObMap bertumpu pada kedaulatan data lokal (*local-first*) menggunakan berkas teks Markdown murni.
-- Hubungan (*edges*) dan keterkaitan data diperlakukan sebagai entitas kelas satu (*graph-native*), setara dengan isi dokumen (*nodes*).
-- Desain antarmuka mengadopsi estetika *space-minimal* (Apple-style dark mode) dengan kanvas visual yang hidup (*living canvas*).
+- Menjabarkan enam prinsip desain inti ObMap yang menjamin kedaulatan data pengguna, kejelasan kognitif visual, dan integritas arsitektur rekayasa perangkat lunak.
+- Menolak *vendor lock-in* dan algoritma feed berbasis *vanity engagement*, menggantinya dengan berkas Markdown terbuka serta graf sitasi berbasis pembuktian pengetahuan.
+- Menjadi rujukan pengambil keputusan UX dan arsitektur kode dari Workspace privat (`/app`), Dashboard (`/vaults`), hingga domain sosial (`src/domains/community/`).
 
 ---
 
-## 1. Lima Pilar Filosofis ObMap
-
-### 1.1 Local-First & Data Sovereignty
-Data Anda adalah milik Anda seutuhnya. ObMap dapat beroperasi 100% tanpa internet. Berkas disimpan langsung di direktori sistem operasi pengguna melalui File System Access API atau dicadangkan ke IndexedDB terenkripsi lokal. Sinkronisasi *cloud* via Supabase bersifat opsional dan selalu mengikuti isolasi *tenant* berbasis RLS.
-
-### 1.2 Markdown-First & Open Standards
-Semua pengetahuan dicatat dalam format Markdown (`.md`) standar CommonMark/GFM dengan YAML front-matter. Tidak ada format database *proprietary* biner yang mengunci teks Anda. Jika ObMap berhenti beroperasi, catatan Anda tetap dapat dibaca oleh editor teks apa pun di dunia.
-
-### 1.3 Graph-Native & Multi-Lens Exploration
-Catatan bukan sekadar daftar file linier di sidebar. Setiap tautan wikilink `[[catatan]]` atau tag `#label` menciptakan simpul (*node*) dan sisi (*link*) dalam basis pengetahuan. Pengguna bebas berganti kacamata pandang (*multi-lens*): teks linier, mindmap pohon, diagram tulang ikan, garis waktu kronologis, atau graf gaya bebas.
-
-### 1.4 Composable & Resilient Workspace
-Arsitektur antarmuka dibangun berbasis *leaves* dan *splits* modular (terinspirasi dari VS Code dan Obsidian). Setiap *leaf* memiliki siklus hidup dan store interaksi terisolasi (`useGraphInteractionStore`), mencegah regresi kaskade render dan memastikan pengalaman kerja yang stabil.
-
-### 1.5 Frictionless Publishing & Controlled Collaboration
-Membagikan karya tidak boleh membutuhkan proses *export-import* manual atau hosting terpisah. ObMap memungkinkan publikasi dokumen terpilih menjadi halaman web statis interaktif dalam satu klik, didukung oleh sistem perizinan bertingkat dan kontrol versi (*VCS micro-commits*).
-
----
-
-## 2. Paradigma Estetika: Space-Minimal Aesthetic
+## 1. Enam Prinsip Inti Produk & Rekayasa
 
 ```mermaid
-graph LR
-    A[Deep Black #000000] --> D[Space-Minimal Canvas]
-    B[Subtle Star Dust & Cosmic Glow] --> D
-    C[Crisp Monochrome Typography] --> D
-    D --> E[Fokus Kognitif Maksimal]
+flowchart TD
+    P1["1. Local-First & Plaintext Sovereignty"] --> ARCH["Arsitektur Berkelanjutan"]
+    P2["2. Markdown + YAML sebagai Single Source of Truth"] --> ARCH
+    P3["3. Determinisme Visual Sebelum Simulasi Fisika"] --> ARCH
+    P4["4. Calm High-Signal Social Network"] --> ARCH
+    P5["5. Progressive Disclosure & 3-Clicks-to-Aha"] --> ARCH
+    P6["6. Multi-Layer Config & Sandboxed Extensibility"] --> ARCH
 ```
 
-- **Deep Black Canvas:** Meminimalkan kelelahan visual (*eye strain*) selama sesi riset intensif.
-- **Atmospheric Glow:** Cahaya halus pada *nodes* dan aliran partikel pada *links* memberikan umpan balik kontekstual tanpa mengganggu fokus membaca.
-- **Progressive Disclosure:** Pengaturan rumit disembunyikan di balik kendali visual dinamis (*floating contextual toolbar* dan *segmented controls*).
+| Prinsip | Implementasi Teknis | Dampak Bagi Pengguna & Komunitas |
+| :--- | :--- | :--- |
+| **1. Local-First & Forever Free Storage** | Driver `FileSystemService.ts` dan `IndexedDbVaultDriver.ts` menyimpan `.md` langsung di perangkat pengguna (`ADR-0004`). | Catatan lokal tak terbatas selamanya tanpa memaksa akun cloud atau biaya sewa untuk akses arsip pribadi. |
+| **2. Derived Views Tanpa Proprietary Lock-In** | Seluruh Kanban, Calendar, Timeline, LMS DAG, dan sitasi diturunkan dari YAML frontmatter (`EditorPropertiesPanel.tsx`) & `.md` murni. | Berkas vault tetap 100% portabel dan terbaca oleh editor Markdown apa pun maupun mesin Git standar. |
+| **3. Deterministic Visual Cognition** | Hanya `Free-Force` memakai simulasi D3 kontinu; seluruh diagram terstruktur (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Citation Tree`) bersifat deterministik (`ADR-0003`). | Tata letak stabil secara spasial (*spatial memory*); tidak bergoyang liar saat simpul diedit atau dibuka kembali. |
+| **4. High-Signal, Anti-Vanity Social Graph** | Domain `src/domains/community/` menilai dampak berbasis kedalaman sitasi (`[[@user/vault/note]]`), *Merge Request* diterima, dan rasio catatan `evergreen`. | Membangun ruang wacana akademik dan profesional bebas *clickbait* dengan lisensi default **`CC BY-SA 4.0`** dan kurasi *Verified Scholar*. |
+| **5. Calm UI & Guided Progressive Mastery** | *Zero Blank Slate* (Landing Sandbox `< 65KB`, template use-case), *3-Clicks-to-Aha*, serta *Progressive Coach Marks* yang dapat dilewati (*skip*). | Pengguna pemula langsung menghasilkan graf pertama dalam `< 90 detik` tanpa membebani *power user*. |
+| **6. Modular Config & Zero-Trust Extensions** | Hierarki konfigurasi 6 lapis (*System → Org Locked → Vault `.obmap/` → User → Leaf → Session*) serta SDK `@obmap/sdk` dalam sandbox Worker/Iframe CSP. | Organisasi dapat menegakkan kebijakan aman, sementara pengembang komunitas leluasa memperluas UI tanpa menyentuh core codebase. |
+
+---
+
+## 2. Anti-Pattern yang Dilarang di ObMap
+1. **Paywall Sinkronisasi & Publikasi Dasar:** Berbeda dari model Obsidian Publish/Sync yang memutus keterhubungan sosial pengguna gratis, identitas publik `/:username` dan publikasi terbuka bersifat gratis di ObMap.
+2. **Hardcoded Pricing / Quota Constants:** Tidak menanam angka harga atau batas paket di kode klien; seluruh matriks kuota dan tarif dikelola dinamis dari DB via `src/domains/admin/`.
+3. **Legacy Path Sub-Directory Sosial (`/p/*`):** Tidak memecah profil dan portofolio ke sub-path teknikal; identitas kanonik berada langsung di `/:username` dan `/@:username` dengan proteksi `RESERVED_SLUGS`.
 
 ---
 
 ## Terkait
-- [Visi dan Misi](vision-mission.md)
-- [Positioning Produk](positioning.md)
-- [Standar Rekayasa](../05-engineering/repository-rules.md)
+- [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
+- [Visi & Misi v2.0](vision-mission.md)
+- [Positioning Strategis](positioning.md)
+- [ADR-0003: Deterministic Layout Solvers](../03-architecture/adr/ADR-0003-deterministic-layout-solvers-vs-force.md)
+- [ADR-0004: Multi-Strategy Storage Isolation](../03-architecture/adr/ADR-0004-multi-strategy-storage-isolation.md)

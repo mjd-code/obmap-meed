@@ -7,7 +7,7 @@
  * Non-destructive: The original `graph_data` JSON remains intact as a safety backup.
  */
 
-import { supabase } from "@/global/api/untypedSupabase";
+import { supabase } from "@/global/api/supabaseClient";
 import { NoteService } from "@/domains/vault/shared/api/NoteService";
 import type { Node as LegacyNode } from "@/domains/graph/shared/utils/graph.types";
 

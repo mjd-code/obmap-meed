@@ -1,168 +1,315 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
-  "updated_at": "2026-11-10",
-  "total_features": 16,
+  "version": "2.0.0",
+  "last_updated": "2026-11-14",
   "features": [
     {
-      "id": "FEAT-VAULT-001",
-      "name": "Multi-Strategy Storage & Isolation",
-      "domain": "vault",
-      "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/vault/shared/api/VaultManager.ts",
-      "persona": ["PER-01", "PER-03", "PER-04"],
-      "requirements": ["FR-VAULT-001"],
-      "tests": ["src/domains/vault/__tests__/VaultManager.test.ts"]
-    },
-    {
-      "id": "FEAT-VAULT-002",
-      "name": "Auto-Save Engine & Indicator",
-      "domain": "workspace",
-      "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/workspace/shared/hooks/useVaultLifecycle.ts",
-      "persona": ["PER-01", "PER-04"],
-      "requirements": ["FR-VAULT-002"],
-      "tests": []
-    },
-    {
-      "id": "FEAT-VAULT-003",
-      "name": "Accumulative Import & Duplicate Resolution",
-      "domain": "vault",
-      "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/vault/shared/api/ImportExportService.ts",
-      "persona": ["PER-01", "PER-03"],
-      "requirements": ["FR-VAULT-003"],
-      "tests": ["src/domains/vault/__tests__/ImportExportService.test.ts"]
-    },
-    {
       "id": "FEAT-EDITOR-001",
-      "name": "CodeMirror 6 Live Preview & Markdown Extensions",
+      "name": "CodeMirror 6 Markdown Editor + Isolated YAML Properties",
       "domain": "editor",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/editor/shared/utils/cmSetup.ts",
-      "persona": ["PER-01", "PER-02", "PER-05"],
-      "requirements": ["FR-EDIT-001"],
-      "tests": []
-    },
-    {
-      "id": "FEAT-EDITOR-002",
-      "name": "Collapsible Properties & YAML Frontmatter Isolation",
-      "domain": "editor",
-      "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/editor/components/EditorPropertiesPanel.tsx",
-      "persona": ["PER-01", "PER-02"],
-      "requirements": ["FR-EDIT-002"],
-      "tests": []
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/editor/components/EditorMarkdownView.tsx",
+        "src/domains/editor/components/EditorPropertiesPanel.tsx"
+      ]
     },
     {
       "id": "FEAT-GRAPH-001",
-      "name": "Multi-Model Layout Solver & Canvas",
+      "name": "Deterministic Layout Solvers (Mindmap, Org, Timeline, Fishbone) & Free-Force",
       "domain": "graph",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/graph/shared/utils/treeLayouts.ts",
-      "persona": ["PER-01", "PER-02", "PER-03"],
-      "requirements": ["FR-GRAPH-001"],
-      "tests": ["src/domains/graph/__tests__/newLayouts.test.ts"]
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/graph/shared/utils/layoutCategory.ts",
+        "src/domains/graph/shared/utils/mindmap.ts",
+        "src/domains/graph/shared/utils/fishbone.ts",
+        "src/domains/graph/shared/utils/timeline.ts"
+      ]
     },
     {
       "id": "FEAT-GRAPH-002",
-      "name": "Hierarchy & Atmosphere Visual Engine",
+      "name": "Headless Canvas Governance, Subtree Override & Frame Invalidation",
       "domain": "graph",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/graph/components/GraphAtmosphereControls.tsx",
-      "persona": ["PER-01", "PER-03"],
-      "requirements": ["FR-GRAPH-002"],
-      "tests": ["src/domains/graph/__tests__/hierarchyColors.test.ts"]
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/graph/components/GraphCanvas.tsx",
+        "src/domains/graph/components/GraphWorkspaceControls.tsx",
+        "src/domains/graph/shared/hooks/useGraphCanvasController.ts"
+      ]
     },
     {
-      "id": "FEAT-GRAPH-003",
-      "name": "Subtree Structure Override & Dynamic Relayout",
+      "id": "FEAT-GRAPH-008",
+      "name": "Argument Map & Citation Tree Solvers, Pitch Mode & PDF/SVG/OPML Export",
       "domain": "graph",
-      "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/graph/shared/utils/subtreeCompose.ts",
-      "persona": ["PER-01", "PER-02"],
-      "requirements": ["FR-GRAPH-003"],
-      "tests": ["src/domains/graph/__tests__/subtreeOverride.test.ts"]
+      "status": "PLANNED",
+      "release_stage": "stage_3_commercial_ga",
+      "step_id": "STEP-05.2",
+      "source_of_truth": [
+        "src/domains/graph/shared/utils/layoutCategory.ts"
+      ]
     },
     {
       "id": "FEAT-META-001",
-      "name": "Aho-Corasick Web Worker Wikilink & Mention Indexing",
+      "name": "Aho-Corasick Web Worker Link & Mention Indexing",
       "domain": "metadata",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/metadata/shared/api/mentions.worker.ts",
-      "persona": ["PER-01", "PER-05"],
-      "requirements": ["FR-META-001"],
-      "tests": []
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/metadata/shared/api/mentions.worker.ts",
+        "src/domains/metadata/shared/utils/aho-corasick.ts",
+        "src/domains/metadata/shared/api/MetadataCache.ts"
+      ]
     },
     {
-      "id": "FEAT-COLLAB-001",
-      "name": "Instant Web Publishing & Public URL Slug",
-      "domain": "collaboration",
+      "id": "FEAT-VAULT-001",
+      "name": "Multi-Strategy Storage Drivers (FS Access API, IndexedDB, Cloud, ZIP)",
+      "domain": "vault",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/collaboration/shared/api/BulkPublishService.ts",
-      "persona": ["PER-03", "PER-05"],
-      "requirements": ["FR-PUB-001"],
-      "tests": []
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/vault/shared/api/VaultManager.ts",
+        "src/domains/vault/shared/api/IVaultStorageDriver.ts",
+        "src/domains/vault/shared/api/FileSystemService.ts",
+        "src/domains/vault/shared/api/IndexedDbVaultDriver.ts",
+        "src/domains/vault/shared/api/CloudVaultService.ts",
+        "src/domains/vault/shared/api/ImportExportService.ts"
+      ]
     },
     {
-      "id": "FEAT-COLLAB-002",
-      "name": "Inherited Hierarchical Permissions & RLS",
-      "domain": "collaboration",
-      "status": "PARTIAL",
-      "source_of_truth": "supabase/migrations/20261031000000_v4_collaboration_and_publishing.sql",
-      "persona": ["PER-04", "PER-06"],
-      "requirements": ["FR-PUB-002"],
-      "tests": []
-    },
-    {
-      "id": "FEAT-COLLAB-003",
-      "name": "CRDT Real-Time Collaborative Canvas & Note Editing",
-      "domain": "collaboration",
-      "status": "PLANNED",
-      "source_of_truth": "docs/02-planning/roadmap.md",
-      "persona": ["PER-04"],
-      "requirements": ["FR-PUB-003"],
-      "tests": []
+      "id": "FEAT-WORK-001",
+      "name": "Multi-Pane Workspace Shell, Command Palette & Vault Lifecycle",
+      "domain": "workspace",
+      "status": "IMPLEMENTED",
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/workspace/WorkspaceOrchestrator.tsx",
+        "src/domains/workspace/components/WorkspaceViewRegistry.tsx",
+        "src/domains/workspace/shared/api/CommandRegistry.ts",
+        "src/domains/workspace/shared/hooks/useVaultLifecycle.ts"
+      ]
     },
     {
       "id": "FEAT-VCS-001",
-      "name": "Git-Like Micro-Revisions, Stash & 3-Way Merge",
+      "name": "In-Browser VCS Diff, Merge Modal & Co-Presence Avatars",
       "domain": "vcs",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/vcs/shared/stores/useVcsStore.ts",
-      "persona": ["PER-01", "PER-04"],
-      "requirements": ["FR-VCS-001"],
-      "tests": []
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/vcs/shared/utils/vcsDiffEngine.ts",
+        "src/domains/vcs/components/VcsCreateMergeRequestModal.tsx",
+        "src/domains/vcs/components/VcsInteractiveMergeModal.tsx",
+        "src/domains/vcs/components/VcsCoPresenceAvatars.tsx"
+      ]
     },
     {
-      "id": "FEAT-SYNC-001",
-      "name": "Offline IndexedDB Sync Queue & Conflict Resolver",
-      "domain": "sync",
+      "id": "FEAT-AUTH-001",
+      "name": "3-Stage ReleaseStageGate & Individual Per-User Admin Approval Queue",
+      "domain": "auth",
       "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/sync/shared/stores/useOfflineStore.ts",
-      "persona": ["PER-01", "PER-04"],
-      "requirements": ["FR-SYNC-001"],
-      "tests": []
+      "release_stage": "stage_1_partner",
+      "step_id": "STEP-01.3",
+      "source_of_truth": [
+        "src/domains/auth/shared/api/ReleaseStageService.ts",
+        "src/domains/auth/components/AuthProtectedRoute.tsx",
+        "src/domains/admin/components/AdminReleaseStageBar.tsx",
+        "src/domains/admin/components/AdminUserManagementTab.tsx",
+        "supabase/migrations/20261114010000_v4_2_step_01_3_to_01_4_stage_gate_and_policy_engine.sql"
+      ]
+    },
+    {
+      "id": "FEAT-COLLAB-001",
+      "name": "Vault Members, Document Share & Bulk Publish",
+      "domain": "collaboration",
+      "status": "PARTIAL",
+      "release_stage": "stage_1_partner",
+      "step_id": "baseline",
+      "source_of_truth": [
+        "src/domains/collaboration/components/CollabDocumentSharePopover.tsx",
+        "src/domains/collaboration/components/CollabBulkPublishModal.tsx",
+        "src/domains/vault/shared/api/VaultMemberService.ts",
+        "supabase/migrations/20261031000000_v4_collaboration_and_publishing.sql"
+      ]
+    },
+    {
+      "id": "FEAT-COLLAB-004",
+      "name": "PolicyEngine RBAC, 4-State Visibility, Private Note Exclude & Default CC BY-SA 4.0",
+      "domain": "collaboration",
+      "status": "IMPLEMENTED",
+      "release_stage": "stage_1_partner",
+      "step_id": "STEP-01.4",
+      "source_of_truth": [
+        "src/domains/auth/shared/api/policyEngine.ts",
+        "src/domains/auth/shared/hooks/useVaultPermission.ts",
+        "src/domains/vault/shared/api/NoteService.ts",
+        "src/domains/collaboration/components/CollabSharePublishTab.tsx",
+        "src/domains/community/shared/api/PublicReaderService.ts"
+      ]
+    },
+    {
+      "id": "FEAT-COMM-001",
+      "name": "Community Reader (public-reader -> community) & Hard Cutover /:username Routing",
+      "domain": "community",
+      "status": "IMPLEMENTED",
+      "release_stage": "stage_1_partner",
+      "step_id": "STEP-01.2",
+      "source_of_truth": [
+        "src/domains/community/CommunityOrchestrator.tsx",
+        "src/domains/community/shared/api/PublicReaderService.ts",
+        "src/domains/community/shared/utils/reservedSlugs.ts",
+        "src/domains/collaboration/shared/utils/publicUrlHelper.ts",
+        "src/domains/settings/shared/api/ProfileService.ts",
+        "src/App.tsx"
+      ]
+    },
+    {
+      "id": "FEAT-SET-001",
+      "name": "6-Layer Cascading Config & Unified DOM/Canvas2D Theme Tokens",
+      "domain": "settings",
+      "status": "IMPLEMENTED",
+      "release_stage": "stage_1_partner",
+      "step_id": "STEP-01.5",
+      "source_of_truth": [
+        "src/domains/settings/shared/api/ConfigService.ts",
+        "src/domains/settings/components/SettingsConfigurationSection.tsx",
+        "src/domains/settings/shared/stores/useThemeStore.ts",
+        "src/domains/graph/shared/utils/theme.ts",
+        "src/domains/graph/shared/hooks/useGraphCanvasController.ts"
+      ]
+    },
+    {
+      "id": "FEAT-DASH-001",
+      "name": "Dashboard Domain (/vaults) with 5 Derived Views & Community Feed",
+      "domain": "dashboard",
+      "status": "VISION",
+      "release_stage": "stage_2_community_beta",
+      "step_id": "STEP-02.1",
+      "source_of_truth": [
+        "src/pages/Landing.tsx",
+        "src/domains/vault/components/VaultCard.tsx",
+        "src/domains/vault/components/VaultModeSelector.tsx"
+      ]
+    },
+    {
+      "id": "FEAT-GROWTH-001",
+      "name": "Conversion Landing Page & Lazy In-Memory Sandbox (<65KB)",
+      "domain": "workspace",
+      "status": "PARTIAL",
+      "release_stage": "stage_2_community_beta",
+      "step_id": "STEP-02.2",
+      "source_of_truth": [
+        "src/pages/Landing.tsx"
+      ]
+    },
+    {
+      "id": "FEAT-GROWTH-002",
+      "name": "Five-Stage Hybrid Onboarding & Sandbox-to-Vault Migration",
+      "domain": "auth",
+      "status": "PLANNED",
+      "release_stage": "stage_2_community_beta",
+      "step_id": "STEP-02.3",
+      "source_of_truth": [
+        "src/domains/settings/shared/stores/LocalConfigStore.ts",
+        "src/domains/settings/shared/stores/CloudConfigStore.ts"
+      ]
+    },
+    {
+      "id": "FEAT-SOC-001",
+      "name": "Scholar Profile (/:username), /explore Directory, Follow & Manual Admin Verified Scholar",
+      "domain": "community",
+      "status": "VISION",
+      "release_stage": "stage_2_community_beta",
+      "step_id": "STEP-03.1",
+      "source_of_truth": [
+        "src/domains/settings/components/SettingsClaimUsernameModal.tsx",
+        "src/domains/admin/AdminOrchestrator.tsx"
+      ]
+    },
+    {
+      "id": "FEAT-SOC-002",
+      "name": "Federated Citations [[@user/vault/note]], Epistemic YAML & Cite Exporter",
+      "domain": "community",
+      "status": "VISION",
+      "release_stage": "stage_2_community_beta",
+      "step_id": "STEP-03.2",
+      "source_of_truth": [
+        "src/domains/metadata/shared/api/mentions.worker.ts"
+      ]
+    },
+    {
+      "id": "FEAT-SOC-003",
+      "name": "Fork to My Vault, Cross-User Knowledge Merge Request & Paragraph Annotations",
+      "domain": "community",
+      "status": "VISION",
+      "release_stage": "stage_2_community_beta",
+      "step_id": "STEP-03.3",
+      "source_of_truth": [
+        "src/domains/vcs/shared/utils/vcsDiffEngine.ts"
+      ]
+    },
+    {
+      "id": "FEAT-BILL-001",
+      "name": "Dynamic Admin-Configured Plans/Quotas & Xendit/Midtrans First Billing",
+      "domain": "admin",
+      "status": "VISION",
+      "release_stage": "stage_3_commercial_ga",
+      "step_id": "STEP-04.1",
+      "source_of_truth": [
+        "src/domains/admin/AdminOrchestrator.tsx"
+      ]
+    },
+    {
+      "id": "FEAT-COLLAB-005",
+      "name": "Organization Teamspaces, Seat Management & Admin-Locked Policies",
+      "domain": "collaboration",
+      "status": "VISION",
+      "release_stage": "stage_3_commercial_ga",
+      "step_id": "STEP-04.2",
+      "source_of_truth": [
+        "src/domains/admin/AdminOrchestrator.tsx",
+        "src/domains/collaboration/CollaborationOrchestrator.tsx"
+      ]
+    },
+    {
+      "id": "FEAT-COLLAB-003",
+      "name": "Real-Time Multiplayer CRDT (Yjs) Multi-Cursor Collaboration",
+      "domain": "collaboration",
+      "status": "VISION",
+      "release_stage": "stage_3_commercial_ga",
+      "step_id": "STEP-04.3",
+      "source_of_truth": [
+        "src/domains/sync/shared/api/SyncCoordinator.ts"
+      ]
     },
     {
       "id": "FEAT-LMS-001",
-      "name": "Interactive Knowledge Graph Curriculum & Progress Tracker",
-      "domain": "workspace",
+      "name": "Interactive Graph LMS, Prerequisite DAG & Skill Tree Progress",
+      "domain": "graph",
       "status": "VISION",
-      "source_of_truth": "docs/06-lms/lms-vision.md",
-      "persona": ["PER-02"],
-      "requirements": ["FR-LMS-001"],
-      "tests": []
+      "release_stage": "stage_3_commercial_ga",
+      "step_id": "STEP-05.1",
+      "source_of_truth": [
+        "docs/06-lms/lms-vision.md"
+      ]
     },
     {
-      "id": "FEAT-WORKSPACE-001",
-      "name": "Multi-Leaf Flexible Docking System & Dynamic Ribbons",
-      "domain": "workspace",
-      "status": "IMPLEMENTED",
-      "source_of_truth": "src/domains/workspace/shared/stores/useWorkspaceStore.ts",
-      "persona": ["PER-01", "PER-02", "PER-03", "PER-04", "PER-05"],
-      "requirements": ["FR-WS-001"],
-      "tests": []
+      "id": "FEAT-EXT-001",
+      "name": "Sandboxed @obmap/sdk, Permission Manifest, Scoped CSS & 12 Extension Points",
+      "domain": "settings",
+      "status": "PARTIAL",
+      "release_stage": "stage_3_commercial_ga",
+      "step_id": "STEP-05.3",
+      "source_of_truth": [
+        "src/domains/settings/shared/api/pluginRegistry.ts",
+        "src/domains/settings/shared/api/schemaRegistry.ts"
+      ]
     }
   ]
 }

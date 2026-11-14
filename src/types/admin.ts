@@ -1,6 +1,18 @@
-import type { AppRole, VaultMemberRole } from "@/types/collaboration";
+import type { AccountLifecycleStatus, AppRole, VaultMemberRole } from "@/types/collaboration";
 
-export type AccountStatus = "active" | "suspended";
+export type AccountStatus = "active" | "approved" | "pending_approval" | "suspended";
+
+export interface PartnerInvitationRecord {
+  id: string;
+  email: string;
+  invite_code: string;
+  invited_by: string;
+  accepted_by: string | null;
+  accepted_at: string | null;
+  expires_at: string;
+  status: "pending" | "accepted" | "revoked" | "expired" | string;
+  created_at: string;
+}
 
 export interface UserWithRole {
   id: string;
@@ -10,6 +22,7 @@ export interface UserWithRole {
   created_at: string;
   role: AppRole;
   status?: AccountStatus;
+  account_status?: AccountLifecycleStatus;
   vault_count?: number;
 }
 

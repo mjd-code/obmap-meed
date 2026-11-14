@@ -3,7 +3,7 @@ import { Cloud, Database, Laptop } from "lucide-react";
 import { toast } from "sonner";
 import { useVaultSync } from "@/domains/vault/shared/hooks/useVaultSync";
 import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
-import { supabase } from "@/global/api/untypedSupabase";
+import { supabase } from "@/global/api/supabaseClient";
 import { VaultMemberService } from "@/domains/vault/shared/api/VaultMemberService";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import type {

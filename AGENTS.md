@@ -4,7 +4,7 @@
 - **Frontend:** React 18 SPA + Vite 5 + TypeScript 5 + Tailwind CSS + Radix UI (shadcn).
 - **Graph & Editor:** react-force-graph-2d, D3.js (forces), CodeMirror 6 (isolated YAML).
 - **Backend/Storage:** Supabase (Auth, RLS, Storage), Local IndexedDB, File System Access API.
-- **Routing:** react-router-dom (`/` landing, `/vaults` dashboard, `/app` workspace, `/p/*` reader).
+- **Routing:** react-router-dom (`/` landing, `/vaults` dashboard `[SHELL ROUTED — full UI STEP-02.1]`, `/app` workspace, `/explore`, `/:username` & `/@:username` community profile/reader `[IMPLEMENTED — hard cutover replacing legacy /p/* without redirect]`).
 
 ## 2. Essential Commands
 - Dev Server: `bun run dev` (or `npm run dev`) at port 8080.
@@ -13,7 +13,7 @@
 - Linting: `npm run lint`.
 
 ## 3. Domain-Driven Structure (`src/domains/`)
-- 12 Isolated Domains: `admin`, `auth`, `collaboration`, `editor`, `graph`, `metadata`, `public-reader`, `settings`, `sync`, `vault`, `vcs`, `workspace`.
+- Current 12 Isolated Domains: `admin`, `auth`, `collaboration`, `community` *(refactored from `public-reader` in `STEP-01.2`)*, `editor`, `graph`, `metadata`, `settings`, `sync`, `vault`, `vcs`, `workspace`. Target 13 Domains (v2.0): add `dashboard` (`STEP-02.1`).
 - Pattern per domain: `<Domain>Orchestrator.tsx`, `components/`, `shared/{api,hooks,stores,utils}`.
 - Global Shared Code: `src/global/{api,components,hooks,stores,types,ui,utils}`.
 - Path Aliasing: Always import internal modules using `@/` alias (e.g. `@/domains/*`, `@/global/*`).
@@ -32,11 +32,20 @@
 8. **Single Source of Truth & Unidirectional Store Sync:** Dilarang menduplikasi state store ke dalam `useState` lokal UI (gunakan *derived state* atau selector Zustand langsung). Dilarang membuat *cyclic bidirectional `useEffect`* antar-store; gunakan *Unidirectional Action Dispatch* dan *previous-value ref guard* (`prevPropRef`) untuk sinkronisasi prop eksternal.
 9. **Hierarchical Store Bridge (Global <-> Leaf):** Setiap *per-leaf store* (`LeafGraphConfigStore`, `LeafGraphInteractionStore`) wajib menerapkan *Write-Through & Broadcast Bridge* terhadap store globalnya (`useGraphStore`, `globalGraphInteractionStore`) agar preferensi tetap tersimpan dan perubahan dari Settings langsung terefleksi di seluruh tab aktif.
 10. **Zero-Regression Headless Extraction & Canvas Frame Invalidation:** Ekstraksi *God Component* ke pola Headless Controller adalah operasi isomorfik perilaku (paritas fitur 100%, tanpa memangkas `useEffect`, filter, atau opsi UI). Setiap mutasi visual pada komponen Canvas2D statis (`cooldownTicks === 0`) wajib memicu `graphRef.current?.refresh?.()` secara reaktif.
+11. **Mandatory LLM Changelog & Documentation Sync Protocol:** Every AI agent completing any code modification, SQL migration, configuration change, or architectural doc update MUST execute these 3 atomic updates in the same turn before finishing:
+   - Append 1 valid JSON line to `docs/_machine/changelog.jsonl` (`{"id":"CHG-YYYYMMDD-NNN","date":"YYYY-MM-DD","type":"...","stage":"...","domains":[...],"summary":"...","files":[...],"verified":"..."}`).
+   - Add a structured entry to `docs/changelogs/YYYY-MM.md` following `docs/changelogs/_template.md`.
+   - Update the *Rolling Top-10 Recent Changes* table in `docs/changelogs/README.md`.
 
 ## 5. Documentation Source of Truth
-- System Portal: `docs/README.md`
+- Master Architecture & Product Blueprint (v2.0): `docs/00-meta/00-0-master-blueprint.md`
+- Quo Vadis v2.0 Execution Plan & Readiness Audit: `docs/00-meta/00-2-quovadis.md`
+- Step-by-Step Gradual Execution Queue: `docs/02-planning/README.md` and `docs/02-planning/roadmap.md`
+- Modular Changelog Hub & Machine Stream: `docs/changelogs/README.md` and `docs/_machine/changelog.jsonl`
+- Developer SDK & Theme Authoring Portal: `docs/07-developers/README.md`
+- System Portal: `docs/README.md` and `docs/SUMMARY.md`
 - Master Feature Catalog: `docs/04-features/feature-catalog.md` and `docs/_machine/features.json`
 - Domain Map: `docs/03-architecture/domain-map.md` and `docs/_machine/domains.json`
-- Tech Debt Register: `docs/05-engineering/tech-debt-register.md`
+- Tech Debt & Drift Registers: `docs/05-engineering/tech-debt-register.md` and `docs/05-engineering/doc-drift-log.md`
 - Coding Standards: `docs/05-engineering/coding-standards.md`
 - Documentation Index: `llms.txt` and `docs/_machine/docs-index.json`

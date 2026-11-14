@@ -4,6 +4,7 @@
  */
 
 import { supabase } from "@/global/api/supabaseClient";
+import { RESERVED_SLUGS, normalizePublicHandle } from "@/domains/community/shared/utils/reservedSlugs";
 
 export interface UsernameAvailabilityResult {
   available: boolean;
@@ -31,29 +32,7 @@ export class ProfileService {
    * Kata kunci terlarang yang tidak boleh digunakan sebagai username
    * untuk menghindari tabrakan dengan rute internal aplikasi.
    */
-  private static readonly RESERVED_USERNAMES = new Set([
-    "admin",
-    "api",
-    "auth",
-    "settings",
-    "profile",
-    "p",
-    "public",
-    "explore",
-    "vault",
-    "graph",
-    "root",
-    "login",
-    "signup",
-    "register",
-    "dashboard",
-    "static",
-    "system",
-    "terms",
-    "privacy",
-    "help",
-    "status",
-  ]);
+  private static readonly RESERVED_USERNAMES = RESERVED_SLUGS;
 
   /**
    * Mengubah teks bebas menjadi format slug standar.
@@ -71,7 +50,7 @@ export class ProfileService {
    * Validasi format username (panjang 3-30 karakter, alphanumeric, underscore, hyphen).
    */
   static validateUsernameFormat(username: string): { valid: boolean; error?: string; normalized: string } {
-    const normalized = username.trim().toLowerCase();
+    const normalized = normalizePublicHandle(username);
 
     if (!normalized) {
       return { valid: false, error: "Username tidak boleh kosong", normalized: "" };
@@ -120,8 +99,9 @@ export class ProfileService {
     const normalized = validation.normalized;
 
     try {
-      // 1. Cek tabel profiles via type-cast adapter
-      const { data: profileMatch, error: profileErr } = await (supabase.from("profiles") as any)
+      // 1. Cek tabel profiles
+      const { data: profileMatch, error: profileErr } = await supabase
+        .from("profiles")
         .select("user_id, username")
         .ilike("username", normalized)
         .maybeSingle();
@@ -132,9 +112,8 @@ export class ProfileService {
       }
 
       if (profileMatch) {
-        const matched = profileMatch as { user_id: string; username: string };
-        if (currentUserId && matched.user_id === currentUserId) {
-          return { available: true, normalizedUsername: normalized }; // Username milik pengguna sendiri
+        if (currentUserId && profileMatch.user_id === currentUserId) {
+          return { available: true, normalizedUsername: normalized };
         }
         return {
           available: false,
@@ -145,7 +124,7 @@ export class ProfileService {
 
       // 2. Cek tabel username_redirects yang masih aktif (belum 14 hari)
       const nowIso = new Date().toISOString();
-      const { data: redirectMatch, error: redirectErr } = await (supabase as any)
+      const { data: redirectMatch, error: redirectErr } = await supabase
         .from("username_redirects")
         .select("user_id, old_username, expires_at")
         .ilike("old_username", normalized)
@@ -158,8 +137,7 @@ export class ProfileService {
       }
 
       if (redirectMatch) {
-        const matchedRedirect = redirectMatch as { user_id: string; old_username: string; expires_at: string };
-        if (currentUserId && matchedRedirect.user_id === currentUserId) {
+        if (currentUserId && redirectMatch.user_id === currentUserId) {
           return { available: true, normalizedUsername: normalized };
         }
         return {
@@ -170,16 +148,14 @@ export class ProfileService {
       }
 
       return { available: true, normalizedUsername: normalized };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         available: false,
         normalizedUsername: normalized,
-        reason: err.message || "Terjadi kesalahan koneksi.",
+        reason: err instanceof Error ? err.message : "Terjadi kesalahan koneksi.",
       };
     }
   }
-
-// Gantikan method claimOrUpdateUsername dan resolveUsernameOrRedirect di ProfileService.ts:
 
   /**
    * Mengklaim atau memperbarui username pengguna.
@@ -197,7 +173,8 @@ export class ProfileService {
     const normalizedNew = availability.normalizedUsername;
 
     // Ambil username saat ini
-    const { data: currentProfile, error: fetchErr } = await (supabase.from("profiles") as any)
+    const { data: currentProfile, error: fetchErr } = await supabase
+      .from("profiles")
       .select("username")
       .eq("user_id", userId)
       .maybeSingle();
@@ -206,12 +183,12 @@ export class ProfileService {
       return { success: false, error: "Gagal mengambil data profil saat ini." };
     }
 
-    const profileData = currentProfile as { username?: string | null } | null;
-    const oldUsername = profileData?.username ? profileData.username.trim().toLowerCase() : null;
+    const oldUsername = currentProfile?.username ? currentProfile.username.trim().toLowerCase() : null;
 
     // Jika username sama persis, pastikan is_public tetap true
     if (oldUsername === normalizedNew) {
-      await (supabase.from("profiles") as any)
+      await supabase
+        .from("profiles")
         .update({ is_public: true })
         .eq("user_id", userId);
       return { success: true };
@@ -220,7 +197,7 @@ export class ProfileService {
     // Jika ada username lama dan berbeda, catat di username_redirects (14 hari)
     if (oldUsername) {
       const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-      const { error: redirectInsertErr } = await (supabase as any)
+      const { error: redirectInsertErr } = await supabase
         .from("username_redirects")
         .insert({
           user_id: userId,
@@ -234,10 +211,11 @@ export class ProfileService {
     }
 
     // Update kolom username dan pastikan is_public = true di tabel profiles
-    const { error: updateErr } = await (supabase.from("profiles") as any)
-      .update({ 
+    const { error: updateErr } = await supabase
+      .from("profiles")
+      .update({
         username: normalizedNew,
-        is_public: true 
+        is_public: true,
       })
       .eq("user_id", userId);
 
@@ -249,32 +227,33 @@ export class ProfileService {
   }
 
   /**
-   * Menemukan pemilik username untuk kebutuhan routing publik /p/:username.
+   * Menemukan pemilik username untuk kebutuhan routing publik /:username (/@username).
    * Mendukung auto-resolusi ke username baru jika pengunjung mengakses username lama dalam masa 14 hari.
    */
   static async resolveUsernameOrRedirect(inputUsername: string): Promise<UsernameResolutionResult | null> {
-    const normalized = inputUsername.trim().toLowerCase();
+    const normalized = normalizePublicHandle(inputUsername);
+    if (!normalized || this.RESERVED_USERNAMES.has(normalized)) {
+      return null;
+    }
 
     // 1. Cek langsung ke profiles berdasarkan kolom username
-    const { data: directProfile } = await (supabase.from("profiles") as any)
+    const { data: directProfile } = await supabase
+      .from("profiles")
       .select("user_id, username")
       .ilike("username", normalized)
       .maybeSingle();
 
-    if (directProfile) {
-      const profile = directProfile as { user_id: string; username: string | null };
-      if (profile.username) {
-        return {
-          userId: profile.user_id,
-          currentUsername: profile.username,
-          isRedirect: false,
-        };
-      }
+    if (directProfile?.username) {
+      return {
+        userId: directProfile.user_id,
+        currentUsername: directProfile.username,
+        isRedirect: false,
+      };
     }
 
     // 2. Cek ke username_redirects yang belum kedaluwarsa (14 hari)
     const nowIso = new Date().toISOString();
-    const { data: redirect } = await (supabase as any)
+    const { data: redirect } = await supabase
       .from("username_redirects")
       .select("user_id, old_username, expires_at")
       .ilike("old_username", normalized)
@@ -284,21 +263,19 @@ export class ProfileService {
       .maybeSingle();
 
     if (redirect) {
-      const redirectData = redirect as { user_id: string; old_username: string };
-
       // Ambil username aktif pemiliknya saat ini
-      const { data: currentOwner } = await (supabase.from("profiles") as any)
+      const { data: currentOwner } = await supabase
+        .from("profiles")
         .select("username")
-        .eq("user_id", redirectData.user_id)
+        .eq("user_id", redirect.user_id)
         .maybeSingle();
 
-      const ownerData = currentOwner as { username?: string | null } | null;
-      if (ownerData && ownerData.username) {
+      if (currentOwner?.username) {
         return {
-          userId: redirectData.user_id,
-          currentUsername: ownerData.username,
+          userId: redirect.user_id,
+          currentUsername: currentOwner.username,
           isRedirect: true,
-          oldUsername: redirectData.old_username,
+          oldUsername: redirect.old_username,
         };
       }
     }

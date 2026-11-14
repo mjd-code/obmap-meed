@@ -4,12 +4,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   PublicReaderService,
   type PublicVaultInfo,
-} from "@/domains/public-reader/shared/api/PublicReaderService";
-import { PublicMarkdownReader } from "@/domains/public-reader/components/PublicReaderMarkdownReader";
-import { PublicInteractiveGraph } from "@/domains/public-reader/components/PublicReaderInteractiveGraph";
-import { PublicFileTree } from "@/domains/public-reader/components/PublicReaderFileTree";
-import { PublicBreadcrumbs } from "@/domains/public-reader/components/PublicReaderBreadcrumbs";
-import { PublicFolderOverview } from "@/domains/public-reader/components/PublicReaderFolderOverview";
+} from "@/domains/community/shared/api/PublicReaderService";
+import { PublicMarkdownReader } from "@/domains/community/components/PublicReaderMarkdownReader";
+import { PublicInteractiveGraph } from "@/domains/community/components/PublicReaderInteractiveGraph";
+import { PublicFileTree } from "@/domains/community/components/PublicReaderFileTree";
+import { PublicBreadcrumbs } from "@/domains/community/components/PublicReaderBreadcrumbs";
+import { PublicFolderOverview } from "@/domains/community/components/PublicReaderFolderOverview";
+import { isReservedSlug } from "@/domains/community/shared/utils/reservedSlugs";
 import type { NoteRecord } from "@/types/collaboration";
 import type { GraphData } from "@/domains/graph/shared/utils/graph.types";
 import { Button } from "@/global/ui/button";
@@ -30,7 +31,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export const PublicReader: React.FC = () => {
+export interface PublicReaderProps {
+  mode?: "reader" | "explore";
+}
+
+export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) => {
   const { username, vaultSlug, noteSlug } = useParams<{
     username?: string;
     vaultSlug?: string;
@@ -46,12 +51,17 @@ export const PublicReader: React.FC = () => {
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
   const [activeView, setActiveView] = useState<"content" | "graph">("content");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(mode !== "explore");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Load Data Publik
   useEffect(() => {
+    if (mode === "explore") {
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     async function loadData() {
@@ -59,9 +69,10 @@ export const PublicReader: React.FC = () => {
       const param2 = username ? vaultSlug : noteSlug;
       const param3 = username ? noteSlug : undefined;
 
-      if (!param1) {
+      if (!param1 || (isReservedSlug(param1) && !/^[0-9a-f-]{36}$/i.test(param1))) {
+        setVaultInfo(null);
         setIsLoading(false);
-        setErrorMessage("Format URL tidak valid.");
+        setErrorMessage("Halaman tidak ditemukan.");
         return;
       }
 
@@ -96,7 +107,7 @@ export const PublicReader: React.FC = () => {
           // Sinkronkan URL jika membuka root vault
           if (!noteSlug && result.activeNote.slug) {
             navigate(
-              `/p/${result.vault.owner.username}/${result.vault.slug}/${result.activeNote.slug}`,
+              `/${result.vault.owner.username}/${result.vault.slug}/${result.activeNote.slug}`,
               { replace: true },
             );
           }
@@ -118,7 +129,7 @@ export const PublicReader: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [username, vaultSlug, noteSlug, navigate]);
+  }, [mode, username, vaultSlug, noteSlug, navigate]);
 
   // Map slug -> title untuk pendeteksi ghost link wikilink
   const publishedSlugMap = useMemo(() => {
@@ -153,7 +164,7 @@ export const PublicReader: React.FC = () => {
     setActiveNote(note);
     setActiveView("content");
     setIsSidebarOpen(false);
-    navigate(`/p/${currentUsername}/${currentVaultSlug}/${note.slug}`);
+    navigate(`/${currentUsername}/${currentVaultSlug}/${note.slug}`);
   };
 
   const handleNavigateHome = () => {
@@ -176,6 +187,33 @@ export const PublicReader: React.FC = () => {
         <div className="text-center space-y-3">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-xs text-muted-foreground">Memuat dokumen publik...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Explore Mode (Komunitas Publik /explore)
+  if (mode === "explore") {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-background px-4 text-center select-none">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+          <Compass className="w-6 h-6" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight mb-2">Jelajahi Komunitas Pengetahuan ObMap</h1>
+        <p className="text-muted-foreground max-w-md mb-6 text-xs leading-relaxed">
+          Akses profil cendekiawan dan vault publik langsung melalui alamat kanonikal{" "}
+          <code className="font-mono text-foreground">/@username</code> atau{" "}
+          <code className="font-mono text-foreground">/@username/nama-vault</code>.
+        </p>
+        <div className="flex items-center gap-2">
+          <Link to="/">
+            <Button variant="outline" size="sm">
+              Beranda
+            </Button>
+          </Link>
+          <Link to="/app">
+            <Button size="sm">Buka Workspace</Button>
+          </Link>
         </div>
       </div>
     );
@@ -220,7 +258,7 @@ export const PublicReader: React.FC = () => {
           {/* Breadcrumb Penulis & Vault */}
           <div className="flex items-center gap-2 text-xs md:text-sm font-semibold min-w-0">
             <Link
-              to={`/p/${currentUsername}/${currentVaultSlug}`}
+              to={`/${currentUsername}/${currentVaultSlug}`}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0"
             >
               <Avatar className="w-6 h-6 border border-border">

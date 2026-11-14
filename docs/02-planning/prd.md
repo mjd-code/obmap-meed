@@ -1,115 +1,93 @@
 ---
 id: DOC-PLAN-001
-title: Product Requirements Document (PRD)
+title: Product Requirements Document (PRD) ObMap v2.0
 type: planning
-status: [IMPLEMENTED]
-owner: Principal Software Architect
-version: 1.1.0
-last_reviewed: 2026-11-10
+status: [PLANNED]
+owner: Chief Product Officer & Lead Product Manager
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
-  - DOC-VIS-001
+  - DOC-META-000
+  - DOC-PLAN-000
   - DOC-PLAN-002
   - DOC-PLAN-003
-  - DOC-PLAN-004
-  - DOC-PLAN-006
-source_of_truth: src/domains/
+  - DOC-PLAN-005
+source_of_truth: docs/00-meta/00-0-master-blueprint.md, docs/00-meta/00-2-quovadis.md
 ---
 
-# Product Requirements Document (PRD) - ObMap
+# Product Requirements Document (PRD) ObMap v2.0
 
 ## Ringkasan 3 Baris
-- Dokumen spesifikasi produk utama yang mengatur kapabilitas inti ObMap lintas 12 domain arsitektur.
-- Mendefinisikan masalah pengguna, batasan teknis, fitur rilis terverifikasi, serta metrik keberhasilan produk.
-- Menetapkan batasan tegas (*non-goals*) untuk menjaga performa kanvas dan kesederhanaan manipulasi teks.
+- Mendefinisikan kebutuhan produk end-to-end ObMap v2.0 sebagai **Visual Knowledge OS** dan **Social Knowledge Network** yang menyatukan kapabilitas Obsidian, XMind, Notion, Wikipedia, dan LinkedIn × ResearchGate × GitHub.
+- Mengunci seluruh keputusan produk mutakhir: domain `community` (`/:username` *hard cutover* tanpa `/p/*`), domain `dashboard` (`/vaults`), persetujuan Stage 2 per-user di `/admin`, kurasi manual *Verified Scholar*, lisensi default `CC BY-SA 4.0`, dan harga/kuota dinamis via `/admin` dengan **Xendit/Midtrans** pertama.
+- Menghubungkan skenario pengguna (`PER-01`–`PER-09`) langsung ke kriteria keberhasilan terukur, mitigasi risiko, dan antrean implementasi `STEP-01.1`–`STEP-05.4`.
 
 ---
 
-## 1. Riwayat Revisi Dokumen
+## 1. Masalah Inti Pengguna & Ruang Lingkup Produk
+Pengguna pengetahuan saat ini terpaksa memecah alur kerjanya di 4–5 alat terpisah: menulis catatan Markdown privat (Obsidian), memetakan ide secara visual deterministik (XMind), berkolaborasi tim dan melihat Kanban/Kalender (Notion), membangun portofolio publik/sitasi (LinkedIn/ResearchGate), dan merancang kurikulum visual (Roadmap/LMS). ObMap v2.0 mengintegrasikan kelima alur tersebut dengan prinsip *local-first* tanpa *vendor lock-in*.
 
-| Versi | Tanggal | Penulis | Perubahan Utama |
-| :--- | :--- | :--- | :--- |
-| 1.0.0 | 2026-10-15 | Principal Architect | Rilis draf awal pasca restrukturisasi Wave 1 & 2 |
-| 1.1.0 | 2026-11-10 | Principal Architect | Sinkronisasi Wave 3 (12 Domain), CodeMirror 6, VCS, & Public Reader |
-
----
-
-## 2. Pemangku Kepentingan (Stakeholders)
-
-- **Sponsor Proyek:** Lead Product Manager
-- **Arsitektur Teknis:** Principal Software Architect
-- **Frontend & Visual Engine:** Senior Visual Performance Engineer
-- **Infrastruktur & Cloud:** Supabase DevOps Specialist
+### Ruang Lingkup In-Scope v2.0
+- **Core Workspace (`/app`):** Editor Markdown CM6 + YAML terisolasi, Canvas2D multi-solver deterministik + Free-Force, Aho-Corasick Web Worker, VCS lokal/cloud, 6-Layer Cascading Config + Unified Theme Engine.
+- **Dashboard Hub (`/vaults` — `domains/dashboard/`):** Manajemen multi-vault + 5 mode tampilan derivatif frontmatter (Grid, Tree, Kanban, Calendar/Timeline, Analytics) + Community Feed & Template Gallery.
+- **Community & Scholarly Network (`/:username`, `/@:username`, `/explore` — `domains/community/`):** Profil intelektual, konstelasi vault publik (`CC BY-SA 4.0`), *Cite this Note*, sitasi lintas-vault `[[@user/vault/note]]`, *Fork & Merge Request*, anotasi paragraf, dan lencana kurasi manual *Verified Scholar*.
+- **Growth, Gate & Admin (`/` Landing Sandbox, Onboarding 5-Tahap, `/admin`):** *ReleaseStageGate* 3 tahap, antrean approval individual Stage 2, manajemen harga/kuota paket dinamis, dan gerbang pembayaran Xendit/Midtrans → Stripe.
+- **Extensibility (`@obmap/sdk`):** Sandbox plugin Worker/Iframe CSP + *Scoped CSS Snippets* + Enterprise Allowlist.
 
 ---
 
-## 3. Pernyataan Masalah
-
-1. **Fragmentasi Alat Pengetahuan:** Pengguna terpaksa memisahkan catatan teks (Notion/Obsidian) dari diagram konseptual (XMind/Miro).
-2. **Kerapuhan Sinkronisasi Kolaboratif:** Alat kolaborasi *real-time* sering menimpa modifikasi offline atau menghasilkan konflik teks yang merusak dokumen.
-3. **Ketergantungan Ekosistem Tertutup:** Pengguna khawatir catatan seumur hidup mereka terdistorsi jika vendor SaaS mengubah model harga atau menghentikan layanan.
-
----
-
-## 4. Ruang Lingkup Fitur Produk & Status
+## 2. Alur Produk Lintas Tahap (End-to-End User Journeys)
 
 ```mermaid
-graph TD
-    subgraph Core Pillars
-        P1[Obsidian: Local PKM] --> F1[CodeMirror 6 Editor]
-        P1 --> F2[FS Access API / IndexedDB]
-        P2[XMind: Visual Engine] --> F3[Tree / Mindmap / Fishbone / Timeline]
-        P2 --> F4[Living Canvas Atmospheric Effects]
-        P3[Notion: Collab & Publish] --> F5[Public Reader /p/*]
-        P3 --> F6[In-Browser VCS Branch & Merge]
-    end
+flowchart LR
+    V["Pengunjung Landing / Sandbox (<65KB)"] --> R["Registrasi + Klaim /:username"]
+    R --> G{"ReleaseStageGate"}
+    G -->|"Stage 1: Partner Pilot"| P1["Token partner_invitations -> /vaults & /app"]
+    G -->|"Stage 2: Community Beta"| P2["account_status = pending_approval -> Antrean /admin"]
+    P2 -->|"Admin Approve Individu"| P1
+    G -->|"Stage 3: Commercial GA"| P3["Auto-Approved + Free/Paid Quota Dinamis"]
+    P1 --> W["Onboarding 5-Tahap -> Workspace /app & Publish /:username"]
+    P3 --> W
 ```
 
-### 4.1 Domain Vault & Penyimpanan Data
-- `FEAT-VAULT-001`: Multi-strategy storage: File System API, IndexedDB, dan Supabase Cloud Sync (`[IMPLEMENTED]`).
-- `FEAT-VAULT-002`: Deteksi dan resolusi konflik impor akumulatif (Merge, Overwrite, Skip, Rename) (`[IMPLEMENTED]`).
-- `FEAT-VAULT-003`: Auto-save otomatis dengan visual status indicator (`[IMPLEMENTED]`).
-
-### 4.2 Domain Editor Markdown
-- `FEAT-EDIT-001`: CodeMirror 6 dengan ekstensi Live Preview, Wikilinks `[[...]]`, dan Tags `#...` (`[IMPLEMENTED]`).
-- `FEAT-EDIT-002`: Collapsible properties editor untuk YAML Frontmatter terisolasi dari teks utama (`[IMPLEMENTED]`).
-- `FEAT-EDIT-003`: Heading outline navigation & folding sections (`[IMPLEMENTED]`).
-
-### 4.3 Domain Graph & Visualisasi
-- `FEAT-GRAPH-001`: Algoritma Mindmap, Org Chart, Brace Map, Fishbone, dan Timeline Hierarki (`[IMPLEMENTED]`).
-- `FEAT-GRAPH-002`: Dynamic Atmosphere & Living Canvas (Stardust particles, link glow flow) (`[IMPLEMENTED]`).
-- `FEAT-GRAPH-003`: Floating contextual gear toolbar dengan hit-test klik kanan / double tap (`[IMPLEMENTED]`).
-- `FEAT-GRAPH-004`: Anti-collision layout bounding box untuk teks panjang (`[PARTIAL]`).
-- `FEAT-GRAPH-005`: Mode visualisasi Tree Table spreadsheet (`[PLANNED]`).
-
-### 4.4 Domain Kolaborasi, VCS, & Publikasi
-- `FEAT-COLLAB-001`: Portal pembaca publik `/p/:username/:vaultSlug` terisolasi anonim (`[IMPLEMENTED]`).
-- `FEAT-VCS-001`: Sistem cabang mikro (*branching*), penampungan (*stashing*), dan *3-way merge* lokal (`[IMPLEMENTED]`).
-- `FEAT-COLLAB-002`: Granular folder & note permission inheritance via Supabase RLS (`[PARTIAL]`).
-- `FEAT-COLLAB-003`: Real-time multiplayer CRDT (Yjs integration) (`[PLANNED]`).
+1. **Alur Akuisisi & Sandbox (`STEP-02.2`–`02.3`):** Pengunjung langsung mencoba editor outline-ke-Mindmap di `/` tanpa login; saat mendaftar, karya di memori otomatis dipindahkan menjadi vault pertamanya begitu melewati `ReleaseStageGate`.
+2. **Alur Publikasi & Kolaborasi Sosial (`STEP-01.2`, `01.4`, `03.1`–`03.3`):** Pemilik memilih state visibilitas (`Private`, `Shared`, `Public Unlisted`, `Public Listed`). Catatan ber-frontmatter `visibility: private` dikecualikan dari bundle publik. Vault publik memakai `CC BY-SA 4.0` sebagai default, menampilkan tombol *Cite* dan *Fork to My Vault*, serta terbuka untuk *Knowledge Merge Request* lintas pengguna via VCS.
+3. **Alur Komersial & Admin (`STEP-04.1`–`04.2`):** Admin menetapkan nominal harga, fitur, dan batas kuota tiap tier di `/admin` (`plans`, `plan_entitlements`, `plan_quotas`), mengaktifkan checkout IDR melalui Xendit/Midtrans (QRIS/VA/e-Wallet) sebelum Stripe, dan menjaga data pengguna tetap dapat dibaca/ekspor bila terjadi *downgrade* (*Non-Destructive Downgrade*).
 
 ---
 
-## 5. Non-Goals (Batasan Tegas Luar Lingkup)
+## 3. Matriks Kebutuhan Fungsional per Domain Utama
 
-- **Bukan Editor WYSIWYG Berbasis Blok Kompleks:** Tidak akan menerapkan model blok seperti Notion yang mengorbankan integritas plaintext Markdown murni.
-- **Bukan Pengganti Database Relasional:** Metadata frontmatter tidak dirancang untuk menangani jutaan baris transaksi perbankan atau kueri SQL berat.
-- **Bukan Cloud File Storage Tanpa Batas:** Media yang diunggah tunduk pada batas kuota per vault pengguna.
+| Kelompok Fitur | Spesifikasi Ringkas | Status | Target Step |
+| :--- | :--- | :---: | :--- |
+| **Workspace & Graph Deterministik** | CM6 + isolated YAML, 4+2 solver deterministik, *Per-Leaf Store*, *Subtree Override*, Pitch Mode & ekspor PDF/SVG/OPML | `[IMPLEMENTED]` / `[PLANNED]` | Baseline + `STEP-05.2` |
+| **Dashboard (`/vaults`)** | 5 views derivatif Markdown/Frontmatter, Community Feed, Template Gallery, redirect login ke `/vaults` | `[VISION]` | `STEP-02.1` |
+| **Community (`/:username` & `/explore`)** | Refaktor `public-reader` → `community`, *hard cutover* `/p/*`, `RESERVED_SLUGS`, profil `/:username`, `/explore`, *Verified Scholar* manual Admin | `[PARTIAL]` / `[VISION]` | `STEP-01.2`, `03.1` |
+| **Citations, Fork/MR & Annotations** | Wikilink `[[@user/vault/note]]`, *Cite Exporter*, `CC BY-SA 4.0`, *Fork to My Vault*, MR lintas user, anotasi hash paragraf | `[PARTIAL]` / `[VISION]` | `STEP-03.2`–`03.3` |
+| **Stage Gate & RBAC PolicyEngine** | `ReleaseStageGate` (Stage 1–3), approval per-user Stage 2 di `/admin`, `PolicyEngine` simetris Postgres RLS, 4 state visibilitas | `[PARTIAL]` / `[VISION]` | `STEP-01.3`–`01.4` |
+| **Dynamic Billing & Teamspaces** | Konfigurasi tarif/kuota dinamis di `/admin`, **Xendit/Midtrans** first → Stripe, Teamspaces + *Org-Lock*, CRDT Yjs | `[VISION]` | `STEP-04.1`–`04.3` |
+| **6-Layer Config, Theme & `@obmap/sdk`** | 6-lapis resolusi config, CSS Variables ↔ Canvas2D tokens, *Scoped CSS Snippets*, `@obmap/sdk` 12 Extension Points | `[PARTIAL]` / `[VISION]` | `STEP-01.5`, `05.3` |
+| **Interactive Graph LMS** | DAG `prerequisites`, state node *Locked/Available/Mastered*, kuis & progres pelajar | `[VISION]` | `STEP-05.1` |
 
 ---
 
-## 6. Metrik Keberhasilan (Success Metrics)
+## 4. Mitigasi Risiko Produk & Teknis (`RISK-01` s/d `RISK-06`)
 
-| Indikator (KPI) | Target Kinerja | Status Saat Ini |
-| :--- | :--- | :--- |
-| **FPS Rendering Kanvas** | Stabil di 60 FPS pada 1.000 nodes | Terverifikasi pada d3 force & tree solvers `[IMPLEMENTED]` |
-| **Waktu Muat Vault Dingin** | < 1,5 detik dari IndexedDB lokal | ~800ms rata-rata pada 500 catatan `[IMPLEMENTED]` |
-| **Zero Data Loss Rate** | 100% data terselamatkan saat crash peramban | Mekanisme IndexedDB Journaling aktif `[IMPLEMENTED]` |
-| **Latensi Web Worker Mention** | < 50ms untuk pencarian indeks 2.000 files | Aho-Corasick Web Worker aktif `[IMPLEMENTED]` |
+| ID Risiko | Deskripsi Risiko | Tingkat | Strategi Mitigasi Terstruktur |
+| :--- | :--- | :---: | :--- |
+| **`RISK-01`** | Kebocoran catatan privat saat vault diubah menjadi `Shared` atau `Public` | Kritis | Pengecualian ketat `visibility: private` di query Supabase RLS & generator bundle; bucket `vault-media` hanya lewat `createSignedUrl`; uji RLS otomatis (`STEP-01.4`, `05.4`). |
+| **`RISK-02`** | Lonjakan trafik pendaftaran merusak stabilitas infrastruktur di tahap awal | Tinggi | Terapkan `ReleaseStageGate` Stage 1 invite-only & Stage 2 `pending_approval` dengan persetujuan individual Admin di `/admin` (`STEP-01.3`). |
+| **`RISK-03`** | Pelanggaran hak akses dan konflik skema saat menambah domain `dashboard` & `community` | Tinggi | Tegakkan aturan DDD & Headless Controller (`<= 300` baris); hapuskan `/p/*` via *hard cutover* bersih (`STEP-01.2`). |
+| **`RISK-04`** | Tabrakan root URL `/:username` dengan rute aplikasi (`/app`, `/vaults`, `/explore`, `/admin`) | Kritis | Validasi tiga lapis `RESERVED_SLUGS` pada urutan route `src/App.tsx`, `ProfileService.ts`, dan constraint PostgreSQL `CHECK` (`STEP-01.2`). |
+| **`RISK-05`** | Kerusakan data atau ketidakpuasan saat masa berlangganan berakhir (*downgrade*) | Tinggi | Terapkan *Grace Period* 7 hari dan *Non-Destructive Downgrade* (`downgraded_readonly` — tetap bisa baca & ekspor ke lokal/ZIP). |
+| **`RISK-06`** | Serangan XSS atau pencurian token oleh plugin komunitas atau CSS kustom | Kritis | Isolasi `@obmap/sdk` dalam Web Worker / Iframe CSP, *Permission Manifest* eksplisit, sanitasi `rehype-sanitize` pada HTML/CSS publik (`STEP-05.3`). |
 
 ---
 
 ## Terkait
-- [Spesifikasi Persyaratan Perangkat Lunak (SRS)](srs.md)
-- [Target Persona Pengguna](personas.md)
-- [Roadmap Produk](roadmap.md)
+- [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
+- [Playbook Eksekusi Step-by-Step (`README.md`)](README.md)
+- [Business Requirements Document (`brd.md`)](brd.md)
+- [System Requirements Specification (`srs.md`)](srs.md)
+- [Katalog Persona (`personas.md`)](personas.md)

@@ -1,104 +1,49 @@
-Berikut adalah laporan komprehensif hasil pemeriksaan, audit menyeluruh, verifikasi integritas kode, dan evaluasi sistemik terhadap direktori `docs/` serta seluruh artifak pendukungnya di dalam repositori ini.
+---
+id: DOC-PORTAL-001
+title: Ringkasan Navigasi & Indeks Dokumentasi Sistem (SUMMARY)
+type: index
+status: [IMPLEMENTED]
+owner: Principal Software Architect
+version: 2.0.0
+last_reviewed: 2026-11-14
+audience: both
+related:
+  - DOC-PORTAL-000
+  - DOC-META-000
+  - DOC-META-005
+  - DOC-CHLOG-000
+source_of_truth: docs/
+---
+
+# Ringkasan Navigasi Dokumentasi ObMap (`SUMMARY`)
+
+## Ringkasan 3 Baris
+- Indeks navigasi cepat seluruh direktori dokumentasi ObMap untuk manusia dan sistem otomasi (`llms.txt`).
+- Menempatkan [Master Blueprint v2.0](00-meta/00-0-master-blueprint.md) dan [Quo Vadis v2.0](00-meta/00-2-quovadis.md) sebagai rujukan tertinggi, serta [Modular Changelog Hub](changelogs/README.md) sebagai pusat riwayat perubahan.
+- Temuan audit file & *code drift* terdahulu telah diarsipkan secara terstruktur di [Doc Drift Log](05-engineering/doc-drift-log.md).
 
 ---
 
-LAPORAN AUDIT & EVALUASI SISTEM DOKUMENTASI (`docs/`)
+## 1. Dokumen Induk & Tata Kelola (`00-meta/` & `changelogs/`)
+- [Master Blueprint v2.0 (`DOC-META-000`)](00-meta/00-0-master-blueprint.md) — Spesifikasi sistem menyeluruh (5 DNA, rute `/:username`, 3-Stage Shipping Gate, RBAC, monetisasi, `dashboard`, 6-layer config, `@obmap/sdk`).
+- [Quo Vadis v2.0 (`DOC-META-005`)](00-meta/00-2-quovadis.md) — Retrospektif teknis Wave 1–3, audit kesiapan 20 dimensi, daftar drift, & roadmap `EPIC-01`–`15`.
+- [Quo Vadis v1.0 (`00-1-quovadis.md`)](00-meta/00-1-quovadis.md) — Arsip historis cetak biru Wave 3.
+- [Modular Changelog Hub (`DOC-CHLOG-000`)](changelogs/README.md) & [Machine JSONL](_machine/changelog.jsonl) — Pusat riwayat perubahan hemat-token & SOP wajib agen.
+- [Konvensi Dokumentasi (`DOC-META-001`)](00-meta/doc-conventions.md), [Glosarium (`DOC-META-002`)](00-meta/glossary.md), [Legenda Status (`DOC-META-003`)](00-meta/status-legend.md).
 
-1. Ringkasan Eksekutif (Executive Summary)
+## 2. Visi & Perencanaan (`01-visions/` & `02-planning/`)
+- Visi: [Vision & Mission](01-visions/vision-mission.md) · [Product Philosophy](01-visions/product-philosophy.md) · [Positioning](01-visions/positioning.md) · [Use Case Pillars](01-visions/use-case-pillars.md).
+- Perencanaan & Eksekusi Bertahap: [**Planning Playbook (`STEP-01.1`–`05.4`)**](02-planning/README.md) · [PRD](02-planning/prd.md) · [BRD](02-planning/brd.md) · [SRS](02-planning/srs.md) · [SoW](02-planning/sow.md) · [Personas](02-planning/personas.md) · [Roadmap](02-planning/roadmap.md) · [Traceability Matrix](02-planning/traceability-matrix.md).
 
-| Metrik Evaluasi | Nilai / Skor | Status | Catatan Utama |
-| :--- | :---: | :---: | :--- |
-| Kelengkapan Dokumen | 38 / 38 berkas MD + 5 / 5 JSON | Sangat Baik (98%) | Seluruh struktur 6 fase dari spesifikasi telah hadir di disk. |
-| Validitas Front-matter | 37 / 37 (100% dokumen formal) | Sempurna (100%) | Seluruh file di subfolder memiliki YAML valid & ID unik tanpa tabrakan. |
-| Integritas Link Internal | 81 / 84 link Markdown valid | Perlu Penyesuaian (96%) | 3 broken link akibat deviasi nama direktori `01-visions/`. |
-| Integritas JSON Mesin | 5 / 5 berkas JSON valid | Perlu Penyesuaian (74%) | 9 entri path di `docs-index.json` meleset dari nama fisik file di disk. |
-| Ketepatan Path Kode Sumber | 13 / 20 path kode terverifikasi presisi | Deviasi Wave 3 (65%) | Sebagian path masih merujuk penamaan pra-Wave 3 (mis. `services` vs `api`). |
-| Skor Kesiapan Produksi | 88 / 100 | SIAP (DENGAN PERBAIKAN MINOR) | Struktur sangat solid, hanya butuh sinkronisasi penamaan & pathing. |
-
----
-
-2. Temuan Audit Struktur & Penamaan Berkas (Filesystem Anomalies)
-
-A. Deviasi Nama Folder `docs/01-visions/` vs `docs/01-vision/`
-* Kondisi Aktual di Disk: Direktori tersimpan dengan nama jamak `docs/01-visions/` (dengan huruf `s`).
-* Kondisi pada Dokumen & Index:
-  * Spesifikasi tugas meminta: `docs/01-vision/`.
-  * Tautan di `docs/02-planning/brd.md`, `docs/02-planning/personas.md`, dan `docs/06-lms/lms-vision.md` menunjuk ke `../01-vision/`.
-  * Seluruh 4 dokumen di `docs-index.json` dan `LLMS.txt` mendaftarkan `docs/01-vision/*`.
-* Dampak: Menimbulkan 3 broken link di Markdown dan 4 path error pada pembaca mesin.
-
-B. Penempatan & Kapitalisasi `llms.txt` dan `AGENTS.md`
-* Kondisi Aktual di Disk:
-  1. `docs/LLMS.txt` berada di dalam folder `docs/` dengan ekstensi kapital (`.txt`), sedangkan root `/llms.txt` belum ada.
-  2. `docs/AGENTS.md` (34 baris, versi ringkas ramah LLM) berada di `docs/`, sementara di root `/AGENTS.md` masih berisi aturan arsitektur lama (24 baris).
-* Rekomendasi Standar: Letakkan `llms.txt` di root `/llms.txt` (huruf kecil) dan gabungkan panduan AI ke root `/AGENTS.md`.
+## 3. Arsitektur, Fitur, Engineering, LMS & Developer SDK (`03-architecture/` s/d `07-developers/`)
+- Arsitektur: [System Overview](03-architecture/system-overview.md) · [Repository Structure](03-architecture/repository-structure.md) · [Domain Map](03-architecture/domain-map.md) · [Data & Storage](03-architecture/data-and-storage.md) · [Layout Engine](03-architecture/layout-engine.md) · [Collaboration & Publishing](03-architecture/collaboration-and-publishing.md) · [ADR Index](03-architecture/adr/README.md).
+- Fitur & LMS: [Feature Catalog](04-features/feature-catalog.md) · [LMS Vision](06-lms/lms-vision.md).
+- Engineering: [Coding Standards](05-engineering/coding-standards.md) · [Testing Strategy](05-engineering/testing-strategy.md) · [Repository Rules](05-engineering/repository-rules.md) · [Contribution Guide](05-engineering/contribution-guide.md) · [Tech Debt Register](05-engineering/tech-debt-register.md) · [Doc Drift Log](05-engineering/doc-drift-log.md).
+- Developer SDK (`@obmap/sdk`): [Dev Portal](07-developers/README.md) · [SDK Quickstart](07-developers/plugin-sdk-quickstart.md) · [Extension Points](07-developers/extension-points-reference.md) · [Theme Guide](07-developers/theme-authoring-guide.md) · [Security & Sandbox](07-developers/security-and-sandbox.md).
 
 ---
 
-3. Temuan Audit Integritas Tautan (Link Integrity Audit)
-
-Dari pengujian 84 link Markdown, ditemukan 3 link mati (100% bersumber dari masalah huruf `s` pada folder `01-visions`):
-1. `docs/02-planning/brd.md:12` &rarr; `[Positioning Produk](../01-vision/positioning.md)` (Gagal resolving)
-2. `docs/02-planning/personas.md:8` &rarr; `[Pilar Kasus Penggunaan](../01-vision/use-case-pillars.md)` (Gagal resolving)
-3. `docs/06-lms/lms-vision.md:15` &rarr; `[Empat Pilar Kasus Penggunaan](../01-vision/use-case-pillars.md)` (Gagal resolving)
-
----
-
-4. Temuan Audit Rekonsiliasi ADR (`03-architecture/adr/`)
-
-Terdapat diskrepansi penomoran dan penamaan antara file riil di disk vs yang didaftarkan di `docs/_machine/docs-index.json` dan `docs/LLMS.txt`:
-
-| Nomor | Nama Berkas Aktual di Disk | Nama yang Terdaftar di `docs-index.json` & `LLMS.txt` | Status Keselarasan |
-| :---: | :--- | :--- | :---: |
-| 0001 | `ADR-0001-domain-driven-design-restructuring.md` | `ADR-0001-multi-storage-strategy.md` | Mismatch |
-| 0002 | `ADR-0002-codemirror-6-markdown-editor.md` | `ADR-0002-deterministic-layout-solvers.md` | Mismatch |
-| 0003 | `ADR-0003-deterministic-layout-solvers-vs-force.md` | `ADR-0003-domain-driven-restructuring.md` | Mismatch |
-| 0004 | `ADR-0004-multi-strategy-storage-isolation.md` | `ADR-0004-internal-vcs-engine.md` | Mismatch |
-| 0005 | `ADR-0005-in-browser-vcs-for-markdown-collaboration.md` | `ADR-0005-web-worker-metadata-indexing.md` | Mismatch |
-
-Catatan: Konten ADR di disk sangat bagus, namun `docs-index.json` dan `LLMS.txt` perlu diperbarui agar merujuk ke nama file aktual di disk.
-
----
-
-5. Temuan Audit Sumber Kebenaran Kode (Code Drift Post-Wave 3)
-
-Sebagian path `source_of_truth` yang dikutip dalam `docs/04-features/feature-catalog.md` dan `docs/_machine/features.json` masih mengacu pada penamaan pra-Wave 3:
-
-| Fitur / Komponen | Path yang Tertulis di Dokumen | Path Riil Aktual di Kode Sumber | Solusi Evaluasi |
-| :--- | :--- | :--- | :--- |
-| Vault Manager | `src/domains/vault/shared/services/VaultManager.ts` | `src/domains/vault/shared/api/VaultManager.ts` | Ubah `services` &rarr; `api` |
-| Import Export | `src/domains/vault/shared/services/ImportExportService.ts` | `src/domains/vault/shared/api/ImportExportService.ts` | Ubah `services` &rarr; `api` |
-| Vault Lifecycle | `src/domains/vault/shared/hooks/useVaultLifecycle.ts` | `src/domains/workspace/shared/hooks/useVaultLifecycle.ts` | Domain pemilik aktual adalah `workspace` |
-| Properties Panel | `src/domains/editor/components/PropertiesPanel.tsx` | `src/domains/editor/components/EditorPropertiesPanel.tsx` | Ditambahkan prefix `Editor` |
-| Editor Setup | `src/domains/editor/shared/cm/setup.ts` | `src/domains/editor/shared/utils/cmSetup.ts` | Tersimpan di folder `utils` |
-| Layout Algorithms | `src/domains/graph/shared/utils/layoutAlgorithms.ts` | `src/domains/graph/shared/utils/treeLayouts.ts` dkk. | Rinci per solver (`treeLayouts`, `mindmap`, `timeline`) |
-| Migrasi Supabase | `supabase/migrations/20261001000000_storage_and_permissions.sql` | `supabase/migrations/20261031000000_v4_collaboration_and_publishing.sql` | Gunakan stempel waktu migrasi v4 aktual |
-
----
-
-6. Evaluasi Skema JSON Mesin (`docs/_machine/`)
-
-1. `domains.json` (100% Akurat): 12 domain (`admin, auth, collaboration, editor, graph, metadata, public-reader, settings, sync, vault, vcs, workspace`) dipetakan dengan tepat beserta orchestrator-nya masing-masing.
-2. `repo-map.json` (100% Akurat): Menggambarkan dengan jelas batas horizontal `src/global/*` vs batas vertikal `src/domains/*`.
-3. `requirements.json` (100% Valid): 16 Functional Requirements dan 4 Non-Functional Requirements terdefinisi rapi dengan kriteria verifikasi.
-4. `features.json` & `docs-index.json`: Valid secara sintaksis JSON, hanya membutuhkan koreksi 7 string path sesuai tabel temuan di atas.
-
----
-
-7. Rencana Tindakan Remediasi (Quick Fix Script)
-
-Bila Anda ingin menyempurnakan seluruh temuan di atas secara instan pada mesin lokal, berikut langkah/skrip shell yang disarankan:
-
-```bash
-# 1. Normalkan nama folder vision (menghilangkan 's' agar semua link valid)
-mv docs/01-visions docs/01-vision
-
-# 2. Sinkronkan AGENTS.md dan llms.txt ke root repositori
-cp docs/AGENTS.md ./AGENTS.md
-cp docs/LLMS.txt ./llms.txt
-
-# 3. Perbarui ADR filenames di docs/_machine/docs-index.json dan llms.txt agar identik dengan disk
-# (ADR-0001-domain-driven-design-restructuring.md, ADR-0002-codemirror-6-markdown-editor.md, dst.)
-```
-
-Sistem dokumentasi `docs/` Anda telah mencapai tingkat kedalaman, keterbacaan manusia, dan keterbacaan AI yang sangat tinggi serta terstruktur secara profesional.
+## Terkait
+- [Portal Dokumentasi Utama](README.md)
+- [Master Blueprint v2.0](00-meta/00-0-master-blueprint.md)
+- [Quo Vadis v2.0](00-meta/00-2-quovadis.md)

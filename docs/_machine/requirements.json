@@ -1,160 +1,47 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
-  "functional_requirements": [
-    {
-      "id": "FR-VAULT-001",
-      "domain": "vault",
-      "title": "Per-Vault Multi-Storage Isolation",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/vault/shared/api/VaultManager.ts",
-      "test_method": "Unit test & IndexedDB storage verification"
-    },
-    {
-      "id": "FR-VAULT-002",
-      "domain": "vault",
-      "title": "Auto-Save Engine & UI Notice",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/vault/shared/hooks/useVaultLifecycle.ts",
-      "test_method": "Simulated mutation trigger & status indicator assert"
-    },
-    {
-      "id": "FR-VAULT-003",
-      "domain": "vault",
-      "title": "Accumulative Import Strategies (Merge/Overwrite/Skip/Rename)",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/vault/shared/api/ImportExportService.ts",
-      "test_method": "Import duplicate conflict simulator"
-    },
-    {
-      "id": "FR-EDIT-001",
-      "domain": "editor",
-      "title": "CodeMirror 6 Live Preview & Markdown Extensions",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/editor/shared/utils/cmSetup.ts",
-      "test_method": "Syntax highlighting & Wikilink regex validation"
-    },
-    {
-      "id": "FR-EDIT-002",
-      "domain": "editor",
-      "title": "Isolated YAML Frontmatter Properties Editor",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/editor/components/EditorPropertiesPanel.tsx",
-      "test_method": "YAML parsing without body leakage"
-    },
-    {
-      "id": "FR-GRAPH-001",
-      "domain": "graph",
-      "title": "Multi-Model Layout Solver (Mindmap, Org, Timeline, Fishbone, Radial)",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/graph/shared/utils/layoutAlgorithms.ts",
-      "test_method": "Deterministic coordinates & node collision check"
-    },
-    {
-      "id": "FR-GRAPH-002",
-      "domain": "graph",
-      "title": "Living Canvas Atmosphere & Hierarchy Depth Color Engine",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/graph/components/GraphAtmosphereControls.tsx",
-      "test_method": "Visual render smoke test & palette generator unit test"
-    },
-    {
-      "id": "FR-GRAPH-003",
-      "domain": "graph",
-      "title": "Subtree-Specific Layout Override",
-      "status": "PARTIAL",
-      "source": "src/domains/graph/shared/utils/subtreeCompose.ts",
-      "test_method": "Mixed layout coordinate continuity"
-    },
-    {
-      "id": "FR-META-001",
-      "domain": "metadata",
-      "title": "Aho-Corasick High Performance Mention Indexing",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/metadata/shared/api/mentions.worker.ts",
-      "test_method": "Worker message response time under 1000 notes"
-    },
-    {
-      "id": "FR-PUB-001",
-      "domain": "collaboration",
-      "title": "Instant Public Web Note & Graph Publishing",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/collaboration/shared/api/PublishingService.ts",
-      "test_method": "HTTP GET /p/:user/:vault/:slug renders successfully"
-    },
-    {
-      "id": "FR-PUB-002",
-      "domain": "collaboration",
-      "title": "Hierarchical Inherited Permissions Engine",
-      "status": "PARTIAL",
-      "source": "supabase/migrations/20261001000000_storage_and_permissions.sql",
-      "test_method": "PostgreSQL RLS policy execution assertions"
-    },
-    {
-      "id": "FR-PUB-003",
-      "domain": "collaboration",
-      "title": "Yjs/CRDT Real-Time Collaborative Canvas",
-      "status": "PLANNED",
-      "source": "docs/02-planning/roadmap.md",
-      "test_method": "WebRTC / WebSocket multi-client synchronization"
-    },
-    {
-      "id": "FR-VCS-001",
-      "domain": "vcs",
-      "title": "Internal VCS Micro-Revisions, Stashes, & 3-Way Merge",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/vcs/shared/stores/useVcsStore.ts",
-      "test_method": "Branch checkout, diff generation, merge conflict detection"
-    },
-    {
-      "id": "FR-SYNC-001",
-      "domain": "sync",
-      "title": "Offline IndexedDB Mutation Queue & Auto-Reconnection",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/sync/shared/stores/useOfflineStore.ts",
-      "test_method": "Offline network toggle mutation playback"
-    },
-    {
-      "id": "FR-LMS-001",
-      "domain": "workspace",
-      "title": "Interactive Curriculum Tree with Mastery Checkpoints",
-      "status": "VISION",
-      "source": "docs/06-lms/lms-vision.md",
-      "test_method": "Interactive node completion status tracking"
-    },
-    {
-      "id": "FR-WS-001",
-      "domain": "workspace",
-      "title": "VS Code/Obsidian-Style Leaf Docking & Split Panes",
-      "status": "IMPLEMENTED",
-      "source": "src/domains/workspace/shared/stores/useWorkspaceStore.ts",
-      "test_method": "Leaf lifecycle and tab drag-split layout tests"
-    }
-  ],
-  "non_functional_requirements": [
-    {
-      "id": "NFR-001",
-      "category": "Performance",
-      "title": "Graph Rendering 60 FPS up to 1,000 nodes",
-      "status": "IMPLEMENTED"
-    },
-    {
-      "id": "NFR-002",
-      "category": "Reliability",
-      "title": "Local-First Zero Data Loss Guarantee",
-      "status": "IMPLEMENTED"
-    },
-    {
-      "id": "NFR-003",
-      "category": "Security",
-      "title": "Strict Tenant Data Isolation via Supabase RLS",
-      "status": "IMPLEMENTED"
-    },
-    {
-      "id": "NFR-004",
-      "category": "Scalability",
-      "title": "Web Worker Offloaded Indexing",
-      "status": "IMPLEMENTED"
-    }
+  "version": "2.0.0",
+  "last_updated": "2026-11-14",
+  "source_srs": "docs/02-planning/srs.md",
+  "requirements": [
+    { "id": "FR-SYS-001", "type": "functional", "domain": "global", "status": "IMPLEMENTED", "step_id": "STEP-01.1", "adr": "ADR-0001", "summary": "Convert src/global/api/untypedSupabase.ts into typed re-export and regenerate strict Supabase schema types across 17 tables." },
+    { "id": "FR-EDITOR-001", "type": "functional", "domain": "editor", "status": "IMPLEMENTED", "step_id": "baseline", "adr": "ADR-0002", "summary": "CodeMirror 6 Markdown body isolated from YAML properties panel." },
+    { "id": "FR-GRAPH-001", "type": "functional", "domain": "graph", "status": "IMPLEMENTED", "step_id": "baseline", "adr": "ADR-0003", "summary": "Deterministic Mindmap/Org/Timeline/Fishbone solvers isolated from Free-Force D3 simulation." },
+    { "id": "FR-GRAPH-010", "type": "functional", "domain": "graph", "status": "PLANNED", "step_id": "STEP-05.2", "adr": "ADR-0003", "summary": "Add deterministic argument-map and citation-tree solvers in layoutCategory.ts." },
+    { "id": "FR-GRAPH-011", "type": "functional", "domain": "graph", "status": "PLANNED", "step_id": "STEP-05.2", "adr": "ADR-0003", "summary": "Add Pitch Mode and PDF/SVG/OPML canvas export adapters." },
+    { "id": "FR-META-001", "type": "functional", "domain": "metadata", "status": "IMPLEMENTED", "step_id": "baseline", "adr": "ADR-0001", "summary": "Aho-Corasick indexing inside mentions.worker.ts (< 100ms)." },
+    { "id": "FR-VAULT-001", "type": "functional", "domain": "vault", "status": "IMPLEMENTED", "step_id": "baseline", "adr": "ADR-0004", "summary": "Multi-driver storage isolation (FS Access API, IndexedDB, Cloud, ZIP)." },
+    { "id": "FR-STAGE-001", "type": "functional", "domain": "auth", "status": "VISION", "step_id": "STEP-01.3", "adr": "ADR-0009", "summary": "Platform release_stage setting governing Stage 1, Stage 2, and Stage 3 access." },
+    { "id": "FR-STAGE-002", "type": "functional", "domain": "auth", "status": "VISION", "step_id": "STEP-01.3", "adr": "ADR-0009", "summary": "Stage 1 Closed Partner Pilot via partner_invitations and /admin provisioning." },
+    { "id": "FR-STAGE-003", "type": "functional", "domain": "admin", "status": "VISION", "step_id": "STEP-01.3", "adr": "ADR-0009", "summary": "Stage 2 new accounts start in pending_approval and require individual per-user Admin approval in /admin." },
+    { "id": "FR-AUTH-010", "type": "functional", "domain": "auth", "status": "PARTIAL", "step_id": "STEP-01.4", "adr": "ADR-0009", "summary": "Symmetric PolicyEngine client evaluator matching Postgres RLS can_access_resource()." },
+    { "id": "FR-VAULT-010", "type": "functional", "domain": "collaboration", "status": "PARTIAL", "step_id": "STEP-01.4", "adr": "ADR-0010", "summary": "4-state visibility SM (Private, Shared, Public Unlisted, Public Listed), visibility:private exclusion, and default CC BY-SA 4.0." },
+    { "id": "FR-COMM-001", "type": "functional", "domain": "community", "status": "IMPLEMENTED", "step_id": "STEP-01.2", "adr": "ADR-0007", "summary": "Refactor public-reader -> community, hard cutover removing /p/* without redirect, register /:username and /@:username with RESERVED_SLUGS." },
+    { "id": "FR-COMM-002", "type": "functional", "domain": "community", "status": "VISION", "step_id": "STEP-03.1", "adr": "ADR-0007", "summary": "Living Scholar Profile /:username with bio, ORCID, public vault constellation, and Impact Index." },
+    { "id": "FR-COMM-003", "type": "functional", "domain": "community", "status": "VISION", "step_id": "STEP-03.1", "adr": "ADR-0007", "summary": "/explore directory for topic indexing and Follow Scholar/Topic." },
+    { "id": "FR-COMM-004", "type": "functional", "domain": "admin", "status": "VISION", "step_id": "STEP-03.1", "adr": "ADR-0010", "summary": "Manual Admin curation in /admin for Verified Scholar/Educator/Institution badges." },
+    { "id": "FR-COMM-005", "type": "functional", "domain": "metadata", "status": "VISION", "step_id": "STEP-03.2", "adr": "ADR-0010", "summary": "Federated [[@username/vaultSlug/noteSlug]] worker parsing, epistemic YAML, and Cite exporter." },
+    { "id": "FR-COMM-006", "type": "functional", "domain": "vcs", "status": "VISION", "step_id": "STEP-03.3", "adr": "ADR-0010", "summary": "Fork to My Vault, Cross-User Knowledge Merge Request via vcsDiffEngine, and hash-anchored annotations." },
+    { "id": "FR-DASH-001", "type": "functional", "domain": "dashboard", "status": "VISION", "step_id": "STEP-02.1", "adr": "ADR-0008", "summary": "Create src/domains/dashboard/ for /vaults and redirect authenticated users from Landing to /vaults." },
+    { "id": "FR-DASH-002", "type": "functional", "domain": "dashboard", "status": "VISION", "step_id": "STEP-02.1", "adr": "ADR-0008", "summary": "Five derived Markdown/frontmatter views (Grid, Tree, Kanban, Calendar/Timeline, Analytics)." },
+    { "id": "FR-GROWTH-001", "type": "functional", "domain": "workspace", "status": "PARTIAL", "step_id": "STEP-02.2", "adr": "ADR-0004", "summary": "Conversion Landing Page with lazy In-Memory Sandbox (<65KB) and stage-aware CTA." },
+    { "id": "FR-GROWTH-002", "type": "functional", "domain": "auth", "status": "PLANNED", "step_id": "STEP-02.3", "adr": "ADR-0008", "summary": "Five-stage Hybrid Onboarding pipeline migrating Sandbox content on account approval." },
+    { "id": "FR-BILL-001", "type": "functional", "domain": "admin", "status": "VISION", "step_id": "STEP-04.1", "adr": "ADR-0009", "summary": "Dynamic DB schema (plans, plan_entitlements, plan_quotas) with zero hardcoded tier pricing or quota constants." },
+    { "id": "FR-BILL-002", "type": "functional", "domain": "admin", "status": "VISION", "step_id": "STEP-04.1", "adr": "ADR-0009", "summary": "Xendit / Midtrans payment gateway webhooks first (IDR/QRIS/VA), followed by Stripe expansion." },
+    { "id": "FR-BILL-003", "type": "functional", "domain": "vault", "status": "VISION", "step_id": "STEP-04.1", "adr": "ADR-0009", "summary": "Server-side quota enforcement + 7-day grace period + Non-Destructive Downgrade." },
+    { "id": "FR-ADM-010", "type": "functional", "domain": "admin", "status": "VISION", "step_id": "STEP-04.2", "adr": "ADR-0009", "summary": "Dynamic pricing/quota configurator, user approval, manual scholar verify, and coupons in /admin." },
+    { "id": "FR-COLLAB-010", "type": "functional", "domain": "collaboration", "status": "VISION", "step_id": "STEP-04.2", "adr": "ADR-0009", "summary": "Org Teamspaces, seat management, and Admin-Locked Policies." },
+    { "id": "FR-COLLAB-003", "type": "functional", "domain": "collaboration", "status": "VISION", "step_id": "STEP-04.3", "adr": "ADR-0005", "summary": "Real-time CRDT (Yjs) co-editing preserving offline local drivers." },
+    { "id": "FR-SET-001", "type": "functional", "domain": "settings", "status": "PARTIAL", "step_id": "STEP-01.5", "adr": "ADR-0011", "summary": "Six-layer cascading config resolution with role-based Org-Lock enforcement." },
+    { "id": "FR-SET-002", "type": "functional", "domain": "settings", "status": "PARTIAL", "step_id": "STEP-01.5", "adr": "ADR-0011", "summary": "Unified DOM CSS variables <-> Canvas2D theme tokens triggering graphRef.current?.refresh?.()." },
+    { "id": "FR-LMS-001", "type": "functional", "domain": "graph", "status": "VISION", "step_id": "STEP-05.1", "adr": "ADR-0003", "summary": "Prerequisite DAG evaluator, Locked/Available/Mastered states, and quiz mastery tracking." },
+    { "id": "FR-EXT-001", "type": "functional", "domain": "settings", "status": "PARTIAL", "step_id": "STEP-05.3", "adr": "ADR-0012", "summary": "Sandboxed @obmap/sdk (Worker/Iframe CSP), Permission Manifest, Scoped CSS, and 12 Extension Points." },
+    { "id": "NFR-001", "type": "non-functional", "domain": "graph", "status": "PARTIAL", "step_id": "STEP-05.2", "adr": "ADR-0003", "summary": "60 FPS at 2,000 nodes; >=30 FPS at 5,000 nodes; Worker index < 100ms." },
+    { "id": "NFR-002", "type": "non-functional", "domain": "community", "status": "PARTIAL", "step_id": "STEP-02.2", "adr": "ADR-0007", "summary": "LCP < 2.0s on / and /:username; initial JS < 250KB gzipped; Landing sandbox < 65KB." },
+    { "id": "NFR-003", "type": "non-functional", "domain": "auth", "status": "PARTIAL", "step_id": "STEP-05.4", "adr": "ADR-0009", "summary": "OWASP ASVS L2 compliance, private storage strictly via createSignedUrl, full automated RLS test suite." },
+    { "id": "NFR-004", "type": "non-functional", "domain": "community", "status": "PARTIAL", "step_id": "STEP-05.4", "adr": "ADR-0010", "summary": "Public Markdown and Scoped CSS Snippets sanitized with rehype-sanitize (0 XSS)." },
+    { "id": "NFR-005", "type": "non-functional", "domain": "workspace", "status": "IMPLEMENTED", "step_id": "baseline", "adr": "ADR-0006", "summary": "0 TSX components over 300 lines (OVER_300=0) via Headless Controller governance." },
+    { "id": "NFR-006", "type": "non-functional", "domain": "global", "status": "IMPLEMENTED", "step_id": "STEP-01.1", "adr": "ADR-0001", "summary": "Strict TypeScript compilation (tsc --noEmit) with 0 errors after TD-005 closure." },
+    { "id": "NFR-007", "type": "non-functional", "domain": "settings", "status": "PARTIAL", "step_id": "STEP-05.4", "adr": "ADR-0011", "summary": "WCAG 2.2 AA accessibility and complete id-ID / en-US localization." },
+    { "id": "NFR-008", "type": "non-functional", "domain": "admin", "status": "VISION", "step_id": "STEP-05.4", "adr": "ADR-0009", "summary": "99.9% SLO uptime, Postgres PITR backup, audit_logs, and Non-Destructive Downgrade." }
   ]
 }

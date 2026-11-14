@@ -1,253 +1,415 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.1.0",
-  "generated_at": "2026-11-14",
-  "documents_count": 36,
+  "version": "2.0.0",
+  "last_updated": "2026-11-14",
+  "root_portal": "docs/README.md",
+  "execution_playbook": "docs/02-planning/README.md",
+  "changelog_stream": "docs/_machine/changelog.jsonl",
   "documents": [
     {
-      "id": "DOC-META-000",
+      "id": "DOC-PORTAL-000",
+      "path": "docs/README.md",
+      "title": "Portal Dokumentasi Teknis & Produk ObMap",
+      "category": "index",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-PORTAL-001",
       "path": "docs/SUMMARY.md",
-      "title": "Portal Dokumentasi ObMap",
+      "title": "Ringkasan Navigasi & Indeks Dokumentasi Sistem (SUMMARY)",
+      "category": "index",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-META-000",
+      "path": "docs/00-meta/00-0-master-blueprint.md",
+      "title": "ObMap System Architecture & Product Master Blueprint (v2.0)",
       "category": "meta",
       "status": "IMPLEMENTED"
     },
     {
+      "id": "DOC-META-ARCHIVE-W3",
+      "path": "docs/00-meta/00-1-quovadis.md",
+      "title": "Quo Vadis ObMap v1.0 (Historical Wave 3 Archive)",
+      "category": "meta",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-META-005",
+      "path": "docs/00-meta/00-2-quovadis.md",
+      "title": "ObMap Quo Vadis v2.0 — Technical Retrospective, System Readiness Audit, and Execution Roadmap",
+      "category": "meta",
+      "status": "PLANNED"
+    },
+    {
       "id": "DOC-META-001",
       "path": "docs/00-meta/doc-conventions.md",
-      "title": "Konvensi Dokumentasi & Penulisan",
+      "title": "Konvensi Penulisan & Struktur Dokumentasi",
       "category": "meta",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-META-002",
       "path": "docs/00-meta/glossary.md",
-      "title": "Glosarium Istilah Sistem",
+      "title": "Glosarium Teknis & Produk ObMap v2.0",
       "category": "meta",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-META-003",
       "path": "docs/00-meta/status-legend.md",
-      "title": "Legenda Taksonomi Status Fitur",
+      "title": "Legenda Status Fitur & Artefak",
       "category": "meta",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-META-004",
       "path": "docs/00-meta/changelog.md",
-      "title": "Catatan Perubahan Dokumentasi & Arsitektur",
+      "title": "Legacy Changelog Index (Pointer to docs/changelogs/)",
       "category": "meta",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-CHLOG-000",
+      "path": "docs/changelogs/README.md",
+      "title": "Modular Changelog Hub & Mandatory AI Agent Update Protocol",
+      "category": "changelog",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-CHLOG-TPL",
+      "path": "docs/changelogs/_template.md",
+      "title": "Template Entri Changelog CHG-YYYYMMDD-NNN",
+      "category": "changelog",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-CHLOG-001",
+      "path": "docs/changelogs/archive-wave-1-to-3.md",
+      "title": "Arsip Changelog Wave 1-3",
+      "category": "changelog",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-CHLOG-002",
+      "path": "docs/changelogs/2026-11.md",
+      "title": "Changelog Bulan November 2026 (2026-11)",
+      "category": "changelog",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-001",
       "path": "docs/01-visions/vision-mission.md",
-      "title": "Visi, Misi, dan Pernyataan Nilai Inti",
+      "title": "Visi, Misi & Sasaran Strategis ObMap v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-002",
       "path": "docs/01-visions/product-philosophy.md",
-      "title": "Filosofi Produk: 5 Pilar Desain Sistem",
+      "title": "Filosofi Produk & Prinsip Rekayasa ObMap v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-003",
       "path": "docs/01-visions/positioning.md",
-      "title": "Analisis Posisi Kompetitif Produk",
+      "title": "Positioning Strategis & Matriks Kompetitif ObMap v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-004",
       "path": "docs/01-visions/use-case-pillars.md",
-      "title": "Empat Pilar Kasus Penggunaan Utama",
+      "title": "Lima Pilar Use-Case ObMap v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
+      "id": "DOC-PLAN-000",
+      "path": "docs/02-planning/README.md",
+      "title": "Playbook Eksekusi Bertahap & Antrean Implementasi Agen (Step-by-Step Queue)",
+      "category": "planning",
+      "status": "PLANNED"
+    },
+    {
       "id": "DOC-PLAN-001",
       "path": "docs/02-planning/prd.md",
-      "title": "Product Requirement Document (PRD)",
+      "title": "Product Requirements Document (PRD) ObMap v2.0",
       "category": "planning",
-      "status": "IMPLEMENTED"
+      "status": "PLANNED"
     },
     {
       "id": "DOC-PLAN-002",
       "path": "docs/02-planning/brd.md",
-      "title": "Business Requirement Document (BRD)",
+      "title": "Business Requirements Document (BRD) ObMap v2.0",
       "category": "planning",
-      "status": "IMPLEMENTED"
+      "status": "PLANNED"
     },
     {
       "id": "DOC-PLAN-003",
       "path": "docs/02-planning/srs.md",
-      "title": "Software Requirements Specification (SRS)",
+      "title": "System Requirements Specification (SRS) ObMap v2.0",
       "category": "planning",
-      "status": "IMPLEMENTED"
+      "status": "PLANNED"
     },
     {
       "id": "DOC-PLAN-004",
       "path": "docs/02-planning/sow.md",
-      "title": "Statement of Work (SoW)",
+      "title": "Statement of Work (SoW) & Paket Pengiriman ObMap v2.0",
       "category": "planning",
-      "status": "IMPLEMENTED"
+      "status": "PLANNED"
     },
     {
       "id": "DOC-PLAN-005",
       "path": "docs/02-planning/personas.md",
-      "title": "Arketipe Persona Pengguna",
+      "title": "Katalog Persona Pengguna & Matriks Skenario ObMap v2.0",
       "category": "planning",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-PLAN-006",
       "path": "docs/02-planning/roadmap.md",
-      "title": "Peta Jalan Produk & Rilis Rinci",
+      "title": "Roadmap Pengembangan Inkremental & Horizon Rilis ObMap v2.0",
       "category": "planning",
-      "status": "IMPLEMENTED"
+      "status": "PLANNED"
     },
     {
       "id": "DOC-PLAN-007",
       "path": "docs/02-planning/traceability-matrix.md",
-      "title": "Matriks Keterlacakan Kebutuhan & Fitur",
+      "title": "Matriks Keterlacakan End-to-End (Traceability Matrix) ObMap v2.0",
       "category": "planning",
-      "status": "IMPLEMENTED"
+      "status": "PLANNED"
     },
     {
       "id": "DOC-ARCH-001",
       "path": "docs/03-architecture/system-overview.md",
-      "title": "Ikhtisar Arsitektur Sistem (C4 Model)",
+      "title": "Tinjauan Arsitektur Sistem ObMap v2.0 (System Overview)",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ARCH-002",
-      "path": "docs/03-architecture/repository-structure.md",
-      "title": "Struktur Repositori & Anotasi Direktori",
+      "path": "docs/03-architecture/domain-map.md",
+      "title": "Peta 13 Domain Terisolasi & Batas Tanggung Jawab (Domain Map)",
       "category": "architecture",
-      "status": "IMPLEMENTED"
+      "status": "PARTIAL"
     },
     {
       "id": "DOC-ARCH-003",
-      "path": "docs/03-architecture/domain-map.md",
-      "title": "Peta Domain Sistem (DDD)",
+      "path": "docs/03-architecture/repository-structure.md",
+      "title": "Struktur Repositori & Tata Letak Berkas ObMap v2.0",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ARCH-004",
       "path": "docs/03-architecture/data-and-storage.md",
-      "title": "Strategi Data, Storage & Keamanan Supabase",
+      "title": "Arsitektur Data, Storage & Konfigurasi 6-Lapis ObMap v2.0",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ARCH-005",
       "path": "docs/03-architecture/layout-engine.md",
-      "title": "Mesin Tata Letak Graf & Mindmap",
+      "title": "Arsitektur Mesin Tata Letak & Kanvas Graf Canvas2D (Layout Engine)",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ARCH-006",
       "path": "docs/03-architecture/collaboration-and-publishing.md",
-      "title": "Arsitektur Kolaborasi & Publikasi Web",
+      "title": "Arsitektur Kolaborasi, Keamanan RBAC, Publikasi /:username & Sitasi v2.0",
       "category": "architecture",
-      "status": "IMPLEMENTED"
+      "status": "PARTIAL"
     },
     {
-      "id": "DOC-ADR-000",
+      "id": "DOC-ARCH-ADR-IDX",
       "path": "docs/03-architecture/adr/README.md",
-      "title": "Indeks Catatan Keputusan Arsitektur (ADR)",
+      "title": "Indeks Architecture Decision Records (ADR-0001 s/d ADR-0012)",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
-      "id": "ADR-0001",
+      "id": "DOC-ARCH-ADR-0001",
       "path": "docs/03-architecture/adr/ADR-0001-domain-driven-design-restructuring.md",
-      "title": "Restrukturisasi Arsitektur ke Domain-Driven Design",
-      "category": "architecture",
+      "title": "ADR-0001 — Domain-Driven Design Restructuring",
+      "category": "adr",
       "status": "IMPLEMENTED"
     },
     {
-      "id": "ADR-0002",
+      "id": "DOC-ARCH-ADR-0002",
       "path": "docs/03-architecture/adr/ADR-0002-codemirror-6-markdown-editor.md",
-      "title": "Adopsi CodeMirror 6 untuk Editor Markdown Terisolasi",
-      "category": "architecture",
+      "title": "ADR-0002 — CodeMirror 6 Markdown Editor & Isolated YAML Properties",
+      "category": "adr",
       "status": "IMPLEMENTED"
     },
     {
-      "id": "ADR-0003",
+      "id": "DOC-ARCH-ADR-0003",
       "path": "docs/03-architecture/adr/ADR-0003-deterministic-layout-solvers-vs-force.md",
-      "title": "Pemisahan Solver Deterministik dari D3 Simulation",
-      "category": "architecture",
+      "title": "ADR-0003 — Deterministic Layout Solvers vs. Continuous Free-Force",
+      "category": "adr",
       "status": "IMPLEMENTED"
     },
     {
-      "id": "ADR-0004",
+      "id": "DOC-ARCH-ADR-0004",
       "path": "docs/03-architecture/adr/ADR-0004-multi-strategy-storage-isolation.md",
-      "title": "Driver Multi-Penyimpanan Per-Vault Terisolasi",
-      "category": "architecture",
+      "title": "ADR-0004 — Multi-Strategy Storage Driver Isolation",
+      "category": "adr",
       "status": "IMPLEMENTED"
     },
     {
-      "id": "ADR-0005",
+      "id": "DOC-ARCH-ADR-0005",
       "path": "docs/03-architecture/adr/ADR-0005-in-browser-vcs-for-markdown-collaboration.md",
-      "title": "Sistem Kontrol Versi Internal Berbasis Mikro-Revisi",
-      "category": "architecture",
+      "title": "ADR-0005 — In-Browser VCS Engine for Markdown Collaboration",
+      "category": "adr",
       "status": "IMPLEMENTED"
     },
     {
-      "id": "ADR-0006",
+      "id": "DOC-ARCH-ADR-0006",
       "path": "docs/03-architecture/adr/ADR-0006-reactive-state-and-headless-controller-governance.md",
-      "title": "Tata Kelola State Reaktif, Store Bridge, dan Zero-Regression Headless Controller",
-      "category": "architecture",
+      "title": "ADR-0006 — Reactive State, Leaf Bridge & Headless Controller Governance",
+      "category": "adr",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ARCH-ADR-0007",
+      "path": "docs/03-architecture/adr/ADR-0007-community-domain-and-canonical-root-routing.md",
+      "title": "ADR-0007 — Refactor Domain public-reader -> community dan Hard Cutover /:username",
+      "category": "adr",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-ARCH-ADR-0008",
+      "path": "docs/03-architecture/adr/ADR-0008-dashboard-domain-and-derived-frontmatter-views.md",
+      "title": "ADR-0008 — Penambahan Domain dashboard (/vaults) & Derived Frontmatter Views",
+      "category": "adr",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-ARCH-ADR-0009",
+      "path": "docs/03-architecture/adr/ADR-0009-release-stage-gate-rbac-and-dynamic-billing.md",
+      "title": "ADR-0009 — ReleaseStageGate 3-Tahap, RBAC PolicyEngine & Dynamic Billing (Xendit/Midtrans First)",
+      "category": "adr",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-ARCH-ADR-0010",
+      "path": "docs/03-architecture/adr/ADR-0010-visibility-state-machine-licensing-and-citations.md",
+      "title": "ADR-0010 — State Machine Visibilitas, Lisensi CC BY-SA 4.0 & Sitasi Lintas-Vault",
+      "category": "adr",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-ARCH-ADR-0011",
+      "path": "docs/03-architecture/adr/ADR-0011-six-layer-cascading-config-and-unified-theme-engine.md",
+      "title": "ADR-0011 — Konfigurasi Bertingkat 6-Lapis & Unified DOM/Canvas2D Theme Engine",
+      "category": "adr",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-ARCH-ADR-0012",
+      "path": "docs/03-architecture/adr/ADR-0012-sandboxed-plugin-sdk-and-extension-points.md",
+      "title": "ADR-0012 — Ekosistem Ekstensi @obmap/sdk Ber-Sandbox & 12 Extension Points",
+      "category": "adr",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-FEAT-000",
+      "path": "docs/04-features/README.md",
+      "title": "Indeks & Tata Kelola Katalog Fitur ObMap v2.0",
+      "category": "features",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-FEAT-001",
       "path": "docs/04-features/feature-catalog.md",
-      "title": "Katalog Master Fitur Sistem",
+      "title": "Master Feature Catalog ObMap v2.0",
       "category": "features",
-      "status": "IMPLEMENTED"
+      "status": "PARTIAL"
     },
     {
       "id": "DOC-ENG-001",
-      "path": "docs/05-engineering/repository-rules.md",
-      "title": "Aturan Repositori & Standar Arsitektur",
+      "path": "docs/05-engineering/coding-standards.md",
+      "title": "Standar Penulisan Kode & Tata Kelola Arsitektur ObMap v2.0",
       "category": "engineering",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ENG-002",
-      "path": "docs/05-engineering/testing-strategy.md",
-      "title": "Strategi Pengujian & Kualitas Perangkat Lunak",
+      "path": "docs/05-engineering/repository-rules.md",
+      "title": "Aturan Repositori, Konvensi Branch & Checklist PR ObMap v2.0",
       "category": "engineering",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ENG-003",
       "path": "docs/05-engineering/tech-debt-register.md",
-      "title": "Register Hutang Teknis Sistem (TD-001 - TD-006)",
+      "title": "Register Hutang Teknis Sistem (TD-001 s/d TD-007)",
       "category": "engineering",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ENG-004",
+      "path": "docs/05-engineering/testing-strategy.md",
+      "title": "Strategi Pengujian Perangkat Lunak & Gerbang Verifikasi ObMap v2.0",
+      "category": "engineering",
+      "status": "PARTIAL"
+    },
+    {
+      "id": "DOC-ENG-005",
+      "path": "docs/05-engineering/contribution-guide.md",
+      "title": "Panduan Kontribusi Pengembang & AI Agent ObMap v2.0",
+      "category": "engineering",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "DOC-ENG-006",
       "path": "docs/05-engineering/doc-drift-log.md",
-      "title": "Catatan Deviasi Dokumentasi vs Kode Aktual",
+      "title": "Catatan Deviasi Dokumentasi vs Kode Aktual & History Audit",
       "category": "engineering",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-LMS-001",
       "path": "docs/06-lms/lms-vision.md",
-      "title": "Cetak Biru Platform LMS Interaktif",
+      "title": "Visi & Spesifikasi Interactive Graph LMS ObMap v2.0",
       "category": "lms",
-      "status": "IMPLEMENTED"
+      "status": "VISION"
+    },
+    {
+      "id": "DOC-DEV-000",
+      "path": "docs/07-developers/README.md",
+      "title": "Portal Pengembang Ekstensi & Tema ObMap (@obmap/sdk)",
+      "category": "developer",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-DEV-001",
+      "path": "docs/07-developers/plugin-sdk-quickstart.md",
+      "title": "Quickstart Membangun Plugin Pertama dengan @obmap/sdk",
+      "category": "developer",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-DEV-002",
+      "path": "docs/07-developers/extension-points-reference.md",
+      "title": "Referensi 12 Extension Points Standar @obmap/sdk",
+      "category": "developer",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-DEV-003",
+      "path": "docs/07-developers/theme-authoring-guide.md",
+      "title": "Panduan Pembuatan Tema & Scoped CSS Snippets ObMap v2.0",
+      "category": "developer",
+      "status": "PLANNED"
+    },
+    {
+      "id": "DOC-DEV-004",
+      "path": "docs/07-developers/security-and-sandbox.md",
+      "title": "Model Keamanan Ekstensi, Izin & Sandbox @obmap/sdk",
+      "category": "developer",
+      "status": "PLANNED"
     }
   ]
 }

@@ -1,82 +1,64 @@
 ---
 id: DOC-VIS-004
-title: Empat Pilar Kasus Penggunaan Utama
+title: Lima Pilar Use-Case ObMap v2.0
 type: vision
 status: [IMPLEMENTED]
-owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
+owner: Chief Product Officer
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
+  - DOC-META-000
   - DOC-VIS-001
   - DOC-VIS-003
-  - DOC-PLAN-001
   - DOC-PLAN-005
-source_of_truth: src/domains/
+  - DOC-LMS-001
+source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ---
 
-# Empat Pilar Kasus Penggunaan Produk
+# Lima Pilar Use-Case ObMap v2.0
 
 ## Ringkasan 3 Baris
-- ObMap melayani empat skenario utama: ensiklopedia pengetahuan terbuka, portofolio pengetahuan visual, pemetaan ide dan brainstorming, serta LMS modular interaktif.
-- Setiap pilar memanfaatkan representasi data yang sama (Markdown + Graph Edges) dengan sudut interaksi yang disesuaikan.
-- Mendukung transisi mulus dari pembuatan draf catatan pribadi di mesin lokal hingga konsumsi publik massal di peramban.
+- Memetakan lima pilar penggunaan utama ObMap v2.0 dari produktivitas riset personal, ruang kerja ideasi tim, portofolio cendekiawan `/:username`, ensiklopedia publik `/explore`, hingga kurikulum DAG interaktif.
+- Menghubungkan setiap pilar langsung ke domain target di `src/domains/` (termasuk domain `community` hasil refaktor `public-reader` serta domain baru `dashboard`) dan segmen persona `PER-01` s/d `PER-09`.
+- Menjadi acuan utama pembuatan template vault pada Dashboard `/vaults` dan alur *Personalization Survey* saat onboarding pengguna baru.
 
 ---
 
-## 1. Pilar I: Alternatif Wikipedia Interaktif (Open Knowledge Base)
+## 1. Arsitektur Lima Pilar Use-Case
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Contributor as Penulis/Kurator
-    participant App as ObMap Workspace
-    participant DB as Supabase Storage/RLS
-    actor Reader as Pembaca Publik
-    
-    Contributor->>App: Tulis artikel Markdown & hubungkan [[Pranala]]
-    Contributor->>App: Klik "Publish Vault/Note"
-    App->>DB: Simpan state publik & generate slug
-    Reader->>App: Buka /p/:username/:vaultSlug
-    App-->>Reader: Render Graf Interaktif + Baca Artikel Anonim
+flowchart TD
+    U["Pengguna & Cendekiawan (PER-01 s/d PER-09)"] --> P1["Pilar 1: Public Encyclopedia & Topic Constellations (/explore)"]
+    U --> P2["Pilar 2: Living Intellectual Portfolio (/:username & /@:username)"]
+    U --> P3["Pilar 3: Ideation, Engineering & PKM Workspace (/app & /vaults)"]
+    U --> P4["Pilar 4: Interactive Graph LMS & Skill Tree DAG (docs/06-lms)"]
+    U --> P5["Pilar 5: Collaborative Research, Citations & Fork/MR (community + vcs)"]
 ```
 
-- **Masalah:** Wikipedia tradisional bersifat linier, kaku, dan sulit dinavigasi secara visual untuk topik interdisipliner yang kompleks.
-- **Solusi ObMap:** Publikasi instan basis pengetahuan publik dengan graf relasi yang dapat dijelajahi, pencarian teks instan via Web Worker, dan antarmuka pembaca yang bersih (`[IMPLEMENTED]`).
+---
+
+## 2. Spesifikasi Detail Per Pilar
+
+| Pilar | Referensi Sistem | Persona Utama | Kapabilitas & Alur Inti | Domain Terkait |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Public Encyclopedia & Topic Constellations** | Wikipedia × Learn-Anything | `PER-05`, `PER-07`, `PER-09` | Menjelajahi indeks topik global di `/explore`, membaca catatan publik dual-pane (graf interaktif + Markdown terkurasi), memeriksa riwayat revisi VCS transparan. | `community` *(eks `public-reader`)*, `graph` |
+| **2. Living Intellectual Portfolio** | LinkedIn × ResearchGate | `PER-01`, `PER-07`, `PER-02` | Profil kanonik `/:username` dan `/@:username` menampilkan bio, afiliasi/ORCID, Konstelasi Vault Publik (`CC BY-SA 4.0` default), lencana kurasi manual *Verified Scholar*, dan *Impact Index*. | `community`, `settings`, `admin` |
+| **3. Ideation, Engineering & Team Workspace** | Obsidian × XMind × Notion | `PER-03`, `PER-04`, `PER-08` | Menulis `.md` *local-first*, menyusun *Mindmap / Fishbone / Timeline / Argument Map* deterministik, mengelola tugas lewat 5 view derivatif Dashboard `/vaults`, serta *Admin-Locked Config* tim. | `workspace`, `dashboard`, `editor`, `graph`, `vault`, `settings` |
+| **4. Interactive Graph LMS & Skill Tree DAG** | Roadmap.sh × Khan Academy Visual | `PER-02`, `PER-08`, `PER-05` | Merancang jalur belajar berbasis dependensi YAML `prerequisites`, memvisualkan node *Locked / Available / Mastered*, serta menerbitkan modul kursus publik bagi mahasiswa/pelajar. | `lms` *(via `graph` + `community`)*, `metadata` |
+| **5. Collaborative Research & Peer Review Network** | GitHub × Academic Peer Review | `PER-01`, `PER-08`, `PER-09` | Rujukan silang federated `[[@user/vault/note]]`, ekspor sitasi APA/MLA/IEEE/BibTeX, *Fork to My Vault*, komentar paragraf terikat hash, dan *Knowledge Merge Request* antar-cendekiawan. | `vcs`, `collaboration`, `community`, `metadata` |
 
 ---
 
-## 2. Pilar II: Portofolio Diri & Pemetaan Hidup (Life & Portfolio Mapping)
-
-- **Skenario:** Profesional, peneliti, dan kreator ingin memamerkan peta kompetensi, riwayat proyek, resume interaktif, dan keterkaitan keahlian mereka.
-- **Fitur Terkait:**
-  - Mode timeline kronologis untuk riwayat karir (`[IMPLEMENTED]`).
-  - Sematan media (gambar, audio, dokumen) sebagai simpul graf kelas satu (`[IMPLEMENTED]`).
-  - Domain publik kustom atau slug personal (`[PARTIAL]`).
-
----
-
-## 3. Pilar III: Pemikiran Visual & Brainstorming (Visual Brainstorming Engine)
-
-- **Skenario:** Pengguna membedah masalah rumit menggunakan metodologi terstruktur:
-  - *Fishbone Diagram (Ishikawa):* Analisis akar penyebab masalah (`[IMPLEMENTED]`).
-  - *Org Chart & Brace Map:* Dekomposisi struktur organisasi atau taksonomi konsep (`[IMPLEMENTED]`).
-  - *Timeline Hierarchy:* Perencanaan roadmap produk atau peristiwa berurutan (`[IMPLEMENTED]`).
-  - *Free-Force Network:* Menemukan kluster ide tersembunyi lewat simulasi gaya fisika (`[IMPLEMENTED]`).
-
----
-
-## 4. Pilar IV: Platform LMS Disruptif (Interactive Learning Management)
-
-- **Skenario:** Dosen atau kreator edukasi menyusun kurikulum visual berjenjang.
-- **Mekanisme:**
-  - Node mewakili modul pembelajaran; edge mewakili prasyarat (*prerequisites*).
-  - Penandaan status kelulusan modul tersimpan secara lokal di peramban siswa.
-  - Peta progres visual memudahkan siswa memahami konteks besar dari materi yang sedang dipelajari (`[VISION]`).
+## 3. Kesesuaian dengan 3-Stage Progressive Rollout
+- **Stage 1 (`stage_1_partner`):** Berfokus pada **Pilar 3** dan fondasi privat **Pilar 4 & 5** bersama institusi/rekan pilot.
+- **Stage 2 (`stage_2_community_beta`):** Membuka **Pilar 1, 2, dan 5** untuk publik (*read-only* `approved` vaults & profil `/:username`), dengan penerimaan akun baru dikontrol manual oleh Admin di `/admin`.
+- **Stage 3 (`stage_3_commercial_ga`):** Membuka seluruh pilar beserta kuota/tarif dinamis, Teamspaces enterprise, pembayaran **Xendit/Midtrans** & Stripe, serta `@obmap/sdk`.
 
 ---
 
 ## Terkait
-- [Positioning Produk](positioning.md)
-- [Target Persona Pengguna](../02-planning/personas.md)
-- [Product Requirements Document (PRD)](../02-planning/prd.md)
+- [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
+- [Katalog Persona (PER-01 s/d PER-09)](../02-planning/personas.md)
+- [Visi & Spesifikasi LMS](../06-lms/lms-vision.md)
+- [Peta 13 Domain Sistem](../03-architecture/domain-map.md)

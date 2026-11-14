@@ -2,6 +2,7 @@ import React from "react";
 import { TabsContent } from "@/global/ui/tabs";
 import { Button } from "@/global/ui/button";
 import { Badge } from "@/global/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/global/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -19,7 +20,7 @@ import {
   Lock,
   GlobeLock,
 } from "lucide-react";
-import type { NoteRecord } from "@/types/collaboration";
+import type { NoteRecord, VaultVisibility } from "@/types/collaboration";
 
 interface CollabSharePublishTabProps {
   noteRecord: NoteRecord | null;
@@ -30,8 +31,12 @@ interface CollabSharePublishTabProps {
   isCopied: boolean;
   processing: boolean;
   canPublish: boolean;
+  canManageVisibility?: boolean;
   isReadOnly: boolean;
   canEdit: boolean;
+  vaultVisibility?: VaultVisibility;
+  noteLicense?: string;
+  onVaultVisibilityChange?: (visibility: VaultVisibility) => void;
   onCopyLink: () => void;
   onOpenPublicUrl: () => void;
   onStartPublish: () => void;
@@ -50,8 +55,12 @@ export const CollabSharePublishTab: React.FC<CollabSharePublishTabProps> = ({
   isCopied,
   processing,
   canPublish,
+  canManageVisibility = false,
   isReadOnly,
   canEdit,
+  vaultVisibility = "private",
+  noteLicense = "CC BY-SA 4.0",
+  onVaultVisibilityChange,
   onCopyLink,
   onOpenPublicUrl,
   onStartPublish,
@@ -61,6 +70,28 @@ export const CollabSharePublishTab: React.FC<CollabSharePublishTabProps> = ({
 }) => {
   return (
     <TabsContent value="publish" className="mt-2.5 space-y-2.5">
+      {/* 4-State Vault Visibility & Citation License Row */}
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <Select
+          disabled={processing || !canManageVisibility}
+          value={vaultVisibility}
+          onValueChange={(v) => onVaultVisibilityChange?.(v as VaultVisibility)}
+        >
+          <SelectTrigger className="h-7 text-[11px] w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="private">Private (Owner/Team)</SelectItem>
+            <SelectItem value="shared">Shared (Invite/Link)</SelectItem>
+            <SelectItem value="public_unlisted">Public Unlisted</SelectItem>
+            <SelectItem value="public_listed">Public Listed</SelectItem>
+          </SelectContent>
+        </Select>
+        <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 h-5">
+          {noteLicense}
+        </Badge>
+      </div>
+
       {/* Status Header */}
       <div className="flex items-center justify-between text-xs">
         <span className="text-[11px] text-muted-foreground font-medium">

@@ -1,97 +1,74 @@
 ---
 id: DOC-ARCH-001
-title: Ikhtisar Arsitektur Sistem (System Overview & C4 Model)
+title: Tinjauan Arsitektur Sistem ObMap v2.0 (System Overview)
 type: architecture
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 1.1.0
-last_reviewed: 2026-11-10
-audience: both
+version: 2.0.0
+last_reviewed: 2026-11-14
+audience: engineering
 related:
+  - DOC-META-000
   - DOC-ARCH-002
   - DOC-ARCH-003
   - DOC-ARCH-004
   - DOC-ARCH-005
-source_of_truth: src/
+  - DOC-ARCH-006
+source_of_truth: src/App.tsx, src/domains/, supabase/migrations/
 ---
 
-# Ikhtisar Arsitektur Sistem (System Overview)
+# Tinjauan Arsitektur Sistem ObMap v2.0 (`System Overview`)
 
 ## Ringkasan 3 Baris
-- Mengadopsi arsitektur *local-first hybrid* dengan orkestrasi 12 domain independen berbasis Domain-Driven Design (DDD).
-- Mengintegrasikan komputasi kanvas graf 2D dan parsing teks sepenuhnya di sisi klien (*client-side execution*).
-- Menghubungkan penyimpanan lokal (FS API/IndexedDB) ke PostgreSQL Supabase melalui lapisan sinkronisasi ber-RLS.
+- Menjelaskan arsitektur menyeluruh ObMap v2.0 berbasis *Local-First Single Page Application* (React 18, TypeScript 5, Vite 5, Zustand, CodeMirror 6, Canvas2D/D3) dengan backend Supabase (Auth, Postgres RLS, Edge Functions, Storage).
+- Menetapkan arsitektur target **13 Domain DDD Terisolasi** (`community` menggantikan `public-reader` + penambahan `dashboard`), rute kanonik root `/:username` & `/@:username` (*hard cutover* tanpa `/p/*`), serta gerbang **3-Stage Progressive Shipping**.
+- Mewajibkan pola **Headless Controller (`ADR-0006`)**, penegakan keamanan simetris (`PolicyEngine` ↔ Postgres RLS), konfigurasi dinamis paket & kuota melalui `/admin`, dan sandbox `@obmap/sdk`.
 
 ---
 
-## 1. Diagram Konteks Sistem (C4 Context Diagram)
+## 1. Diagram Konteks & Topologi Sistem (C4 Level 1–2)
 
 ```mermaid
-graph TD
-    User([Pengguna / Peneliti])
-    PublicUser([Pembaca Anonim])
-    
-    subgraph ObMap System
-        WebPWA[ObMap Web / PWA Client<br/>React + Vite + CodeMirror 6 + Canvas]
-    end
-    
-    LocalFS[(Sistem Berkas Lokal<br/>Markdown & Media)]
-    IndexedDB[(Browser Storage<br/>IndexedDB Cache)]
-    SupabaseCloud[(Supabase Cloud<br/>PostgreSQL 15 + RLS + Auth)]
-    
-    User -->|Membaca & Menyunting Dokumen| WebPWA
-    PublicUser -->|Mengeksplorasi Basis Pengetahuan| WebPWA
-    WebPWA -->|File System Access API| LocalFS
-    WebPWA -->|Offline Caching & Journaling| IndexedDB
-    WebPWA -->|Cloud Sync & Publishing| SupabaseCloud
+flowchart TB
+    USR["Pengguna / Cendekiawan / Partner / Admin"] --> ROUTER["src/App.tsx: Routing + RESERVED_SLUGS + ReleaseStageGate"]
+    ROUTER --> LAND["/ (Landing + Lazy Sandbox <65KB)"]
+    ROUTER --> DASH["/vaults (domains/dashboard — 5 Derived Views) [PLANNED]"]
+    ROUTER --> WORK["/app (domains/workspace — CM6 + Canvas2D + VCS) [IMPLEMENTED]"]
+    ROUTER --> COMM["/:username, /@:username, /explore (domains/community — eks public-reader) [PARTIAL]"]
+    ROUTER --> ADM["/admin (domains/admin — User Approval, Dynamic Pricing/Quotas, Manual Scholar Verify)"]
+
+    WORK --> STORE["Zustand Per-Leaf Stores & Local/Cloud Config Bridge"]
+    WORK --> WORKER["Web Worker (mentions.worker.ts — Aho-Corasick) + Layout Solvers"]
+    DASH --> DRV["IVaultStorageDriver (FS API, IndexedDB, Cloud, In-Memory)"]
+    COMM --> SB["Supabase (Auth, Postgres RLS, Edge Functions, Private Storage)"]
+    ADM --> SB
+    SB --> PGW["Payment Webhooks: Xendit/Midtrans First -> Stripe [VISION]"]
 ```
 
 ---
 
-## 2. Diagram Kontainer Aplikasi (C4 Container Diagram)
+## 2. Lapisan Arsitektur Kunci
 
-```mermaid
-graph TD
-    subgraph Client Application Browser Runtime
-        Shell[Application Shell & Router<br/>react-router-dom]
-        
-        subgraph 12 Autonomous Domains
-            D_Vault[Vault Domain<br/>Persistence Manager]
-            D_Editor[Editor Domain<br/>CodeMirror 6 Engine]
-            D_Graph[Graph Domain<br/>2D Canvas & Multi-Solvers]
-            D_VCS[VCS Domain<br/>Micro-Revisions & 3-Way Merge]
-            D_Collab[Collaboration Domain<br/>Share & Permission Control]
-            D_Reader[Public Reader Domain<br/>Fast SSR/CSR Viewer]
-            D_Work[Workspace Domain<br/>Leaves & Split Tree Engine]
-            D_Meta[Metadata Domain<br/>Aho-Corasick Web Worker]
-        end
-        
-        State[Zustand Stores & Event Bus<br/>Leaf Scoped States]
-    end
-    
-    Shell --> D_Work
-    D_Work --> D_Graph
-    D_Work --> D_Editor
-    D_Graph --> State
-    D_Editor --> State
-    D_Vault --> LocalFS
-    D_Vault --> IndexedDB
-    D_Collab --> SupabaseCloud
-    D_VCS --> IndexedDB
-    D_Meta --> WorkerThreads[Web Worker Background Threads]
-```
+| Lapisan | Komponen & Teknologi Utama | Status & Batas Arsitektural |
+| :--- | :--- | :--- |
+| **Presentation & Routing** | React 18, Tailwind, Radix/shadcn UI, `react-router-dom` | `[IMPLEMENTED]` di `src/App.tsx`; migrasi *hard cutover* `/p/*` → `/:username` dijadwalkan di `STEP-01.2`. |
+| **Domain Orchestration (DDD)** | 12 domain aktif di `src/domains/` → 13 target domain (`community` + `dashboard`) | Pola `<Domain>Orchestrator.tsx` + Pure View (`<=300` baris) + `use<Feature>Controller.ts`. |
+| **State & Config Engine** | Pure Zustand actions (`vaultSessionActions.ts`), Per-Leaf Store Bridge, 6-Layer Config | `[IMPLEMENTED]` untuk Leaf Bridge (`ADR-0006`); 6-Layer Org-Lock & Theme sync di `STEP-01.5`. |
+| **Computation & Canvas** | Web Worker (`mentions.worker.ts`), `layoutCategory.ts` (4 solver + Free-Force) | Target `60 FPS` pada `2.000` node; `argument-map` & `citation-tree` di `STEP-05.2`. |
+| **Data, Storage & Security** | `FileSystemService.ts`, `IndexedDbVaultDriver.ts`, Supabase V4 RLS, `createSignedUrl` | Local storage 100% gratis; media privat via `createSignedUrl`; `untypedSupabase.ts` dihapus di `STEP-01.1`. |
+| **Stage Gate & Billing Engine** | `ReleaseStageGate`, `PolicyEngine`, tabel `plans`/`plan_quotas`, **Xendit/Midtrans → Stripe** | Taris & kuota diatur Admin di `/admin`; penegakan absolut di RLS & Edge Functions (`STEP-04.1`). |
 
 ---
 
-## 3. Aliran Data Utama (Primary Data Flows)
-
-1. **Local Authoring Loop:** Penyuntingan di CodeMirror 6 memicu pembaruan state lokal -> di-debounce ke *auto-save* driver vault (FS API/IndexedDB) -> Web Worker memindai *wikilinks* dan *mentions*.
-2. **Graph Visualization Loop:** Struktur file tree diproyeksikan ke `buildGraphProjection` -> solver deterministik menghitung posisi simpul -> kanvas merender simpul, tautan kurva, dan partikel atmosfer.
-3. **Publishing Loop:** Modul kolaborasi memvalidasi izin -> mengekspor snapshot dokumen ke Supabase -> rute `/p/:username/:vaultSlug` merender tampilan publik tanpa login.
+## 3. Prinsip Lintas-Domain (*Cross-Cutting Invariants*)
+1. Domain tidak boleh saling mengimpor komponen internal secara langsung; gunakan kontrak *shared API/store* atau Global Shared (`src/global/`).
+2. Mutasi status workspace berjalan melalui *pure Zustand actions* dan sinkronisasi unidireksional (`ADR-0006`).
+3. Seluruh rute aplikasi sistem (`app`, `vaults`, `auth`, `admin`, `explore`, `install`, dll.) dijaga `RESERVED_SLUGS` agar profil `/:username` di root domain tidak pernah berbenturan.
 
 ---
 
 ## Terkait
-- [Peta Struktur Repositori](repository-structure.md)
-- [Peta Domain Arsitektur](domain-map.md)
-- [Arsitektur Data dan Penyimpanan](data-and-storage.md)
+- [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
+- [Peta 13 Domain (`domain-map.md`)](domain-map.md)
+- [Struktur Repositori (`repository-structure.md`)](repository-structure.md)
+- [Indeks ADR (`adr/README.md`)](adr/README.md)

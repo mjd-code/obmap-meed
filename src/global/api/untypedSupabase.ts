@@ -1,9 +1,5 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { supabase as typedSupabase } from "@/global/api/supabaseClient";
-
 /**
- * Same client, loosely typed. Used for tables that the generated
- * database types do not yet describe (stale type generation).
+ * @deprecated Legacy shim preserved only for backward import compatibility.
+ * Use `@/global/api/supabaseClient` directly; TD-005 resolved strict typing.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const supabase = typedSupabase as unknown as SupabaseClient<any>;
+export { supabase } from "@/global/api/supabaseClient";

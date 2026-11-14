@@ -45,4 +45,4 @@ stateDiagram-v2
 
 ## Terkait
 - [Konvensi Dokumentasi](doc-conventions.md)
-- [Log Perbedaan Kode](05-engineering/doc-drift-log.md)
+- [Log Perbedaan Kode](../05-engineering/doc-drift-log.md)

@@ -1,286 +1,297 @@
 ---
 id: DOC-META-000
-title: Master Blueprint ObMap — Konstitusi Falsafah, Jejaring Pengetahuan, dan Arsitektur Induk
-type: standard
+title: ObMap System Architecture & Product Master Blueprint (v2.0)
+type: architecture
 status: [PLANNED]
-owner: Principal Software Architect & Chief Product Officer
+owner: Principal Software Architect & Product Engineering Lead
 version: 2.0.0
 last_reviewed: 2026-11-14
 audience: both
 related:
   - DOC-META-001
+  - DOC-META-004
   - DOC-META-005
-  - DOC-VIS-001
-  - DOC-VIS-003
   - DOC-ARCH-001
   - ADR-0006
 source_of_truth: src/domains/, src/global/, src/App.tsx, supabase/migrations/
 ---
 
-# Master Blueprint ObMap ("Pancasila" Konstitusi Produk & Arsitektur Sistem)
+# ObMap System Architecture & Product Master Blueprint (v2.0)
 
 ## Ringkasan 3 Baris
-- Menetapkan **Konstitusi Induk ObMap** sebagai **The Social Knowledge Network & Visual Thinking OS**: fusi 5 DNA (**Obsidian × XMind × Notion × Wikipedia × LinkedIn/ResearchGate/GitHub**) untuk menyeimbangkan media sosial hiburan dengan jejaring cendekiawan.
-- Mengunci standar rute sosial kanonik `/@:username`, tata kelola visibilitas (`Private`, `Shared`, `Public Listed/Unlisted`), monetisasi etis (XMind + Notion, menolak paywall *sync/publish* ala Obsidian), RBAC berlapis, dan kustomisasi 6-lapis + `@obmap/sdk`.
-- Menjadi sumber kebenaran normatif bagi seluruh dokumen di `docs/`, `AGENTS.md`, dan `llms.txt`, sedangkan evaluasi gap serta jadwal eksekusi dirinci di [Quo Vadis v2](00-2-quovadis.md).
+- Spesifikasi induk arsitektur dan produk ObMap v2.0 sebagai **Local-First Visual Knowledge Management System, Collaborative Research Workspace, dan High-Signal Social Knowledge Graph** berbasis fusi 5 sistem referensi (Obsidian, XMind, Notion, Wikipedia, LinkedIn/ResearchGate/GitHub).
+- Mengunci standar rute publik root-level `/:username` dan `/@:username` (menghapus `/p/*`), mekanisme **3-Stage Progressive Shipping Gate** (*Partner Pilot → Approval-Gated Community Beta → Commercial GA*), RBAC berlapis, dan arsitektur *entitlement server-side*.
+- Mendefinisikan standar kualitas ganda (Developer Standard & User Standard), domain baru `dashboard`, konfigurasi 6-lapis, Unified Theme Engine, serta Public Extension SDK `@obmap/sdk`.
 
 ---
 
-## Pembukaan Konstitusional & North Star
+## 1. System Definition, Product Thesis & Telemetry Targets
 
-> **Positioning Satu Kalimat:** ObMap adalah **The Social Knowledge Network & Visual Thinking Operating System** yang menyatukan kedaulatan catatan lokal (*Obsidian*), kognisi visual deterministik (*XMind*), kolaborasi tim (*Notion*), ensiklopedia terbuka (*Wikipedia*), dan reputasi intelektual publik (*LinkedIn × ResearchGate × GitHub*).
+> **Positioning Statement:** ObMap adalah **Local-First Visual Knowledge Management System, Collaborative Research Workspace, dan High-Signal Social Knowledge Graph** yang menggabungkan kedaulatan plaintext Markdown (*Obsidian*), tata letak graf deterministik (*XMind*), kolaborasi tim & tampilan data derivatif (*Notion*), keterbukaan pengetahuan terverifikasi (*Wikipedia*), serta identitas intelektual & alur *Fork/Merge* (*LinkedIn × ResearchGate × GitHub*).
 
-- **North Star Metric:** **Weekly Active Knowledge Connections (`WAKC`)** — jumlah simpul pengetahuan yang dibuat, dipetakan secara visual, disitasi lintas-vault, atau di-*fork* secara bermakna setiap minggu.
-- **Metrik Pendukung:**
-  - *Time-to-First-Value (`TTFV`)* `< 90 detik` dari kunjungan landing hingga graf pertama tersusun.
-  - *Activation Rate* (menyelesaikan sandbox + klaim `/@username` / membuat vault pertama) `>= 35%` `[ASSUMPTION]`.
-  - *Retention D7 / D30* `>= 40% / 22%` untuk kreator aktif `[ASSUMPTION]`.
-  - *Public Knowledge Viral K-Factor* `>= 0.35` melalui tautan `/@username`, sitasi, dan tombol *Fork to My Vault* `[ASSUMPTION]`.
-  - *Free-to-Paid Conversion* `>= 4%` (Pro/Team) dan *Scholarly NPS* `>= +50` `[ASSUMPTION]`.
+### 1.1 Telemetry & Success Metrics
+- **North Star Metric:** **Weekly Active Knowledge Connections (`WAKC`)** — jumlah node pengetahuan yang dibuat, dipetakan secara deterministik, disitasi lintas-vault, atau di-*fork* secara bermakna setiap minggu.
+- **Supporting Product & Engineering KPIs:**
+  - *Time-to-First-Value (`TTFV`)* `< 90 detik` sejak akses Landing Sandbox hingga graf pertama terbentuk.
+  - *Activation Rate* (sandbox → registrasi/approval → pembuatan vault atau klaim `username`) `>= 35%` `[ASSUMPTION]`.
+  - *Retention D7 / D30* `>= 40% / 22%` untuk pengguna aktif `[ASSUMPTION]`.
+  - *Public Knowledge Viral K-Factor* `>= 0.35` melalui tautan `/:username`, sitasi, dan tombol *Fork to My Vault* `[ASSUMPTION]`.
+  - *Free-to-Paid Conversion* `>= 4%` (pada Stage 3 Commercial GA) dan *Core Canvas Performance* `60 FPS` pada `2.000` node serta LCP `< 2.0s`.
 
-| Dimensi | Quo Vadis v1 (`00-1-quovadis.md`) | Master Blueprint v2 (`00-0-master-blueprint.md`) |
+### 1.2 Baseline Delta (`00-1-quovadis.md` v1.0 → `00-0-master-blueprint.md` v2.0)
+
+| Aspek Sistem | Baseline v1.0 (`00-1-quovadis.md`) | Target Architecture v2.0 (`00-0-master-blueprint.md`) |
 | :--- | :--- | :--- |
-| **Identitas Produk** | Hybrid PKM & Visual LMS (3 DNA) | Social Knowledge Network & Visual Thinking OS (5 DNA) |
-| **Kolaborasi Tim** | VCS lokal + RLS dasar (`[PARTIAL]`) | DNA Notion penuh: Teamspace, komentar, presence, Kanban/Kalender derivatif |
-| **Identitas & Rute Publik** | Portal statis `/p/:username/:vaultSlug` | Profil cendekiawan `/@:username`, eksplorasi `/explore`, sitasi & fork |
-| **Model Bisnis** | Draft kasar di `brd.md` (`{{TBD}}`) | Model hibrida XMind + Notion + Academic Economy dengan entitlement server-side |
-| **Home & Akuisisi** | Belum ada domain Dashboard & Sandbox | Domain baru `src/domains/dashboard/` (`/vaults`), Landing Sandbox, Onboarding 5-lapis |
-| **Kustomisasi & Ekstensi** | Internal `configRegistry` & `pluginRegistry` | Config 6-lapis berbasis Role, Unified Theme Engine, `@obmap/sdk` bersandbox |
+| **Klasifikasi Produk** | Hybrid PKM & Visual LMS (3 referensi) | Visual Knowledge OS & Social Knowledge Network (5 referensi) |
+| **Model Kolaborasi** | VCS lokal + RLS dasar (`[PARTIAL]`) | Teamspaces, izin granular, komentar blok, CRDT, view derivatif frontmatter |
+| **Rute & Identitas Publik** | Sub-path legacy `/p/:username/:vaultSlug` | Root-level kanonik `/:username` dan `/@:username` (*hard cutover*, `/p/*` langsung dimatikan), plus `/explore` |
+| **Strategi Rilis** | Tidak terdefinisi (*big-bang*) | **3-Stage Progressive Shipping Gate**: Partner Pilot → Approval Beta (per-user `/admin`) → Commercial GA (Xendit/Midtrans → Stripe) |
+| **Home, Komunitas & Akuisisi** | 12 domain (`public-reader` di `/p/*`, tanpa Dashboard & Sandbox) | **13 Bounded Domains** (`community` menyerap `public-reader` + domain baru `dashboard`), Landing Sandbox `< 65KB`, Onboarding 5-tahap |
+| **Kustomisasi & SDK** | Registry internal (`configRegistry`, `pluginRegistry`) | 6-Layer Cascading Config, Unified DOM/Canvas2D Theme Engine, `@obmap/sdk` |
 
-### Hukum Dasar Arsitektur (Non-Negotiable)
-1. **Zero Feature Deletion:** Dilarang menghapus atau meminifikasi fitur, paket, atau arsip (`00-1-quovadis.md`) tanpa mandat eksplisit.
-2. **Markdown + Frontmatter Sovereignty:** Kanban, Kalender, LMS DAG, dan sitasi sosial wajib **diturunkan** (*derived*) dari berkas Markdown + YAML Frontmatter, bukan format blok JSON *proprietary*.
-3. **Deterministic Graph Solvers (`ADR-0003`):** Hanya `Free-Force` yang menjalankan simulasi D3 kontinu; seluruh solver terstruktur (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Citation Tree`) bersifat deterministik.
-4. **Headless Controller & Reactive Governance (`ADR-0006`):** Pemisahan Orchestrator / View (`<=300` baris) / `use<Feature>Controller.ts`, mutasi via pure Zustand actions, Single Source of Truth, dan Canvas Frame Invalidation.
-5. **Security by Design:** Skema DB hanya via migrasi `supabase/migrations/` dengan RLS ketat & grant eksplisit (`authenticated`, `service_role`); bucket media privat (`vault-media`, `avatars`) diakses eksklusif via `createSignedUrl`.
-6. **Local-First Gratis Selamanya:** Penggunaan lokal (`FileSystemService.ts`, `IndexedDbVaultDriver.ts`) 100% gratis selamanya tanpa paksaan registrasi.
+### 1.3 Six Architectural Invariants (Non-Negotiable Engineering Constraints)
+1. **Zero Feature Deletion:** Tidak menghapus atau meminifikasi fitur, dependensi, atau catatan arsip (`00-1-quovadis.md`) tanpa persetujuan eksplisit.
+2. **Markdown + Frontmatter Single Source of Truth:** Tampilan Kanban, Kalender, Timeline, LMS DAG, dan sitasi sosial wajib **diturunkan** (*derived*) dari berkas Markdown + YAML Frontmatter, bukan blok JSON *proprietary*.
+3. **Deterministic Graph Solvers (`ADR-0003`):** Hanya mode `Free-Force` yang menjalankan simulasi D3 kontinu; seluruh layout terstruktur (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Citation Tree`) bersifat deterministik (`layoutCategory.ts`).
+4. **Headless Controller & Reactive Governance (`ADR-0006`):** Pemisahan Orchestrator / Pure View (`<=300` baris) / `use<Feature>Controller.ts`, mutasi via pure Zustand actions, Single Source of Truth, Hierarchical Store Bridge, dan Canvas Frame Invalidation.
+5. **Database & Private Storage Security:** Perubahan skema hanya melalui migrasi SQL di `supabase/migrations/` dengan RLS ketat serta grant eksplisit (`authenticated`, `service_role`); bucket privat (`vault-media`, `avatars`) diakses eksklusif via `createSignedUrl`.
+6. **Local-First Forever Free:** Penyimpanan lokal (`FileSystemService.ts`, `IndexedDbVaultDriver.ts`) tetap 100% gratis selamanya tanpa mewajibkan akun cloud.
 
 ---
 
-## Sila 1: Visi Peradaban & Fusi 5 DNA Superpower ("Pengimbang Media Sosial Entertainment")
+## 2. Five-System Reference Architecture (Core DNA Specification)
 
-Media sosial arus utama mengoptimalkan *dopamine loop*, konten dangkal, dan polarisasi. ObMap membalik paradigma tersebut: membangun ruang digital berkejelasan tinggi tempat para akademisi, peneliti, dosen, mahasiswa, insinyur, dan pembelajar memetakan pemikiran nyata (*Proof-of-Thought*) dan mewariskan graf pengetahuan kolektif.
+ObMap dirancang sebagai infrastruktur penyeimbang ekosistem media sosial hiburan dengan menyediakan lingkungan kerja kognitif dan jejaring cendekiawan berkejelasan tinggi (*high-signal knowledge network*).
 
 ```mermaid
 flowchart TD
-    D1["1. Obsidian: Vault Lokal, Markdown & Plugin SDK"] --> CORE["O B M A P — The Social Knowledge Network"]
-    D2["2. XMind: Solver Deterministik & Kognisi Visual"] --> CORE
-    D3["3. Notion: Teamspace, Kolaborasi & Views Derivatif"] --> CORE
-    D4["4. Wikipedia: Graf Pengetahuan Publik & Sitasi Terbuka"] --> CORE
-    D5["5. LinkedIn × ResearchGate × GitHub: Profil /@username & Fork/PR"] --> CORE
-    CORE --> P1["Pilar 1: Ensiklopedia & Konstelasi Publik"]
-    CORE --> P2["Pilar 2: Living Intellectual Profile (/@username)"]
-    CORE --> P3["Pilar 3: Workspace Riset & Pemecahan Masalah"]
-    CORE --> P4["Pilar 4: Kurikulum LMS & Skill Tree DAG"]
-    CORE --> P5["Pilar 5: Jejaring Riset & Peer Review Komunitas"]
+    R1["1. Obsidian: Local-First Vault, Markdown & Plugin SDK"] --> CORE["ObMap v2.0 Runtime & Social Knowledge Graph"]
+    R2["2. XMind: Deterministic Solvers & Visual Cognition"] --> CORE
+    R3["3. Notion: Teamspaces, RBAC & Derived Data Views"] --> CORE
+    R4["4. Wikipedia: Open Knowledge Index & Verifiable Cross-Links"] --> CORE
+    R5["5. LinkedIn × ResearchGate × GitHub: /:username Profile & Fork/MR"] --> CORE
+    CORE --> P1["Pillar 1: Public Encyclopedia & Topic Constellations"]
+    CORE --> P2["Pillar 2: Living Intellectual Portfolio (/:username)"]
+    CORE --> P3["Pillar 3: Ideation & Problem-Solving Workspace"]
+    CORE --> P4["Pillar 4: Interactive Graph LMS & Skill Tree DAG"]
+    CORE --> P5["Pillar 5: Collaborative Research & Peer Review Network"]
 ```
 
-| DNA Patokan | Kekuatan yang Diserap | Kelemahan yang Dilampaui | Standar Konkret Terukur di ObMap | Status Saat Ini |
+| Sistem Referensi | Kapabilitas yang Diadopsi | Limitasi yang Dieliminasi | Acceptance Standard di ObMap | Status Kode Aktual |
 | :--- | :--- | :--- | :--- | :--- |
-| **Obsidian** | Plaintext `.md`, `[[wikilinks]]`, multi-pane workspace, command palette, config modular & ekosistem plugin | Graph view *hairball*, Sync & Publish berbayar mahal, nol fitur tim bawaan | 10k+ catatan tanpa lag (Aho-Corasick Worker), split pane & hotkeys, config `.obmap/`, `@obmap/sdk` | `[IMPLEMENTED]` (inti PKM), `[PARTIAL]` (plugin SDK) |
-| **XMind** | Layout radial/hierarkis deterministik, Bézier, branch colors, fold/unfold, tema & ekspor presentasi | File biner `.xmind` tertutup, non-searchable Git, bukan PKM panjang | 6+ solver deterministik, subtree override, navigasi `Tab`/`Enter`/`Space`, ekspor SVG/PDF/OPML, Pitch Mode | `[IMPLEMENTED]` (4+ solver), `[PLANNED]` (Pitch/OPML) |
-| **Notion** | Share dialog mudah, teamspace, komentar kontekstual, presence, template, view Kanban/Kalender/Tabel | *Cloud lock-in*, format blok tertutup, berat offline, tidak punya graf pengetahuan sejati | View Kanban/Kalender diturunkan dari YAML frontmatter, komentar paragraf, presence & share dialog terpadu | `[PARTIAL]` (V4 RLS & co-presence), `[VISION]` (views/teamspace) |
-| **Wikipedia** | Rujukan silang terbuka, riwayat suntingan publik, netralitas kategori, indeks pencarian instan | Teks linier statis tanpa peta konsep visual; kontribusi terhambat markup lawas | Dual-pane Graph + Markdown reader, riwayat revisi VCS terbuka, metadata sitasi & kategori topik | `[IMPLEMENTED]` (`/p/*` & VCS), `[VISION]` (indeks global) |
-| **LinkedIn × ResearchGate × GitHub** | Identitas profesional, jejaring sitasi ilmiah, model sosial *Fork & Merge Request* berbasis teks | LinkedIn penuh pamer tanpa bukti karya; ResearchGate statis PDF; GitHub terlalu teknis untuk non-dev | Profil kanonik `/@username`, `[[@user/vault/note]]`, *Fork & Knowledge Merge Request*, reputasi anti-vanity | `[PARTIAL]` (claim username & `VcsCreateMergeRequestModal`), `[VISION]` (social graph) |
+| **Obsidian** | Plaintext `.md`, `[[wikilinks]]`, split-pane workspace, command palette, config `.obmap/`, Plugin API | Graph *hairball*, Sync & Publish berbayar terpisah, minim kolaborasi tim | Indexing `< 100ms` via Aho-Corasick Worker (`mentions.worker.ts`), config terisolasi, `@obmap/sdk` | `[IMPLEMENTED]` (inti PKM), `[PARTIAL]` (SDK) |
+| **XMind** | Layout radial/hierarkis deterministik, Bézier, branch color coding, fold/unfold, tema & ekspor presentasi | Format biner `.xmind` tertutup, tidak ramah VCS/Git, bukan editor teks panjang | 6+ solver deterministik, subtree override, navigasi `Tab`/`Enter`/`Space`, ekspor PDF/SVG/OPML, Pitch Mode | `[IMPLEMENTED]` (4+ solver), `[PLANNED]` (Pitch/OPML) |
+| **Notion** | Share modal terpadu, teamspace, komentar kontekstual, co-presence, template, Kanban/Kalender/Tabel | *Vendor lock-in* format blok tertutup, performa offline lemah, tanpa graph engine | View Kanban/Kalender derivatif YAML frontmatter, komentar terikat blok, presence real-time | `[PARTIAL]` (V4 RLS, `VcsCoPresenceAvatars`), `[VISION]` |
+| **Wikipedia** | Rujukan silang terbuka, riwayat revisi transparan, pengindeksan kategori, pembacaan instan anonim | Teks linier tanpa navigasi graf konsep; hambatan kontribusi markup lawas | Dual-pane Graph + Markdown reader, riwayat VCS terbuka, metadata sitasi & direktori `/explore` | `[IMPLEMENTED]` (`public-reader` → `community`, VCS), `[VISION]` |
+| **LinkedIn × ResearchGate × GitHub** | Identitas profesional, graf sitasi ilmiah, alur kontribusi *Fork & Merge Request* | Feed berbasis *vanity engagement*; portofolio PDF statis; Git CLI terlalu rumit bagi non-developer | Profil kanonik `/:username` / `/@:username`, `[[@user/vault/note]]`, Fork & Knowledge Merge Request | `[PARTIAL]` (`SettingsClaimUsernameModal`, `VcsCreateMergeRequestModal`), `[VISION]` |
 
-### Matriks Posisi Kompetitif Jujur
+### 2.1 Six-Column Competitive Matrix
 
-| Dimensi | Obsidian | Notion | XMind | Wikipedia | LinkedIn / RG | **ObMap v2** |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Kedaulatan Data Lokal** | Sangat Tinggi | Rendah | Tinggi | Publik | Rendah | **Sangat Tinggi (FS API + IDB)** `[IMPLEMENTED]` |
-| **Visualisasi Multi-Model** | Force-directed | Tidak ada | Sangat Kuat | Tidak ada | Tidak ada | **Multi-Solver Deterministik + Force** `[IMPLEMENTED]` |
-| **Kolaborasi & Views Derivatif** | Add-on Sync | Sangat Kuat | Terbatas | Wiki Edit | Terbatas | **VCS + Views dari Frontmatter** `[PARTIAL]`/`[VISION]` |
-| **Publikasi & Jejaring Sosial** | Berbayar statis | Share link | Ekspor berkas | Selalu publik | Profil + PDF | **Gratis `/@username` + Citation + Fork** `[VISION]` |
-| **Kurikulum LMS Native** | Plugin pihak ke-3 | Template manual | Tidak ada | Kategori saja | Tidak ada | **DAG Skill Tree & Progress Engine** `[VISION]` |
+| Dimensi Teknis | Obsidian | Notion | XMind | Wikipedia | LinkedIn / RG | **ObMap v2.0** |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Data Sovereignty** | Tinggi | Rendah | Sedang | Publik | Rendah | **Tinggi (FS API + IndexedDB)** `[IMPLEMENTED]` |
+| **Graph & Visual Cognition** | Force 2D | Tidak ada | Deterministik | Tidak ada | Tidak ada | **Deterministik Multi-Solver + Force** `[IMPLEMENTED]` |
+| **Team Collaboration & Views** | Add-on Sync | Sangat Kuat | Terbatas | Wiki Edit | Terbatas | **VCS + Derived Frontmatter Views** `[PARTIAL]`/`[VISION]` |
+| **Public Identity & Citation** | Statis berbayar | Share URL | Ekspor file | Publik | Profil + PDF | **Gratis `/:username` + Citation + Fork** `[VISION]` |
+| **Curriculum / LMS Engine** | Plugin | Manual | Tidak ada | Kategori | Tidak ada | **Native DAG Skill Tree & Progress** `[VISION]` |
 
 ---
 
-## Sila 2: Arsitektur Identitas Publik (`/@username`), Visibilitas & Jejaring Sosial Pengetahuan
+## 3. Progressive Rollout Gate, Namespace Routing & Knowledge Graph Protocol
 
-### 2.1 Standar Rute Kanonik Modern (`/@:username`)
+### 3.1 Three-Stage Progressive Shipping & Access Gate (`ReleaseStageGate`)
+Untuk mempercepat rilis sembari mengembangkan kapabilitas penuh secara bertahap (*shipping while developing*), akses sistem dikendalikan oleh konfigurasi platform `release_stage` di backend dan gerbang autentikasi terpusat.
 
-| Rute Kanonik | Peran Halaman | Orchestrator / Komponen Target | Kompatibilitas & Catatan Teknis |
+```mermaid
+stateDiagram-v2
+    [*] --> Stage1_PartnerPilot: Launch Awal (Invite-Only)
+    Stage1_PartnerPilot --> PartnerSession: Login via partner_invitations / Allowlist
+    Stage1_PartnerPilot --> Stage2_CommunityBeta: Aktifkan Self-Signup + Approval Queue
+    Stage2_CommunityBeta --> PendingApproval: Registrasi Baru + Klaim Username
+    PendingApproval --> ApprovedMember: Admin Approve di /admin (Kontrol Traffic)
+    Stage2_CommunityBeta --> AnonymousPublicView: Akses Guest ke /:username & Vault Shared
+    Stage2_CommunityBeta --> Stage3_CommercialGA: Aktifkan Billing & Entitlements
+    Stage3_CommercialGA --> FreeOrPaidSession: Registrasi Terbuka + Quota Server-Side
+```
+
+| Stage Rilis | Flag Konfigurasi | Mekanisme Autentikasi & Traffic Control | Akses Publik Anonim | Target Verifikasi |
+| :--- | :--- | :--- | :--- | :--- |
+| **Stage 1: Closed Partner & Institutional Pilot** | `stage_1_partner` | Pendaftaran publik ditutup; akses hanya via `partner_invitations` atau provisi manual oleh Admin di `/admin`. | Ditutup penuh atau terbatas pada vault partner bertautan khusus. | Validasi stabilitas Workspace, Graph, VCS, dan penyimpanan lokal/cloud bersama mitra awal. |
+| **Stage 2: Approval-Gated Community Beta** | `stage_2_community_beta` | Registrasi publik & klaim `username` dibuka dengan status `account_status = 'pending_approval'`. Setiap akun baru wajib disetujui **secara individual oleh Admin di `/admin`** (tanpa kuota referral) sebelum masuk `/vaults` & `/app`. | Pengunjung publik hanya dapat melihat profil `/:username` dan vault berstatus `shared`/`published` dari akun berstatus `approved`. | Menguji pertumbuhan komunitas (`explore`, sitasi, fork) sambil menjaga kontrol trafik server secara ketat. |
+| **Stage 3: Public Commercial GA** | `stage_3_commercial_ga` | Registrasi langsung aktif (`approved`) dengan penegakan kuota paket Free vs Paid dinamis berbasis DB/Admin di database & Edge Functions. | Direktori penuh `/explore`, `/:username`, dan publikasi terbuka gratis. | Konversi langganan berkelanjutan, teamspaces enterprise, dan `@obmap/sdk`. |
+
+### 3.2 Root-Level Canonical Identity & Namespace Routing (`/:username` & `/@:username`)
+Seluruh standar URL publik ObMap mematikan prefix legacy `/p/` secara langsung (*hard cutover* tanpa redirect transisi) dan mengadopsi rute root-level modern yang setara dengan standar jejaring sosial dan repositori kode masa kini. Refactor `src/domains/public-reader/` menjadi `src/domains/community/` menyatukan seluruh UI portal komunitas dan reader kanonik dalam satu bounded domain.
+
+| Pola URL Kanonik | Handler / Orchestrator | Akses & Stage Gate | Deskripsi Fungsional |
 | :--- | :--- | :--- | :--- |
-| `/` | Landing Page + Live Sandbox | `src/pages/Landing.tsx` | Pengguna login diarahkan ke `/vaults` (bukan langsung `/app`) |
-| `/explore` | Direktori Eksplorasi Komunitas | `CommunityOrchestrator` `[VISION]` | Kurasi bidang ilmu, *Trending Maps*, *Featured Scholars* |
-| `/@:username` | **Living Intellectual Profile** | `ScholarProfileOrchestrator` `[VISION]` | Bio, afiliasi/ORCID, Konstelasi Vault Publik, statistik dampak |
-| `/@:username/:vaultSlug` | Portal Vault Publik & Graf | `PublicReaderOrchestrator` `[PARTIAL]` | Kanvas interaktif + tombol *Cite*, *Star/Bookmark*, *Fork* |
-| `/@:username/:vaultSlug/:noteSlug` | Dual-Pane Knowledge Reader | `PublicReaderOrchestrator` `[PARTIAL]` | Bacaan Markdown + kompas graf + anotasi paragraf |
-| `/vaults` | **Dashboard App (Home)** | `DashboardOrchestrator` `[PLANNED]` | Pusat kendali vault, views derivatif, dan feed komunitas |
-| `/app` | Workspace Editor & Graf | `WorkspaceOrchestrator.tsx` `[IMPLEMENTED]` | Multi-pane CodeMirror 6 + Canvas2D + VCS |
-| `/p/:username/:vaultSlug/*` | Rute Publik Legacy | `PublicReader.tsx` `[IMPLEMENTED]` | Wajib dipertahankan sebagai *301/client redirect* ke `/@:username/*` |
+| `/` | `src/pages/Landing.tsx` | Publik (Stage 1–3) | Landing page dengan *Embedded In-Memory Sandbox* dan CTA sesuai `release_stage` |
+| `/explore` | `CommunityOrchestrator` `[VISION]` | Stage 2–3 | Indeks kurasi topik ilmu, *Trending Knowledge Graphs*, dan *Featured Scholars* |
+| `/vaults` | `DashboardOrchestrator` `[PLANNED]` | Auth + `approved` | Dashboard Home (5 mode tampilan workspace derivatif + feed komunitas) |
+| `/app` | `WorkspaceOrchestrator.tsx` `[IMPLEMENTED]` | Auth + `approved` | Multi-pane Markdown Editor + Canvas2D Graph + VCS |
+| `/auth`, `/admin`, `/install` | Modul Auth / Admin / PWA | Sesuai RBAC | Login/Waitlist, Manajemen Approval/User/Quota/Billing, dan Instalasi PWA |
+| `/:username` & `/@:username` | `CommunityOrchestrator` `[VISION]` | Publik (`approved` + publik) | Profil Intelektual: bio, afiliasi/ORCID, Konstelasi Vault, statistik dampak |
+| `/:username/:vaultSlug` & `/@:username/:vaultSlug` | `CommunityOrchestrator` *(eks `PublicReaderOrchestrator`)* `[PARTIAL]` | Publik / Shared | Portal Vault Publik dengan kanvas interaktif + aksi *Cite*, *Bookmark*, *Fork* |
+| `/:username/:vaultSlug/:noteSlug` & `/@:username/:vaultSlug/:noteSlug` | `CommunityOrchestrator` *(eks `PublicReaderOrchestrator`)* `[PARTIAL]` | Publik / Shared | *Dual-Pane Reader*: artikel Markdown + kompas graf + anotasi blok |
 
-- **Implementasi React Router v6:** Segmen `/:handle` divalidasi di wrapper route (`handle.startsWith("@")`), sementara rute sistem (`/auth`, `/app`, `/vaults`, `/explore`, `/admin`, `/install`, `/p/*`) dideklarasikan lebih dahulu agar bebas tabrakan namespace. `ProfileService.ts` dan `SettingsClaimUsernameModal.tsx` (`[IMPLEMENTED]`) tetap menjadi gerbang klaim *handle* unik.
+- **Namespace Collision Prevention (`RESERVED_SLUGS`):** Karena `/:username` berada di root domain, `ProfileService.checkUsernameAvailability()`, constraint PostgreSQL `CHECK (username NOT IN (...))`, dan urutan route di `src/App.tsx` wajib mencadangkan seluruh path sistem: `app`, `vaults`, `auth`, `admin`, `explore`, `install`, `settings`, `api`, `assets`, `p`, `pricing`, `docs`, `help`, `legal`, `about`, `login`, `signup`.
+- **Handle Normalization:** Akses ke `/@budi` dan `/budi` di-resolve ke record profil `username = 'budi'` yang sama secara kanonik (dengan dukungan tag `<link rel="canonical">` konsisten).
 
-### 2.2 Standar Visibilitas Vault (`Private`, `Shared`, `Public Listed`, `Public Unlisted`)
+### 3.3 Vault Visibility State Machine (`Private`, `Shared`, `Public Unlisted`, `Public Listed`)
 
 ```mermaid
 stateDiagram-v2
     [*] --> Private: Default Vault Baru
-    Private --> Shared: Undang Kolaborator / Buat Link Terbatas
-    Shared --> Private: Cabut Semua Anggota & Link
-    Private --> PublicUnlisted: Terbitkan via Tautan (Owner + Verified Handle)
-    Shared --> PublicUnlisted: Terbitkan Tautan Baca Publik
-    PublicUnlisted --> PublicListed: Daftarkan ke /@username & /explore
-    PublicListed --> PublicUnlisted: Sembunyikan dari Indeks Komunitas
-    PublicListed --> Private: Unpublish (Konfirmasi + Putus Cache Publik)
-    PublicUnlisted --> Private: Unpublish (Cabut Akses Anonim)
+    Private --> Shared: Undang Anggota / Terbitkan Share Link
+    Shared --> Private: Cabut Semua Anggota & Share Link
+    Private --> PublicUnlisted: Publish Link-Only (Requires approved account)
+    Shared --> PublicUnlisted: Publish Link-Only
+    PublicUnlisted --> PublicListed: Daftarkan ke /:username & /explore
+    PublicListed --> PublicUnlisted: Lepas dari Indeks Publik
+    PublicListed --> Private: Unpublish (Konfirmasi + Invalidate CDN)
+    PublicUnlisted --> Private: Unpublish (Putus Akses Anonim)
 ```
 
-| Aspek | `Private` | `Shared` (Team / Guest) | `Public Unlisted` | `Public Listed` (`/@username`) |
+| Dimensi Teknis | `Private` | `Shared` (Collaborator / Guest) | `Public Unlisted` | `Public Listed` (`/:username`) |
 | :--- | :--- | :--- | :--- | :--- |
-| **Manajemen & Kontrol** | Hanya Owner | Owner/Admin kelola email/link ber-expiry | Owner/Admin; per-note exclude (`visibility: private`) | Owner; muncul di profil `/@username` & `/explore` |
-| **Frontend UX** | Workspace `/app` saja | Indikator *Co-Presence* & komentar | Dual-pane Reader + badge *Unlisted* | Profil sosial + aksi *Cite*, *Fork*, *Discuss* |
-| **Backend & RLS** | `auth.uid() = owner_id` | Policy `vault_members` & `share_links` | Snapshot/live notes dengan `status = 'published'` | Terindeks Full-Text Search & Citation Graph |
-| **Media Storage** | Bucket privat + `createSignedUrl` | Signed URL berdurasi pendek per sesi | Proxy/CDN asset terpublikasi yang disetujui | CDN asset terpublikasi + OG Image graf dinamis |
-| **SEO & Caching** | `noindex, nofollow` | `noindex, nofollow` | `noindex` (aman untuk draf privat klien) | SSR/Meta OG dinamis, Sitemap, Schema.org `ScholarlyArticle` |
+| **Kontrol Akses** | `auth.uid() = owner_id` | `vault_members` & token `share_links` ber-expiry | Token/URL vault diketahui + akun pemilik `approved` | Terbuka bagi seluruh pengunjung & crawler |
+| **Per-Note Override** | Semua privat | Hormati peran member per folder | `visibility: private` di YAML dikecualikan dari bundle publik | `visibility: private` di YAML dikecualikan dari indeks & graf |
+| **Media Delivery** | Bucket privat + `createSignedUrl` | Signed URL ber-TTL pendek per sesi | Edge-cached signed/published manifest terotorisasi | CDN publik + generator OG Card graf dinamis |
+| **SEO & Discovery** | `noindex, nofollow` | `noindex, nofollow` | `noindex, nofollow` | SSR/Meta OG dinamis, Sitemap XML, Schema.org `ScholarlyArticle` |
 
-- **Unified Share Dialog:** Satu dialog ala Notion (evolusi `CollabDocumentSharePopover.tsx` dan `CollabBulkPublishModal.tsx`) mengelola undangan email, link dengan peran & masa berlaku, toggle *Publish to `/@username`*, *Listed vs Unlisted*, serta pengecualian folder/catatan.
-
-### 2.3 Enam Inovasi Jejaring Pengetahuan (All-Rounded Scholarly Features)
-1. **Federated Cross-Vault Wikilinks (`[[@username/vaultSlug/noteSlug]]`):** Referensi lintas-pengguna menghasilkan *Cross-Vault Backlink* otomatis dan mencatat sitasi di tabel `cross_vault_citations`.
-2. **GitHub-Style "Fork & Knowledge Merge Request":** Pembaca dapat mem-*fork* vault publik ke akun sendiri lalu mengajukan usulan perbaikan via `VcsCreateMergeRequestModal.tsx` & `vcsDiffEngine.ts` untuk di-review pemilik asli.
-3. **Epistemic Status & Scholarly Frontmatter:** Skema standar `epistemic_status` (`seedling` | `budding` | `evergreen` | `peer_reviewed`), `confidence`, `doi`, `license` (default `CC BY-SA 4.0` `[ASSUMPTION]`), dan `references` (BibTeX/CSL), ditambah tombol **"Cite this Note"** (APA, MLA, IEEE, BibTeX, ObMap Wikilink).
-4. **Paragraph-Level Scholarly Annotations:** Komentar tertambat pada hash blok paragraf atau ID simpul graf (mendukung mode *Public Peer Review* maupun *Private Study Group*).
-5. **Anti-Vanity Reputation System:** Reputasi diukur dari *Citation Impact*, *Accepted Merge Requests*, *Fork Reuses*, rasio catatan *Evergreen*, dan penyelesaian kurikulum LMS — bukan algoritma *clickbait*.
-6. **Dua Solver Graf Ilmiah Baru (Deterministik):**
-   - **`argument-map` (Toulmin Debate Map):** memetakan *Claim*, *Evidence*, *Warrant*, *Counter-Argument*, dan *Synthesis* dari properti frontmatter/heading.
-   - **`citation-tree` (Genealogy Tree):** memvisualisasikan silsilah evolusi gagasan dan rujukan antar-paper secara kronologis.
+### 3.4 Six Knowledge Network Protocols (Scholarly & Collaborative Capabilities)
+1. **Federated Cross-Vault Wikilinks (`[[@username/vaultSlug/noteSlug]]`):** Referensi lintas-vault menghasilkan *Cross-Vault Backlink* otomatis dan merekam relasi di tabel `cross_vault_citations`.
+2. **VCS-Backed Vault Fork & Merge Request Protocol:** Pengunjung terautentikasi (`approved`) dapat mem-*fork* vault publik dan mengajukan perbaikan melalui `VcsCreateMergeRequestModal.tsx` + `vcsDiffEngine.ts`.
+3. **Epistemic Metadata & One-Click Citation Exporter:** Skema YAML standar `epistemic_status` (`seedling` | `budding` | `evergreen` | `peer_reviewed`), `confidence`, `doi`, `license` (**default `CC BY-SA 4.0`** agar ramah sitasi & *Fork/Merge Request*, dapat di-override per vault), dan `references` (BibTeX/CSL), lengkap dengan tombol *"Cite this Note"* (APA, MLA, IEEE, BibTeX, ObMap Wikilink).
+4. **Block-Hash Anchored Paragraph Annotations & Manual Scholar Verification:** Diskusi tertambat pada hash paragraf atau ID simpul graf (mendukung *Public Peer Review* dan *Private Team Review*); lencana *Verified Scholar / Educator / Institution* diberikan melalui **kurasi manual oleh Admin di `/admin`**.
+5. **High-Signal Scholarly Impact Index:** Penilaian reputasi berbasis kedalaman sitasi, *Merge Request* yang diterima, utilitas *Fork*, rasio catatan *Evergreen*, dan penyelesaian kurikulum — tanpa metrik *clickbait*.
+6. **Deterministic Analytical Solvers (`ADR-0003`):** Penambahan dua layout deterministik baru pada `layoutCategory.ts`: `argument-map` (pemetaan *Claim–Evidence–Warrant–Counter–Synthesis*) dan `citation-tree` (silsilah kronologis literatur).
 
 ---
 
-## Sila 3: Dua Standar Mutlak — Developer Standard & User Standard
+## 4. Engineering Quality Gates (Developer Standard) & Interaction Matrix (User Standard)
 
-### 3.1 Developer Standard (Enterprise Engineering Excellence)
+### 4.1 Developer Standard (Enterprise Engineering Excellence)
 
 ```mermaid
 flowchart LR
-    WEB["Client SPA (React 18 + TS + Tailwind + CodeMirror 6 + Canvas2D)"]
-    subgraph DOMAINS ["14 Bounded Domains (src/domains/)"]
+    SPA["Client SPA (React 18 + TS 5 + Tailwind + CM6 + Canvas2D)"]
+    subgraph DOMAINS ["13 Bounded Domains (Target src/domains/)"]
         CORE["vault · editor · graph · metadata · vcs · sync"]
         SHELL["workspace · dashboard (Baru) · settings · auth · admin"]
-        SOCIAL["collaboration · public-reader / community (Diperluas)"]
+        NET["collaboration · community (Menggantikan public-reader)"]
     end
-    ENGINE["Unified Policy Engine + Entitlement Gate + 6-Layer Config"]
-    SUPA["Supabase Cloud (Auth, Postgres RLS, Edge Functions, Private Buckets)"]
-    LOCAL["Local Storage (FS Access API + IndexedDB)"]
-    PAY["Payment Gateways (Stripe Global + Xendit/Midtrans ID)"]
-    WEB --> DOMAINS --> ENGINE
-    ENGINE --> SUPA
-    ENGINE --> LOCAL
-    SUPA --> PAY
+    GATE["Policy Engine + ReleaseStageGate + Entitlement Gate + 6-Layer Config"]
+    BACKEND["Supabase (Auth, Postgres RLS, Edge Functions, Storage)"]
+    LOCAL["Local Drivers (FS Access API + IndexedDB + Memory Sandbox)"]
+    PAY["Billing Webhooks (Xendit/Midtrans → Stripe)"]
+    SPA --> DOMAINS --> GATE
+    GATE --> BACKEND
+    GATE --> LOCAL
+    BACKEND --> PAY
 ```
 
-| Kategori Quality Gate | Standar Target Enterprise (Wajib Lulus Sebelum Rilis) | Status Saat Ini |
+| Domain Gate | Standar Target Produksi | Status Saat Ini |
 | :--- | :--- | :--- |
-| **Type Safety & Lint** | TypeScript strict 0 error; `TD-005` (`untypedSupabase.ts`) terhapus; `npm run lint` bersih | `[PARTIAL]` (`TD-005` aktif) |
-| **Automated Testing** | `npx vitest run` 100% hijau; coverage `>= 85%` pada solver, VCS, policy engine, entitlement; E2E Playwright untuk alur auth, onboarding, share, dan billing | `[PARTIAL]` (Vitest unit hijau) |
-| **Performance Budget** | `/`, `/@username` LCP `< 2.0s`, CLS `< 0.05`; initial bundle `< 250KB` gzipped; Landing Sandbox `< 65KB`; Canvas2D `60 FPS` (2.000 node) & `>=30 FPS` (5.000 node) | `[PARTIAL]` |
-| **A11y & i18n** | WCAG 2.2 AA (kontras, navigasi keyboard penuh, ARIA pada modal & reader); dwibahasa `id-ID` dan `en-US` via kamus terstruktur | `[PARTIAL]` |
-| **Security & Privacy** | Kepatuhan OWASP ASVS Level 2; uji otomatis RLS (pgTAP/integration) setiap migrasi; sanitasi XSS Markdown & CSS snippet; `createSignedUrl` wajib untuk bucket privat | `[PARTIAL]` |
-| **Observability & SLO** | Error tracking terstruktur, product funnel telemetry (opt-in privasi), `audit_logs` untuk aksi sensitif, feature flags, backup PITR, SLO `99.9%` untuk reader & sync | `[PARTIAL]` (`audit_logs` ada) |
+| **Type Safety & Static Analysis** | TypeScript strict 0 error; hapus `untypedSupabase.ts` (`TD-005`); `npm run lint` 0 warning | `[PARTIAL]` (`TD-005` aktif) |
+| **Test Coverage & E2E** | `npx vitest run` 100% lulus; coverage `>= 85%` untuk solver, VCS, policy engine, entitlement; E2E Playwright untuk onboarding, approval gate, share, & checkout | `[PARTIAL]` |
+| **Performance Budget** | `/`, `/:username` LCP `< 2.0s`, CLS `< 0.05`; initial JS `< 250KB` gzipped; Sandbox `< 65KB`; Canvas2D `60 FPS` (`2.000` node) & `>= 30 FPS` (`5.000` node) | `[PARTIAL]` |
+| **Security & RLS Testing** | Kepatuhan OWASP ASVS L2; uji integrasi RLS otomatis tiap migrasi; sanitasi Markdown/CSS publik (`rehype-sanitize`); `createSignedUrl` wajib | `[PARTIAL]` |
+| **A11y, i18n & Observability** | WCAG 2.2 AA; kamus `id-ID` & `en-US`; error tracking, `audit_logs`, feature flags, backup PITR, SLO `99.9%` | `[PARTIAL]` |
 
-- **Definition of Done (DoD) PR:** (1) Kepatuhan aturan Headless Controller (`<=300` baris/komponen UI), (2) Uji unit + uji RLS bila menyentuh DB, (3) Pembaruan dokumen di `docs/` bila ada perubahan kontrak/fitur, (4) Zero regresi pada `npx vitest run` dan `npm run build`.
+- **Mandatory PR Definition of Done (DoD):** (1) Komponen UI mematuhi Headless Controller (`<= 300` baris), (2) Uji unit/RLS lulus, (3) Pembaruan wajib pada `docs/_machine/changelog.jsonl` + `docs/changelogs/YYYY-MM.md` + `docs/changelogs/README.md` dalam perubahan yang sama.
 
-### 3.2 User Standard (Cognitive & Experience Excellence)
-- **Prinsip UX Inti:** (1) *3-Clicks-to-Aha*, (2) *Zero Blank Slate* (empty state selalu mengajar atau menyediakan template), (3) *Universal Undo* untuk editor & kanvas, (4) *Calm High-Signal UI* (bebas distraksi notifikasi hiburan), (5) *Keyboard-First & Touch-Ready*, (6) *Guided Recovery* (pesan error selalu disertai aksi pemulihan).
+### 4.2 User Standard (Interaction Principles & Role × Scenario × Function Matrix)
+- **Enam Prinsip UX:** *3-Clicks-to-Aha*, *Zero Blank Slate*, *Universal Undo*, *Calm High-Signal UI*, *Keyboard-First & Touch-Ready*, dan *Guided Error Recovery*.
 
-| Peran Utama | Menulis & Memetakan (`/app`) | Dashboard (`/vaults`) | Kolaborasi & VCS | Publikasi `/@username` & Sosial | LMS, Admin & Billing |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Visitor / Sandbox** | Editor & graf demo di Landing (in-memory) | Terkunci (arahkan daftar) | Tidak tersedia | Baca & eksplorasi `/explore`, `/@username` | Ikut modul LMS publik terbuka |
-| **Free Scholar** | Penuh (Lokal tak terbatas + sync terbatas) | Semua 5 mode workspace + Feed | Commit/branch lokal; terima Fork PR | Profil `/@username` penuh, sitasi, diskusi | Belajar/mengajar dasar gratis |
-| **Pro Creator** | Penuh + tema, solver & ekspor lanjut | Analitik pembaca & sitasi pribadi | Unlimited cloud snapshots & 90+ hari | Custom domain, PDF/SVG HD, badge Pro | Kupon/tagihan pribadi |
-| **Editor / Commenter (Shared)** | Edit (Editor) / Read+Annotate (Commenter) | Muncul di *"Shared with me"* | Buat branch & ajukan Merge Request | Ikut kontribusi jika diizinkan Owner | Lihat progres kelas/tim |
-| **Team / Org Admin** | Penuh + kunci kebijakan gaya & plugin | Analitik beban kerja & progres tim | Kelola branch protection & anggota | Kelola *Team Publication* institusi | Kelola seat, SSO, allowlist plugin |
-| **Superadmin** | Tidak mengakses konten privat tanpa audit | Telemetry global | Audit keamanan & moderasi konten | Verifikasi cendekiawan & takedown DMCA | Kelola tier, override plan, kupon |
+| Role / State | Landing & Onboarding | Dashboard (`/vaults`) | Workspace (`/app`) | Kolaborasi & VCS | Publik `/:username` & Sosial | Admin & Billing |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Visitor (Anonim)** | Coba Sandbox in-memory | Redirect ke `/auth` | Tidak dapat diakses | Tidak tersedia | Baca profil/vault `approved` & publik | Tidak tersedia |
+| **Pending Approval (Stage 2)** | Sudah klaim `username` | Tahan di **Waitlist Status Card** | Terkunci hingga Admin approve | Tidak tersedia | Baca profil publik lain; profil sendiri belum tayang | Lihat status antrean saja |
+| **Partner Pilot (Stage 1)** | Bypass waitlist via token | Penuh (5 mode derivatif) | Penuh (Lokal + Cloud Partner) | Commit, branch, share tim mitra | Sesuai kebijakan pilot partner | Tidak tersedia |
+| **Free User (Stage 3)** | Penuh | Penuh + Community Feed | Lokal tak terbatas + 2 Cloud Vault | 2 tamu/vault, VCS 14 hari | Profil `/:username` gratis, *Cite*, *Fork* | Kelola profil & upgrade |
+| **Pro / Team Admin** | Penuh + Preset Tim | Analitik pembaca / *workload* tim | Penuh + tema/ekspor lanjut & lock config | Unlimited anggota, PR review, CRDT | Custom domain / publikasi tim | Kelola seat, billing, allowlist plugin |
+| **Superadmin** | Telemetry konversi | Telemetry platform | Opsional (audit-logged) | Audit & moderasi konten | Kurasi manual *Verified Scholar* & takedown | **Approval per-user Stage 2**, **atur harga & kuota dinamis**, kupon |
 
-- **Katalog Persona Diperbarui (`PER-01` s/d `PER-09`):** Mempertahankan `PER-01` (Peneliti Akademik), `PER-02` (Dosen/Instruktur LMS), `PER-03` (Konsultan Bisnis), `PER-04` (Product Lead), `PER-05` (Pembaca Publik), `PER-06` (System Admin), serta menambah `PER-07` (**Kreator Pengetahuan / Cendekiawan Publik `/@username`**), `PER-08` (**Kepala Lab / Admin Kampus**), dan `PER-09` (**Kontributor Terbuka & Peer Reviewer**).
+- **Katalog Persona (`PER-01`–`PER-09`):** `PER-01` Peneliti Akademik, `PER-02` Dosen/Instruktur LMS, `PER-03` Konsultan Bisnis, `PER-04` Product Lead, `PER-05` Pembaca Publik, `PER-06` System/Platform Admin, `PER-07` Kreator Pengetahuan Publik (`/:username`), `PER-08` Kepala Lab Riset / Admin Kampus, `PER-09` Kontributor Terbuka & Peer Reviewer.
 
 ---
 
-## Sila 4: Tata Kelola Peran (RBAC), Monetisasi Etis (Free vs Paid) & Arsitektur Entitlement
+## 5. Multi-Layer RBAC Policy Engine, Dynamic Entitlement Architecture & Monetization Model
 
-### 4.1 Hierarki RBAC Dua Lapis & Unified Policy Engine
-- **Lapis 1 — Platform/Account Roles:** `anonymous`, `trial_sandbox`, `free_scholar`, `pro_creator`, `verified_academic`, `team_member`, `team_admin`, `billing_owner`, `moderator`, `support`, `superadmin`.
-- **Lapis 2 — Resource Roles (Vault / Teamspace / Classroom):** `owner`, `admin` (maintainer), `editor`, `commenter`, `contributor` (via Fork/PR), `viewer`, `guest`, `public_reader`.
-- **Perilaku UI Deterministik:**
-  - *Disembunyikan total:* Menu `/admin` untuk non-superadmin; tombol *Billing* untuk member biasa.
-  - *Dinonaktifkan + Tooltip Penjelasan:* Tombol *Publish* atau *Invite* pada peran `viewer`/`commenter` menampilkan alasan peran atau batas kuota paket.
-  - *Read-Only Banner:* Saat pengguna berada di vault *downgraded* atau mode `viewer`/`guest`, editor tetap terbuka dalam mode baca dengan aksi eksplisit *"Fork ke Vault Saya"*.
-- **Unified Policy Engine:** Evolusi `src/domains/auth/shared/hooks/useVaultPermission.ts` menjadi fungsi murni `can(actor, action, resource, context)` yang mengombinasikan **Resource Role + Platform Entitlement + Org Policy**, berpasangan dengan fungsi Postgres RLS `public.can_access_resource(...)` dan pencatatan ke `audit_logs`.
+### 5.1 Two-Layer RBAC & Unified Policy Engine
+- **Layer 1 (Platform Account Roles & Gate):** `anonymous`, `trial_sandbox`, `pending_approval`, `partner_pilot`, `free`, `pro`, `academic_verified`, `team_member`, `team_admin`, `billing_owner`, `moderator`, `superadmin`.
+- **Layer 2 (Resource / Vault Roles):** `owner`, `admin`, `editor`, `commenter`, `contributor` (via Fork/PR), `viewer`, `guest`, `public_reader`.
+- **Deterministic UI Gating:** *Hidden* untuk rute administratif; *Disabled + Tooltip Alasan* untuk aksi terkunci oleh peran atau kuota dinamis; *Read-Only Banner + Tombol Fork* untuk vault *viewer* atau vault berstatus *downgraded*.
+- **Unified Policy Engine:** Evolusi `src/domains/auth/shared/hooks/useVaultPermission.ts` menjadi evaluator `can(actor, action, resource, context)` yang identik dengan fungsi PostgreSQL RLS `public.can_access_resource(...)` serta mencatat mutasi izin ke `audit_logs`.
 
-### 4.2 Monetisasi Etis (XMind × Notion × Academic Economy — Menolak Model Obsidian)
+### 5.2 Commercial Model (XMind + Notion Hybrid & Dynamic Admin-Managed Quotas)
 
-| Aplikasi Patokan | Filosofi Bisnis | Penilaian & Sikap ObMap |
+| Model Referensi | Mekanisme Monetisasi | Keputusan Arsitektural ObMap |
 | :--- | :--- | :--- |
-| **Obsidian** | Fitur inti Sync & Publish dijual mahal sebagai add-on terpisah; tidak ada model tim terintegrasi | **DITOLAK.** Menyandera sinkronisasi dan publikasi mematikan efek jaringan sosial pengetahuan |
-| **XMind** | Fitur dasar gratis kuat; Pro membuka tema, presentasi & ekspor premium lintas perangkat | **DIADOPSI** untuk diferensiasi alat visualisasi, ekspor HD/OPML, dan *Pitch Mode* |
-| **Notion** | Individu sangat murah hati/gratis; monetisasi pada kolaborasi tim per-seat, riwayat & kontrol admin | **DIADOPSI** untuk teamspace, izin granular, guest, analitik tim, dan billing per-seat |
+| **Obsidian** | Sync & Publish dijual sebagai add-on berbayar terpisah tanpa tier tim | **Ditolak.** Mengunci publikasi dan sinkronisasi memutus efek jaringan sosial pengetahuan. |
+| **XMind** | Fitur inti gratis kuat; Pro membuka tema, presentasi & ekspor lanjut | **Diadopsi** untuk diferensiasi visualisasi lanjutan, *Pitch Mode*, dan ekspor PDF/SVG/OPML. |
+| **Notion** | Penggunaan individu sangat luas; monetisasi per-seat untuk kolaborasi tim & kontrol admin | **Diadopsi** untuk Teamspaces, izin granular, guest tak terbatas, dan kontrol organisasi. |
 
-| Fitur & Kuota | **Free Scholar** (`$0`) | **Pro Creator** (`[ASSUMPTION]` ~$8/bln / Rp79rb) | **Team / Lab** (`[ASSUMPTION]` ~$12/seat/bln) | **Academic / Enterprise** (`Custom`) |
+> **Prinsip Konfigurasi Dinamis:** Seluruh nominal harga, batas kuota numerik, dan matriks fitur per paket **TIDAK di-hardcode** di kode frontend. Seluruhnya disimpan pada tabel database (`plans`, `plan_entitlements`, `plan_quotas`) dan dikelola secara real-time oleh Superadmin melalui `src/domains/admin/`. Nilai di tabel di bawah adalah konfigurasi awal (*seed baseline*):
+
+| Fitur & Kuota (`Configurable in /admin`) | **Free** (`$0`) | **Pro** *(Seed Baseline)* | **Team / Lab** *(Seed Baseline)* | **Academic / Enterprise** (`Custom`) |
 | :--- | :--- | :--- | :--- | :--- |
-| **Vault Lokal (FS API & IDB)** | **Tak Terbatas Selamanya** | Tak Terbatas | Tak Terbatas | Tak Terbatas |
-| **Profil `/@username` & Publikasi Terbuka** | **Gratis Penuh** (`Public Listed`) | Penuh + Custom Domain + Analitik | Publikasi Tim + *Unlisted* | Katalog Kampus + Lencana Resmi |
-| **Cloud Sync & Media Privat** | 2 Vault Cloud, 250 MB media | Tak Terbatas, 20 GB media | Tak Terbatas, 100 GB+ bersama | Kuota Organisasi Khusus |
-| **Solver & Ekspor Graf** | 4 Solver dasar, ekspor PNG/MD | Semua Solver + Pitch Mode + PDF/SVG/OPML | Sama + Template & Tema Tim | Sama + Branding Institusi |
-| **Kolaborasi, Riwayat & Tamu** | 2 tamu baca/komentar, VCS 14 hari | 5 tamu/vault, riwayat 180 hari | Unlimited anggota, riwayat 1 tahun, PR Review | SSO/SAML, Admin-Locked Config, Audit SLA |
+| **Local Storage (FS API & IDB)** | **Tak Terbatas Selamanya** | Tak Terbatas | Tak Terbatas | Tak Terbatas |
+| **Profil `/:username` & Publikasi Terbuka** | **Gratis Penuh** (`Public Listed`, `CC BY-SA 4.0`) | Penuh + Custom Domain + Analitik | Publikasi Tim + `Public Unlisted` | Katalog Kampus + Lencana Kurasi |
+| **Cloud Sync & Media Privat (Dinamis)** | Kuota dasar (mis. 2 Vault Cloud, 250 MB) | Kuota Pro (diatur Admin) | Kuota Team/Lab (diatur Admin) | Kuota Organisasi Khusus |
+| **Solver, Tema & Ekspor** | 4 Solver dasar, PNG/Markdown | Semua Solver + Pitch Mode + PDF/SVG/OPML | Sama + Template & Tema Tim | Sama + Branding Institusi |
+| **Kolaborasi, Riwayat & Tamu (Dinamis)** | Batas tamu & retensi VCS Free (diatur Admin) | Batas tamu & retensi Pro (diatur Admin) | Unlimited anggota, retensi lanjut, PR Review | SSO/SAML, Admin-Locked Config, Audit SLA |
 
 ```mermaid
 erDiagram
-    plans ||--o{ entitlements : defines
+    plans ||--o{ plan_entitlements : defines
+    plans ||--o{ plan_quotas : configures
     plans ||--o{ subscriptions : governs
     subscriptions }o--|| users_or_orgs : owned_by
     subscriptions ||--o{ billing_invoices : generates
-    users_or_orgs ||--o{ usage_quotas : consumes
-    users_or_orgs ||--o{ org_seats : allocates
+    users_or_orgs ||--o{ usage_quotas : tracks
+    users_or_orgs ||--o{ org_seats : assigns
+    users_or_orgs ||--o| account_approvals : gated_by
 ```
 
-- **Enforcement & Payment Gateway:** Validasi kuota dan fitur mutlak ditegakkan di sisi server (Postgres RLS + Supabase Edge Functions); klien hanya memakai `useEntitlement()` / `<FeatureGate>` untuk UX. Integrasi ganda **Stripe** (global) dan **Xendit/Midtrans** (QRIS, Virtual Account, e-wallet Indonesia).
-- **Non-Destructive Downgrade & Admin Lifecycle:** Siklus `trialing` → `active` → `past_due` → `grace_period` (7 hari) → `downgraded_readonly`. Data di atas kuota **tidak pernah dihapus** (menjadi *read-only* + bebas ekspor ZIP/lokal). Domain `src/domains/admin/` mengelola override manual, kupon beasiswa/akademik, dan manajemen seat.
+- **Server-Side Enforcement & Payment Gateway Priority:** Validasi kuota dinamis dan hak akses fitur ditegakkan mutlak di Postgres RLS & Supabase Edge Functions (klien memakai `useEntitlement()` / `<FeatureGate>` hanya untuk UX). Integrasi pembayaran memprioritaskan **Xendit / Midtrans** terlebih dahulu (IDR, QRIS, Virtual Account, e-Wallet), disusul ekspansi **Stripe** untuk pasar global.
+- **Non-Destructive Downgrade:** Siklus `trialing` → `active` → `past_due` → `grace_period` (7 hari) → `downgraded_readonly`. Data di atas kuota dinamis **tidak pernah dihapus**; tetap dapat dibaca dan diekspor ke lokal/ZIP. Domain `src/domains/admin/` menyediakan kontrol penuh untuk menyetel harga/kuota paket, override akun, kupon, dan persetujuan user Stage 2.
 
 ---
 
-## Sila 5: Pengalaman Pengguna Menyeluruh — Landing, Onboarding, Dashboard & Kustomisasi
+## 6. Acquisition Surface, Hybrid Onboarding, Dashboard Domain & Extensibility SDK
 
-### 5.1 Landing Page (`/`) & Embedded Live Sandbox Trial
-- **Struktur Halaman:** (1) Hero dengan proposisi 5 DNA, (2) **Embedded Live Sandbox** (lazy-loaded `< 65KB` gzipped, memakai in-memory driver tanpa memuat store penuh: ketik outline → ubah instan antara Mindmap / Fishbone / Timeline), (3) Live Showcase Konstelasi `/@username` & `/explore`, (4) Penjelasan 5 Sila Produk, (5) Matriks Perbandingan, (6) Kalkulator & Tabel Paket Gratis/Berbayar, (7) FAQ + CTA *"Simpan Karyamu & Klaim `/@username`"*.
+### 6.1 Landing Page (`/`) & In-Memory Sandbox Trial
+- **Komposisi Halaman (`src/pages/Landing.tsx`):** Hero 5-DNA → **Embedded Live Sandbox** (lazy-loaded `< 65KB` gzipped memakai driver in-memory: ketik outline → toggle instan Mindmap/Fishbone/Timeline) → Live Showcase `/:username` & `/explore` → Matriks Perbandingan → Paket Harga (aktif/preview sesuai Stage) → CTA Adaptif Stage (`Minta Akses Mitra` pada Stage 1, `Daftar Antrean Beta` pada Stage 2, `Mulai Gratis` pada Stage 3).
 
-### 5.2 Onboarding Kelas Dunia (Hybrid 5 Model Berlapis)
+### 6.2 Five-Stage Hybrid Onboarding Pipeline
 
 ```mermaid
 flowchart LR
-    S1["1. Benefits Splash: 3-4 slide nilai utama + Skip"] --> S2["2. Interactive Sandbox: Coba graf langsung di Landing"]
-    S2 --> S3["3. Signup + Klaim /@username (Karya Sandbox Tersimpan)"]
-    S3 --> S4["4. Personalization Quiz (3-5 tanya: Peran, Bidang, Tujuan)"]
-    S4 --> S5["5. Guided Tour (<=5 langkah) + Progressive Coach Marks & Checklist"]
+    S1["1. Benefits Splash (3-4 slide + Skip)"] --> S2["2. In-Memory Sandbox di Landing"]
+    S2 --> S3["3. Registrasi + Klaim /:username + ReleaseStageGate"]
+    S3 --> S4["4. Personalization Survey (Peran, Bidang, Tujuan)"]
+    S4 --> S5["5. Guided Tour (<=5 langkah) + Progressive Coach Marks"]
 ```
 
-- **Adaptasi Peran:** *Owner Baru* diarahkan memilih template & mempublikasikan node pertama; *Member Undangan* langsung masuk ke vault tim dengan ringkasan peran; *Pembaca Publik* yang mengklik *Fork* langsung masuk ke workspace berbekal salinan vault tersebut. Status progres disimpan di `LocalConfigStore` & `CloudConfigStore` dan tidak mengganggu *power user* (tombol *Skip All* selalu tersedia).
+- **State & Role Adaptation:** Progres onboarding disimpan pada `LocalConfigStore` dan `CloudConfigStore` serta dapat dilewati penuh oleh *power user*. Karya dari Sandbox Landing langsung dimigrasikan menjadi vault pertama begitu akun lolos `ReleaseStageGate`.
 
-### 5.3 Dashboard App (`/vaults`) — Domain Baru `src/domains/dashboard/`
-- Menjadi domain ke-13 (`DashboardOrchestrator.tsx`, `DashboardWidgetRegistry.ts`, `useDashboardController.ts`) yang mengelola rute `/vaults`, setara dengan `WorkspaceOrchestrator.tsx` pada `/app`. `src/domains/vault/` tetap menangani manajemen driver/CRUD penyimpanan vault, sedangkan `dashboard` menangani komposisi layar Home.
-- **5 Mode Workspace Pribadi & Tim (Seluruhnya Derivatif dari Markdown + Frontmatter):**
-  1. **Content-First Grid/List (Default):** Daftar vault lokal/cloud/shared/public dengan badge, catatan *pinned*, cuplikan teks, filter tag, dan *Command Palette* (`⌘K`).
-  2. **Knowledge-Base Hierarchy Tree:** Penjelajah pohon dokumen lintas vault.
-  3. **Task-Centric Kanban:** Papan kolom yang diturunkan dari properti frontmatter (`status`, `assignee`, `due`) dan checkbox `- [ ]` di berkas Markdown.
-  4. **Time-Oriented Calendar & Timeline:** Jadwal dan garis waktu rilis dari frontmatter tanggal & *daily notes* menggunakan solver Timeline.
-  5. **Productivity & Learning Analytics:** Grafik kontribusi mingguan, rasio penyelesaian tugas, *workload* tim, dan progres kurikulum LMS.
-- **Community & Knowledge Discovery Hub:** Widget *Following Scholars Feed* (`/@username` yang diikuti), kotak masuk *Citations & Merge Requests*, galeri template (Riset, LMS, Konsultasi Fishbone, PM/Meeting, Portofolio), serta indikator kuota paket.
+### 6.3 Dashboard Domain (`src/domains/dashboard/` at `/vaults`)
+- Berperan sebagai **Domain ke-13** (`DashboardOrchestrator.tsx`, `DashboardWidgetRegistry.ts`, `useDashboardController.ts`) yang mengatur rute `/vaults`, memisahkan komposisi beranda dari logika CRUD driver penyimpanan di `src/domains/vault/`.
+- **5 Mode Workspace Derivatif (100% dari Markdown + YAML Frontmatter):** (1) *Content-First Grid/List*, (2) *Knowledge-Base Hierarchy Tree*, (3) *Task-Centric Kanban* (`status`, `assignee`, `due`, checklist), (4) *Time-Oriented Calendar & Timeline*, (5) *Productivity & Learning Analytics*.
+- **Community & Discovery Hub:** Widget *Following Scholars Feed* (`/:username`), kotak masuk *Citations & Merge Requests*, galeri template per use-case, dan status kuota paket.
 
-### 5.4 Multi-Layer Settings, Full-App Theme Engine & Public Extension SDK (`@obmap/sdk`)
-- **6-Layer Cascading Config Berbasis Role:** Resolusi deterministik dari tingkat terendah ke tertinggi (*dengan Org Policy dapat mengunci kunci di bawahnya*):
-  1. `System Defaults` → 2. `Org/Campus Policy (Admin-Locked)` → 3. `Vault Config (.obmap/config.json / VaultConfigFile.ts)` → 4. `User Profile (LocalConfigStore / CloudConfigStore)` → 5. `Workspace/Leaf Override` → 6. `Session/URL`.
-  - Pengaturan yang dikunci admin menampilkan badge *"Dikelola oleh Organisasi"*; pengaturan di luar wewenang role (`viewer`, `guest`) disembunyikan atau *read-only*.
-- **Unified Design Token & Theme Engine:** Evolusi `useThemeStore.ts` menjadi sistem token tunggal yang menggerakkan CSS Variables Tailwind (DOM di Landing, Dashboard, Workspace, `/@username` & Reader) **sekaligus** Canvas2D (`graph/shared/utils/theme.ts`, `atmosphereConfig.ts`), plus dukungan **Scoped CSS Snippets** yang disanitasi untuk keamanan publik.
-- **Modular Config & Sandboxed Public Extension SDK (`@obmap/sdk`):**
-  - Evolusi `configRegistry.ts`, `schemaRegistry.ts`, dan `pluginRegistry.ts` menjadi SDK publik berbasis `manifest.json` dengan izin deklaratif (`vault:read`, `vault:write`, `network`, `ui:only`), isolasi Web Worker / iframe CSP, dan *Error Boundary* per plugin.
-  - **12 Extension Points:** `WorkspaceViewRegistry`, `DashboardWidgetRegistry`, `CommandRegistry`, `ConfigSectionRegistry`, `CodeMirror6Extension`, `MarkdownPostProcessor`, `SlashCommandProvider`, `FrontmatterSchemaProvider`, `GraphLayoutSolver`, `GraphThemeDecorator`, `ExportAdapter`, dan `Ribbon/StatusBar`.
-  - **Developer Portal (`docs/07-developers/`) & Community Directory:** Quickstart 5 menit, TypeDoc API Reference otomatis, Cookbook, Theme Authoring Guide, CLI Hot-Reload, alur submission PR ber-audit keamanan, serta kontrol *allowlist* plugin bagi Admin Enterprise.
+### 6.4 Six-Layer Cascading Configuration, Unified Theme Engine & `@obmap/sdk`
+- **Hierarki Resolusi Konfigurasi (6 Lapis):** `System Defaults` → `Org/Institution Policy (Admin-Locked)` → `Vault Config (.obmap/config.json / VaultConfigFile.ts)` → `User Profile (LocalConfigStore / CloudConfigStore)` → `Workspace/Leaf Override` → `Session/URL`. Pengaturan yang dikunci organisasi atau berada di luar izin peran tampil *read-only* dengan indikator pemilik kebijakan.
+- **Unified Design Token & Theme Engine:** Menyatukan `useThemeStore.ts` agar satu set token tema mengendalikan CSS Variables Tailwind (DOM) sekaligus parameter render Canvas2D (`graph/shared/utils/theme.ts`, `atmosphereConfig.ts`), dilengkapi dukungan **Scoped CSS Snippets** yang disanitasi untuk halaman publik.
+- **Modular Isolated Config & Sandboxed `@obmap/sdk`:** Evolusi `configRegistry.ts`, `schemaRegistry.ts`, dan `pluginRegistry.ts` menjadi SDK publik dengan `manifest.json`, *Permission Manifest* (`vault:read`, `vault:write`, `network`, `ui:only`), isolasi Web Worker / iframe CSP, 12 *Extension Points* terstandar (`WorkspaceViewRegistry`, `DashboardWidgetRegistry`, `CommandRegistry`, `ConfigSectionRegistry`, `CodeMirror6Extension`, `MarkdownPostProcessor`, `SlashCommandProvider`, `FrontmatterSchemaProvider`, `GraphLayoutSolver`, `GraphThemeDecorator`, `ExportAdapter`, `Ribbon/StatusBar`), *Community Directory*, serta dokumentasi developer di `docs/07-developers/`.
 
 ---
 
 ## Terkait
-- [Quo Vadis ObMap v2 — Evaluasi & Peta Jalan ("UUD 1945")](00-2-quovadis.md)
+- [ObMap Quo Vadis v2.0 — Evaluasi & Peta Jalan Eksekusi](00-2-quovadis.md)
+- [Playbook Antrean Eksekusi Bertahap (Step-by-Step Queue)](../02-planning/README.md)
+- [Sistem Changelog Modular & Protokol Agen](../changelogs/README.md)
 - [Konvensi Dokumentasi Sistem](doc-conventions.md)
-- [Quo Vadis ObMap v1 (Arsip Historis Wave 3)](00-1-quovadis.md)
 - [Tata Kelola State Reaktif & Headless Controller (ADR-0006)](../03-architecture/adr/ADR-0006-reactive-state-and-headless-controller-governance.md)

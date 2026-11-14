@@ -1,73 +1,73 @@
 ---
 id: DOC-VIS-001
-title: Visi, Misi, dan Pernyataan Nilai Produk
+title: Visi, Misi & Sasaran Strategis ObMap v2.0
 type: vision
 status: [IMPLEMENTED]
-owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
+owner: Chief Product Officer & Principal Architect
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
+  - DOC-META-000
+  - DOC-META-005
   - DOC-VIS-002
   - DOC-VIS-003
   - DOC-VIS-004
-  - DOC-PLAN-001
-source_of_truth: src/App.tsx
+source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ---
 
-# Visi dan Misi Produk ObMap
+# Visi, Misi & Sasaran Strategis ObMap v2.0
 
 ## Ringkasan 3 Baris
-- ObMap adalah workspace pengetahuan *local-first* berbasis Markdown yang memvisualisasikan isi vault sebagai peta interaktif multi-model.
-- Mengintegrasikan kedaulatan data ala Obsidian, mesin diagram terstruktur ala XMind, serta kolaborasi dan publikasi instan ala Notion.
-- Bertujuan mendisrupsi model ensiklopedia publik (alternatif Wikipedia), portofolio pengetahuan visual, dan kurikulum LMS interaktif.
+- Mendefinisikan arah jangka panjang ObMap sebagai **Visual Knowledge Operating System** sekaligus **Social Knowledge Network** berkejelasan tinggi bagi cendekiawan, peneliti, pendidik, dan tim pengetahuan.
+- Menggabungkan lima sistem referensi terbaik (**Obsidian**, **XMind**, **Notion**, **Wikipedia**, serta **LinkedIn × ResearchGate × GitHub**) di atas fondasi *local-first* Markdown dan graf Canvas2D deterministik.
+- Menyelaraskan pengiriman bertahap 3 tahap rilis (*Partner Pilot → Approval-Gated Community Beta → Commercial GA*) menuju adopsi komersial dan komunitas riset terbuka.
 
 ---
 
-## 1. Elevator Pitch (Satu Kalimat)
+## 1. Pernyataan Visi & Misi
 
-> **ObMap adalah workspace pengetahuan *local-first* berbasis Markdown yang memvisualisasikan isi vault sebagai peta interaktif, dengan kolaborasi berbasis kontrol versi dan publikasi web instan.**
+### Visi
+Menjadi infrastruktur pengetahuan terpadu dan jejaring sosial cendekiawan paling intuitif di dunia—penyeimbang ekosistem media sosial hiburan—di mana berpikir secara spasial, menyunting secara privat, berkolaborasi dalam tim, dan menerbitkan karya terverifikasi berlangsung dalam satu sistem yang berdaulat atas data.
+
+### Misi
+1. **Menyatukan Kedalaman PKM & Kognisi Visual:** Menghilangkan friksi antara editor Markdown *local-first* bergaya Obsidian dan kanvas pemetaan deterministik sekelas XMind (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Citation Tree`).
+2. **Menghadirkan Kolaborasi Tanpa Lock-In:** Menyediakan Teamspaces, izin granular, komentar terstruktur, dan 5 mode *Derived Views* bergaya Notion yang diturunkan 100% dari berkas `.md` + YAML frontmatter.
+3. **Membangun Jejaring Pengetahuan Terbuka & Terverifikasi:** Menjadikan identitas kanonik `/:username` / `/@:username` sebagai portofolio intelektual hidup (*Living Intellectual Portfolio*) dengan lisensi default **`CC BY-SA 4.0`**, rujukan lintas-vault `[[@user/vault/note]]`, kurasi manual *Verified Scholar*, serta alur kontribusi *Fork & Knowledge Merge Request*.
+4. **Mengutamakan Kecepatan Rilis yang Terkendali:** Menerapkan **3-Stage Progressive Shipping Gate** agar sistem langsung memberi nilai nyata bagi mitra awal (Stage 1), bertumbuh aman lewat approval individual Admin di `/admin` (Stage 2), dan berkembang komersial berkelanjutan lewat tarif & kuota dinamis serta pembayaran **Xendit/Midtrans → Stripe** (Stage 3).
 
 ---
 
-## 2. Pernyataan Visi (Vision Statement)
-
-Menjadi platform eksplorasi pengetahuan terbuka paling fleksibel di web modern, di mana pemikiran manusia tidak lagi terisolasi dalam dokumen statis atau terkunci di silo *cloud proprietary*, melainkan terhubung sebagai graf pengetahuan hidup yang dapat dimiliki secara lokal, dieksplorasi secara visual, dan dibagikan secara instan ke seluruh dunia.
+## 2. Sintesis Lima Sistem Referensi
 
 ```mermaid
-graph TD
-    A[Kedaulatan Data Lokal] --> D[ObMap Knowledge Hub]
-    B[Pemetaan Visual Multi-Model] --> D
-    C[Publikasi & Kolaborasi Terbuka] --> D
-    D --> E[Alternatif Wikipedia Interaktif]
-    D --> F[Visual Life & Portfolio Mapping]
-    D --> G[Disruptive Interactive LMS]
+flowchart LR
+    OBS["Obsidian: Local-First .md, Wikilinks & SDK"] --> CORE["ObMap v2.0 Knowledge OS"]
+    XM["XMind: Deterministic Solvers & Export"] --> CORE
+    NOT["Notion: Teamspaces, RBAC & Derived Views"] --> CORE
+    WIK["Wikipedia: Open Knowledge Index & Dual-Pane Reader"] --> CORE
+    SOC["LinkedIn × RG × GitHub: /:username & Fork/MR"] --> CORE
+    CORE --> OUT["Jejaring Pengetahuan Cendekiawan + Workspace Privat"]
 ```
 
 ---
 
-## 3. Misi Produk (Mission Statement)
+## 3. Sasaran Strategis & Indikator Kinerja Utama (North Star KPIs)
 
-1. **Memberikan Kedaulatan Penuh atas Data:** Menjamin pengguna memiliki berkas catatannya secara fisik melalui Markdown murni dan File System Access API tanpa *vendor lock-in*.
-2. **Menjembatani Teks dan Graf:** Mengubah catatan Markdown biasa menjadi struktur visual multi-model (Mind Map, Org Chart, Fishbone, Timeline, Force Graph) secara otomatis dan dua arah.
-3. **Mendemokratisasi Penerbitan Pengetahuan:** Menyediakan rute publikasi instan sekali klik (`/p/:username/:vaultSlug`) yang dapat diakses publik tanpa login.
-4. **Menyediakan Kolaborasi Andal Tanpa Merusak Dokumen:** Memanfaatkan sistem kontrol versi internal (VCS micro-revisions, stashing, branch, 3-way merge) untuk kerja tim yang aman.
-
----
-
-## 4. Nilai-Nilai Inti (Core Values)
-
-| Nilai | Prinsip | Wujud Nyata di Kode |
+| Kategori Metrik | Target v2.0 | Cara Pengukuran & Konteks Rilis |
 | :--- | :--- | :--- |
-| **Local-First** | Data pengguna milik pengguna seutuhnya | Driver File System API + fallback IndexedDB (`src/domains/vault/`) |
-| **Open Formats** | Plaintext Markdown standar terbuka | CommonMark + GFM parser + frontmatter YAML murni |
-| **Visual Thinking** | Struktur graf bukan sekadar visualisasi pasif | Interactive 2D Canvas + dynamic re-layout (`src/domains/graph/`) |
-| **Instant Sharing** | Publikasi web tanpa friksi setup server | Public Reader route dengan optimasi anonim (`src/domains/public-reader/`) |
+| **Time-to-First-Value (`TTFV`)** | `< 90 detik` | Waktu sejak membuka Sandbox Landing (`/`) hingga pengguna menghasilkan graf visual pertama. |
+| **Activation Rate** | `>= 35%` `[ASSUMPTION]` | Konversi pengunjung Sandbox → akun `approved` → pembuatan vault pertama atau klaim `/:username`. |
+| **D7 / D30 Active Retention** | `>= 40% / >= 22%` `[ASSUMPTION]` | Pengguna aktif yang kembali menyunting catatan, meninjau kurikulum, atau berinteraksi di `community`. |
+| **Scholarly Viral K-Factor** | `>= 0.35` `[ASSUMPTION]` | Registrasi baru melalui tautan kanonik `/:username`, kartu sitasi, dan tombol *Fork to My Vault*. |
+| **Core Canvas & Web Vitals** | `60 FPS` (`2.000` node) · LCP `< 2.0s` | Performa kanvas Canvas2D pada `/app` & `community`, serta LCP halaman publik `/:username`. |
+| **Free-to-Paid Conversion (Stage 3)** | `>= 4%` `[ASSUMPTION]` | Konversi pengguna aktif menuju paket Pro / Team melalui gateway **Xendit/Midtrans** & Stripe. |
 
 ---
 
 ## Terkait
-- [Filosofi Produk](product-philosophy.md)
-- [Positioning Produk](positioning.md)
-- [Pilar Kasus Penggunaan](use-case-pillars.md)
-- [Product Requirements Document (PRD)](../02-planning/prd.md)
+- [ObMap System Architecture & Product Master Blueprint (v2.0)](../00-meta/00-0-master-blueprint.md)
+- [ObMap Quo Vadis v2.0](../00-meta/00-2-quovadis.md)
+- [Filosofi Produk & Prinsip Desain](product-philosophy.md)
+- [Positioning Strategis](positioning.md)
+- [Lima Pilar Use-Case](use-case-pillars.md)

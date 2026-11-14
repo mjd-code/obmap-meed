@@ -82,7 +82,7 @@ export const ClaimUsernameModal: React.FC<ClaimUsernameModalProps> = ({
           <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
             Catatan publik Anda akan diakses melalui alamat khusus:
             <span className="block mt-1 font-mono text-xs text-foreground bg-muted/60 p-2 rounded border border-border">
-              /p/<span className="text-primary font-bold">{username.trim().toLowerCase() || "username"}</span>/vault/catatan
+              /@<span className="text-primary font-bold">{username.trim().toLowerCase() || "username"}</span>/vault/catatan
             </span>
             Username ini unik global dan dapat diubah sewaktu-waktu.
           </DialogDescription>

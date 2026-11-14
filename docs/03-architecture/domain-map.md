@@ -1,79 +1,66 @@
 ---
-id: ARCH-DOM-001
-title: Peta dan Arsitektur 12 Domain ObMap
+id: DOC-ARCH-002
+title: Peta 13 Domain Terisolasi & Batas Tanggung Jawab (Domain Map)
 type: architecture
-status: [IMPLEMENTED]
+status: [PARTIAL]
 owner: Principal Software Architect
-version: 1.1.0
-last_reviewed: 2026-11-12
-audience: both
+version: 2.0.0
+last_reviewed: 2026-11-14
+audience: engineering
 related:
-  - ARCH-STRUCT-001
-  - ENG-RULES-001
-  - DOC-ENG-004
+  - DOC-ARCH-001
+  - DOC-ARCH-003
+  - DOC-ARCH-ADR-0001
+  - DOC-ARCH-ADR-0007
+  - DOC-ARCH-ADR-0008
 source_of_truth: src/domains/
 ---
 
-# Peta Domain Bisnis
+# Peta 13 Domain Terisolasi (`Domain Map`)
 
 ## Ringkasan 3 Baris
-- Aplikasi dibagi secara tegas menjadi 12 modul domain independen menggunakan prinsip Domain-Driven Design (DDD).
-- Setiap domain memiliki satu `Orchestrator` yang mengekspos kapabilitas domain ke Workspace atau ke rute halaman.
-- Komponen internal domain menerapkan struktur 3 lapis: Orchestrator (Façade), View (JSX Murni), dan Headless Controller Hook.
+- Memetakan batas tanggung jawab seluruh domain di `src/domains/`: **12 domain aktif** pada kode saat ini dan transisi terencana menuju **13 domain target v2.0**.
+- Mengunci keputusan refaktor `src/domains/public-reader/` → **`src/domains/community/`** (`STEP-01.2`) serta penambahan domain baru ke-13 **`src/domains/dashboard/`** (`STEP-02.1`).
+- Mendokumentasikan registry pengaturan internal (`configRegistry.ts`, `pluginRegistry.ts`, `schemaRegistry.ts`) di `src/domains/settings/` untuk menutup `DRFT-013`.
 
 ---
 
-## 1. Matriks 12 Domain Sistem
+## 1. Peta Topologi Transisi (`12 Aktif → 13 Target v2.0`)
 
 ```mermaid
-graph TD
-    WS[workspace] --> ED[editor]
-    WS --> GR[graph]
-    WS --> VL[vault]
-    WS --> VCS[vcs]
-    WS --> MD[metadata]
-    VL --> SY[sync]
-    VL --> AU[auth]
-    VCS --> CO[collaboration]
-    PR[public-reader] --> GR
-    PR --> ED
-    AD[admin] --> ST[settings]
+flowchart LR
+    subgraph ACTIVE ["12 Domain Kode Saat Ini (Wave 3)"]
+        D1["admin · auth · collaboration · editor · graph · metadata"]
+        D2["settings · sync · vault · vcs · workspace · public-reader"]
+    end
+    D2 -->|"STEP-01.2 Refactor"| COMM["community (CommunityOrchestrator + /:username + /explore)"]
+    ACTIVE -->|"STEP-02.1 Baru"| DASH["dashboard (DashboardOrchestrator + /vaults + 5 Views)"]
 ```
-
-### Rincian Modul Domain
-
-| Domain | Orchestrator Utama | Subfolder Aktif | Tanggung Jawab & Fitur Kunci |
-| :--- | :--- | :--- | :--- |
-| **admin** | `AdminOrchestrator.tsx` | `components`, `shared/api,hooks` | Audit log, telemetri visual Bento, health check, sistem diagnostik. |
-| **auth** | `AuthOrchestrator.tsx` | `components`, `shared/api,hooks` | Login, registrasi, sesi Supabase Cloud, route protection, dev banner. |
-| **collaboration** | `CollaborationOrchestrator.tsx` | `components`, `shared/api,utils` | Review workflow, visual diff viewer, bulk publish modal, linter dua tahap. |
-| **editor** | `EditorOrchestrator.tsx` | `components`, `shared/api,stores,utils` | Editor CodeMirror 6, collapsible YAML properties, footnote popover, tabel dinamis. |
-| **graph** | `GraphOrchestrator.tsx` | `components`, `shared/api,hooks,stores,utils` | Engine tata letak multi-model (XMind/Mindmap/Force), Living Canvas, Color Engine. |
-| **metadata** | `MetadataOrchestrator.tsx` | `components`, `shared/api,hooks,utils` | Web Worker Aho-Corasick untuk unlinked mentions, backlinks traversal. |
-| **public-reader** | `PublicReaderOrchestrator.tsx`| `components`, `shared/api` | Render rute `/p/:username/:vaultSlug`, file tree publik, graf interaktif anonim. |
-| **settings** | `SettingsOrchestrator.tsx` | `components`, `shared/api,hooks,stores,utils`| Settings Hub, command palette (Ctrl+P), manajemen API key, claim username. |
-| **sync** | `SyncOrchestrator.tsx` | `components`, `shared/api,hooks,stores` | Status auto-save, sinkronisasi queue, antarmuka instalasi PWA. |
-| **vault** | `VaultOrchestrator.tsx` | `components`, `shared/api,hooks,stores,utils`| CRUD vault, isolasi data, driver Local/Cloud/FS, backup & ZIP import/export. |
-| **vcs** | `VcsOrchestrator.tsx` | `components`, `shared/api,stores,utils` | Version control internal: branch, commit mikro, merge request, co-presence. |
-| **workspace** | `WorkspaceOrchestrator.tsx` | `components`, `shared/api,hooks,stores,utils`| Sistem dock antarmuka VS Code/Obsidian, group split, tabs, file explorer. |
 
 ---
 
-## 2. Pola Arsitektur Internal Domain
+## 2. Katalog Lengkap 13 Domain Target
 
-1. **Domain Orchestrator (`<Domain>Orchestrator.tsx`):**
-   Bertindak sebagai penghubung makro antara domain dengan *workspace layout* dan *leaf store*. Orchestrator tidak mengurusi kalkulasi kalkulasi detail UI individual.
-2. **Headless Component Controller Pattern:**
-   Komponen visual yang memiliki kerumitan grafis atau manipulasi data (seperti `GraphCanvas` atau `EditorMarkdownView`) mendelegasikan seluruh efek samping (`useEffect`), kalkulasi geometri (`useMemo`), dan *subscriptions* ke hook pendamping berawalan `use<Component>Controller.ts`.
-3. **Leaf-Scoped Store Registry & Bridge:**
-   State interaksi dan konfigurasi kanvas dikelola secara independen per leaf workspace melalui *leaf registry* dengan *Write-Through & Broadcast Bridge* ke store global (`useGraphStore`, `globalGraphInteractionStore`) agar tetap persisten dan sinkron dengan Settings.
-4. **Decoupled Event Bus & Unidirectional Sync:**
-   Komunikasi tak langsung lintas domain disalurkan melalui `DomainEvents.ts`, dan sinkronisasi antar-store wajib mengikuti pola *Unidirectional Action Dispatch* (lihat `ADR-0006`).
+| # | Domain (`src/domains/*`) | Status Aktual | Tanggung Jawab Inti | Modul / Simbol Kunci Terverifikasi | Evolusi Target v2.0 (`STEP`) |
+| :-: | :--- | :---: | :--- | :--- | :--- |
+| 1 | **`workspace`** | `[IMPLEMENTED]` | Shell multi-pane/tab `/app`, command palette, registry view & lifecycle vault | `WorkspaceOrchestrator.tsx`, `WorkspaceViewRegistry.tsx`, `CommandRegistry.ts`, `WorkspaceSettingsLeaf.tsx`, `useVaultLifecycle.ts` | Onboarding Guided Tour & host Extension Points SDK (`STEP-02.3`, `05.3`). |
+| 2 | **`editor`** | `[IMPLEMENTED]` | Penyunting Markdown CodeMirror 6 terpisah dari YAML Frontmatter | `EditorMarkdownView.tsx`, `EditorPropertiesPanel.tsx` | Skema `epistemic_status`/`doi`/`license` & anotasi blok (`STEP-03.2`, `03.3`). |
+| 3 | **`graph`** | `[IMPLEMENTED]` | Kanvas graf Canvas2D, 4 solver deterministik + Free-Force, kontroler reaktif | `GraphCanvas.tsx`, `GraphWorkspaceControls.tsx`, `useGraphCanvasController.ts`, `layoutCategory.ts`, `mindmap.ts`, `fishbone.ts`, `timeline.ts` | Theme Bridge `theme.ts`, LMS DAG overlay, `argument-map` & `citation-tree` (`STEP-01.5`, `05.1`–`05.2`). |
+| 4 | **`metadata`** | `[IMPLEMENTED]` | Indeks backlink, tag, & metadata via Aho-Corasick Web Worker | `mentions.worker.ts`, `aho-corasick.ts`, `MetadataCache.ts` | Parser rujukan federated `[[@username/vault/note]]` (`STEP-03.2`). |
+| 5 | **`vault`** | `[IMPLEMENTED]` | Abstraksi CRUD & driver penyimpanan multi-strategi | `VaultManager.ts`, `IVaultStorageDriver.ts`, `FileSystemService.ts`, `IndexedDbVaultDriver.ts`, `CloudVaultService.ts`, `ImportExportService.ts`, `VaultMemberService.ts`, `VaultCard.tsx`, `VaultModeSelector.tsx` | `InMemoryVaultDriver` (Sandbox Landing) & penegakan kuota dinamis (`STEP-02.2`, `04.1`). |
+| 6 | **`sync`** | `[IMPLEMENTED]` | Sinkronisasi status lokal-ke-cloud & antrean perubahan | Submodul `src/domains/sync/` | Dukungan sinkronisasi delta CRDT Yjs & status downgrade (`STEP-04.1`, `04.3`). |
+| 7 | **`vcs`** | `[IMPLEMENTED]` | Riwayat versi in-browser, diff, branch, & modal Merge Request | `VcsCreateMergeRequestModal.tsx`, `VcsInteractiveMergeModal.tsx`, `VcsCoPresenceAvatars.tsx`, `vcsDiffEngine.ts` | *Fork to My Vault* & *Knowledge Merge Request* lintas pengguna (`STEP-03.3`). |
+| 8 | **`collaboration`** | `[IMPLEMENTED]` / `[PARTIAL]` | Share popover, bulk publish, & koordinasi izin kolaborator | `CollabDocumentSharePopover.tsx`, `CollabBulkPublishModal.tsx` | 4 state visibilitas, share links, Teamspaces, & CRDT Yjs (`STEP-01.4`, `04.2`–`04.3`). |
+| 9 | **`community`** *(saat ini `public-reader`)* | `[PARTIAL]` | Portal baca publik dual-pane Graph + Markdown & jejaring cendekiawan | Saat ini `PublicReaderOrchestrator.tsx`, `InteractiveGraph`, `MarkdownReader`, `PublicReaderService.ts` | Refaktor ke `CommunityOrchestrator.tsx`; *hard cutover* `/p/*` → `/:username`, `/@:username`, `/explore`, *Cite*, *Follow*, *Fork* (`STEP-01.2`, `03.1`–`03.3`). |
+| 10 | **`dashboard`** *(Baru)* | `[VISION]` | Beranda `/vaults`, 5 *Derived Views* YAML, Community Feed & Template Gallery | `DashboardOrchestrator.tsx` `[PLANNED]`, `DashboardWidgetRegistry.ts` `[PLANNED]` | Memisahkan UX beranda dari `vault` (`STEP-02.1`). |
+| 11 | **`auth`** | `[IMPLEMENTED]` / `[PARTIAL]` | Autentikasi sesi & pemeriksaan izin dasar | `useVaultPermission.ts` | `ReleaseStageGate` (`Stage 1–3`) & evolusi ke `PolicyEngine` simetris RLS (`STEP-01.3`–`01.4`). |
+| 12 | **`admin`** | `[IMPLEMENTED]` / `[PARTIAL]` | Panel operasional `/admin` & wizard setup awal admin | `AdminOrchestrator.tsx`, `AdminFirstTimeSetupWizard.tsx` | Antrean approval per-user Stage 2, kurasi manual *Verified Scholar*, konfigurasi dinamis `plans`/`plan_quotas`, & kupon (`STEP-01.3`, `03.1`, `04.2`). |
+| 13 | **`settings`** | `[IMPLEMENTED]` / `[PARTIAL]` | Hub pengaturan terisolasi, profil/username, & registry ekstensibilitas | `SettingsHub.tsx`, `ProfileService.ts`, `SettingsClaimUsernameModal.tsx`, `VaultConfigFile.ts`, `LocalConfigStore.ts`, `CloudConfigStore.ts`, `useThemeStore.ts`, `configRegistry.ts`, `pluginRegistry.ts`, `schemaRegistry.ts`, `registerConfigSections.ts` | Guard `RESERVED_SLUGS`, 6-Layer Org-Lock, Unified Theme Engine, & `@obmap/sdk` Worker Sandbox (`STEP-01.2`, `01.5`, `05.3`). |
 
 ---
 
 ## Terkait
-- [Struktur Repositori](repository-structure.md)
-- [Aturan Repositori](../05-engineering/repository-rules.md)
-- [Standar Koding](../05-engineering/coding-standards.md)
-```
+- [Struktur Repositori (`repository-structure.md`)](repository-structure.md)
+- [ADR-0001: Domain-Driven Design](adr/ADR-0001-domain-driven-design-restructuring.md)
+- [ADR-0007: Community Domain & /:username](adr/ADR-0007-community-domain-and-canonical-root-routing.md)
+- [ADR-0008: Dashboard Domain & Derived Views](adr/ADR-0008-dashboard-domain-and-derived-frontmatter-views.md)

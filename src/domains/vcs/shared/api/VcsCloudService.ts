@@ -1,9 +1,9 @@
 /**
  * Service VCS Cloud terpusat (P1, P2, P5, P9).
- * Menggunakan src/shared/lib/untypedSupabase.ts untuk tabel migrasi VCS baru.
  */
 
-import { supabase } from '@/global/api/untypedSupabase';
+import { supabase } from '@/global/api/supabaseClient';
+import type { TablesUpdate } from '@/global/api/supabaseTypes';
 import { VcsHashUtil } from '@/domains/vcs/shared/utils/vcsHash';
 import {
   VcsBranch,
@@ -120,7 +120,7 @@ export class VcsCloudService {
       name: string;
     }>
   ): Promise<void> {
-    const payload: Record<string, any> = {};
+    const payload: TablesUpdate<'vault_branches'> = {};
     if (updates.isProtected !== undefined) payload.is_protected = updates.isProtected;
     if (updates.isArchived !== undefined) payload.is_archived = updates.isArchived;
     if (updates.autoDeleteOnMerge !== undefined) payload.auto_delete_on_merge = updates.autoDeleteOnMerge;
@@ -270,7 +270,7 @@ export class VcsCloudService {
       commitHash: commitRow.commit_hash,
       parentCommitId: commitRow.parent_commit_id,
       message: commitRow.message,
-      scope: commitRow.scope,
+      scope: commitRow.scope as VcsScope,
       targetPath: commitRow.target_path,
       authorId: commitRow.author_id,
       isRevert: commitRow.is_revert,
@@ -460,7 +460,7 @@ export class VcsCloudService {
       targetBranchId: data.target_branch_id,
       title: data.title,
       description: data.description,
-      status: data.status,
+      status: data.status as VcsMergeRequest['status'],
       authorId: data.author_id,
       mergedBy: data.merged_by,
       mergedAt: data.merged_at,
@@ -477,7 +477,7 @@ export class VcsCloudService {
     status: 'merged' | 'closed',
     userId: string
   ): Promise<void> {
-    const payload: Record<string, any> = {
+    const payload: TablesUpdate<'vcs_merge_requests'> = {
       status,
       updated_at: new Date().toISOString(),
     };

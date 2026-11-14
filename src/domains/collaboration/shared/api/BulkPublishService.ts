@@ -11,6 +11,10 @@
 import { supabase } from "@/global/api/supabaseClient";
 import { NoteService } from "@/domains/vault/shared/api/NoteService";
 import { AssetBundlerService } from "@/domains/vault/shared/api/AssetBundlerService";
+import {
+  ensurePublicNoteLicense,
+  isNoteExcludedFromPublic,
+} from "@/domains/auth/shared/api/policyEngine";
 import type { Node } from "@/domains/graph/shared/utils/graph.types";
 import type { ExplorerNode } from "@/domains/workspace/components/WorkspaceFileExplorerTree";
 
@@ -129,6 +133,24 @@ export class BulkPublishService {
       const isFolder = item.type === "folder";
       let finalContent = item.content;
 
+      const yamlVisibilityMatch = (item.content || "").match(
+        /^---\s*[\r\n]+([\s\S]*?)[\r\n]+---/
+      );
+      const isYamlPrivate = Boolean(
+        yamlVisibilityMatch &&
+          /(?:^|\n)\s*visibility\s*:\s*["']?private["']?/i.test(yamlVisibilityMatch[1])
+      );
+
+      if (isYamlPrivate || isNoteExcludedFromPublic({ visibility: isYamlPrivate ? "private" : undefined })) {
+        const excludedState: BulkPublishItemState = {
+          ...item,
+          status: "failed",
+          errorReason: "Dikecualikan dari publikasi (visibility: private).",
+        };
+        onStateChange?.(excludedState);
+        return excludedState;
+      }
+
       // 1. Fase Pemrosesan Aset Media (hanya untuk file catatan)
       if (!isFolder && item.content) {
         const stateBundling: BulkPublishItemState = {
@@ -160,13 +182,13 @@ export class BulkPublishService {
         title: item.title,
         content: finalContent || (isFolder ? "Folder Overview" : ""),
         status: "published",
-        frontmatter: {
+        frontmatter: ensurePublicNoteLicense({
           type: item.type,
           parentId: item.parentId,
           depth: item.depth,
           is_folder: isFolder,
           local_node_id: item.nodeId,
-        },
+        }),
       });
 
       const successState: BulkPublishItemState = {

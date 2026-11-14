@@ -19,7 +19,7 @@ export interface CheckVaultAvailabilityParams {
 
 export class VaultValidationService {
   /**
-   * Menghasilkan slug URL yang konsisten dan aman untuk rute /p/:username/:vaultSlug
+   * Menghasilkan slug URL yang konsisten dan aman untuk rute /:username/:vaultSlug
    */
   static slugify(text: string): string {
     return text

@@ -179,12 +179,12 @@ export function SettingsAccountProfileTab({
                     URL Publik Anda:
                   </span>
                   <code className="text-primary font-mono text-[11px] truncate">
-                    {window.location.origin}/p/{currentDisplayUsername}
+                    {window.location.origin}/@{currentDisplayUsername}
                   </code>
                 </div>
                 {profile?.username && (
                   <a
-                    href={`/p/${profile.username}`}
+                    href={`/@${profile.username}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 shrink-0 ml-2"

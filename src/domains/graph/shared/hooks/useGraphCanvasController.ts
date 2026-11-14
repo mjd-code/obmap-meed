@@ -17,6 +17,7 @@ import type { GraphCanvasProps, GraphCanvasHandle } from '@/domains/graph/compon
 import { useGraphEngineStore } from '@/domains/graph/shared/stores/useGraphEngineStore';
 import { useGraphInteractionStore } from '@/domains/graph/shared/stores/useGraphInteractionStore';
 import { useExplorerGraphSyncStore } from '@/domains/graph/shared/stores/useExplorerGraphSyncStore';
+import { useThemeStore } from '@/domains/settings/shared/stores/useThemeStore';
 import { defaultLinkConfig, defaultTopologyConfig } from '@/domains/graph/shared/stores/useGraphStore';
 import { buildGraphProjection } from '@/domains/graph/shared/utils/buildGraphProjection';
 import { buildTheme } from '@/domains/graph/shared/utils/theme';
@@ -388,8 +389,14 @@ export function useGraphCanvasController(
     [collapsedIds, projection, geometry.targets, displayData.nodes, layoutMode, toggleCollapsed, setTransitionStatus],
   );
 
-  // Tema Grafis
-  const theme = useMemo(() => buildTheme(props.graphConfig), [props.graphConfig]);
+  const appTheme = useThemeStore((state) => state.theme);
+  const customCssSnippet = useThemeStore((state) => state.customCssSnippet);
+
+  // Tema Grafis (terhubung ke unified `--ob-*` DOM tokens -> memicu repaint Rule 10)
+  const theme = useMemo(
+    () => buildTheme(props.graphConfig),
+    [props.graphConfig, appTheme, customCssSnippet]
+  );
 
   // Pathway Highlight (menggabungkan hover canvas & hover File Explorer)
   const activeHoverId = explorerHoveredNodeId ?? hoveredId;

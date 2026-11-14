@@ -8,6 +8,39 @@
 
 export type ConfigScope = 'user' | 'vault';
 
+/**
+ * Strict 6-layer cascading configuration priority (ADR-0011, FR-SET-001).
+ */
+export type ConfigLayer =
+  | 'system'
+  | 'org_policy'
+  | 'vault'
+  | 'user'
+  | 'leaf'
+  | 'session';
+
+export const CONFIG_LAYER_PRIORITY: readonly ConfigLayer[] = [
+  'system',
+  'org_policy',
+  'vault',
+  'user',
+  'leaf',
+  'session',
+] as const;
+
+export interface ResolvedConfigEntry<T = unknown> {
+  value: T;
+  sourceLayer: ConfigLayer;
+  isLockedByAdmin: boolean;
+}
+
+export interface OrgPolicyLockEntry<T = unknown> {
+  value: T;
+  locked: boolean;
+}
+
+export type OrgPolicyLockMap = Record<string, OrgPolicyLockEntry>;
+
 export interface ConfigSection<T = unknown> {
   /** Stable id, used as the storage key and export filename. */
   id: string;

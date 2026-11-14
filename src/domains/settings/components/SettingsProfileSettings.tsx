@@ -98,7 +98,7 @@ export function ProfileSettings() {
                   </div>
                   <p className="text-muted-foreground">
                     Jika Anda mengubah username, tautan lama Anda (
-                    <code>/p/{ctrl.profile?.username}/...</code>) akan dialihkan
+                    <code>/@{ctrl.profile?.username}/...</code>) akan dialihkan
                     ke username baru selama <strong>14 hari</strong> sebelum
                     nama lama dilepas untuk akun lain.
                   </p>

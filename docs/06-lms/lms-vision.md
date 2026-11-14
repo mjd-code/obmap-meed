@@ -1,58 +1,55 @@
 ---
 id: DOC-LMS-001
-title: Visi dan Arsitektur Pembelajaran Interaktif (LMS Vision)
-type: spec
+title: Visi & Spesifikasi Interactive Graph LMS ObMap v2.0
+type: strategy
 status: [VISION]
-owner: Lead Learning Experience Designer
-version: 1.0.0
-last_reviewed: 2026-11-10
+owner: Chief Product Officer & Curriculum Architect
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
+  - DOC-META-000
   - DOC-VIS-004
-  - DOC-PLAN-001
-source_of_truth: src/domains/
+  - DOC-PLAN-000
+  - DOC-ARCH-006
+source_of_truth: docs/00-meta/00-0-master-blueprint.md, docs/01-visions/use-case-pillars.md
 ---
 
-# Visi Platform LMS Interaktif (Interactive LMS Vision)
+# Visi & Spesifikasi Interactive Graph LMS ObMap v2.0
 
 ## Ringkasan 3 Baris
-- Mendefinisikan transformasi graf pengetahuan ObMap menjadi kurikulum pembelajaran visual adaptif (*knowledge-graph LMS*).
-- Menjadikan simpul (*nodes*) sebagai unit kompetensi/materi dan sisi (*edges*) sebagai relasi prasyarat belajar (*learning prerequisites*).
-- Memetakan kapabilitas yang sudah ada saat ini serta rencana integrasi pelacakan progres siswa secara lokal.
+- Mengintegrasikan kapabilitas *Learning Management System (LMS)* berorientasi **Skill Tree Directed Acyclic Graph (DAG)** langsung di atas format Markdown + YAML frontmatter tanpa *vendor lock-in*.
+- Menghubungkan kurikulum publik pendidik (`PER-02`, `PER-08`) ke identitas kanonik `/:username/:vaultSlug` di `src/domains/community/` dengan lisensi terbuka default **`CC BY-SA 4.0`** serta lencana *Verified Educator/Institution* hasil kurasi Admin.
+- Menjadwalkan implementasi teknis mesin evaluator prasyarat DAG, status progres simpul, dan kuis pemahaman pada Horizon 5 (`STEP-05.1`).
 
 ---
 
-## 1. Konsep Dasar: Kurikulum Berbasis Graf Pengetahuan
+## 1. Arsitektur Skill Tree DAG Berbasis Frontmatter
 
 ```mermaid
-graph LR
-    M1[Modul 1: Fondasi Markdown] --> M2[Modul 2: Arsitektur Wikilink]
-    M1 --> M3[Modul 3: Manajemen File Vault]
-    M2 --> M4[Modul 4: Pemetaan Graf Relasi]
-    M3 --> M4
-    M4 --> M5[Tugas Akhir: Portofolio Publikasi]
-    
-    style M1 fill:#10b981,stroke:#059669,stroke-width:2px;
-    style M2 fill:#10b981,stroke:#059669,stroke-width:2px;
-    style M3 fill:#3b82f6,stroke:#2563eb,stroke-width:2px;
-    style M4 fill:#374151,stroke:#1f2937,stroke-width:2px;
-    style M5 fill:#374151,stroke:#1f2937,stroke-width:2px;
+stateDiagram-v2
+    [*] --> Locked: Node memiliki prerequisites belum Mastered
+    Locked --> Available: Semua prerequisites berstatus Mastered
+    Available --> Mastered: Pelajar lulus kuis / checklist bukti pemahaman
 ```
-*Legenda: Hijau = Selesai, Biru = Sedang Dipelajari, Abu-abu = Terkunci (Prasyarat Belum Terpenuhi).*
+
+Setiap catatan pembelajaran (*Learning Node*) mendefinisikan dependensinya di blok YAML terisolasi (`EditorPropertiesPanel.tsx`):
+- `lms_role`: `concept` \| `module` \| `assessment`
+- `prerequisites`: daftar tautan `[[note]]` prasyarat (divalidasi sebagai *Directed Acyclic Graph* tanpa siklus).
+- `estimated_minutes` & `mastery_criteria`: metode kelulusan (*self-check*, kuis JSON YAML, atau kiriman *Knowledge Merge Request* tugas).
+- `license`: mewarisi default vault **`CC BY-SA 4.0`** saat dipublikasikan sebagai kurikulum terbuka.
 
 ---
 
-## 2. Pemetaan Kapabilitas Saat Ini vs Celah Kebutuhan
-
-| Kapabilitas Diperlukan | Fitur ObMap Saat Ini | Celah yang Harus Dibangun | Status |
-| :--- | :--- | :--- | :--- |
-| **Hierarki & Urutan Materi** | Mode Timeline & Org Chart `[IMPLEMENTED]` | Logika penguncian simpul (*locked prerequisites*) | `[PLANNED]` |
-| **Penyajian Konten Modul** | CodeMirror 6 & Reading Mode `[IMPLEMENTED]` | Kuis interaktif inline berbasis Markdown | `[VISION]` |
-| **Pelacakan Progres Siswa** | Local IndexedDB persistence `[IMPLEMENTED]` | Store status centang modul (*learning progress store*) | `[PLANNED]` |
-| **Distribusi Materi Kelas** | Public Reader Portal `/p/*` `[IMPLEMENTED]` | Portal kelas dengan autentikasi grup siswa | `[VISION]` |
+## 2. Alur Penggunaan Dosen, Institusi & Pelajar (`Stage 2–3`)
+1. **Penulisan Modul (`/app`):** Dosen menyusun materi di Editor CM6 dan memvisualisasikan ketergantungan topik memakai solver graf deterministik.
+2. **Publikasi Kanonik (`/:username/:vaultSlug`):** Kurikulum diterbitkan melalui `src/domains/community/` (menggantikan skema usang `/p/*`) sehingga pelajar anonim maupun terdaftar dapat menjelajahi peta silabus dan sitasi `[[@user/vault/note]]`.
+3. **Pelacakan Progres & Fork Belajar:** Pelajar dapat membaca langsung di reader *dual-pane* atau memilih *Fork to My Vault* untuk mencatat refleksi belajar pribadi sambil melaporkan kemajuan ke widget *Productivity & Learning Analytics* pada `/vaults` (`STEP-02.1` & `STEP-05.1`).
+4. **Kontrol Institusi (`Team / Academic`):** Kampus atau lab riset dapat menyebarkan kurikulum internal di *Teamspace* terkurasi (`Protected / Shared`) dengan *Admin-Locked Config* (`STEP-04.2`).
 
 ---
 
 ## Terkait
-- [Empat Pilar Kasus Penggunaan](../01-visions/use-case-pillars.md)
-- [Peta Jalan Pengembangan Produk](../02-planning/roadmap.md)
+- [Lima Pilar Use-Case (`../01-visions/use-case-pillars.md`)](../01-visions/use-case-pillars.md)
+- [Playbook Eksekusi (`STEP-05.1` di `../02-planning/README.md`)](../02-planning/README.md)
+- [Domain Community & Rute `/:username` (`../03-architecture/adr/ADR-0007-community-domain-and-canonical-root-routing.md`)](../03-architecture/adr/ADR-0007-community-domain-and-canonical-root-routing.md)

@@ -1,31 +1,63 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
-  "root_mappings": {
-    "src/domains": {
-      "purpose": "Domain-Driven Design boundaries (12 decoupled feature domains)",
-      "pattern": "<Domain>Orchestrator.tsx, components/, shared/{api,hooks,stores,utils}"
+  "version": "2.0.0",
+  "last_updated": "2026-11-14",
+  "repository": "obmap-meed",
+  "entrypoints": {
+    "router": "src/App.tsx",
+    "bootstrap": "src/app/bootstrap.ts",
+    "landing": "src/pages/Landing.tsx",
+    "agents_rules": "AGENTS.md",
+    "llm_index": "llms.txt",
+    "docs_portal": "docs/README.md",
+    "execution_playbook": "docs/02-planning/README.md"
+  },
+  "routes": {
+    "active_in_app_tsx": ["/", "/auth", "/install", "/explore", "/admin", "/app", "/vaults", "/:username/:vaultSlug/:noteSlug", "/:username/:vaultSlug", "/:username", "*"],
+    "deprecated_removed_hard_cutover": ["/p/:username/:vaultSlug/:noteSlug", "/p/:username/:vaultSlug", "/p/:vaultSlug"],
+    "hard_cutover_step": "STEP-01.2"
+  },
+  "source_directories": {
+    "active_domains": [
+      "src/domains/admin",
+      "src/domains/auth",
+      "src/domains/collaboration",
+      "src/domains/community",
+      "src/domains/editor",
+      "src/domains/graph",
+      "src/domains/metadata",
+      "src/domains/settings",
+      "src/domains/sync",
+      "src/domains/vault",
+      "src/domains/vcs",
+      "src/domains/workspace"
+    ],
+    "legacy_barrel_shims": [
+      "src/domains/public-reader"
+    ],
+    "target_v2_changes": {
+      "refactor_public_reader_to_community": "IMPLEMENTED (STEP-01.2)",
+      "create_dashboard_domain": "STEP-02.1"
     },
-    "src/global": {
-      "purpose": "Shared horizontal primitives, UI design tokens, global stores, Supabase client",
-      "subpaths": {
-        "api": "Untyped/typed Supabase instances & event bus",
-        "components": "App-level layouts and dialogs",
-        "hooks": "Cross-cutting lifecycle & UI hooks",
-        "stores": "DomainEvents, useStatusNoticeStore",
-        "types": "Common domain-agnostic interfaces",
-        "ui": "Radix UI + Tailwind design system components (shadcn)",
-        "utils": "Formatting, math, and styling helpers"
-      }
-    },
-    "supabase/migrations": {
-      "purpose": "Source of truth for database schema, RLS policies, and triggers"
-    },
-    "docs": {
-      "purpose": "Enterprise-grade documentation system (Human, Robot, AI friendly)"
-    },
-    "_machine": {
-      "purpose": "Structured JSON metadata catalogs for AI agents and code generators"
-    }
-  }
+    "global_shared": ["src/global/api", "src/global/components", "src/global/hooks", "src/global/stores", "src/global/types", "src/global/ui", "src/global/utils"],
+    "migrations": [
+      "supabase/migrations/20251207180819_e7543200-4d7a-4415-b876-ec6ffb158cc0.sql",
+      "supabase/migrations/20251207183100_cd9323ad-684f-498a-8ca7-853e472c6083.sql",
+      "supabase/migrations/20260918120633_ad98b0f0-2227-46ea-99b2-5d569a098975.sql",
+      "supabase/migrations/20261031000000_v4_collaboration_and_publishing.sql",
+      "supabase/migrations/20261114000000_v4_1_step_01_1_and_01_2_schema_and_reserved_slugs.sql"
+    ]
+  },
+  "docs_structure": [
+    "docs/00-meta",
+    "docs/changelogs",
+    "docs/01-visions",
+    "docs/02-planning",
+    "docs/03-architecture",
+    "docs/03-architecture/adr",
+    "docs/04-features",
+    "docs/05-engineering",
+    "docs/06-lms",
+    "docs/07-developers",
+    "docs/_machine"
+  ]
 }

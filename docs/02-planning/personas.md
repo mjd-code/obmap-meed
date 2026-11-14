@@ -1,72 +1,60 @@
 ---
 id: DOC-PLAN-005
-title: Profil Persona Pengguna (User Personas)
+title: Katalog Persona Pengguna & Matriks Skenario ObMap v2.0
 type: planning
 status: [IMPLEMENTED]
-owner: Lead UX Researcher
-version: 1.0.0
-last_reviewed: 2026-11-10
+owner: Chief Product Officer & UX Lead
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
+  - DOC-META-000
   - DOC-VIS-004
   - DOC-PLAN-001
   - DOC-PLAN-002
-source_of_truth: src/domains/
+source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ---
 
-# Profil Persona Pengguna (User Personas)
+# Katalog Persona Pengguna & Matriks Skenario ObMap v2.0
 
 ## Ringkasan 3 Baris
-- Menghadirkan 6 profil persona mendalam yang mewakili spektrum pengguna utama ObMap.
-- Memetakan titik frustrasi (*pain points*), motivasi utama, serta pola alur penggunaan aplikasi harian mereka.
-- Menjadi panduan empati bagi perancang antarmuka dan perekayasa fitur dalam memprioritaskan kapabilitas produk.
+- Mengidentifikasi sembilan persona pengguna utama (`PER-01` s/d `PER-09`) yang mencakup pengguna PKM privat, tim kolaborasi, pendidik LMS, cendekiawan jaringan sosial `/:username`, hingga administrator platform.
+- Memetakan kebutuhan fungsional, *pain points*, izin akses (`PolicyEngine`), dan interaksi lintas tahapan rilis (`Stage 1`–`Stage 3`) per persona.
+- Menjadi acuan langsung bagi alur *Personalization Survey* saat onboarding, template Dashboard `/vaults`, serta desain UX konsol `/admin`.
 
 ---
 
-## 1. Matriks Ringkasan Persona
+## 1. Direktori Persona (`PER-01` s/d `PER-09`)
 
-| ID Persona | Nama Persona | Peran Utama | Kebutuhan Kunci di ObMap | Fitur Utama yang Digunakan |
+| ID Persona | Peran & Segmen | Pilar Utama | Tujuan Inti di ObMap | Permukaan Utama |
 | :--- | :--- | :--- | :--- | :--- |
-| `PER-01` | Dr. Aris Pratama | Peneliti / Akademisi | Kedaulatan data lokal, wikilinks, graf sitasi bebas | Markdown Editor, Mention Worker, Force Graph |
-| `PER-02` | Siti Nurhaliza | Dosen / Pengajar LMS | Penyusunan kurikulum interaktif & pemantauan progres | Mindmap Layout, Timeline, Public Reader |
-| `PER-03` | Kevin Sanjaya | Konsultan / Analis Bisnis | Dekomposisi masalah akar, visualisasi hierarki cepat | Fishbone (Ishikawa), Org Chart, Export ZIP |
-| `PER-04` | Maya Indrawati | Product Lead / PM | Kolaborasi tim, pencegahan konflik catatan proyek | In-Browser VCS, Branching, Stashing, 3-Way Merge |
-| `PER-05` | Budi Santoso | Pembaca Publik / Pelajar | Membaca catatan interaktif anonim tanpa registrasi | Public Reader Portal (`/p/*`), Filter Topik |
-| `PER-06` | Reza Rahardian | System Admin / DevOps | Keamanan data multi-tenant, kontrol RLS ketat | Supabase RLS, Storage Bucket Isolation, Auth |
+| **`PER-01`** | **Peneliti Akademik** *(Doctoral / Independent Researcher)* | Pilar 3, 5 | Mensintesis literatur berformat `.md`, memakai *Argument Map* & *Citation Tree*, menyematkan metadata `epistemic_status`/`doi`, dan mengutip lintas vault (`[[@user/vault/note]]`). | `/app`, `/:username`, Cite Exporter |
+| **`PER-02`** | **Dosen / Instruktur LMS** *(Educator & Course Author)* | Pilar 4, 2 | Menyusun kurikulum berbentuk graf prasyarat (`prerequisites` DAG), menerbitkan modul kuliah interaktif di `/:username`, serta memantau penguasaan siswa. | `/app`, `/vaults`, `/:username/:vaultSlug` |
+| **`PER-03`** | **Konsultan Bisnis & Strategi** | Pilar 3 | Memetakan akar masalah dengan *Fishbone*, *Mindmap*, dan *Timeline* deterministik yang rapi untuk dipresentasikan dalam *Pitch Mode* dan diekspor PDF/SVG. | `/`, `/app`, `/vaults` (Kanban/Timeline) |
+| **`PER-04`** | **Product & Engineering Lead** | Pilar 3, 5 | Mengelola ADR teknis, spesifikasi proyek Markdown, tampilan Kanban/Calendar derivatif di `/vaults`, dan ulasan perubahan via VCS Merge Request bersama tim. | `/vaults`, `/app`, `/app` (VCS) |
+| **`PER-05`** | **Pembaca Publik & Pembelajar Mandiri** | Pilar 1, 4 | Menemukan konstelasi topik terkurasi di `/explore` tanpa login, memahami relasi konsep lewat dual-pane reader, serta mem-*fork* catatan `CC BY-SA 4.0`. | `/explore`, `/:username/:vaultSlug` |
+| **`PER-06`** | **System / Platform Admin** *(Superadmin)* | Infrastruktur & Tata Kelola | Mengontrol *ReleaseStageGate*, menyetujui pendaftar Stage 2 **secara individual per-user**, mengonfigurasi **harga & kuota paket secara dinamis**, dan melakukan **kurasi manual *Verified Scholar***. | `/admin`, `audit_logs` |
+| **`PER-07`** | **Kreator Pengetahuan Publik** *(Scholar / Public Thinker)* | Pilar 2, 1 | Membangun portofolio intelektual hidup di `/:username`, mempublikasikan vault terbuka (`CC BY-SA 4.0`), dan menumbuhkan *Impact Index* berbasis sitasi asli. | `/:username`, `community`, Analytics |
+| **`PER-08`** | **Kepala Lab Riset / Admin Kampus** | Pilar 3, 5, 4 | Mengelola Teamspaces institusi, menegakkan konfigurasi terkunci organisasi (*Org-Lock Policy*), mengontrol *seat* tim, serta meninjau allowlist plugin `@obmap/sdk`. | `/vaults`, `/admin` (Org Teamspaces) |
+| **`PER-09`** | **Kontributor Terbuka & Peer Reviewer** | Pilar 5, 1 | Mem-*fork* vault pengetahuan publik, memperbaiki atau memperkaya catatan, mengajukan *Knowledge Merge Request*, dan memberi anotasi kritis di tingkat paragraf. | `/:username/:vaultSlug`, `vcs` |
 
 ---
 
-## 2. Rincian Persona Mendalam
+## 2. Matriks Skenario Akses Lintas Tahap & Role (`Role × Scenario`)
 
-### PER-01: Dr. Aris Pratama (Peneliti Akademik & Mahasiswa Doktoral)
-- **Karakteristik:** Menulis ribuan catatan literatur ilmiah, sensitif terhadap privasi data penelitian, menolak *vendor lock-in*.
-- **Titik Frustrasi:** Khawatir catatan disandera format *proprietary* aplikasi SaaS; graf bawaan alat lain lambat saat memproses 3.000+ catatan.
-- **Skenario ObMap:**
-  ```mermaid
-  graph LR
-      P1[Buka Direktori Lokal via FS API] --> P2[Tulis Catatan Paper di CodeMirror]
-      P2 --> P3[Koneksikan [[Teori]] & #Sitasi]
-      P3 --> P4[Eksplorasi Kluster Ide via 2D Living Canvas]
-  ```
-
-### PER-02: Siti Nurhaliza, M.Pd (Dosen & Instruktur Pembelajaran Visual)
-- **Karakteristik:** Mengajar kelas berkapasitas besar; ingin menyajikan silabus dan materi kuliah yang tidak membosankan.
-- **Titik Frustrasi:** Mahasiswa kesulitan memahami urutan materi (*prerequisites*) jika hanya diberi daftar tautan PDF panjang.
-- **Skenario ObMap:** Menyusun modul kuliah sebagai pohon topik hierarkis, mengaktifkan mode Timeline untuk peta jalan tugas, dan membagikan tautan `/p/siti/matakuliah-ai` ke mahasiswa.
-
-### PER-03: Kevin Sanjaya (Konsultan Manajemen & Solusi Strategis)
-- **Karakteristik:** Sering memfasilitasi sesi *brainstorming* ruang rapat; membutuhkan visualisasi analisis sebab-akibat instan.
-- **Titik Frustrasi:** Pembuatan diagram di alat presentasi biasa memakan waktu penataan kotak berjam-jam secara manual.
-- **Skenario ObMap:** Mengetik poin permasalahan dalam daftar bertingkat Markdown, lalu mengubah visualisasi menjadi diagram Fishbone dalam satu klik via *Floating Gear Toolbar*.
-
-### PER-04: Maya Indrawati (Tech Product Lead & Koordinator Proyek)
-- **Karakteristik:** Mengelola dokumentasi arsitektur perangkat lunak bersama tim perekayasa lintas disiplin.
-- **Titik Frustrasi:** Edit dokumen bersamaan sering menghasilkan teks tertimpa (*race conditions*) atau riwayat perubahan yang kabur.
-- **Skenario ObMap:** Membuat *branch* catatan baru untuk draf rilis fitur, melakukan pengujian draf, lalu menggabungkannya ke *main branch* melalui mesin *3-way merge* bawaan ObMap.
+| State / Peran Sesi | Landing & Sandbox (`/`) | Approval & Akses (`/vaults`, `/app`) | Komunitas & Profil (`/:username`) | Monetisasi & Konfigurasi (`/admin`, `/settings`) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Anonim / Guest (`PER-05`)** | Sandbox in-memory gratis tanpa akun | Redirect ke `/auth` | Baca profil `approved` & vault `Public Listed` / `Shared` link | Hanya switcher tema lokal |
+| **Pending Approval (`Stage 2`)** | Karya Sandbox tersimpan sementara untuk migrasi | Ditahan pada **Waitlist Status Card** hingga Admin approve di `/admin` | Dapat membaca karya publik orang lain; profil sendiri belum aktif | Belum dapat menerbitkan vault |
+| **Partner Pilot (`Stage 1`)** | Akses cepat via `partner_invitations` | Akses penuh `/vaults` & `/app` | Sesuai visibilitas vault partner | Kuota pilot terkelola Admin |
+| **Free Scholar (`PER-01/05/07`)** | Penuh + Migrasi Sandbox | Local Vaults tak terbatas + Cloud dasar dinamis | `/:username` penuh, *Cite*, *Fork*, & *Merge Request* (`CC BY-SA 4.0`) | Checkout **Xendit/Midtrans** saat upgrade |
+| **Pro / Team Admin (`PER-03/04/08`)** | Penuh + Preset Tim | 5 views Dashboard + Teamspaces + *Org-Lock* + CRDT | Custom domain / analitik / kurasi tim | Seat management & kuota dinamis DB |
+| **Platform Superadmin (`PER-06`)** | Akses telemetry & preview stage | Opsional (tercatat di `audit_logs`) | **Kurasi manual *Verified Scholar*** & moderasi DMCA/etik | **Approval per-user Stage 2**, edit **`plans`/`plan_quotas` dinamis**, kupon |
 
 ---
 
 ## Terkait
-- [Pilar Kasus Penggunaan](../01-visions/use-case-pillars.md)
-- [Product Requirements Document (PRD)](prd.md)
-- [Software Requirements Specification (SRS)](srs.md)
+- [Master Blueprint v2.0 §4.2](../00-meta/00-0-master-blueprint.md)
+- [Lima Pilar Use-Case](../01-visions/use-case-pillars.md)
+- [Product Requirements Document (`prd.md`)](prd.md)
+- [Business Requirements Document (`brd.md`)](brd.md)

@@ -1,86 +1,64 @@
 ---
 id: DOC-PLAN-004
-title: Statement of Work (SoW)
+title: Statement of Work (SoW) & Paket Pengiriman ObMap v2.0
 type: planning
-status: [IMPLEMENTED]
-owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
+status: [PLANNED]
+owner: Principal Software Architect & Project Lead
+version: 2.0.0
+last_reviewed: 2026-11-14
 audience: both
 related:
-  - DOC-PLAN-001
-  - DOC-PLAN-003
+  - DOC-META-005
+  - DOC-PLAN-000
   - DOC-PLAN-006
-source_of_truth: src/
+  - DOC-CHLOG-000
+source_of_truth: docs/02-planning/README.md, docs/00-meta/00-2-quovadis.md
 ---
 
-# Statement of Work (SoW) - ObMap Platform
+# Statement of Work (SoW) & Paket Pengiriman ObMap v2.0
 
 ## Ringkasan 3 Baris
-- Menegaskan batasan pekerjaan formal, kriteria penyelesaian (*Definition of Done*), dan tanggung jawab tim.
-- Mengklasifikasikan pekerjaan yang termasuk dalam lingkup (*In-Scope*) versus yang dikecualikan (*Out-of-Scope*).
-- Menjadi kontrak kerja acuan dalam mengukur keberhasilan pengiriman fitur lintas gelombang pengembangan.
+- Mendefinisikan ruang lingkup pekerjaan (*Work Breakdown Structure*), batasan eksekusi, kriteria serah terima (*Acceptance Criteria*), dan tata kelola perubahan untuk pengembangan ObMap v2.0.
+- Memisahkan capaian fondasi Wave 1–3 (`[IMPLEMENTED]`) dari empat paket pengiriman terurut (*Work Packages* `WP-0` s/d `WP-3`) yang dieksekusi mengikuti `docs/02-planning/README.md`.
+- Mewajibkan kepatuhan terhadap `AGENTS.md` (Headless Controller `<= 300` baris, Vitest hijau, serta Rule 11 3-Part Changelog Sync) pada setiap penyerahan paket kerja.
 
 ---
 
-## 1. Riwayat Revisi Dokumen
+## 1. Status Baseline & Work Breakdown Structure (WBS)
 
-| Versi | Tanggal | Penulis | Perubahan Utama |
+### Baseline Wave 1–3 (`[IMPLEMENTED]`)
+Arsitektur 12 domain DDD, penghapusan *god components* (`OVER_300=0`), 4 solver graf deterministik + Free-Force, editor CodeMirror 6 + YAML terisolasi, Aho-Corasick Web Worker, driver FS Access API + IndexedDB + Cloud, dan skema V4 SQL dasar.
+
+### Paket Kerja v2.0 (*Active & Scheduled Work Packages*)
+
+| Paket Kerja | Stage / Gelombang | Langkah Tercakup | Deliverable Utama & Gate Penerimaan |
 | :--- | :--- | :--- | :--- |
-| 1.0.0 | 2026-11-10 | Principal Architect | Formalisasi deliverable pasca-Wave 3 DDD Restructuring |
+| **`WP-0`: Documentation Overhaul (`G1`–`G7`)** | Pre-Code Gate | Docs Waves `G1`–`G7` | Penyelarasan penuh `docs/`, `AGENTS.md`, `llms.txt`, `ADR-0007`–`0012`, `docs/07-developers/`, dan `docs/_machine/*.json` tanpa broken link atau kontradiksi. |
+| **`WP-1`: Stage 1 Pilot Readiness (`H1`)** | `stage_1_partner` | `STEP-01.1` – `STEP-01.5` | Clean type-safety (`TD-005`), domain `community` + *hard cutover* `/p/*` → `/:username`, `ReleaseStageGate`, approval individual `/admin`, `PolicyEngine` + `CC BY-SA 4.0`, & 6-Layer Config + Theme sync. |
+| **`WP-2`: Stage 2 Community Beta (`H2` + `H3`)** | `stage_2_community_beta` | `STEP-02.1` – `STEP-03.3` | Domain ke-13 `dashboard` (`/vaults` + 5 derived views), Landing Sandbox `< 65KB`, Hybrid Onboarding 5-tahap, Profil `/:username`, `/explore`, *Verified Scholar* manual Admin, `[[@user/vault/note]]`, & Fork/MR. |
+| **`WP-3`: Stage 3 Commercial GA (`H4` + `H5`)** | `stage_3_commercial_ga` | `STEP-04.1` – `STEP-05.4` | Skema tarif/kuota dinamis di `/admin`, webhook **Xendit/Midtrans first** + Stripe, Teamspaces + *Org-Lock*, CRDT Yjs, Interactive LMS DAG, solver `argument-map`/`citation-tree`, Pitch Mode, `@obmap/sdk`, & audit WCAG/OWASP. |
 
 ---
 
-## 2. Lingkup Pekerjaan (In-Scope vs Out-of-Scope)
-
-```mermaid
-graph TD
-    subgraph Lingkup Resmi
-        In1[Arsitektur 12 Domain Mandiri] --> In
-        In2[CodeMirror 6 Editor & Live Preview] --> In
-        In3[Mesin Graf Multi-Model & Living Canvas] --> In
-        In4[In-Browser VCS Branch & Stash] --> In
-        In5[Public Reader Portal Anonim] --> In
-    end
-    subgraph Di Luar Lingkup
-        Out1[Native Mobile App iOS/Android Khusus] --> Out
-        Out2[Real-Time Video/Audio Calling] --> Out
-        Out3[Database Kustom Non-Postgres/Supabase] --> Out
-    end
-```
-
-### 2.1 Pekerjaan Termasuk (In-Scope)
-1. **Refaktorisasi Modular Domain-Driven Design:** Pemisahan tuntas 12 domain di `src/domains/*` dengan pola `<Domain>Orchestrator.tsx`.
-2. **Editor CodeMirror 6 Modern:** Penyuntingan Markdown murni dengan autocompletion slash command, wikilinks, tags, dan properties panel.
-3. **Mesin Diagram XMind-Grade:** Tata letak deterministik pohon (Mindmap, Org, Brace, Fishbone, Timeline) dan force-directed graph.
-4. **Sistem VCS Terpadu di Peramban:** Pelacakan modifikasi baris demi baris, riwayat versi mikro, dan penggabungan cabang lokal.
-5. **Portal Publikasi Web Terbuka:** Render dokumen dan graf publik melalui rute `/p/:username/:vaultSlug`.
-
-### 2.2 Pekerjaan Dikecualikan (Out-of-Scope)
-1. **Aplikasi Native Biner Tersendiri:** Fokus platform adalah Web / Progressive Web App (PWA) terpasang; tidak ada kompilasi Swift/Kotlin mandiri saat ini.
-2. **Editor Tabel WYSIWYG Relasional:** Tidak membangun tiruan penuh database Notion; tabel tetap mematuhi format GFM Markdown standar.
-3. **Penyimpanan Berkas Mandiri Tanpa Batas:** Hosting file besar (video > 100MB) dialihkan ke storage eksternal atau konfigurasi mandiri pengguna.
+## 2. Ruang Lingkup di Luar Cakupan (*Out of Scope* v2.0)
+- Aplikasi desktop Electron / Tauri native terpisah *(PWA + File System Access API mencakup kebutuhan lintas-OS v2.0)*.
+- Penghapusan atau konversi vault `.md` menjadi format biner tertutup.
+- Mekanisme undangan referral *peer-to-peer* pada Stage 2 *(persetujuan akun dilakukan individual oleh Admin di `/admin`)*.
+- Redirect permanen dari rute usang `/p/*` *(dimatikan langsung melalui hard cutover sesuai keputusan terkunci)*.
 
 ---
 
-## 3. Asumsi Proyek dan Ketergantungan Eksternal
-
-- **Ketergantungan Browser Modern:** Pengguna diasumsikan menggunakan peramban modern yang mendukung ES2022, Web Workers, dan IndexedDB v2+.
-- **Infrastruktur Backend:** Layanan sinkronisasi *cloud* bergantung pada ketersediaan API Supabase (PostgreSQL 15+, Auth GoTrue, Storage S3-compatible).
-- **Integritas Skema Migrasi:** Seluruh struktur tabel harus dibuat melalui migrasi berurutan di `supabase/migrations/` tanpa modifikasi manual di konsol database.
-
----
-
-## 4. Kriteria Penyelesaian Resmi (Definition of Done)
-
-1. **Integritas Kode (Clean Build):** Perintah `npm run build` (Vite) dan kompilasi TypeScript `tsc --noEmit` lulus 100% tanpa error.
-2. **Kepatuhan Uji Regresi:** Rangkaian pengujian unit di `vitest run` mencapai tingkat kelulusan minimal > 98% (termasuk mock IndexedDB dan D3 solver).
-3. **Tidak Ada God Component Baru:** Komponen antarmuka baru tidak boleh melebihi 400 baris kode tanpa dekomposisi modular.
-4. **Dokumentasi Selaras Kode:** Setiap penambahan fitur baru wajib memperbarui katalog fitur dan dokumen arsitektur terkait.
+## 3. Protokol Serah Terima & Definisi Selesai (DoD)
+Setiap penyerahan modul kode (`WP-1` s/d `WP-3`) dinyatakan diterima apabila memenuhi:
+1. Seluruh komponen `.tsx` baru/termodifikasi mematuhi batas `<= 300` baris dengan Headless Controller (`ADR-0006`).
+2. `npx tsc --noEmit`, `npx vitest run`, `npm run lint`, dan `npm run build` lulus tanpa error.
+3. Migrasi SQL baru menyertakan hak akses eksplisit (`authenticated`, `service_role`) serta uji RLS positif & negatif.
+4. Agen memperbarui status `STEP-XX.Y` di `docs/02-planning/README.md` serta mengeksekusi **3 pembaruan changelog atomik** (`AGENTS.md` Rule 11).
 
 ---
 
 ## Terkait
-- [Product Requirements Document (PRD)](prd.md)
-- [Spesifikasi Persyaratan Perangkat Lunak (SRS)](srs.md)
-- [Roadmap Pengembangan Produk](roadmap.md)
+- [Playbook Eksekusi Step-by-Step (`README.md`)](README.md)
+- [Roadmap & Horizon (`roadmap.md`)](roadmap.md)
+- [Quo Vadis v2.0 (`00-2-quovadis.md`)](../00-meta/00-2-quovadis.md)
+- [Repository Rules](../05-engineering/repository-rules.md)

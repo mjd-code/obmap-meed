@@ -1,6 +1,12 @@
 export type AppRole = 'superadmin' | 'member';
 
-export type VaultMemberRole = 'admin' | 'editor' | 'contributor' | 'viewer';
+export type VaultMemberRole = 'admin' | 'editor' | 'contributor' | 'commenter' | 'viewer' | 'guest';
+
+export type VaultVisibility = 'private' | 'shared' | 'public_unlisted' | 'public_listed';
+
+export type ReleaseStage = 'stage_1_partner' | 'stage_2_community_beta' | 'stage_3_commercial_ga';
+
+export type AccountLifecycleStatus = 'pending_approval' | 'approved' | 'suspended';
 
 export type NoteStatus = 'draft' | 'in_review' | 'published' | 'archived';
 

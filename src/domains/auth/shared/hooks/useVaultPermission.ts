@@ -1,23 +1,31 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/global/api/untypedSupabase";
+import { supabase } from "@/global/api/supabaseClient";
 import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { useVaultStore } from "@/domains/vault/shared/stores/useVaultStore";
-import type { VaultMemberRole } from "@/types/collaboration";
+import {
+  evaluateVaultPermissions,
+  type ResourceRole,
+} from "@/domains/auth/shared/api/policyEngine";
+import type { VaultMemberRole, VaultVisibility } from "@/types/collaboration";
 
 export interface VaultPermissions {
-  role: VaultMemberRole | "owner" | "superadmin" | "none";
+  role: ResourceRole;
+  vaultVisibility: VaultVisibility;
   canEdit: boolean;
   canReview: boolean;
   canPublish: boolean;
+  canComment: boolean;
   canManageMembers: boolean;
+  canManageVisibility: boolean;
   isReadOnly: boolean;
   loading: boolean;
 }
 
 export function useVaultPermission(): VaultPermissions {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const currentVaultId = useVaultStore((s) => s.currentVaultId);
-  const [role, setRole] = useState<VaultPermissions["role"]>("none");
+  const [role, setRole] = useState<ResourceRole>("none");
+  const [vaultVisibility, setVaultVisibility] = useState<VaultVisibility>("private");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +35,7 @@ export function useVaultPermission(): VaultPermissions {
       if (!user) {
         if (isMounted) {
           setRole("none");
+          setVaultVisibility("private");
           setLoading(false);
         }
         return;
@@ -58,7 +67,17 @@ export function useVaultPermission(): VaultPermissions {
         return;
       }
 
-      // 2. Cek apakah pengguna adalah anggota kolaborator di vault_members
+      // 2. Cek metadata vault (owner + 4-state visibility)
+      const { data: vaultRow } = await supabase
+        .from("user_vaults")
+        .select("user_id, visibility")
+        .eq("id", currentVaultId)
+        .maybeSingle();
+
+      const resolvedVisibility =
+        (vaultRow?.visibility as VaultVisibility | undefined) ?? "private";
+
+      // 3. Cek apakah pengguna adalah anggota kolaborator di vault_members
       const { data: memberRow } = await supabase
         .from("vault_members")
         .select("role")
@@ -68,39 +87,26 @@ export function useVaultPermission(): VaultPermissions {
 
       if (memberRow) {
         if (isMounted) {
+          setVaultVisibility(resolvedVisibility);
           setRole(memberRow.role as VaultMemberRole);
           setLoading(false);
         }
         return;
       }
 
-      // 3. Cek di tabel user_vaults di cloud (apakah pemilik sah)
-      const { data: vaultRow } = await supabase
-        .from("user_vaults")
-        .select("user_id")
-        .eq("id", currentVaultId)
-        .maybeSingle();
-
       if (vaultRow) {
-        if (vaultRow.user_id === user.id) {
-          if (isMounted) {
-            setRole("owner");
-            setLoading(false);
-          }
-          return;
-        }
-        // Vault milik orang lain dan user BUKAN anggota
         if (isMounted) {
-          setRole("none");
+          setVaultVisibility(resolvedVisibility);
+          setRole(vaultRow.user_id === user.id ? "owner" : "none");
           setLoading(false);
         }
         return;
       }
 
-      // 4. Jika vault tidak ditemukan di cloud dan user bukan siapa-siapa,
-      // JANGAN upsert kepemilikan orang lain! Strict NONE.
+      // 4. Jika vault tidak ditemukan di cloud dan user bukan siapa-siapa, STRICT NONE.
       if (isMounted) {
         setRole("none");
+        setVaultVisibility("private");
         setLoading(false);
       }
     }
@@ -112,19 +118,15 @@ export function useVaultPermission(): VaultPermissions {
     };
   }, [user, currentVaultId]);
 
-  const canEdit = ["contributor", "editor", "admin", "owner", "superadmin"].includes(role);
-  const canReview = ["editor", "admin", "owner", "superadmin"].includes(role);
-  const canPublish = ["editor", "admin", "owner", "superadmin"].includes(role);
-  const canManageMembers = ["admin", "owner", "superadmin"].includes(role);
-  const isReadOnly = role === "viewer" || role === "none";
+  const evaluated = evaluateVaultPermissions({
+    role,
+    accountStatus: profile?.account_status ?? "approved",
+    visibility: vaultVisibility,
+  });
 
   return {
-    role,
-    canEdit,
-    canReview,
-    canPublish,
-    canManageMembers,
-    isReadOnly,
+    ...evaluated,
+    vaultVisibility,
     loading,
   };
 }

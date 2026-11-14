@@ -1,89 +1,80 @@
 ---
-id: ARCH-STRUCT-001
-title: Struktur dan Hierarki Repositori ObMap
+id: DOC-ARCH-003
+title: Struktur Repositori & Tata Letak Berkas ObMap v2.0
 type: architecture
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 1.0.0
-last_reviewed: 2026-11-10
-audience: both
+version: 2.0.0
+last_reviewed: 2026-11-14
+audience: engineering
 related:
-  - ARCH-DOM-001
-  - ENG-RULES-001
-source_of_truth: src/
+  - DOC-ARCH-001
+  - DOC-ARCH-002
+  - DOC-ENG-002
+source_of_truth: src/, supabase/, docs/, AGENTS.md
 ---
 
-# Struktur Repositori Terverifikasi
+# Struktur Repositori & Tata Letak Berkas (`Repository Structure`)
 
 ## Ringkasan 3 Baris
-- Repositori dibangun menggunakan arsitektur React 18 + Vite 5 + TypeScript dengan pendekatan Domain-Driven Design (DDD).
-- Kode aplikasi berpusat di `src/domains/` (12 domain bisnis) dan `src/global/` (komponen atomik serta utilitas bersama).
-- Folder legacy `src/core/` dan `src/shared/` telah dihapus sepenuhnya demi mencegah ambiguitas impor.
+- Mendokumentasikan tata letak direktori kode sumber, migrasi database, modul dokumentasi v2.0, dan indeks mesin pada repositori ObMap.
+- Menjaga konvensi seragam pada setiap domain di `src/domains/` (`<Domain>Orchestrator.tsx`, `components/`, `shared/{api,hooks,stores,utils}`) serta impor wajib via alias `@/`.
+- Memetakan transisi struktur untuk refaktor `public-reader/` → `community/` (`STEP-01.2`) dan penambahan domain `dashboard/` (`STEP-02.1`).
 
 ---
 
-## 1. Pohon Direktori Repositori (Level 1–3)
+## 1. Struktur Tingkat Atas Repositori
 
 ```text
 obmap-meed/
-├── docs/                       # Sistem dokumentasi enterprise
-├── supabase/
-│   ├── config.toml             # Konfigurasi Supabase CLI
-│   └── migrations/             # Sumber kebenaran skema database (SQL)
+├── AGENTS.md                        # Aturan wajib & Rule 11 Changelog Protocol bagi AI agents
+├── llms.txt                         # Indeks dokumen standar LLM
+├── README.md                        # Pengantar repositori & quickstart lokal
+├── docs/                            # Basis dokumentasi v2.0 (README.md Portal & SUMMARY.md)
+│   ├── 00-meta/                     # Master Blueprint, Quo Vadis v2.0, Konvensi, Glosarium, Arsip v1.0
+│   ├── changelogs/                  # Sistem changelog bulanan sharded & hemat-token (Rule 11)
+│   ├── 01-visions/                  # Visi, Filosofi, Positioning (5 Referensi), 5 Pilar Use-Case
+│   ├── 02-planning/                 # Playbook Antrean Step-by-Step (README.md), PRD, BRD, SRS, SoW, Roadmap
+│   ├── 03-architecture/             # Tinjauan Arsitektur, 13 Domain, Storage, Graph, & adr/ADR-0001..0012
+│   ├── 04-features/                 # Katalog Fitur Master
+│   ├── 05-engineering/              # Standar Koding, Testing Strategy, Repo Rules, Tech Debt, Doc Drift Log
+│   ├── 06-lms/                      # Spesifikasi LMS Skill Tree DAG
+│   ├── 07-developers/               # Portal SDK (@obmap/sdk), Extension Points, Theme Guide, Sandbox
+│   └── _machine/                    # Metadata JSON + changelog.jsonl (append-only machine stream)
 ├── src/
-│   ├── App.tsx                 # Root router aplikasi (React Router DOM)
-│   ├── main.tsx                # Entry point DOM & hydration
-│   ├── index.css               # Styling global & token warna Tailwind
-│   ├── app/                    # Entry point spesifik shell aplikasi
-│   ├── pages/                  # Halaman top-level untuk route terdaftar
-│   │   ├── Admin.tsx           # Dashboard administrasi sistem (/admin)
-│   │   ├── Index.tsx           # Workspace utama aplikasi (/app)
-│   │   ├── Install.tsx         # Halaman panduan PWA (/install)
-│   │   ├── Landing.tsx         # Landing page publik (/)
-│   │   ├── NotFound.tsx        # Fallback rute 404
-│   │   └── PublicReader.tsx    # Portal pembaca publik (/p/...)
-│   ├── domains/                # 12 Domain Modular Bisnis
-│   │   ├── admin/              # Monitoring, telemetri bento, audit feed
-│   │   ├── auth/               # Otentikasi Supabase, sesi, guard
-│   │   ├── collaboration/      # Diff viewer, linters, bulk publish
-│   │   ├── editor/             # CodeMirror 6, properties, footnotes
-│   │   ├── graph/              # Engine visual 2D/3D, layout, living canvas
-│   │   ├── metadata/           # Aho-Corasick mentions, backlinks
-│   │   ├── public-reader/      # Portal baca artikel anonim & graf publik
-│   │   ├── settings/           # Command palette, profil, API key, hub
-│   │   ├── sync/               # Auto-save status, PWA install prompt
-│   │   ├── vault/              # Vault lifecycle, storage drivers, manager
-│   │   ├── vcs/                # Branching, commits, co-presence avatars
-│   │   └── workspace/          # Window docking, tabs, split-pane, tree
-│   ├── global/                 # Lapisan Bersama Lintas-Domain
-│   │   ├── api/                # Klien Supabase untyped & konfigurasi cloud
-│   │   ├── components/         # ErrorBoundary dan shell global
-│   │   ├── hooks/              # Utilitas hook global (mobile, toast)
-│   │   ├── stores/             # Global event emitter & UI store
-│   │   ├── types/              # Deklarasi tipe global & metadata
-│   │   ├── ui/                 # 40+ Komponen UI atomik berbasis shadcn/ui
-│   │   └── utils/              # Helper manipulasi string, DOM, dan format
-│   └── types/                  # Ambient TypeScript definitions
-├── package.json
-├── tailwind.config.lov.json
-├── tsconfig.json
-└── vite.config.ts
+│   ├── App.tsx                      # Router utama + guard stage/auth
+│   ├── global/                      # Shared UI (Radix/shadcn), API (untypedSupabase.ts -> hapus di STEP-01.1), stores, types, utils
+│   ├── pages/                       # Halaman root (Landing.tsx, Install, dll.)
+│   └── domains/                     # Isolated DDD Bounded Domains (lihat §2)
+└── supabase/
+    └── migrations/                  # Skema SQL byte-for-byte (V4 + migrasi v2.0 terencana)
 ```
 
 ---
 
-## 2. Tanggung Jawab Direktori Tingkat Atas
+## 2. Tata Letak Standar di Dalam `src/domains/<domain>/`
 
-| Folder | Status | Deskripsi Tanggung Jawab |
-| :--- | :--- | :--- |
-| `src/domains/` | `[IMPLEMENTED]` | Logika bisnis terisolasi. Masing-masing memiliki subfolder `components/` dan `shared/`. |
-| `src/global/ui/` | `[IMPLEMENTED]` | Pustaka antarmuka atomik murni (shadcn/ui). Bebas dependensi logika bisnis domain apa pun. |
-| `src/pages/` | `[IMPLEMENTED]` | Kontainer halaman berbasis lazy-load yang merakit satu atau beberapa Orchestrator domain. |
-| `supabase/migrations/`| `[IMPLEMENTED]` | 4 file migrasi SQL aktif yang mengontrol tabel, indeks, RLS, dan triggers. |
+Setiap bounded domain di `src/domains/` mematuhi struktur kanonik berikut (`ADR-0001` & `ADR-0006`):
+
+```text
+src/domains/<domain>/
+├── <Domain>Orchestrator.tsx         # Penghubung domain ke route/workspace & store context
+├── components/                      # Pure presentational React components (<= 300 baris)
+└── shared/
+    ├── api/                         # Service layer (Supabase queries, SDK registries, drivers)
+    ├── hooks/                       # Headless Controller hooks (use<Feature>Controller.ts)
+    ├── stores/                      # Pure Zustand stores & actions (tanpa React context provider)
+    ├── utils/                       # Pure TypeScript helpers, layout solvers, URL builders
+    └── workers/                     # Web Workers / runner terisolasi (mis. metadata/shared/api/mentions.worker.ts)
+```
+
+### Catatan Transisi Direktori Terjadwal
+- `STEP-01.2`: `src/domains/public-reader/` (berisi `PublicReaderOrchestrator.tsx`, `components/*`, `shared/*`) direfaktor seluruhnya menjadi `src/domains/community/` dengan `CommunityOrchestrator.tsx`.
+- `STEP-02.1`: `src/domains/dashboard/` dibuat baru untuk mengelola `/vaults` (`DashboardOrchestrator.tsx`, `DashboardWidgetRegistry.ts`).
 
 ---
 
 ## Terkait
-- [Portal Dokumentasi](../README.md)
-- [Peta Domain](domain-map.md)
-- [Aturan Repositori](../05-engineering/repository-rules.md)
+- [Peta 13 Domain (`domain-map.md`)](domain-map.md)
+- [Aturan Repositori (`../05-engineering/repository-rules.md`)](../05-engineering/repository-rules.md)
+- [Playbook Eksekusi (`../02-planning/README.md`)](../02-planning/README.md)

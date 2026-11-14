@@ -12,14 +12,62 @@ import { listConfigSections, getConfigSection } from '@/domains/settings/shared/
 import { localConfigStore } from '@/domains/settings/shared/stores/LocalConfigStore';
 import { cloudConfigStore } from '@/domains/settings/shared/stores/CloudConfigStore';
 import {
+  CONFIG_LAYER_PRIORITY,
   CONFIG_SCHEMA_VERSION,
   emptyDocument,
   isConfigDocument,
   type ConfigDocument,
+  type ConfigLayer,
   type ConfigSection,
   type ConfigSyncState,
+  type OrgPolicyLockEntry,
+  type OrgPolicyLockMap,
+  type ResolvedConfigEntry,
   type SectionRecord,
 } from '@/domains/settings/shared/utils/config.types';
+
+/**
+ * Pure deterministic 6-layer cascading config resolver (ADR-0011, STEP-01.5):
+ * Priority order: 1. system -> 2. org_policy -> 3. vault -> 4. user -> 5. leaf -> 6. session.
+ * When `org_policy` is locked by Org/Superadmin, layers 3-6 cannot override it unless
+ * the actor holds admin privilege.
+ */
+export function resolveCascadingConfig<T>(
+  layers: Partial<Record<ConfigLayer, T>>,
+  orgLock?: OrgPolicyLockEntry<T>,
+  isActorAdmin = false
+): ResolvedConfigEntry<T> {
+  const effectiveLayers: Partial<Record<ConfigLayer, T>> = { ...layers };
+  if (orgLock && orgLock.value !== undefined) {
+    effectiveLayers.org_policy = orgLock.value;
+  }
+
+  let resolvedValue = effectiveLayers.system as T;
+  let sourceLayer: ConfigLayer = 'system';
+
+  for (const layer of CONFIG_LAYER_PRIORITY) {
+    const candidate = effectiveLayers[layer];
+    if (candidate !== undefined) {
+      resolvedValue = candidate;
+      sourceLayer = layer;
+    }
+  }
+
+  const isLocked = Boolean(orgLock?.locked && orgLock.value !== undefined);
+  if (isLocked && !isActorAdmin && orgLock) {
+    return {
+      value: orgLock.value,
+      sourceLayer: 'org_policy',
+      isLockedByAdmin: true,
+    };
+  }
+
+  return {
+    value: resolvedValue,
+    sourceLayer,
+    isLockedByAdmin: isLocked,
+  };
+}
 
 const DEVICE_KEY = 'obmap-device-id';
 const SAVE_DEBOUNCE_MS = 800;
@@ -51,6 +99,11 @@ export class ConfigService {
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private pending = new Set<string>();
   private cloudRetry = new Set<string>();
+  private orgPolicyLocks: OrgPolicyLockMap = {};
+  private leafOverrides: Record<string, Record<string, unknown>> = {};
+  private sessionOverrides: Record<string, unknown> = {};
+  private cachedUserSections: Record<string, unknown> = {};
+  private cachedVaultSections: Record<string, unknown> = {};
 
   private state: ConfigSyncState = {
     status: 'idle',
@@ -59,6 +112,81 @@ export class ConfigService {
     hydrated: false,
   };
   private stateListeners = new Set<(s: ConfigSyncState) => void>();
+
+  /* ----------------------- 6-layer cascading config ------------------- */
+
+  /** Registers or removes an Org Policy lock for a settings section (Layer 2). */
+  setOrgPolicyLock(sectionId: string, value: unknown, locked: boolean): void {
+    this.orgPolicyLocks[sectionId] = { value, locked };
+    const section = getConfigSection(sectionId);
+    if (section && locked && value !== undefined) {
+      this.applying = true;
+      try {
+        section.write(value as never);
+      } finally {
+        this.applying = false;
+      }
+    }
+    this.setState({});
+  }
+
+  clearOrgPolicyLock(sectionId: string): void {
+    delete this.orgPolicyLocks[sectionId];
+    this.setState({});
+  }
+
+  /** Registers a temporary per-leaf override (Layer 5). */
+  setLeafOverride(sectionId: string, leafId: string, value: unknown): void {
+    if (!this.leafOverrides[leafId]) {
+      this.leafOverrides[leafId] = {};
+    }
+    this.leafOverrides[leafId][sectionId] = value;
+  }
+
+  clearLeafOverrides(leafId?: string): void {
+    if (leafId) {
+      delete this.leafOverrides[leafId];
+    } else {
+      this.leafOverrides = {};
+    }
+  }
+
+  /** Registers a volatile session override (Layer 6). */
+  setSessionOverride(sectionId: string, value: unknown): void {
+    this.sessionOverrides[sectionId] = value;
+  }
+
+  clearSessionOverrides(): void {
+    this.sessionOverrides = {};
+  }
+
+  /** Resolves a registered section across all 6 cascading config layers. */
+  resolveSection<T = unknown>(
+    sectionId: string,
+    options?: { leafId?: string; isActorAdmin?: boolean; systemDefault?: T }
+  ): ResolvedConfigEntry<T> {
+    const section = getConfigSection(sectionId);
+    const liveValue = section ? (section.read() as T) : undefined;
+    const vaultVal = this.cachedVaultSections[sectionId] as T | undefined;
+    const userVal = this.cachedUserSections[sectionId] as T | undefined;
+    const leafVal = options?.leafId
+      ? (this.leafOverrides[options.leafId]?.[sectionId] as T | undefined)
+      : undefined;
+    const sessionVal = this.sessionOverrides[sectionId] as T | undefined;
+    const lock = this.orgPolicyLocks[sectionId] as OrgPolicyLockEntry<T> | undefined;
+
+    return resolveCascadingConfig<T>(
+      {
+        system: options?.systemDefault ?? liveValue,
+        vault: section?.scope === 'vault' ? vaultVal ?? liveValue : vaultVal,
+        user: section?.scope === 'user' ? userVal ?? liveValue : userVal,
+        leaf: leafVal,
+        session: sessionVal,
+      },
+      lock,
+      options?.isActorAdmin ?? false
+    );
+  }
 
   /* ------------------------------ state ------------------------------ */
 
@@ -127,9 +255,23 @@ export class ConfigService {
     const userDoc = await this.localDoc('user');
     const vaultDoc = await this.localDoc('vault');
 
+    this.cachedUserSections = {};
+    this.cachedVaultSections = {};
+    for (const [k, rec] of Object.entries(userDoc.sections)) {
+      this.cachedUserSections[k] = rec.data;
+    }
+    for (const [k, rec] of Object.entries(vaultDoc.sections)) {
+      this.cachedVaultSections[k] = rec.data;
+    }
+
     this.applying = true;
     try {
       for (const section of listConfigSections()) {
+        const lock = this.orgPolicyLocks[section.id];
+        if (lock?.locked && lock.value !== undefined) {
+          section.write(lock.value as never);
+          continue;
+        }
         const doc = section.scope === 'user' ? userDoc : vaultDoc;
         const record = doc.sections[section.id];
         if (!record) continue;

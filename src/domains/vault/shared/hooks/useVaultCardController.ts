@@ -84,7 +84,7 @@ export function useVaultCardController({
         setValidationState({
           status: "valid",
           slug: res.slug,
-          message: `Tersedia: /p/.../${res.slug}`,
+          message: `Tersedia: /@username/${res.slug}`,
         });
       } else {
         setValidationState({
