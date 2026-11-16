@@ -35,7 +35,7 @@ export function DevAuthBanner() {
         <Button
           size="sm"
           variant="outline"
-          className="h-7 gap-1.5 bg-background/80 px-2 text-[11px] backdrop-blur"
+          className="h-7 gap-1.5 bg-background/80 px-2 vk-text-xs backdrop-blur"
           onClick={() => void handleSignOut()}
         >
           <LogOut className="h-3 w-3" />
@@ -45,7 +45,7 @@ export function DevAuthBanner() {
         <Button
           size="sm"
           variant="outline"
-          className="h-7 gap-1.5 bg-background/80 px-2 text-[11px] backdrop-blur"
+          className="h-7 gap-1.5 bg-background/80 px-2 vk-text-xs backdrop-blur"
           disabled={busy}
           onClick={handleLogin}
         >

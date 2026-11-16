@@ -77,7 +77,7 @@ export function GraphCanvasUtilityDock({
             className="w-56 p-2 rounded-lg border-border/80 bg-popover/95 backdrop-blur-md shadow-xl"
           >
             <div className="border-b border-border/40 pb-1.5 px-1 mb-1">
-              <p className="text-[11px] font-semibold">Hierarchy Depths</p>
+              <p className="vk-text-xs font-semibold">Hierarchy Depths</p>
             </div>
             <GraphLevelLegend depths={depths} hierarchy={hierarchy} />
           </PopoverContent>
@@ -130,7 +130,7 @@ export function GraphCanvasUtilityDock({
         onClick={toggleTimeLapse}
       >
         {isTimeLapseActive ? (
-          <Pause className="h-3.5 w-3.5 text-primary animate-pulse" />
+          <Pause className="h-3.5 w-3.5 text-primary animate-pulse motion-reduce:animate-none" />
         ) : (
           <Play className="h-3.5 w-3.5" />
         )}

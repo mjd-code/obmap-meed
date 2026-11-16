@@ -96,7 +96,7 @@ export const VaultCardHeader = ({
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
         <div
           className={`p-2 rounded-lg shrink-0 ${
-            location === "folder" ? "bg-primary/10 text-primary" : "bg-blue-500/10 text-blue-400"
+            location === "folder" ? "bg-primary/10 text-primary" : "bg-info/10 text-info"
           }`}
         >
           {location === "folder" ? (
@@ -120,7 +120,7 @@ export const VaultCardHeader = ({
                     }}
                     className={`h-7 pr-7 text-xs font-medium transition-colors ${
                       validationState.status === "valid"
-                        ? "border-emerald-500/80 focus-visible:ring-emerald-500/30"
+                        ? "border-success/80 focus-visible:ring-success/30"
                         : validationState.status === "duplicate" ||
                             validationState.status === "invalid"
                           ? "border-destructive focus-visible:ring-destructive/30"
@@ -134,7 +134,7 @@ export const VaultCardHeader = ({
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
                     )}
                     {validationState.status === "valid" && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-success" />
                     )}
                     {(validationState.status === "duplicate" ||
                       validationState.status === "invalid") && (
@@ -146,7 +146,7 @@ export const VaultCardHeader = ({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-emerald-500 hover:text-emerald-400 disabled:opacity-40"
+                  className="h-7 w-7 text-success hover:text-success disabled:opacity-40"
                   onClick={onSaveRename}
                   disabled={!canSave}
                   title={canSave ? "Simpan nama baru" : "Nama belum valid atau duplikat"}
@@ -166,9 +166,9 @@ export const VaultCardHeader = ({
 
               {validationState.message && (
                 <div
-                  className={`text-[11px] flex items-center gap-1 leading-tight ${
+                  className={`vk-text-xs flex items-center gap-1 leading-tight ${
                     validationState.status === "valid"
-                      ? "text-emerald-500 font-medium"
+                      ? "text-success font-medium"
                       : "text-destructive font-medium"
                   }`}
                 >
@@ -187,14 +187,14 @@ export const VaultCardHeader = ({
                 {name}
               </h3>
               {isActive && (
-                <Badge variant="default" className="text-[10px] h-4.5 px-1.5 font-medium shrink-0">
+                <Badge variant="default" className="vk-text-2xs h-4.5 px-1.5 font-medium shrink-0">
                   Aktif
                 </Badge>
               )}
               {isCollaborator && (
                 <Badge
                   variant="secondary"
-                  className="text-[10px] h-4.5 px-1.5 font-medium shrink-0 capitalize"
+                  className="vk-text-2xs h-4.5 px-1.5 font-medium shrink-0 capitalize"
                 >
                   {userRole}
                 </Badge>

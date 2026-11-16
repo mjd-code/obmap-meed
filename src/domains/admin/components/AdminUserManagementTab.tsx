@@ -133,12 +133,12 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
                           <div className="text-sm font-semibold flex items-center gap-1.5">
                             {u.display_name || "Tanpa Nama"}
                             {isSelf && (
-                              <Badge variant="outline" className="text-[10px] px-1 py-0">
+                              <Badge variant="outline" className="vk-text-2xs px-1 py-0">
                                 Anda
                               </Badge>
                             )}
                           </div>
-                          <div className="text-[11px] text-muted-foreground font-mono">
+                          <div className="vk-text-xs text-muted-foreground font-mono">
                             {u.id.substring(0, 8)}...
                           </div>
                         </div>
@@ -149,12 +149,12 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
 
                     <TableCell>
                       {u.role === "superadmin" ? (
-                        <Badge className="bg-primary text-primary-foreground flex items-center gap-1 w-fit text-[11px]">
+                        <Badge className="bg-primary text-primary-foreground flex items-center gap-1 w-fit vk-text-xs">
                           <ShieldCheck className="h-3 w-3" />
                           Superadmin
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="flex items-center gap-1 w-fit text-[11px]">
+                        <Badge variant="secondary" className="flex items-center gap-1 w-fit vk-text-xs">
                           <UserCheck className="h-3 w-3" />
                           Member
                         </Badge>
@@ -163,18 +163,18 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
 
                     <TableCell>
                       {isSuspended ? (
-                        <Badge variant="destructive" className="text-[10px] gap-1">
+                        <Badge variant="destructive" className="vk-text-2xs gap-1">
                           <Ban className="w-2.5 h-2.5" /> Ditangguhkan
                         </Badge>
                       ) : u.status === "pending_approval" ? (
                         <Badge
                           variant="outline"
-                          className="text-[10px] gap-1 text-amber-600 border-amber-500/40"
+                          className="vk-text-2xs gap-1 text-warning border-warning/40"
                         >
                           <Clock className="w-2.5 h-2.5" /> Pending Approval
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px] gap-1 text-emerald-600 border-emerald-500/30">
+                        <Badge variant="outline" className="vk-text-2xs gap-1 text-success border-success/30">
                           <CheckCircle className="w-2.5 h-2.5" /> Aktif
                         </Badge>
                       )}
@@ -226,7 +226,7 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
                             variant={isSuspended ? "outline" : "ghost"}
                             size="sm"
                             className={`h-8 text-xs ${
-                              isSuspended ? "text-emerald-600" : "text-destructive hover:bg-destructive/10"
+                              isSuspended ? "text-success" : "text-destructive hover:bg-destructive/10"
                             }`}
                             onClick={() => handleToggleSuspension(u.id, u.status)}
                           >
@@ -269,16 +269,16 @@ export const UserManagementTab: React.FC<Props> = ({ users: initialUsers, onRefr
               <div className="p-3 rounded-lg border bg-muted/20 space-y-1">
                 <p className="font-semibold text-foreground text-sm">{inspectUser.display_name || "Tanpa Nama"}</p>
                 <p className="text-muted-foreground">{inspectUser.email}</p>
-                <p className="font-mono text-[10px] text-muted-foreground">UUID: {inspectUser.id}</p>
+                <p className="font-mono vk-text-2xs text-muted-foreground">UUID: {inspectUser.id}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="p-2.5 rounded-lg border bg-card">
-                  <p className="text-muted-foreground text-[11px]">Total Vault Dimiliki</p>
+                  <p className="text-muted-foreground vk-text-xs">Total Vault Dimiliki</p>
                   <p className="text-lg font-bold text-foreground mt-0.5">{inspectUser.vault_count || 0}</p>
                 </div>
                 <div className="p-2.5 rounded-lg border bg-card">
-                  <p className="text-muted-foreground text-[11px]">Status Akses</p>
+                  <p className="text-muted-foreground vk-text-xs">Status Akses</p>
                   <p className="text-sm font-bold text-foreground mt-1 capitalize">{inspectUser.status || "active"}</p>
                 </div>
               </div>

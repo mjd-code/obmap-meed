@@ -97,7 +97,7 @@ export function SyncStatusIndicator({
               disabled={isSyncing}
               className={
                 compact
-                  ? "h-5 gap-1 rounded px-1.5 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "h-5 gap-1 rounded px-1.5 vk-text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
                   : "flex h-auto items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm text-primary hover:bg-primary/20"
               }
             >
@@ -145,7 +145,7 @@ export function SyncStatusIndicator({
   if (compact) return null;
   if (justSynced) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-sm animate-in fade-in">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 text-success text-sm animate-in fade-in">
         <CheckCircle className="w-4 h-4" />
         <span>Synced</span>
       </div>
@@ -155,7 +155,7 @@ export function SyncStatusIndicator({
   if (pendingCount > 0) {
     return (
       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm">
-        <Cloud className="w-4 h-4 animate-pulse" />
+        <Cloud className="w-4 h-4 animate-pulse motion-reduce:animate-none" />
         <span>Syncing...</span>
         <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-xs font-medium">
           {pendingCount}

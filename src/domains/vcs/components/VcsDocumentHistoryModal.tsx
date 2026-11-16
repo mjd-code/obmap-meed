@@ -189,11 +189,11 @@ export const VcsDocumentHistoryModal: React.FC<VcsDocumentHistoryModalProps> = (
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-foreground">{c.message}</span>
-                            <Badge variant="outline" className="font-mono text-[10px]">
+                            <Badge variant="outline" className="font-mono vk-text-2xs">
                               {c.commitHash.substring(0, 7)}
                             </Badge>
                           </div>
-                          <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                          <div className="vk-text-xs text-muted-foreground flex items-center gap-2">
                             <span>{c.author?.displayName || 'Kolaborator'}</span>
                             <span>•</span>
                             <span>{new Date(c.createdAt).toLocaleString()}</span>
@@ -234,7 +234,7 @@ export const VcsDocumentHistoryModal: React.FC<VcsDocumentHistoryModalProps> = (
                           <span className="font-medium text-foreground">
                             Snapshot Otomatis ({new Date(rev.timestamp).toLocaleTimeString()})
                           </span>
-                          <div className="text-[11px] text-muted-foreground">
+                          <div className="vk-text-xs text-muted-foreground">
                             {new Date(rev.timestamp).toLocaleDateString()} • {rev.content.length} karakter
                           </div>
                         </div>

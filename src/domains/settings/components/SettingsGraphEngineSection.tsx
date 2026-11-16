@@ -16,9 +16,9 @@ import {
 import { LayoutEngineTab } from "@/domains/graph/components/GraphLayoutEngineTab";
 import { NodeStylingTab } from "@/domains/graph/components/GraphNodeStylingTab";
 import { LinkStylingTab } from "@/domains/graph/components/GraphLinkStylingTab";
+import { FreeForceControls } from "@/domains/graph/components/GraphFreeForceControls";
 import { AnalyticsTab } from "@/domains/graph/components/GraphAnalyticsTab";
 import { useGraphStore } from "@/domains/graph/shared/stores/useGraphStore";
-import { useGraphInteractionStore } from "@/domains/graph/shared/stores/useGraphInteractionStore";
 
 const tabItems = [
   { value: "layout", icon: LayoutGrid, label: "Layout" },
@@ -32,8 +32,6 @@ export function GraphEngineSettings() {
   const [activeTab, setActiveTab] = useState("layout");
   const config = useGraphStore((s) => s.config);
   const stats = useGraphStore((s) => s.stats);
-  const requestReheat = useGraphInteractionStore((s) => s.requestReheat);
-  const requestStop = useGraphInteractionStore((s) => s.requestStop);
   const {
     updateNodeConfig,
     updateLinkConfig,
@@ -92,6 +90,12 @@ export function GraphEngineSettings() {
             onUpdate={updateLinkConfig}
             onTopologyUpdate={updateTopologyConfig}
             onTopologyStyleUpdate={updateTopologyStyle}
+          />
+        </TabsContent>
+        <TabsContent value="forces" className="mt-4">
+          <FreeForceControls
+            forces={config.forces}
+            onUpdate={updateForceConfig}
           />
         </TabsContent>
         <TabsContent value="analytics" className="mt-4">

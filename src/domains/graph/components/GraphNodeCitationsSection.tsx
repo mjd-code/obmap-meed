@@ -56,13 +56,13 @@ export const NodeCitationsSection = ({
           {ctrl.unresolved.length > 0 && (
             <span
               title={`${ctrl.unresolved.length} kutipan belum memiliki definisi`}
-              className="flex items-center text-[10px] text-amber-500 font-normal gap-1"
+              className="flex items-center vk-text-2xs text-warning font-normal gap-1"
             >
               <AlertCircle className="w-3 h-3" />
               <span>{ctrl.unresolved.length} pending</span>
             </span>
           )}
-          <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">
+          <Badge variant="secondary" className="vk-text-2xs h-4 px-1.5 font-normal">
             {ctrl.totalCount}
           </Badge>
         </div>
@@ -80,13 +80,13 @@ export const NodeCitationsSection = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="shrink-0 px-1 py-0.2 rounded text-[10px] font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
+                  <span className="shrink-0 px-1 py-0.2 rounded vk-text-2xs font-mono font-semibold bg-primary/10 text-primary border border-primary/20">
                     [^{def.label}]
                   </span>
                   {!isCurrentlyEditing && (
                     <span
                       onClick={() => onCitationClick?.(def.label)}
-                      className="truncate text-[11px] text-foreground/90 cursor-pointer hover:text-primary transition-colors select-text"
+                      className="truncate vk-text-xs text-foreground/90 cursor-pointer hover:text-primary transition-colors select-text"
                       title={def.text || "Belum ada teks"}
                     >
                       {def.text || <em className="text-muted-foreground">Belum diisi</em>}
@@ -114,7 +114,7 @@ export const NodeCitationsSection = ({
                         ? ctrl.handleSaveEdit(def.label)
                         : ctrl.handleStartEdit(def.label, def.text)
                     }
-                    className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                    className="h-5 px-1.5 vk-text-2xs text-muted-foreground hover:text-foreground"
                     title={isCurrentlyEditing ? "Simpan" : "Edit Cepat"}
                   >
                     {isCurrentlyEditing ? (
@@ -127,7 +127,7 @@ export const NodeCitationsSection = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => ctrl.handleDelete(def.label)}
-                    className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                    className="h-5 px-1.5 vk-text-2xs text-muted-foreground hover:text-destructive"
                     title="Hapus"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -154,7 +154,7 @@ export const NodeCitationsSection = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => ctrl.setEditingLabel(null)}
-                      className="h-5 text-[10px] px-2"
+                      className="h-5 vk-text-2xs px-2"
                     >
                       Batal
                     </Button>
@@ -162,7 +162,7 @@ export const NodeCitationsSection = ({
                       variant="default"
                       size="sm"
                       onClick={() => ctrl.handleSaveEdit(def.label)}
-                      className="h-5 text-[10px] px-2"
+                      className="h-5 vk-text-2xs px-2"
                     >
                       Simpan
                     </Button>
@@ -175,12 +175,12 @@ export const NodeCitationsSection = ({
 
         {ctrl.unresolved.length > 0 && (
           <div className="pt-1 flex flex-wrap gap-1 items-center">
-            <span className="text-[10px] text-muted-foreground/70 mr-1">Belum terisi:</span>
+            <span className="vk-text-2xs text-muted-foreground/70 mr-1">Belum terisi:</span>
             {ctrl.unresolved.map((u) => (
               <Badge
                 key={u.label}
                 variant="outline"
-                className="text-[10px] h-4 px-1 text-amber-500 border-amber-500/30 cursor-pointer hover:bg-amber-500/10"
+                className="vk-text-2xs h-4 px-1 text-warning border-warning/30 cursor-pointer hover:bg-warning/10"
                 onClick={() => ctrl.handleStartEdit(u.label, "")}
               >
                 [^{u.label}] +
@@ -194,7 +194,7 @@ export const NodeCitationsSection = ({
             variant="ghost"
             size="sm"
             onClick={ctrl.handleAddNew}
-            className="w-full h-6 text-[10px] text-muted-foreground hover:text-foreground justify-center gap-1 border border-dashed border-border/40"
+            className="w-full h-6 vk-text-2xs text-muted-foreground hover:text-foreground justify-center gap-1 border border-dashed border-border/40"
           >
             <Plus className="w-3 h-3" />
             Tambah Kutipan [^{ctrl.nextNumber}]

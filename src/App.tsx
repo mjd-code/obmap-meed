@@ -9,7 +9,8 @@ import { ProtectedRoute } from "@/domains/auth/components/AuthProtectedRoute";
 import { DevAuthBanner } from "@/domains/auth/components/AuthDevBanner";
 import { EventDebugPanel } from "@/domains/vault/components/VaultEventDebugPanel";
 import { CommandPalette } from "@/domains/settings/components/SettingsCommandPalette";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
+import { syncBrandToDocumentMeta, useBrandConfig } from "@/global/config/brand.config";
 
 const queryClient = new QueryClient();
 
@@ -98,8 +99,17 @@ const Admin = lazy(() =>
   }),
 );
 
+const BrandMetaSync = () => {
+  const brand = useBrandConfig();
+  useEffect(() => {
+    syncBrandToDocumentMeta(brand);
+  }, [brand]);
+  return null;
+};
+
 const App = () => (
   <ErrorBoundary>
+    <BrandMetaSync />
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />

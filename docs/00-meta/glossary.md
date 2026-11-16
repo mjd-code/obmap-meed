@@ -28,7 +28,7 @@ source_of_truth: src/domains/, docs/
 
 | Istilah | Definisi Kanonik |
 | :--- | :--- |
-| **Vault** | Ruang kerja pengetahuan terisolasi berupa direktori berkas Markdown (`.md`) beserta metadata `.obmap/` dan indeks relasi antar-catatan; dapat disimpan lokal (`FS Access API` / `IndexedDB`) atau cloud (`Supabase`). |
+| **Vault** | Ruang kerja pengetahuan terisolasi berupa direktori berkas Markdown (`.md`) beserta metadata `.vk/` (fallback `.obmap/`) dan indeks relasi antar-catatan; dapat disimpan lokal (`FS Access API` / `IndexedDB`) atau cloud (`Supabase`). |
 | **Note** | Unit atomik berkas Markdown (`.md`) yang memisahkan **YAML Frontmatter terisolasi** (`EditorPropertiesPanel.tsx`) dari isi teks murni (`EditorMarkdownView.tsx`). |
 | **Node** | Representasi visual sebuah *Note* atau topik konseptual di kanvas graf 2D (`GraphCanvas.tsx`), lengkap dengan koordinat, derajat tautan, warna cabang, dan status progres. |
 | **Leaf** | Tab atau panel aktif di dalam `WorkspaceOrchestrator` yang masing-masing memiliki instance store terisolasi (*Per-Leaf Store*: `LeafGraphConfigStore`, `LeafGraphInteractionStore`). |
@@ -54,7 +54,7 @@ source_of_truth: src/domains/, docs/
 | **Verified Scholar** | Lencana verifikasi resmi bagi akademisi, pendidik, atau institusi yang diberikan melalui proses kurasi manual Admin pada `/admin`. |
 | **Cross-Vault Citation & Fork/MR** | Tautan federated `[[@username/vaultSlug/noteSlug]]` yang tercatat di indeks sitasi global, serta alur *Fork to My Vault* → *Knowledge Merge Request* dengan lisensi publik default **`CC BY-SA 4.0`**. |
 | **Epistemic Metadata** | Properti YAML standar (`epistemic_status`: `seedling` \| `budding` \| `evergreen` \| `peer_reviewed`, `confidence`, `doi`, `license`, `references`) untuk keandalan rujukan ilmiah. |
-| **Six-Layer Cascading Config & `@obmap/sdk`** | Resolusi pengaturan 6 lapis (*System Defaults* → *Org Policy Locked* → *Vault `.obmap/`* → *User Profile* → *Leaf* → *Session*) dan antarmuka ekstensi terisolasi (Web Worker / Iframe CSP) dengan manifest izin eksplisit. |
+| **Six-Layer Cascading Config & `@vk/sdk`** | Resolusi pengaturan 6 lapis (*System Defaults* → *Org Policy Locked* → *Vault `.vk/` [fallback `.obmap/`]* → *User Profile* → *Leaf* → *Session*) dan antarmuka ekstensi terisolasi (Web Worker / Iframe CSP) dengan manifest izin eksplisit. |
 
 ---
 

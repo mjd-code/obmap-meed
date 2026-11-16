@@ -5,7 +5,7 @@ type: planning
 status: [PLANNED]
 owner: Principal Visual Graphics & Layout Algorithm Architect / Staff Frontend Architect
 version: 2.0.0
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-16
 audience: both
 related:
   - DOC-PLAN-000
@@ -17,6 +17,7 @@ related:
   - DOC-ARCH-ADR-0004
   - DOC-ARCH-ADR-0006
   - DOC-ARCH-ADR-0011
+  - DOC-ARCH-ADR-0013
   - DOC-META-000
 source_of_truth: src/domains/graph/, src/domains/editor/, src/domains/workspace/, docs/03-architecture/layout-engine.md
 ---
@@ -40,7 +41,7 @@ Kekuatan masing-masing kategori alat pengetahuan saat ini terpisah:
 **ObMap v2.0** menyatukan keduanya secara native: setiap folder/catatan `.md` **dan** garis besar struktur di dalam satu catatan (`# H1 / ## H2 / ### H3 / - [ ] Task`) dapat divisualisasikan dengan mesin tata letak deterministik kelas XMind (`cooldownTicks === 0`, `AGENTS.md` Rule 2) sekaligus bertransisi ke *Knowledge Graph* dalam satu ruang kerja *"Mini-VSCode Desktop-First"* (`DOC-PLAN-008`).
 
 ### 1.2 Baseline Audit Berkas Aktual & Akar Masalah Visual
-Inspeksi langsung pada codebase `src/domains/graph/`, `src/domains/editor/`, dan `src/domains/workspace/` menunjukkan bahwa ObMap sudah memiliki fondasi deterministik yang solid (*Dual Canvas* via `layoutCategory.ts`, referensi `measureBox` di `timeline.ts`, dan token `--ob-*` di `theme.ts`), namun memiliki **9 kesenjangan struktural** berikut:
+Inspeksi langsung pada codebase `src/domains/graph/`, `src/domains/editor/`, dan `src/domains/workspace/` menunjukkan bahwa ObMap sudah memiliki fondasi deterministik yang solid (*Dual Canvas* via `layoutCategory.ts`, referensi `measureBox` di `timeline.ts`, dan token `--vk-*` di `theme.ts`), namun memiliki **9 kesenjangan struktural** berikut:
 
 | ID Gap | Lokasi Kode Terverifikasi (`file:line`) | Kondisi Aktual di Codebase | Dampak Visual & UX ke Pengguna |
 | :--- | :--- | :--- | :--- |
@@ -133,7 +134,7 @@ Memperluas `textLayout.ts` dan `drawNode.ts` dari sekadar kotak teks datar menja
 1. **Elemen Internal yang Diukur dalam Metric `(width, height)`:**
    - **Left Slot (`Markers & Checkboxes`):** Checkbox tugas (`- [ ]` / `- [x]`), Priority badge (`1–7`), Progress Ring / Pie (`0%..100%`), Star, Flag, Emoji (*maksimal 3 ikon di baris 1 agar rapi; berlebih dibungkus ke baris indikator*).
    - **Icon / Sticker Slot:** Ikon format file (`folder`, `.md`, `image`, `pdf`, `audio`) atau stiker kustom vektor SVG/Emoji (`20×20px` atau `28×28px`).
-   - **Body Slot (`Multi-line Title`):** Teks terbungkus cerdas (*word-wrap* hingga `maxWidth: 220px`, font & ukuran mengikuti `--ob-font-*` + Cascading Style Level).
+   - **Body Slot (`Multi-line Title`):** Teks terbungkus cerdas (*word-wrap* hingga `maxWidth: 220px`, font & ukuran mengikuti `--vk-font-*` + Cascading Style Level).
    - **Right Badge Slot:** Jumlah anak terlipat (`+12`), indikator *Note Attachment*, dan indikator *Wikilink Count* (`↗ 4`).
    - **Footer Row (`Labels / Tags`):** *Pill badge* kecil di bawah judul (`#riset`, `#draft`, `@tim`) dengan padding internal `4px` yang menambah tinggi AABB kartu di Pass 0 sebelum Pass 1 dijalankan!
 2. **8 Bentuk Topik (`TopicShape`) di `drawNode.ts`:**
@@ -264,7 +265,7 @@ export interface RelationshipEdge {
 
 ```mermaid
 flowchart LR
-    L1["Level 1: Skeleton & Global Theme (--ob-* + Seed Palette)"] --> L2["Level 2: Topic Role Style (Central / Main / Subtopic / Floating / Summary)"]
+    L1["Level 1: Skeleton & Global Theme (--vk-* + Seed Palette)"] --> L2["Level 2: Topic Role Style (Central / Main / Subtopic / Floating / Summary)"]
     L2 --> L3["Level 3: Smart Branch HSL Inheritance (Depth Gradation + WCAG AA >= 4.5:1)"]
     L3 --> L4["Level 4: Local Node Override (fill / border / text / shape / line)"]
     L4 --> OUT["ResolvedNodePaint (Immutable per Frame)"]
@@ -275,9 +276,9 @@ flowchart LR
 
 Aturan resolusi gaya berjenjang pada `cascadingStyleResolver.ts`:
 1. **Level 1 — Skeleton & Global Canvas Theme (`SkeletonTheme`):**
-   - Menentukan warna kanvas dasar (`--ob-bg-canvas`), pola atmosfer/grid, keluarga huruf utama (`--ob-font-sans` dari `DOC-PLAN-008`), gaya garis cabang standar (`BranchLineStyle`), dan **6–8 Warna Induk Harmonis (*Branch Seed Palette*)**. Terintegrasi penuh dengan 6 Preset Tema Universal (`ObMap Midnight`, `Obsidian OLED`, `Daylight Paper`, `Warm Sepia`, `Nord Scholar`, `High Contrast AAA`).
+   - Menentukan warna kanvas dasar (`--vk-bg-canvas`), pola atmosfer/grid, keluarga huruf utama (`--vk-font-sans` dari `DOC-PLAN-008`), gaya garis cabang standar (`BranchLineStyle`), dan **6–8 Warna Induk Harmonis (*Branch Seed Palette*)**. Terintegrasi penuh dengan 6 Preset Tema Universal (`${brand.name} Midnight`, `Obsidian OLED`, `Daylight Paper`, `Warm Sepia`, `Nord Scholar`, `High Contrast AAA`).
 2. **Level 2 — Level-Based Role Style (`TopicRoleStyle`):**
-   - **`central` (Kedalaman 0):** Ukuran font besar (`+3px` / `600–700` weight), bentuk `pill` atau `rounded-rect` bertepi tegas, isian warna primer `--ob-accent`, tebal garis keluar terbesar.
+   - **`central` (Kedalaman 0):** Ukuran font besar (`+3px` / `600–700` weight), bentuk `pill` atau `rounded-rect` bertepi tegas, isian warna primer `--vk-accent`, tebal garis keluar terbesar.
    - **`main` (Kedalaman 1):** Ukuran font menengah (`+1px` / `600` weight), bentuk `rounded-rect`, latar isian penuh menggunakan warna cabang induk ke-$k$.
    - **`subtopic` (Kedalaman $\ge 2$):** Ukuran font standar (`12px` *scalable*), bentuk bawaan Skeleton (misalnya **`underline`** pada skeleton klasik XMind atau kotak tinted tipis pada skeleton modern), garis cabang menipis bertahap (`lineWidth = max(1.25, 3.0 - depth * 0.35)`).
    - **`floating` & `summary`:** Garis tepi terputus (*dashed*) untuk *floating topic*, atau aksen kurung & huruf miring ringan untuk *summary topic*.
@@ -290,7 +291,7 @@ Aturan resolusi gaya berjenjang pada `cascadingStyleResolver.ts`:
      - **Pada Kanvas Terang (`isDark === false`):**
        - Latar isian kartu: $S_{fill} = \min(75, S_k)\%$, $L_{fill} = \text{clamp}(91 + (d - 2) \times 2,\; 88,\; 97)\%$.
        - Garis tepi & garis cabang: $L_{line} = \text{clamp}(L_k - (d - 1) \times 5,\; 30,\; 58)\%$.
-   - **WCAG AA Contrast Guard:** Setelah `fillColor` terselesaikan (pada mode kotak terisi), fungsi `pickContrastTextColor(fillHex)` menghitung luminansi relatif $Y$ dan memastikan rasio kontras teks terhadap latar minimal **`4.5:1`** (`#F8FAFC` vs `#0F172A` atau tinta semantik tema). Pada bentuk `underline` atau `none`, teks kontras langsung diukur terhadap `--ob-bg-canvas`.
+   - **WCAG AA Contrast Guard:** Setelah `fillColor` terselesaikan (pada mode kotak terisi), fungsi `pickContrastTextColor(fillHex)` menghitung luminansi relatif $Y$ dan memastikan rasio kontras teks terhadap latar minimal **`4.5:1`** (`#F8FAFC` vs `#0F172A` atau tinta semantik tema). Pada bentuk `underline` atau `none`, teks kontras langsung diukur terhadap `--vk-bg-canvas`.
 4. **Level 4 — Local / Inline Node Override (`NodeStyleOverride`):**
    - Pengguna dapat menimpa warna latar, warna garis, warna teks, bentuk topik (`TopicShape`), atau ketebalan font pada **1 topik saja** atau **"Terapkan ke Seluruh Cabang Ini"** (*promote override* ke Level 3 cabang tersebut), serta melakukan **"Reset to Skeleton/Branch Style"** kapan saja.
 
@@ -331,7 +332,7 @@ Mengubah ObMap dari "dua fitur terpisah" menjadi satu mesin pemetaan pengetahuan
      topic_shape: pill
      ```
      Semua properti ini dapat disunting baik lewat Inspector Mindmap **maupun** langsung di `EditorPropertiesPanel.tsx` secara sinkron dua arah.
-   - **Sidecar Spatial Manifest (`.obmap/mindmap-layout.json`):** Menyimpan data spasial murni agar frontmatter YAML tetap ringkas: daftar `boundaries`, `summaries`, `flex_offsets` (`dx, dy` pada *Flex Mode*), titik kendali lengkung *Manual Relationship*, dan *Heading ID overrides* untuk *In-Note Outline Mindmap*. Berkas JSON ini ikut ter-versioning oleh domain `src/domains/vcs/`.
+   - **Sidecar Spatial Manifest (`.vk/mindmap-layout.json` | fallback `.obmap/mindmap-layout.json` per `ADR-0013`):** Menyimpan data spasial murni agar frontmatter YAML tetap ringkas: daftar `boundaries`, `summaries`, `flex_offsets` (`dx, dy` pada *Flex Mode*), titik kendali lengkung *Manual Relationship*, dan *Heading ID overrides* untuk *In-Note Outline Mindmap*. Berkas JSON ini ikut ter-versioning oleh domain `src/domains/vcs/`.
 
 ---
 
@@ -363,7 +364,7 @@ Menggantikan panel 6-tab yang statis (`GraphSettingContent.tsx`) dengan inspekto
 Tersembunyi rapi di bawah seksi lipat *"Engine & Physics Tuning"* di dalam Inspector (hanya dibuka saat diperlukan) dan disinkronkan lewat **Hierarchical Store Bridge (`AGENTS.md` Rule 9)**:
 - Slider jarak presisi piksel (`siblingGap`, `levelGap`, `laneGap`, `boundaryPadding`, `curveTension`, `taperRootWidth`).
 - Pengaturan **D3 Physics Forces** (dipindahkan ke sini sekaligus menuntaskan celah tab `forces` kosong pada `GraphConfigPanel.tsx:158-183`, dan **hanya muncul saat mode `free-force` aktif**).
-- Kontrol cakupan persistensi: **"Simpan untuk Tab Ini"** (`LeafGraphConfigStore`, `Layer 5`) vs **"Jadikan Default Vault"** (`.obmap/config.json`, `Layer 3`) vs **"Jadikan Default User"** (`Layer 4`) tanpa menimpa aturan `org_policy` (`Layer 2`) yang terkunci Admin.
+- Kontrol cakupan persistensi: **"Simpan untuk Tab Ini"** (`LeafGraphConfigStore`, `Layer 5`) vs **"Jadikan Default Vault"** (`.vk/config.json` / fallback `.obmap/config.json`, `Layer 3`) vs **"Jadikan Default User"** (`Layer 4`) tanpa menimpa aturan `org_policy` (`Layer 2`) yang terkunci Admin.
 
 ---
 
@@ -376,20 +377,20 @@ Seluruh pengembangan dipecah agar tetap stabil, teruji per tahap, dan mematuhi b
 | :--- | :---: | :--- | :--- |
 | **`XMIND-STEP-01`** | `P0` · Siap Mulai Segera (`STEP-01.5` Selesai) | **Baru:** `src/domains/graph/shared/utils/compositeLayoutEngine.ts`, `collisionResolver.ts`, `structureSolvers.ts`.<br>**Modifikasi:** `subtreeCompose.ts`, `mindmap.ts`, `fishbone.ts`, `treeLayouts.ts`, `timeline.ts`, `useLayoutEngine.ts`, `GraphContextualToolbar.tsx` (`lines 112-151`). | **Two-Pass Composite Layout Engine & Zero-Collision Solver:** Generalisasi pola `measureBox` ke seluruh `StructureClass` (Pass 1 Bottom-Up `CompositeSubtreeBox` + Pass 2 Top-Down + Cross-Structure Margin/Anchor). Perbaiki `layoutRadial` (*adaptive circumference*) dan `fishbone.ts` (*recursive rib box*). Tambahkan `resolveAABBCollisions` Sweep-and-Prune ($O(N \log N)$). Aktifkan kembali UI `Subtree Structure Override` di `GraphContextualToolbar.tsx`.<br>**Gate:** Property-based Vitest 100 pohon campuran lulus dengan **0 AABB overlaps**. |
 | **`XMIND-STEP-02`** | `P0` · Prasyarat: `XMIND-STEP-01` | **Modifikasi:** `graph.types.ts`, `textLayout.ts` (`measureRichNodeMetrics`), `drawNode.ts`, `drawLink.ts`, `useGraphCanvasController.ts`.<br>**Baru:** `src/domains/graph/shared/utils/drawAttachments.ts`. | **Internal Flexbox Node Box Model, 8 Topic Shapes & Tapered Connectors:** Ukur & render **Markers** (Priority `1–7`, Progress Ring, Checkbox, Flag/Star), **Stickers/Format Icons**, **Footer Tag Pills**, dan **Note/Wikilink Badge** di dalam AABB kartu sebelum Pass 1 dijalankan. Implementasi 8 `TopicShape` (termasuk **`underline`** dan **`cloud`**), **`tapered-bezier`** trunk, dan **Dynamic Anchor Routing** antar-struktur.<br>**Gate:** Teks/ikon/pills tidak pernah terpotong dan bounding box sinkron 100% dengan `measureRichNodeMetrics`. |
-| **`XMIND-STEP-03`** | `P1` · Prasyarat: `UI-STEP-01`, `XMIND-STEP-02` | **Baru:** `src/domains/graph/shared/utils/cascadingStyleResolver.ts`.<br>**Modifikasi:** `hierarchyColors.ts`, `theme.ts`, `useGraphStore.ts`, `useLeafGraphConfigStore.ts`, `useLayoutEngine.ts`, `useGraphCanvasController.ts`. | **4-Level Cascading Style Inheritance, Smart HSL Engine & Dual Update Pipeline:** Implementasi Level 1 (Skeleton + `--ob-*`) → Level 2 (Central/Main/Subtopic/Floating/Summary) → Level 3 (Smart HSL branch gradation + WCAG AA `>= 4.5:1` contrast guard) → Level 4 (Local Override + Reset). Pisahkan `layoutSignature` (geometri) vs `paintSignature` (visual-only `refresh()` `< 2ms`).<br>**Gate:** Tes unit `0` eksekusi solver saat warna/tema berubah + uji rasio kontras $\ge 4.5:1$ di Dark & Light mode. |
+| **`XMIND-STEP-03`** | `P1` · Prasyarat: `UI-STEP-01`, `XMIND-STEP-02` | **Baru:** `src/domains/graph/shared/utils/cascadingStyleResolver.ts`.<br>**Modifikasi:** `hierarchyColors.ts`, `theme.ts`, `useGraphStore.ts`, `useLeafGraphConfigStore.ts`, `useLayoutEngine.ts`, `useGraphCanvasController.ts`. | **4-Level Cascading Style Inheritance, Smart HSL Engine & Dual Update Pipeline:** Implementasi Level 1 (Skeleton + `--vk-*`) → Level 2 (Central/Main/Subtopic/Floating/Summary) → Level 3 (Smart HSL branch gradation + WCAG AA `>= 4.5:1` contrast guard) → Level 4 (Local Override + Reset). Pisahkan `layoutSignature` (geometri) vs `paintSignature` (visual-only `refresh()` `< 2ms`).<br>**Gate:** Tes unit `0` eksekusi solver saat warna/tema berubah + uji rasio kontras $\ge 4.5:1$ di Dark & Light mode. |
 | **`XMIND-STEP-04`** | `P1` · Prasyarat: `XMIND-STEP-02` | **Baru:** `src/domains/graph/shared/utils/boundarySummarySolver.ts`, `relationshipRouter.ts`.<br>**Modifikasi:** `drawDecorations.ts`, `useGraphInteractionStore.ts`, `useCanvasDragReparent.ts`, `useGraphCanvasController.ts`. | **Boundary, Summary Braces, Obstacle-Avoiding Relationships & Flex Mode:** Implementasi `BoundaryGroup` (`rounded`/`cloud`/`dashed` hull + padding yang menginflasi `CompositeSubtreeBox`), `SummaryGroup` (kurung `{` + first-class Summary Topic Node), **Obstacle-Avoiding Bezier Router** untuk relasi manual & `[[wikilinks]]` di Mindmap Mode (cabut filter pembuang di `useGraphCanvasController.ts:307-309`), dan `Strict` vs `Flex Mode` manual offset + tombol *Tidy Up*.<br>**Gate:** Boundary & Summary node lolos uji Zero-AABB Overlap terhadap seluruh cabang luar. |
-| **`XMIND-STEP-05`** | `P1` · Prasyarat: `XMIND-STEP-03`, `XMIND-STEP-04`, `UI-STEP-02` | **Baru:** `GraphQuickCanvasBar.tsx`, `useGraphQuickCanvasBarController.ts`, `GraphContextualInspector.tsx`, `useGraphContextualInspectorController.ts`.<br>**Modifikasi:** `GraphWorkspaceControls.tsx`, `GraphConfigPanel.tsx`, `GraphSettingContent.tsx`, `GraphOrchestrator.tsx`. | **3-Layer Settings UX Consolidation:** Konsolidasi kontrol yang terpecah menjadi **Layer 1 Quick Canvas Bar (5 kontrol)**, **Layer 2 Contextual Smart Inspector** (berubah otomatis per seleksi: Canvas / Topic / Multi-Select / Boundary-Summary-Relationship), dan **Layer 3 Advanced Tuning** (memperbaiki tab `forces` kosong di `GraphConfigPanel.tsx`). Patuhi batas `<= 300` baris per berkas `.tsx` dan bridge `LeafGraphConfigStore` (`Rule 9`).<br>**Gate:** `OVER_300=0` pada semua komponen baru & seluruh fitur kontrol sebelumnya tetap 100% paritas. |
-| **`XMIND-STEP-06`** | `P2` · Prasyarat: `XMIND-STEP-05`, `STEP-02.1` | **Baru:** `src/domains/graph/shared/utils/markdownOutlineMindmapBridge.ts`, `mindmapLayoutManifest.ts` (`.obmap/mindmap-layout.json`).<br>**Modifikasi:** `EditorPropertiesPanel.tsx`, `WorkspaceSidebarPanel.tsx`, `vaultSessionActions.ts`, `GraphOrchestrator.tsx`, `src/domains/vcs/`. | **Obsidian × XMind Bidirectional Vault & In-Note Outline Bridge:** (1) Persistensi bersih YAML frontmatter (`icon`, `priority`, `progress`, `structure_class`, `branch_color`, `topic_shape`) + sidecar `.obmap/mindmap-layout.json` (boundaries, summaries, flex offsets) tanpa mengotori body `.md` (`Rule 6`); (2) Mode **In-Note Outline-to-Mindmap** (heading `#/##/###`, list, & `- [ ]` task sync 2-arah ke CodeMirror 6 AST secara lossless); (3) Reparent & tambah topik di kanvas langsung mencerminkan struktur di `WorkspaceSidebarPanel.tsx`.<br>**Gate:** Round-trip AST test lossless + verifikasi berkas `.md` bersih dari komentar/metadata tersembunyi. |
+| **`XMIND-STEP-05`** `[IMPLEMENTED]` | `P1` · Prasyarat: `XMIND-STEP-03`, `XMIND-STEP-04`, `UI-STEP-02` | **Baru:** `GraphQuickCanvasBar.tsx`, `useGraphQuickCanvasBarController.ts`, `GraphContextualInspector.tsx`, `GraphInspectorTopicSection.tsx`, `useGraphContextualInspectorController.ts`, `useGraphOrchestratorController.ts`.<br>**Modifikasi:** `GraphContextualToolbar.tsx`, `GraphContextualToolbarOverlay.tsx`, `GraphCanvas.tsx`, `GraphOrchestrator.tsx`. | **3-Layer Settings UX Consolidation:** Konsolidasi kontrol menjadi **Layer 1 Quick Canvas Bar (5 kluster kontrol harian)**, **Layer 2 Contextual Smart Inspector** (berubah otomatis per seleksi: Canvas / Topic & Branch / Boundary-Summary Decorations), dan **Layer 3 Advanced Engine Tuning** (`FreeForceControls` kontekstual hanya saat `free-force`). Mematuhi `<= 300` baris per `.tsx` dan bridge `LeafGraphConfigStore` (`Rule 7`, `Rule 9`).<br>**Gate:** `xmind3LayerUx.test.tsx`, `OVER_300=0`, & `eslint 0 err` lulus. |
+| **`XMIND-STEP-06`** `[IMPLEMENTED]` | `P2` · Prasyarat: `XMIND-STEP-05` | **Baru:** `src/domains/graph/shared/utils/{markdownOutlineMindmapBridge,mindmapLayoutManifest,frontmatterMindmapSync}.ts`.<br>**Modifikasi:** `src/global/types/graph.types.ts`, `buildGraphProjection.ts`, `useGraphCanvasController.ts`, `useEditorPropertiesController.ts`, `useGraphOrchestratorController.ts`. | **Obsidian × XMind Bidirectional Vault & In-Note Outline Bridge:** (1) Persistensi bersih YAML frontmatter (`icon`, `priority`, `progress`, `checkbox`, `structure_class`, `branch_color`, `topic_shape`) + sidecar `.vk/mindmap-layout.json` (fallback zero-loss `.obmap/mindmap-layout.json` per `ADR-0013`) tanpa mengotori body `.md` (`Rule 6`); (2) Mode **In-Note Outline-to-Mindmap** (`Note AST`) 2-arah lossless untuk heading `#..######`, list, & task `- [ ]` dengan code-fence guard; (3) Reparent & tambah topik tersinkron dengan `vaultSessionActions.ts` (`File Explorer`).<br>**Gate:** `markdownOutlineMindmapBridge.test.ts` (round-trip AST lossless & sidecar fallback), 27 file / 163 Vitest lulus. |
 
 ### 5.2 Sinkronisasi Lintas-Jalur (`STEP-02.1`–`05.4` & `UI-STEP-01`–`06`)
 Agar pengembangan berjalan paralel tanpa konflik file atau *rework*:
 
 | Jalur Fitur Produk (`README.md`) | Jalur Design System (`DOC-PLAN-008`) | Jalur XMind Visual Engine (`DOC-PLAN-009`) | Titik Temu & Integrasi |
 | :--- | :--- | :--- | :--- |
-| `STEP-01.5` `[IMPLEMENTED]` | `UI-STEP-01` (`P0`, `--ob-*` Tokens & Presets) | `XMIND-STEP-01` & `XMIND-STEP-02` (`P0`, Two-Pass Engine & Rich Shapes) | `XMIND-STEP-01/02` dapat dikerjakan paralel segera tanpa menunggu UI overhaul; font & token dasar akan otomatis diwarisi saat `UI-STEP-01` masuk. |
-| `STEP-02.1` (`[NEXT]` `/vaults` Dashboard) | `UI-STEP-02` & `UI-STEP-03` (`P0`, Appearance & Workbench Shell) | `XMIND-STEP-03` (`P1`, 4-Level Style & `--ob-*` Graph Bridge) | `CascadingStyleResolver` (`XMIND-STEP-03`) langsung membaca 6 Preset Tema & kalkulator kontras WCAG AA dari `UI-STEP-01/02`. |
+| `STEP-01.5` `[IMPLEMENTED]` | `UI-STEP-01` (`P0`, `--vk-*` Tokens & Presets) | `XMIND-STEP-01` & `XMIND-STEP-02` (`P0`, Two-Pass Engine & Rich Shapes) | `XMIND-STEP-01/02` dapat dikerjakan paralel segera tanpa menunggu UI overhaul; font & token dasar akan otomatis diwarisi saat `UI-STEP-01` masuk. |
+| `STEP-02.1` (`[NEXT]` `/vaults` Dashboard) | `UI-STEP-02` & `UI-STEP-03` (`P0`, Appearance & Workbench Shell) | `XMIND-STEP-03` (`P1`, 4-Level Style & `--vk-*` Graph Bridge) | `CascadingStyleResolver` (`XMIND-STEP-03`) langsung membaca 6 Preset Tema & kalkulator kontras WCAG AA dari `UI-STEP-01/02`. |
 | `STEP-02.2` (`Landing` + Live Sandbox `< 65KB`) | `UI-STEP-04` (`Editor Toolbar` + `Forces Tab`) | `XMIND-STEP-04` & `XMIND-STEP-05` (`P1`, Boundaries/Summaries & 3-Layer Inspector) | Embedded Live Sandbox di `STEP-02.2` langsung memakai Two-Pass Zero-Collision Engine (tanpa panel berat) untuk demonstrasi instannya (*outline → Mindmap/Fishbone*). |
-| `STEP-05.1` & `STEP-05.2` (LMS DAG, `argument-map`, `citation-tree`, Pitch/SVG/PDF) | `UI-STEP-06` (`P2`, Token Sweep & WCAG AAA) | `XMIND-STEP-06` (`P2`, `.obmap/mindmap-layout.json` & Note AST Bridge) | Dua solver baru di `STEP-05.2` dibangun di atas antarmuka `StructureSolver` dari `XMIND-STEP-01`, sehingga otomatis mendukung Markers, Boundary, Summary, dan ekspor SVG berpresisi tinggi. |
+| `STEP-05.1` & `STEP-05.2` (LMS DAG, `argument-map`, `citation-tree`, Pitch/SVG/PDF) | `UI-STEP-06` (`P2`, Token Sweep & WCAG AAA) | `XMIND-STEP-06` (`P2`, `.vk/mindmap-layout.json` / fallback `.obmap/` & Note AST Bridge) | Dua solver baru di `STEP-05.2` dibangun di atas antarmuka `StructureSolver` dari `XMIND-STEP-01`, sehingga otomatis mendukung Markers, Boundary, Summary, dan ekspor SVG berpresisi tinggi. |
 
 ---
 
@@ -405,7 +406,7 @@ Setiap langkah `XMIND-STEP-*` wajib meluluskan suite pengujian berikut di `src/d
 2. **`boundarySummarySolver.test.ts`:**
    - Memverifikasi bahwa setiap node di luar `BoundaryGroup` memiliki jarak minimum $\ge \text{boundaryPadding}$ terhadap garis batas poligon pembungkus, dan setiap `SummaryTopic` + anak-anak lanjutannya tidak menabrak cabang saudara sebelah.
 3. **`cascadingStyleResolver.test.ts`:**
-   - Memverifikasi prioritas Level 1 → Level 2 → Level 3 → Level 4, memastikan rasio kontras WCAG AA ($\ge 4.5:1$) pada seluruh 6 preset tema (`ObMap Midnight` s/d `High Contrast AAA`), dan memverifikasi **0 pemanggilan `computeLayout`** saat mutasi *Visual-Only* dijalankan (hanya `refreshSpy` yang terpanggil).
+   - Memverifikasi prioritas Level 1 → Level 2 → Level 3 → Level 4, memastikan rasio kontras WCAG AA ($\ge 4.5:1$) pada seluruh 6 preset tema (`${brand.name} Midnight` s/d `High Contrast AAA`), dan memverifikasi **0 pemanggilan `computeLayout`** saat mutasi *Visual-Only* dijalankan (hanya `refreshSpy` yang terpanggil).
 4. **`markdownOutlineMindmapBridge.test.ts`:**
    - Uji *round-trip lossless* (`Markdown + YAML + Prosa -> Outline Mindmap -> Tambah Subtopic + Centang Task + Reparent Branch -> Markdown AST`): memastikan teks paragraf, blok kode, dan properti YAML lain tidak hilang maupun berubah format secara liar, serta body `.md` bebas dari komentar JSON proprietary.
 
@@ -435,7 +436,7 @@ Sebelum `XMIND-STEP-01` dieksekusi, mohon konfirmasi 6 keputusan arah berikut:
    - *Opsi A (Direkomendasikan):* Secara default saat membuka Mode Mindmap, `[[wikilinks]]` lintas-cabang **ditampilkan halus (*opacity* rendah `0.35`, garis putus-putus berbelok menghindari kartu)** saat node dipilih/di-hover atau lewat toggle cepat `"Show Wikilink Relationships"`, agar keterhubungan Obsidian tetap hidup tanpa mengganggu kerapian hierarki XMind.
    - *Opsi B:* Sembunyikan `[[wikilinks]]` sepenuhnya di Mindmap Mode kecuali pengguna menambahkan Relationship manual.
 3. **Lokasi Penyimpanan Metadata Spasial (`Boundaries`, `Summaries`, `Flex Offsets`):**
-   - *Opsi A (Direkomendasikan):* **Hybrid Clean Storage (`AGENTS.md` Rule 6)** — Properti semantik manusia (`icon`, `priority`, `progress`, `structure_class`, `branch_color`, `topic_shape`) di **YAML Frontmatter**; data koordinat & grup multi-node (`boundaries`, `summaries`, `flex_offsets`, `relationship_control_points`) di **`.obmap/mindmap-layout.json`** agar berkas `.md` tetap 100% bersih dan portabel untuk Obsidian/Git.
+   - *Opsi A (Direkomendasikan):* **Hybrid Clean Storage (`AGENTS.md` Rule 6 & `ADR-0013`)** — Properti semantik manusia (`icon`, `priority`, `progress`, `structure_class`, `branch_color`, `topic_shape`) di **YAML Frontmatter**; data koordinat & grup multi-node (`boundaries`, `summaries`, `flex_offsets`, `relationship_control_points`) di **`.vk/mindmap-layout.json`** (dengan fallback otomatis `.obmap/mindmap-layout.json`) agar berkas `.md` tetap 100% bersih dan portabel untuk Obsidian/Git.
    - *Opsi B:* Simpan seluruh metadata termasuk koordinat di dalam frontmatter YAML setiap berkas `.md`.
 4. **Gaya Bawaan Topik Depth $\ge 2$ (`Subtopic`) pada Skeleton Standar ObMap:**
    - *Opsi A (Direkomendasikan):* Ikuti gaya klasik XMind modern: **Central Topic** = `pill`/`rounded-rect` berisi aksen tebal; **Main Topic (Depth 1)** = `rounded-rect` berlatar warna cabang lembut; **Subtopic (Depth $\ge 2$)** = **`underline`** (*minimalist XMind branch line* tepat di bawah teks, super bersih & ringan dibaca pada peta besar). Pengguna tetap bisa ubah ke `rounded-rect` dalam 1 klik.
@@ -456,4 +457,5 @@ Sebelum `XMIND-STEP-01` dieksekusi, mohon konfirmasi 6 keputusan arah berikut:
 - [ADR-0002: CodeMirror 6 & Isolated YAML Properties](../03-architecture/adr/ADR-0002-codemirror-6-markdown-editor.md)
 - [ADR-0003: Deterministic Layout Solvers vs. Free-Force](../03-architecture/adr/ADR-0003-deterministic-layout-solvers-vs-force.md)
 - [ADR-0011: Six-Layer Config & Unified Theme Engine](../03-architecture/adr/ADR-0011-six-layer-cascading-config-and-unified-theme-engine.md)
+- [ADR-0013: Brand-Agnostic Infrastructure & Dynamic Branding](../03-architecture/adr/ADR-0013-brand-agnostic-infrastructure-and-dynamic-branding.md)
 - [Panduan Pembuatan Tema & Scoped CSS Snippets](../07-developers/theme-authoring-guide.md)

@@ -24,15 +24,15 @@ interface NodeBreadcrumbBarProps {
 
 export const getNodeIcon = (node: NodeBreadcrumbItem) => {
   if (node.type === "folder")
-    return <Folder className="w-4 h-4 text-yellow-500" />;
+    return <Folder className="w-4 h-4 text-warning" />;
   if (node.type === "media") {
     switch (node.mediaType) {
       case "image":
-        return <Image className="w-4 h-4 text-emerald-500" />;
+        return <Image className="w-4 h-4 text-success" />;
       case "audio":
         return <Music className="w-4 h-4 text-violet-500" />;
       case "video":
-        return <Video className="w-4 h-4 text-rose-500" />;
+        return <Video className="w-4 h-4 text-danger" />;
     }
   }
   return <FileText className="w-4 h-4 text-primary" />;
@@ -113,7 +113,7 @@ export const NodeBreadcrumbBar = ({
       </div>
 
       {hasChanges && (
-        <span className="text-xs text-amber-500/80 shrink-0">
+        <span className="text-xs text-warning/80 shrink-0">
           • Unsaved
         </span>
       )}

@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "rebrand": "node scripts/rebrand.ts"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",

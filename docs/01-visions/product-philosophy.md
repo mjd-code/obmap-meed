@@ -44,7 +44,7 @@ flowchart TD
 | **3. Deterministic Visual Cognition** | Hanya `Free-Force` memakai simulasi D3 kontinu; seluruh diagram terstruktur (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Citation Tree`) bersifat deterministik (`ADR-0003`). | Tata letak stabil secara spasial (*spatial memory*); tidak bergoyang liar saat simpul diedit atau dibuka kembali. |
 | **4. High-Signal, Anti-Vanity Social Graph** | Domain `src/domains/community/` menilai dampak berbasis kedalaman sitasi (`[[@user/vault/note]]`), *Merge Request* diterima, dan rasio catatan `evergreen`. | Membangun ruang wacana akademik dan profesional bebas *clickbait* dengan lisensi default **`CC BY-SA 4.0`** dan kurasi *Verified Scholar*. |
 | **5. Calm UI & Guided Progressive Mastery** | *Zero Blank Slate* (Landing Sandbox `< 65KB`, template use-case), *3-Clicks-to-Aha*, serta *Progressive Coach Marks* yang dapat dilewati (*skip*). | Pengguna pemula langsung menghasilkan graf pertama dalam `< 90 detik` tanpa membebani *power user*. |
-| **6. Modular Config & Zero-Trust Extensions** | Hierarki konfigurasi 6 lapis (*System → Org Locked → Vault `.obmap/` → User → Leaf → Session*) serta SDK `@obmap/sdk` dalam sandbox Worker/Iframe CSP. | Organisasi dapat menegakkan kebijakan aman, sementara pengembang komunitas leluasa memperluas UI tanpa menyentuh core codebase. |
+| **6. Modular Config & Zero-Trust Extensions** | Hierarki konfigurasi 6 lapis (*System → Org Locked → Vault `.vk/` [fallback `.obmap/`] → User → Leaf → Session*) serta SDK `@vk/sdk` dalam sandbox Worker/Iframe CSP. | Organisasi dapat menegakkan kebijakan aman, sementara pengembang komunitas leluasa memperluas UI tanpa menyentuh core codebase. |
 
 ---
 

@@ -99,7 +99,7 @@ export function LayoutEngineTab() {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label className="text-xs">Layout Structure</Label>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="vk-text-2xs text-muted-foreground">
               {interaction.layoutArrangement === 'auto' ? 'Fixed (Anti-overlap)' : 'Freehand Custom'}
             </span>
           </div>

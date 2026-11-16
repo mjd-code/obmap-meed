@@ -5,8 +5,6 @@ import { Flame, Pause, Magnet } from 'lucide-react';
 import { defaultForceConfig, type ForceConfig } from '@/domains/graph/shared/stores/useGraphStore';
 import { useGraphInteractionStore } from '@/domains/graph/shared/stores/useGraphInteractionStore';
 
-useGraphInteractionStore
-
 interface FreeForceControlsProps {
   forces: ForceConfig;
   onUpdate: (updates: Partial<ForceConfig>) => void;
@@ -86,11 +84,11 @@ export function FreeForceControls({ forces, onUpdate }: FreeForceControlsProps) 
           type="button"
           variant="outline"
           size="sm"
-          className="h-7 text-xs font-medium hover:border-amber-500/50 hover:bg-amber-500/10"
+          className="h-7 text-xs font-medium hover:border-warning/50 hover:bg-warning/10"
           onClick={requestReheat}
           title="Beri energi kinetik agar graf menyusun ulang secara alami"
         >
-          <Flame className="mr-1.5 h-3.5 w-3.5 text-amber-500" />
+          <Flame className="mr-1.5 h-3.5 w-3.5 text-warning" />
           Kocok Ulang
         </Button>
         <Button

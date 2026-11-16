@@ -41,7 +41,7 @@ export const DocumentVcsButtonGroup: React.FC<DocumentVcsButtonGroupProps> = ({
         {pendingSyncCount > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center px-1.5 py-0.5 text-[10px] font-mono text-amber-500 font-medium bg-amber-500/10 rounded">
+              <div className="flex items-center px-1.5 py-0.5 vk-text-2xs font-mono text-warning font-medium bg-warning/10 rounded">
                 {isProcessingSync ? (
                   <RefreshCw className="w-3 h-3 animate-spin mr-1" />
                 ) : (

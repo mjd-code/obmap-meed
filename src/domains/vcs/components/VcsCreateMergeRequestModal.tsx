@@ -85,7 +85,7 @@ export const VcsCreateMergeRequestModal: React.FC<VcsCreateMergeRequestModalProp
           {/* Pemilihan Cabang Sumber -> Tujuan */}
           <div className="grid grid-cols-5 items-center gap-2 bg-muted/30 p-2.5 rounded border border-border/50">
             <div className="col-span-2">
-              <label className="text-[10px] text-muted-foreground block mb-1">Sumber (Dari)</label>
+              <label className="vk-text-2xs text-muted-foreground block mb-1">Sumber (Dari)</label>
               <select
                 value={sourceBranchId}
                 onChange={(e) => setSourceBranchId(e.target.value)}
@@ -104,7 +104,7 @@ export const VcsCreateMergeRequestModal: React.FC<VcsCreateMergeRequestModalProp
             </div>
 
             <div className="col-span-2">
-              <label className="text-[10px] text-muted-foreground block mb-1">Tujuan (Ke)</label>
+              <label className="vk-text-2xs text-muted-foreground block mb-1">Tujuan (Ke)</label>
               <select
                 value={targetBranchId}
                 onChange={(e) => setTargetBranchId(e.target.value)}

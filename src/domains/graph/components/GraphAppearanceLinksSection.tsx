@@ -111,7 +111,7 @@ export function GraphAppearanceLinksSection({
         >
           <TabsList className="grid w-full grid-cols-4 h-7 p-0.5 bg-muted/60">
             {LINK_STYLE_TYPES.map((t) => (
-              <TabsTrigger key={t.value} value={t.value} className="text-[10px] px-1 py-0.5">
+              <TabsTrigger key={t.value} value={t.value} className="vk-text-2xs px-1 py-0.5">
                 {t.label}
               </TabsTrigger>
             ))}
@@ -209,7 +209,7 @@ export function GraphAppearanceLinksSection({
               <span className="text-xs font-medium text-foreground">
                 Aliran Partikel Bergerak
               </span>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="vk-text-2xs text-muted-foreground">
                 Animasi titik melintasi tautan
               </p>
             </div>

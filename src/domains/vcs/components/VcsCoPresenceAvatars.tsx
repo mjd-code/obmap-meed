@@ -69,7 +69,7 @@ export const VcsCoPresenceAvatars: React.FC<VcsCoPresenceAvatarsProps> = ({ vaul
             <TooltipTrigger asChild>
               <Avatar className="w-5 h-5 ring-1.5 ring-background rounded-full border border-primary/30 transition-transform hover:scale-110">
                 {u.avatarUrl && <AvatarImage src={u.avatarUrl} alt={u.displayName} />}
-                <AvatarFallback className="text-[9px] font-medium bg-primary/20 text-primary">
+                <AvatarFallback className="vk-text-2xs font-medium bg-primary/20 text-primary">
                   {u.displayName.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -81,7 +81,7 @@ export const VcsCoPresenceAvatars: React.FC<VcsCoPresenceAvatarsProps> = ({ vaul
         ))}
 
         {activeUsers.length > 3 && (
-          <span className="text-[10px] font-medium text-muted-foreground pl-1">
+          <span className="vk-text-2xs font-medium text-muted-foreground pl-1">
             +{activeUsers.length - 3}
           </span>
         )}

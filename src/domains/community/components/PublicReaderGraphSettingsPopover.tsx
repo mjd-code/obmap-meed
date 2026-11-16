@@ -125,7 +125,7 @@ export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProp
           <div className="space-y-3.5 pt-2">
             {/* 1. Pilihan Layout */}
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 font-medium text-foreground text-[11px]">
+              <div className="flex items-center gap-1.5 font-medium text-foreground vk-text-xs">
                 <Network className="w-3 h-3 text-primary" />
                 <span>Pilihan Layout</span>
               </div>
@@ -142,8 +142,8 @@ export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProp
                           : "bg-background/40 border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                       }`}
                     >
-                      <span className="text-[11px] font-semibold">{layout.label}</span>
-                      <span className="text-[9px] opacity-75 leading-tight truncate">
+                      <span className="vk-text-xs font-semibold">{layout.label}</span>
+                      <span className="vk-text-2xs opacity-75 leading-tight truncate">
                         {layout.desc}
                       </span>
                     </button>
@@ -156,12 +156,12 @@ export const PublicGraphSettingsPopover: React.FC<PublicGraphSettingsPopoverProp
 
             {/* 2. Tema Warna */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between font-medium text-foreground text-[11px]">
+              <div className="flex items-center justify-between font-medium text-foreground vk-text-xs">
                 <div className="flex items-center gap-1.5">
                   <Palette className="w-3 h-3 text-primary" />
                   <span>Tema Warna</span>
                 </div>
-                <Badge variant="outline" className="text-[9px] h-4 font-normal px-1.5">
+                <Badge variant="outline" className="vk-text-2xs h-4 font-normal px-1.5">
                   {activeThemeName}
                 </Badge>
               </div>

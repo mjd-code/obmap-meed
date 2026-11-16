@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Share,
 } from "lucide-react";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 export interface PWAInstallPromptProps {
   variant?: "banner" | "card" | "minimal";
@@ -35,6 +36,7 @@ export function PWAInstallPrompt({
   showOfflineStatus = true,
   onDismiss,
 }: PWAInstallPromptProps) {
+  const brand = useBrandConfig();
   const {
     canInstall,
     isInstalled,
@@ -153,7 +155,7 @@ export function PWAInstallPrompt({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground">Install VaultGraph</h3>
+                  <h3 className="font-semibold text-foreground">Install {brand.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     Get quick access from your home screen. Works offline!
                   </p>
@@ -210,7 +212,7 @@ export function PWAInstallPrompt({
             </div>
             <Button className="w-full mt-4" onClick={handleInstall}>
               <Download className="w-4 h-4 mr-2" />
-              Install VaultGraph
+              Install {brand.name}
             </Button>
           </div>
         </CardContent>

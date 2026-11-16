@@ -92,7 +92,7 @@ export const AdminReleaseStageBar: React.FC<AdminReleaseStageBarProps> = ({
             Buat Invite
           </Button>
           {latestPendingInvite && (
-            <Badge variant="outline" className="font-mono text-[10px]">
+            <Badge variant="outline" className="font-mono vk-text-2xs">
               Terbaru: {latestPendingInvite.invite_code}
             </Badge>
           )}
@@ -110,7 +110,7 @@ export const AdminReleaseStageBar: React.FC<AdminReleaseStageBarProps> = ({
           >
             <span>{item.label}</span>
             {item.key === "pending_approval" && pendingCount > 0 && (
-              <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+              <Badge variant="secondary" className="h-4 px-1 vk-text-2xs">
                 {pendingCount}
               </Badge>
             )}

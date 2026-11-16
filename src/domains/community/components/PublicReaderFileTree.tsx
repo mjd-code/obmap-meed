@@ -182,9 +182,9 @@ export const PublicFileTree: React.FC<PublicFileTreeProps> = ({
           {/* Ikon Tipe File / Folder */}
           {node.isFolder ? (
             isExpanded ? (
-              <FolderOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <FolderOpen className="w-3.5 h-3.5 text-warning shrink-0" />
             ) : (
-              <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <Folder className="w-3.5 h-3.5 text-warning shrink-0" />
             )
           ) : (
             <FileText
@@ -200,7 +200,7 @@ export const PublicFileTree: React.FC<PublicFileTreeProps> = ({
 
           {/* Badge jumlah anak folder */}
           {node.isFolder && hasChildren && (
-            <span className="text-[10px] text-muted-foreground/60 font-mono px-1 rounded bg-muted/40 shrink-0">
+            <span className="vk-text-2xs text-muted-foreground/60 font-mono px-1 rounded bg-muted/40 shrink-0">
               {node.children.length}
             </span>
           )}

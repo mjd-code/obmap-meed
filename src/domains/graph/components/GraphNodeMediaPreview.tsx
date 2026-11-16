@@ -223,8 +223,8 @@ export const NodeMediaPreview = ({ node }: NodeMediaPreviewProps) => {
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
         <div className="flex items-center justify-between border-b border-border/40 pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-rose-500" />
+            <div className="w-8 h-8 rounded-lg bg-danger/10 flex items-center justify-center">
+              <FileText className="w-4 h-4 text-danger" />
             </div>
             <div>
               <p className="text-sm font-medium leading-none">{node.name}</p>

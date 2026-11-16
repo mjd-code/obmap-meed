@@ -27,7 +27,7 @@ export function GraphLevelLegend({ depths, hierarchy }: GraphLevelLegendProps) {
             className="h-2.5 w-2.5 flex-shrink-0 rounded-full border border-border/60"
             style={{ backgroundColor: resolveLevelColor(depth, hierarchy) }}
           />
-          <span className="truncate text-foreground/80 text-[11px]">
+          <span className="truncate text-foreground/80 vk-text-xs">
             Level {depth}
             {depth === 0 ? ' (Root)' : ''}
           </span>

@@ -77,7 +77,7 @@ export function SettingsVaultListTab({
 
           {activeVault && (
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-[11px] h-5 px-2">
+              <Badge variant="secondary" className="vk-text-xs h-5 px-2">
                 {LOCATION_META[activeVault.location]?.label || "Vault"}
               </Badge>
               <span className="text-xs text-muted-foreground hidden sm:inline">

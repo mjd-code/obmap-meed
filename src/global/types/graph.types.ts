@@ -4,6 +4,13 @@
 
 // src/shared/stores/types.ts
 
+export type MindmapStructureClass =
+  | 'mindmap'
+  | 'org-chart'
+  | 'brace-map'
+  | 'timeline'
+  | 'fishbone';
+
 export type TopicShape =
   | 'rounded-rect'
   | 'pill'
@@ -117,6 +124,7 @@ export interface RenderNode {
   branchColor?: string;
   attachments?: NodeAttachments;
   topicShape?: TopicShape;
+  structureClass?: MindmapStructureClass;
   styleOverride?: NodeStyleOverride;
   wikilinkCount?: number;
   x?: number;
@@ -143,6 +151,7 @@ export interface Node {
   wikilinkCount?: number;
   attachments?: NodeAttachments;
   topicShape?: TopicShape;
+  structureClass?: MindmapStructureClass;
   branchColor?: string;
   styleOverride?: NodeStyleOverride;
   mediaType?: 'image' | 'audio' | 'video' | 'pdf'; // <-- Ditambahkan 'pdf'

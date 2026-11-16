@@ -86,14 +86,14 @@ export const PublicNodePreviewDrawer: React.FC<PublicNodePreviewDrawerProps> = (
       {/* 1. Header Drawer */}
       <div className="p-4 border-b border-border/60 flex items-start justify-between gap-2 shrink-0 bg-muted/20">
         <div className="space-y-1 min-w-0">
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+          <div className="flex items-center gap-1.5 vk-text-xs text-muted-foreground font-medium">
             {isFolder ? (
-              <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <Folder className="w-3.5 h-3.5 text-warning shrink-0" />
             ) : (
               <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
             )}
             <span className="uppercase tracking-wider">{isFolder ? "Folder Hub" : "Dokumen Catatan"}</span>
-            <Badge variant="outline" className="text-[9px] h-4 font-mono px-1">
+            <Badge variant="outline" className="vk-text-2xs h-4 font-mono px-1">
               v{activeNoteRecord.version}
             </Badge>
           </div>
@@ -117,7 +117,7 @@ export const PublicNodePreviewDrawer: React.FC<PublicNodePreviewDrawerProps> = (
       <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 text-xs [scrollbar-width:thin]">
         {/* Cuplikan Teks */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          <span className="vk-text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
             Ringkasan Isi
           </span>
           <p className="text-foreground/90 leading-relaxed bg-background/50 p-2.5 rounded-lg border border-border/50 text-xs italic">
@@ -127,7 +127,7 @@ export const PublicNodePreviewDrawer: React.FC<PublicNodePreviewDrawerProps> = (
 
         {/* Tanggal Terbit */}
         {activeNoteRecord.published_at && (
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 vk-text-xs text-muted-foreground">
             <Calendar className="w-3.5 h-3.5" />
             <span>
               Diterbitkan:{" "}
@@ -143,15 +143,15 @@ export const PublicNodePreviewDrawer: React.FC<PublicNodePreviewDrawerProps> = (
         {/* Daftar Catatan Terhubung (Graph Traversal Hub) */}
         <div className="space-y-2 pt-2 border-t border-border/50">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+            <span className="vk-text-2xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
               <Network className="w-3 h-3 text-primary" />
               <span>Relasi Terhubung ({connectedNotes.length})</span>
             </span>
-            <span className="text-[9px] text-muted-foreground/80">Klik untuk selancar</span>
+            <span className="vk-text-2xs text-muted-foreground/80">Klik untuk selancar</span>
           </div>
 
           {connectedNotes.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground/70 italic py-1">
+            <p className="vk-text-xs text-muted-foreground/70 italic py-1">
               Belum ada tautan yang terhubung ke dokumen ini.
             </p>
           ) : (

@@ -132,7 +132,7 @@ export const VaultCard = ({
         />
 
         {/* Minimal Summary Metrics Row */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
+        <div className="flex items-center justify-between pt-2 border-t border-border/50 vk-text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 font-medium text-foreground">
               <Network className="w-3 h-3 text-primary" /> {nodeCount}{" "}

@@ -11,7 +11,7 @@ import {
   type GraphConfigState,
 } from "@/domains/graph/shared/stores/useGraphStore";
 import { useGraphEngineStore } from "@/domains/graph/shared/stores/useGraphEngineStore";
-import { useThemeStore } from "@/domains/settings/shared/stores/useThemeStore";
+import { useThemeStore, type AppearanceConfig } from "@/domains/settings/shared/stores/useThemeStore";
 import { useEditorSettingsStore } from "@/domains/editor/shared/stores/useEditorSettingsStore";
 import { useUIStore } from "@/domains/workspace/shared/stores/useUIStore";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
@@ -69,6 +69,57 @@ export function registerConfigSections(): void {
     read: readEngine,
     write: (value) => useGraphEngineStore.getState().patch(value),
     subscribe: (cb) => useGraphEngineStore.subscribe(() => cb()),
+  });
+
+  /* ------------------------------ appearance ----------------------------- */
+  type AppearanceSnapshot = {
+    presetId: AppearanceConfig["presetId"];
+    mode: AppearanceConfig["mode"];
+    typography: AppearanceConfig["typography"];
+    layout: AppearanceConfig["layout"];
+    motion: AppearanceConfig["motion"];
+    customCssSnippet: string;
+  };
+
+  registerConfigSection<AppearanceSnapshot>({
+    id: "appearance",
+    label: "Appearance & Accessibility",
+    version: 1,
+    scope: "user",
+    read: () => {
+      const s = useThemeStore.getState();
+      return {
+        presetId: s.appearance.presetId,
+        mode: s.appearance.mode,
+        typography: s.appearance.typography,
+        layout: s.appearance.layout,
+        motion: s.appearance.motion,
+        customCssSnippet: s.customCssSnippet,
+      };
+    },
+    write: (value) => {
+      const s = useThemeStore.getState();
+      if (value.presetId && value.presetId !== s.appearance.presetId) {
+        s.setPreset(value.presetId);
+      }
+      if (value.mode) s.setMode(value.mode);
+      if (value.typography) s.updateTypography(value.typography);
+      if (value.layout) s.updateLayout(value.layout);
+      if (value.motion) s.updateMotion(value.motion);
+      if (typeof value.customCssSnippet === "string") {
+        s.setCustomCssSnippet(value.customCssSnippet);
+      }
+    },
+    reset: () => useThemeStore.getState().resetTheme(),
+    subscribe: (cb) =>
+      useThemeStore.subscribe((s, prev) => {
+        if (
+          s.appearance !== prev.appearance ||
+          s.customCssSnippet !== prev.customCssSnippet
+        ) {
+          cb();
+        }
+      }),
   });
 
   /* -------------------------------- theme -------------------------------- */

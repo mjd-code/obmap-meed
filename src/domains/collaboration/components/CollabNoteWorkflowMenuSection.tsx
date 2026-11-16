@@ -48,7 +48,7 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
   return (
     <>
       <DropdownMenuSeparator />
-      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
+      <DropdownMenuLabel className="vk-text-2xs uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
         Publikasi Web
       </DropdownMenuLabel>
 
@@ -56,19 +56,19 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
       <div className="flex items-center justify-between px-2 py-1.5 text-xs">
         <span className="text-muted-foreground">Status</span>
         {controller.isPublished ? (
-          <Badge className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 text-[10px] px-1.5 py-0 font-medium gap-1">
+          <Badge className="bg-success/15 text-success border border-success/30 vk-text-2xs px-1.5 py-0 font-medium gap-1">
             <CheckCircle className="w-2.5 h-2.5" />
             Terbit v{noteRecord.version}
           </Badge>
         ) : noteRecord.status === "in_review" ? (
-          <Badge className="bg-amber-500/15 text-amber-500 border border-amber-500/30 text-[10px] px-1.5 py-0 font-medium gap-1">
+          <Badge className="bg-warning/15 text-warning border border-warning/30 vk-text-2xs px-1.5 py-0 font-medium gap-1">
             <Clock className="w-2.5 h-2.5" />
             In Review
           </Badge>
         ) : (
           <Badge
             variant="secondary"
-            className="text-[10px] px-1.5 py-0 text-muted-foreground"
+            className="vk-text-2xs px-1.5 py-0 text-muted-foreground"
           >
             Draf Lokal
           </Badge>
@@ -117,7 +117,7 @@ export const NoteWorkflowMenuSection: React.FC<NoteWorkflowMenuSectionProps> = (
             disabled={controller.processing}
             className="text-xs"
           >
-            <Send className="w-3.5 h-3.5 mr-2 text-amber-500" />
+            <Send className="w-3.5 h-3.5 mr-2 text-warning" />
             Ajukan Review...
           </DropdownMenuItem>
         )}

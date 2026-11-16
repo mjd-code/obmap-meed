@@ -31,7 +31,7 @@ export const PublicReaderGraphSettingsSections: React.FC<
 
       {/* 3. Label Catatan */}
       <div className="space-y-2">
-        <div className="flex items-center gap-1.5 font-medium text-foreground text-[11px]">
+        <div className="flex items-center gap-1.5 font-medium text-foreground vk-text-xs">
           <Type className="w-3 h-3 text-primary" />
           <span>Label Catatan</span>
         </div>
@@ -59,7 +59,7 @@ export const PublicReaderGraphSettingsSections: React.FC<
             </div>
 
             <div className="space-y-1 pt-1">
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="flex items-center justify-between vk-text-2xs text-muted-foreground">
                 <span>Ukuran Teks Label</span>
                 <span className="font-mono">{config.nodes.labelSize}px</span>
               </div>
@@ -79,7 +79,7 @@ export const PublicReaderGraphSettingsSections: React.FC<
 
       {/* 4. Filter Jenis Node */}
       <div className="space-y-2">
-        <div className="flex items-center gap-1.5 font-medium text-foreground text-[11px]">
+        <div className="flex items-center gap-1.5 font-medium text-foreground vk-text-xs">
           <Filter className="w-3 h-3 text-primary" />
           <span>Filter Jenis Node</span>
         </div>
@@ -107,12 +107,12 @@ export const PublicReaderGraphSettingsSections: React.FC<
 
       {/* 5. Jarak & Peregangan Fisika */}
       <div className="space-y-2.5 pb-1">
-        <div className="flex items-center gap-1.5 font-medium text-foreground text-[11px]">
+        <div className="flex items-center gap-1.5 font-medium text-foreground vk-text-xs">
           <Sliders className="w-3 h-3 text-primary" />
           <span>Jarak Node & Keregangan</span>
         </div>
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between vk-text-2xs text-muted-foreground">
             <span>Panjang Relasi</span>
             <span className="font-mono">{config.forces.linkDistance}px</span>
           </div>
@@ -125,7 +125,7 @@ export const PublicReaderGraphSettingsSections: React.FC<
           />
         </div>
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between vk-text-2xs text-muted-foreground">
             <span>Gaya Tolak Antar Node</span>
             <span className="font-mono">{Math.abs(config.forces.chargeStrength)}</span>
           </div>

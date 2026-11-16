@@ -139,7 +139,7 @@ export const VcsQuickCommitModal: React.FC<VcsQuickCommitModalProps> = ({
         <div className="space-y-3 py-2 text-xs">
           <div className="flex items-center justify-between text-muted-foreground bg-muted/40 p-2 rounded border border-border/50">
             <span>Target Branch:</span>
-            <Badge variant="outline" className="font-mono text-[11px] bg-background">
+            <Badge variant="outline" className="font-mono vk-text-xs bg-background">
               {activeBranchName}
             </Badge>
           </div>

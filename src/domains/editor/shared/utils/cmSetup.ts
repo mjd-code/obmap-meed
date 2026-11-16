@@ -48,12 +48,13 @@ import {
   slashCommandCompletion,
   type SuggestSource,
 } from "@/domains/editor/shared/utils/suggestions";
-import type {
-  EditorAppearanceConfig,
-  EditorBehaviorConfig,
-  EditorSuggestionsConfig,
+import {
+  defaultAppearanceConfig,
+  FONT_FAMILY_CSS,
+  type EditorAppearanceConfig,
+  type EditorBehaviorConfig,
+  type EditorSuggestionsConfig,
 } from "@/domains/editor/shared/stores/useEditorSettingsStore";
-import { FONT_FAMILY_CSS } from "@/domains/editor/shared/stores/useEditorSettingsStore";
 import { Table as GfmTable } from "@lezer/markdown";
 import { footnoteLivePreview } from "@/domains/editor/shared/utils/cmFootnoteWidget";
 
@@ -74,17 +75,31 @@ export interface EditorSetupOptions {
   onSave?: () => void;
 }
 
-/** Font / size / spacing driven by user settings. */
+/** Font / size / spacing driven by user settings and global `--vk-prose-*` tokens. */
 export function appearanceTheme(appearance: EditorAppearanceConfig): Extension {
+  const fontSizeCss =
+    appearance.fontSize === defaultAppearanceConfig.fontSize
+      ? `var(--vk-prose-size, ${appearance.fontSize}px)`
+      : `${appearance.fontSize}px`;
+  const lineHeightCss =
+    appearance.lineHeight === defaultAppearanceConfig.lineHeight
+      ? `var(--vk-prose-line-height, ${appearance.lineHeight})`
+      : String(appearance.lineHeight);
+  const maxWidthCss =
+    appearance.contentWidth === defaultAppearanceConfig.contentWidth
+      ? `var(--vk-prose-max-width, ${appearance.contentWidth}ch)`
+      : `${appearance.contentWidth}ch`;
+
   return EditorView.theme({
-    "&": { fontSize: `${appearance.fontSize}px` },
+    "&": { fontSize: fontSizeCss },
     ".cm-scroller": {
       fontFamily: FONT_FAMILY_CSS[appearance.fontFamily],
-      lineHeight: String(appearance.lineHeight),
+      lineHeight: lineHeightCss,
+      letterSpacing: "var(--vk-prose-letter-spacing, 0em)",
     },
     ".cm-content": appearance.limitContentWidth
       ? {
-          maxWidth: `${appearance.contentWidth}ch`,
+          maxWidth: maxWidthCss,
           marginLeft: "auto",
           marginRight: "auto",
         }

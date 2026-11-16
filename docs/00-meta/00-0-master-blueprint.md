@@ -5,7 +5,7 @@ type: architecture
 status: [PLANNED]
 owner: Principal Software Architect & Product Engineering Lead
 version: 2.0.0
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-16
 audience: both
 related:
   - DOC-META-001
@@ -13,6 +13,7 @@ related:
   - DOC-META-005
   - DOC-ARCH-001
   - ADR-0006
+  - DOC-ARCH-ADR-0013
 source_of_truth: src/domains/, src/global/, src/App.tsx, supabase/migrations/
 ---
 
@@ -21,7 +22,7 @@ source_of_truth: src/domains/, src/global/, src/App.tsx, supabase/migrations/
 ## Ringkasan 3 Baris
 - Spesifikasi induk arsitektur dan produk ObMap v2.0 sebagai **Local-First Visual Knowledge Management System, Collaborative Research Workspace, dan High-Signal Social Knowledge Graph** berbasis fusi 5 sistem referensi (Obsidian, XMind, Notion, Wikipedia, LinkedIn/ResearchGate/GitHub).
 - Mengunci standar rute publik root-level `/:username` dan `/@:username` (menghapus `/p/*`), mekanisme **3-Stage Progressive Shipping Gate** (*Partner Pilot → Approval-Gated Community Beta → Commercial GA*), RBAC berlapis, dan arsitektur *entitlement server-side*.
-- Mendefinisikan standar kualitas ganda (Developer Standard & User Standard), domain baru `dashboard`, konfigurasi 6-lapis, Unified Theme Engine, serta Public Extension SDK `@obmap/sdk`.
+- Mendefinisikan standar kualitas ganda (Developer Standard & User Standard), domain baru `dashboard`, konfigurasi 6-lapis, Unified Theme Engine, serta Public Extension SDK `@vk/sdk`.
 
 ---
 
@@ -47,7 +48,7 @@ source_of_truth: src/domains/, src/global/, src/App.tsx, supabase/migrations/
 | **Rute & Identitas Publik** | Sub-path legacy `/p/:username/:vaultSlug` | Root-level kanonik `/:username` dan `/@:username` (*hard cutover*, `/p/*` langsung dimatikan), plus `/explore` |
 | **Strategi Rilis** | Tidak terdefinisi (*big-bang*) | **3-Stage Progressive Shipping Gate**: Partner Pilot → Approval Beta (per-user `/admin`) → Commercial GA (Xendit/Midtrans → Stripe) |
 | **Home, Komunitas & Akuisisi** | 12 domain (`public-reader` di `/p/*`, tanpa Dashboard & Sandbox) | **13 Bounded Domains** (`community` menyerap `public-reader` + domain baru `dashboard`), Landing Sandbox `< 65KB`, Onboarding 5-tahap |
-| **Kustomisasi & SDK** | Registry internal (`configRegistry`, `pluginRegistry`) | 6-Layer Cascading Config, Unified DOM/Canvas2D Theme Engine, `@obmap/sdk` |
+| **Kustomisasi & SDK** | Registry internal (`configRegistry`, `pluginRegistry`) | 6-Layer Cascading Config, Unified DOM/Canvas2D Theme Engine, `@vk/sdk` |
 
 ### 1.3 Six Architectural Invariants (Non-Negotiable Engineering Constraints)
 1. **Zero Feature Deletion:** Tidak menghapus atau meminifikasi fitur, dependensi, atau catatan arsip (`00-1-quovadis.md`) tanpa persetujuan eksplisit.
@@ -79,7 +80,7 @@ flowchart TD
 
 | Sistem Referensi | Kapabilitas yang Diadopsi | Limitasi yang Dieliminasi | Acceptance Standard di ObMap | Status Kode Aktual |
 | :--- | :--- | :--- | :--- | :--- |
-| **Obsidian** | Plaintext `.md`, `[[wikilinks]]`, split-pane workspace, command palette, config `.obmap/`, Plugin API | Graph *hairball*, Sync & Publish berbayar terpisah, minim kolaborasi tim | Indexing `< 100ms` via Aho-Corasick Worker (`mentions.worker.ts`), config terisolasi, `@obmap/sdk` | `[IMPLEMENTED]` (inti PKM), `[PARTIAL]` (SDK) |
+| **Obsidian** | Plaintext `.md`, `[[wikilinks]]`, split-pane workspace, command palette, config `.vk/` (fallback `.obmap/`), Plugin API | Graph *hairball*, Sync & Publish berbayar terpisah, minim kolaborasi tim | Indexing `< 100ms` via Aho-Corasick Worker (`mentions.worker.ts`), config terisolasi, `@vk/sdk` | `[IMPLEMENTED]` (inti PKM), `[PARTIAL]` (SDK) |
 | **XMind** | Layout radial/hierarkis deterministik, Bézier, branch color coding, fold/unfold, tema & ekspor presentasi | Format biner `.xmind` tertutup, tidak ramah VCS/Git, bukan editor teks panjang | 6+ solver deterministik, subtree override, navigasi `Tab`/`Enter`/`Space`, ekspor PDF/SVG/OPML, Pitch Mode | `[IMPLEMENTED]` (4+ solver), `[PLANNED]` (Pitch/OPML) |
 | **Notion** | Share modal terpadu, teamspace, komentar kontekstual, co-presence, template, Kanban/Kalender/Tabel | *Vendor lock-in* format blok tertutup, performa offline lemah, tanpa graph engine | View Kanban/Kalender derivatif YAML frontmatter, komentar terikat blok, presence real-time | `[PARTIAL]` (V4 RLS, `VcsCoPresenceAvatars`), `[VISION]` |
 | **Wikipedia** | Rujukan silang terbuka, riwayat revisi transparan, pengindeksan kategori, pembacaan instan anonim | Teks linier tanpa navigasi graf konsep; hambatan kontribusi markup lawas | Dual-pane Graph + Markdown reader, riwayat VCS terbuka, metadata sitasi & direktori `/explore` | `[IMPLEMENTED]` (`public-reader` → `community`, VCS), `[VISION]` |
@@ -118,7 +119,7 @@ stateDiagram-v2
 | :--- | :--- | :--- | :--- | :--- |
 | **Stage 1: Closed Partner & Institutional Pilot** | `stage_1_partner` | Pendaftaran publik ditutup; akses hanya via `partner_invitations` atau provisi manual oleh Admin di `/admin`. | Ditutup penuh atau terbatas pada vault partner bertautan khusus. | Validasi stabilitas Workspace, Graph, VCS, dan penyimpanan lokal/cloud bersama mitra awal. |
 | **Stage 2: Approval-Gated Community Beta** | `stage_2_community_beta` | Registrasi publik & klaim `username` dibuka dengan status `account_status = 'pending_approval'`. Setiap akun baru wajib disetujui **secara individual oleh Admin di `/admin`** (tanpa kuota referral) sebelum masuk `/vaults` & `/app`. | Pengunjung publik hanya dapat melihat profil `/:username` dan vault berstatus `shared`/`published` dari akun berstatus `approved`. | Menguji pertumbuhan komunitas (`explore`, sitasi, fork) sambil menjaga kontrol trafik server secara ketat. |
-| **Stage 3: Public Commercial GA** | `stage_3_commercial_ga` | Registrasi langsung aktif (`approved`) dengan penegakan kuota paket Free vs Paid dinamis berbasis DB/Admin di database & Edge Functions. | Direktori penuh `/explore`, `/:username`, dan publikasi terbuka gratis. | Konversi langganan berkelanjutan, teamspaces enterprise, dan `@obmap/sdk`. |
+| **Stage 3: Public Commercial GA** | `stage_3_commercial_ga` | Registrasi langsung aktif (`approved`) dengan penegakan kuota paket Free vs Paid dinamis berbasis DB/Admin di database & Edge Functions. | Direktori penuh `/explore`, `/:username`, dan publikasi terbuka gratis. | Konversi langganan berkelanjutan, teamspaces enterprise, dan `@vk/sdk`. |
 
 ### 3.2 Root-Level Canonical Identity & Namespace Routing (`/:username` & `/@:username`)
 Seluruh standar URL publik ObMap mematikan prefix legacy `/p/` secara langsung (*hard cutover* tanpa redirect transisi) dan mengadopsi rute root-level modern yang setara dengan standar jejaring sosial dan repositori kode masa kini. Refactor `src/domains/public-reader/` menjadi `src/domains/community/` menyatukan seluruh UI portal komunitas dan reader kanonik dalam satu bounded domain.
@@ -282,10 +283,11 @@ flowchart LR
 - **5 Mode Workspace Derivatif (100% dari Markdown + YAML Frontmatter):** (1) *Content-First Grid/List*, (2) *Knowledge-Base Hierarchy Tree*, (3) *Task-Centric Kanban* (`status`, `assignee`, `due`, checklist), (4) *Time-Oriented Calendar & Timeline*, (5) *Productivity & Learning Analytics*.
 - **Community & Discovery Hub:** Widget *Following Scholars Feed* (`/:username`), kotak masuk *Citations & Merge Requests*, galeri template per use-case, dan status kuota paket.
 
-### 6.4 Six-Layer Cascading Configuration, Unified Theme Engine & `@obmap/sdk`
-- **Hierarki Resolusi Konfigurasi (6 Lapis):** `System Defaults` → `Org/Institution Policy (Admin-Locked)` → `Vault Config (.obmap/config.json / VaultConfigFile.ts)` → `User Profile (LocalConfigStore / CloudConfigStore)` → `Workspace/Leaf Override` → `Session/URL`. Pengaturan yang dikunci organisasi atau berada di luar izin peran tampil *read-only* dengan indikator pemilik kebijakan.
+### 6.4 Six-Layer Cascading Configuration, Unified Theme Engine & `@vk/sdk`
+- **Hierarki Resolusi Konfigurasi (6 Lapis):** `System Defaults` → `Org/Institution Policy (Admin-Locked)` → `Vault Config (.vk/config.json [fallback .obmap/config.json] / VaultConfigFile.ts)` → `User Profile (LocalConfigStore / CloudConfigStore)` → `Workspace/Leaf Override` → `Session/URL`. Pengaturan yang dikunci organisasi atau berada di luar izin peran tampil *read-only* dengan indikator pemilik kebijakan.
 - **Unified Design Token & Theme Engine:** Menyatukan `useThemeStore.ts` agar satu set token tema mengendalikan CSS Variables Tailwind (DOM) sekaligus parameter render Canvas2D (`graph/shared/utils/theme.ts`, `atmosphereConfig.ts`), dilengkapi dukungan **Scoped CSS Snippets** yang disanitasi untuk halaman publik.
-- **Modular Isolated Config & Sandboxed `@obmap/sdk`:** Evolusi `configRegistry.ts`, `schemaRegistry.ts`, dan `pluginRegistry.ts` menjadi SDK publik dengan `manifest.json`, *Permission Manifest* (`vault:read`, `vault:write`, `network`, `ui:only`), isolasi Web Worker / iframe CSP, 12 *Extension Points* terstandar (`WorkspaceViewRegistry`, `DashboardWidgetRegistry`, `CommandRegistry`, `ConfigSectionRegistry`, `CodeMirror6Extension`, `MarkdownPostProcessor`, `SlashCommandProvider`, `FrontmatterSchemaProvider`, `GraphLayoutSolver`, `GraphThemeDecorator`, `ExportAdapter`, `Ribbon/StatusBar`), *Community Directory*, serta dokumentasi developer di `docs/07-developers/`.
+- **Dynamic Brand Registry, White-Label Override & Brand-Agnostic Storage (`ADR-0013`):** Memusatkan identitas merek (nama, tagline, domain, logo, paket SDK) ke `src/global/config/brand.config.ts` dengan injeksi build-time (`viteBrandHtmlPlugin`), hook runtime `useBrandConfig()` (*white-label* per organisasi via `platform_settings` / `Org Policy`), netralisasi storage lokal ke namespace `vk-*` (`VkConfigDB`, `.vk/`) ber-migrasi zero-loss dari `obmap-*` / `.obmap/`, serta CLI auto-rebrand aman `scripts/rebrand.ts`.
+- **Modular Isolated Config & Sandboxed `@vk/sdk`:** Evolusi `configRegistry.ts`, `schemaRegistry.ts`, dan `pluginRegistry.ts` menjadi SDK publik dengan `manifest.json`, *Permission Manifest* (`vault:read`, `vault:write`, `network`, `ui:only`), isolasi Web Worker / iframe CSP, 12 *Extension Points* terstandar (`WorkspaceViewRegistry`, `DashboardWidgetRegistry`, `CommandRegistry`, `ConfigSectionRegistry`, `CodeMirror6Extension`, `MarkdownPostProcessor`, `SlashCommandProvider`, `FrontmatterSchemaProvider`, `GraphLayoutSolver`, `GraphThemeDecorator`, `ExportAdapter`, `Ribbon/StatusBar`), *Community Directory*, serta dokumentasi developer di `docs/07-developers/`.
 
 ---
 
@@ -295,3 +297,4 @@ flowchart LR
 - [Sistem Changelog Modular & Protokol Agen](../changelogs/README.md)
 - [Konvensi Dokumentasi Sistem](doc-conventions.md)
 - [Tata Kelola State Reaktif & Headless Controller (ADR-0006)](../03-architecture/adr/ADR-0006-reactive-state-and-headless-controller-governance.md)
+- [Infrastruktur Brand-Agnostic & Dynamic Branding (ADR-0013)](../03-architecture/adr/ADR-0013-brand-agnostic-infrastructure-and-dynamic-branding.md)

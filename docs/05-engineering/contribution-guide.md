@@ -21,7 +21,7 @@ source_of_truth: AGENTS.md, docs/02-planning/README.md
 ## Ringkasan 3 Baris
 - Alur kerja praktis bagi developer inti, kontributor open-source, dan AI coding agent dalam menyiapkan lingkungan kerja serta mengeksekusi tugas di ObMap v2.0.
 - Menghubungkan langsung alur pengembangan kode bertahap ke [Playbook Eksekusi Step-by-Step (`docs/02-planning/README.md`)](../02-planning/README.md) agar prioritas selalu jelas.
-- Membedakan jalur kontribusi **Core Platform** (`src/domains/`) dengan jalur **Plugin & Tema Eksternal** (`@obmap/sdk` di `docs/07-developers/`).
+- Membedakan jalur kontribusi **Core Platform** (`src/domains/`) dengan jalur **Plugin & Tema Eksternal** (`@vk/sdk` di `docs/07-developers/`).
 
 ---
 
@@ -40,12 +40,12 @@ source_of_truth: AGENTS.md, docs/02-planning/README.md
 
 ---
 
-## 3. Kontribusi Ekstensi & Tema Komunitas (`@obmap/sdk`)
-Pengembang pihak ketiga yang ingin menambahkan *workspace view*, widget dashboard, *export adapter*, solver graf kustom, atau tema visual tidak perlu mengubah kode inti di `src/domains/` — rujuk langsung [Portal Developer `@obmap/sdk`](../07-developers/README.md).
+## 3. Kontribusi Ekstensi & Tema Komunitas (`@vk/sdk`)
+Pengembang pihak ketiga yang ingin menambahkan *workspace view*, widget dashboard, *export adapter*, solver graf kustom, atau tema visual tidak perlu mengubah kode inti di `src/domains/` — rujuk langsung [Portal Developer `@vk/sdk`](../07-developers/README.md).
 
 ---
 
 ## Terkait
 - [Playbook Eksekusi Step-by-Step (`../02-planning/README.md`)](../02-planning/README.md)
 - [Aturan Repositori (`repository-rules.md`)](repository-rules.md)
-- [Portal Developer `@obmap/sdk` (`../07-developers/README.md`)](../07-developers/README.md)
+- [Portal Developer `@vk/sdk` (`../07-developers/README.md`)](../07-developers/README.md)

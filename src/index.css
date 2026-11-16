@@ -49,6 +49,103 @@ All colors MUST be HSL.
 
     --node-glow: 270 80% 70%;
     --graph-bg: 240 15% 4%;
+
+    /* Universal Brand-Agnostic Design Tokens (`--vk-*`, UI-STEP-01) */
+    --vk-bg-canvas: hsl(240 15% 7%);
+    --vk-bg-base: hsl(240 15% 5%);
+    --vk-bg-surface: hsl(240 12% 8%);
+    --vk-surface: hsl(240 15% 5%);
+    --vk-bg-elevated: hsl(240 12% 11%);
+    --vk-bg-muted: hsl(240 10% 15%);
+    --vk-bg-sidebar: hsl(240 12% 7%);
+    --vk-bg-overlay: hsl(240 14% 12%);
+    --vk-glass-blur: 12px;
+
+    --vk-text-primary: hsl(240 10% 95%);
+    --vk-text-secondary: hsl(240 10% 82%);
+    --vk-text-muted: hsl(240 8% 66%);
+    --vk-text-subtle: hsl(240 6% 52%);
+    --vk-text-on-primary: hsl(240 15% 6%);
+
+    --vk-border-subtle: hsl(240 10% 14%);
+    --vk-border-default: hsl(240 10% 19%);
+    --vk-border-strong: hsl(240 12% 30%);
+    --vk-ring-focus: hsl(270 70% 65%);
+    --vk-border-width: 1px;
+
+    --vk-primary: hsl(270 70% 65%);
+    --vk-accent: hsl(270 80% 70%);
+    --vk-success: hsl(152 69% 46%);
+    --vk-success-subtle: hsl(152 45% 14%);
+    --vk-warning: hsl(38 92% 58%);
+    --vk-warning-subtle: hsl(38 55% 15%);
+    --vk-danger: hsl(0 78% 62%);
+    --vk-danger-subtle: hsl(0 55% 16%);
+    --vk-info: hsl(205 90% 62%);
+    --vk-info-subtle: hsl(205 55% 15%);
+
+    --vk-font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --vk-font-sans: var(--vk-font-ui);
+    --vk-font-prose: "Inter", Georgia, Cambria, "Times New Roman", serif;
+    --vk-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --vk-font-display: "Plus Jakarta Sans", var(--vk-font-ui);
+    --vk-ui-scale: 1;
+    --vk-prose-size: 16px;
+    --vk-prose-line-height: 1.65;
+    --vk-prose-letter-spacing: 0em;
+    --vk-prose-max-width: 68ch;
+
+    --vk-row-h-sm: 1.75rem;
+    --vk-row-h-md: 2.25rem;
+    --vk-tab-h: 2.25rem;
+    --vk-statusbar-h: 1.5rem;
+    --vk-panel-pad: 0.75rem;
+    --vk-card-pad: 1rem;
+    --vk-gap-unit: 0.5rem;
+
+    --vk-radius-sm: 0.25rem;
+    --vk-radius-md: 0.5rem;
+    --vk-radius-lg: 0.75rem;
+    --vk-radius-panel: 0.75rem;
+    --vk-motion-scale: 1;
+  }
+
+  [data-density="compact"] {
+    --vk-row-h-sm: 1.5rem;
+    --vk-row-h-md: 1.875rem;
+    --vk-tab-h: 1.875rem;
+    --vk-statusbar-h: 1.375rem;
+    --vk-panel-pad: 0.5rem;
+    --vk-card-pad: 0.75rem;
+    --vk-gap-unit: 0.375rem;
+  }
+
+  [data-density="spacious"] {
+    --vk-row-h-sm: 2rem;
+    --vk-row-h-md: 2.625rem;
+    --vk-tab-h: 2.5rem;
+    --vk-statusbar-h: 1.75rem;
+    --vk-panel-pad: 1rem;
+    --vk-card-pad: 1.25rem;
+    --vk-gap-unit: 0.75rem;
+  }
+
+  [data-motion="reduced"] *,
+  [data-motion="reduced"] *::before,
+  [data-motion="reduced"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -84,14 +181,13 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    font-size: calc(16px * var(--vk-ui-scale, 1));
+  }
+
   body {
     @apply bg-background text-foreground;
-    font-family:
-      "Inter",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      sans-serif;
+    font-family: var(--vk-font-ui, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   }
 
   .graph-node {
@@ -126,6 +222,14 @@ All colors MUST be HSL.
   /* Prose styles for markdown */
   .prose {
     @apply text-foreground;
+    font-family: var(--vk-font-prose, var(--vk-font-ui));
+    font-size: var(--vk-prose-size, 16px);
+    line-height: var(--vk-prose-line-height, 1.65);
+    letter-spacing: var(--vk-prose-letter-spacing, 0em);
+  }
+
+  .prose code {
+    font-family: var(--vk-font-mono);
   }
 
   .prose h1 {
@@ -281,5 +385,43 @@ All colors MUST be HSL.
 
   .hover\:scrollbar-thumb-muted-foreground\/30:hover::-webkit-scrollbar-thumb {
     background-color: hsl(var(--muted-foreground) / 0.3);
+  }
+
+  /* Universal Typography Scale (`DOC-PLAN-008` §3.5, UI-STEP-01) */
+  .vk-text-2xs,
+  .ob-text-2xs {
+    font-size: 0.6875rem;
+    line-height: 1rem;
+  }
+  .vk-text-xs,
+  .ob-text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .vk-text-sm,
+  .ob-text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  .vk-text-base,
+  .ob-text-base {
+    font-size: var(--vk-prose-size, 1rem);
+    line-height: var(--vk-prose-line-height, 1.65);
+  }
+  .vk-text-lg,
+  .ob-text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  .vk-text-xl,
+  .ob-text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+  .vk-text-display,
+  .ob-text-display {
+    font-family: var(--vk-font-display, var(--vk-font-ui));
+    font-size: 1.75rem;
+    line-height: 2.25rem;
   }
 }

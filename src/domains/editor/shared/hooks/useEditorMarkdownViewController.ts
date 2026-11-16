@@ -224,6 +224,7 @@ export function useEditorMarkdownViewController({
 
   return {
     hostRef,
+    api,
     cleanBody,
     definitionsMap,
     isReading,

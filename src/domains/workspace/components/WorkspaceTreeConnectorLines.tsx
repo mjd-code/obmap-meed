@@ -8,23 +8,23 @@ export const TREE_INDENT_WIDTH = 16;
 // Sesuaikan fungsi getExplorerNodeIcon agar menangani node bertipe "pdf" maupun mediaType "pdf":
 export const getExplorerNodeIcon = (node: ExplorerNode) => {
   if (node.type === "folder") {
-    return <Folder className="w-4 h-4 shrink-0 text-yellow-500" />;
+    return <Folder className="w-4 h-4 shrink-0 text-warning" />;
   }
   if (
     node.type === "pdf" ||
     (node.type === "media" && node.mediaType === "pdf")
   ) {
-    return <FileText className="w-4 h-4 shrink-0 text-rose-500" />;
+    return <FileText className="w-4 h-4 shrink-0 text-danger" />;
   }
   if (node.type === "media") {
     if (node.mediaType === "image") {
-      return <Image className="w-4 h-4 shrink-0 text-emerald-500" />;
+      return <Image className="w-4 h-4 shrink-0 text-success" />;
     }
     if (node.mediaType === "audio") {
-      return <Music className="w-4 h-4 shrink-0 text-purple-500" />;
+      return <Music className="w-4 h-4 shrink-0 text-accent" />;
     }
     if (node.mediaType === "video") {
-      return <Video className="w-4 h-4 shrink-0 text-red-500" />;
+      return <Video className="w-4 h-4 shrink-0 text-danger" />;
     }
   }
   return <FileText className="w-4 h-4 shrink-0 text-primary" />;

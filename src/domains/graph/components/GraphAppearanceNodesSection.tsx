@@ -67,7 +67,7 @@ export function GraphAppearanceNodesSection({
           <div className="flex items-center justify-between">
             <div>
               <span className="text-xs font-medium text-foreground">Bentuk Otomatis Format</span>
-              <p className="text-[10px] text-muted-foreground">Bentuk unik per tipe file</p>
+              <p className="vk-text-2xs text-muted-foreground">Bentuk unik per tipe file</p>
             </div>
             <Switch
               checked={config.nodes.autoShapeByFormat ?? true}
@@ -77,12 +77,12 @@ export function GraphAppearanceNodesSection({
 
           {(config.nodes.autoShapeByFormat ?? true) ? (
             <div className="flex items-center justify-between pt-1">
-              <span className="text-[11px] text-muted-foreground">Gaya Marker:</span>
+              <span className="vk-text-xs text-muted-foreground">Gaya Marker:</span>
               <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-md border border-border/40">
                 <button
                   type="button"
                   onClick={() => updateNodeConfig({ formatMarkerStyle: "shapes" })}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  className={`px-2 py-0.5 vk-text-2xs font-medium rounded transition-colors ${
                     (config.nodes.formatMarkerStyle ?? "shapes") === "shapes"
                       ? "bg-background text-foreground shadow-xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
@@ -93,7 +93,7 @@ export function GraphAppearanceNodesSection({
                 <button
                   type="button"
                   onClick={() => updateNodeConfig({ formatMarkerStyle: "icons" })}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                  className={`px-2 py-0.5 vk-text-2xs font-medium rounded transition-colors ${
                     config.nodes.formatMarkerStyle === "icons"
                       ? "bg-background text-foreground shadow-xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
@@ -105,7 +105,7 @@ export function GraphAppearanceNodesSection({
             </div>
           ) : (
             <div className="space-y-1.5 pt-1">
-              <span className="text-[11px] text-muted-foreground font-medium">
+              <span className="vk-text-xs text-muted-foreground font-medium">
                 Bentuk Manual Semua Node
               </span>
               <Select
@@ -151,7 +151,7 @@ export function GraphAppearanceNodesSection({
         <div className="flex items-center justify-between pt-2 border-t border-border/40">
           <div>
             <span className="text-xs font-medium text-foreground">Skala Kedalaman Hierarki</span>
-            <p className="text-[10px] text-muted-foreground">Node root lebih besar dari cabang</p>
+            <p className="vk-text-2xs text-muted-foreground">Node root lebih besar dari cabang</p>
           </div>
           <Switch
             checked={config.nodes.sizeByDepth}
@@ -177,7 +177,7 @@ export function GraphAppearanceNodesSection({
         />
 
         <div className="space-y-1.5">
-          <span className="text-[11px] font-medium text-muted-foreground">Mode Tampilan Label</span>
+          <span className="vk-text-xs font-medium text-muted-foreground">Mode Tampilan Label</span>
           <div className="grid grid-cols-3 gap-1 rounded-lg border border-border/60 bg-muted/40 p-1">
             {[
               { id: "nodes", label: "Titik Saja" },
@@ -188,7 +188,7 @@ export function GraphAppearanceNodesSection({
                 key={m.id}
                 type="button"
                 onClick={() => setLabelMode(m.id as LabelMode)}
-                className={`py-1 text-[11px] font-medium rounded transition-all ${
+                className={`py-1 vk-text-xs font-medium rounded transition-all ${
                   labelMode === m.id
                     ? "bg-background text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"

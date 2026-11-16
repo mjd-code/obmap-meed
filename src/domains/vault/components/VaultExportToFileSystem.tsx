@@ -221,11 +221,11 @@ export const ExportToFileSystem = ({ vaultName, nodes, trigger }: ExportToFileSy
 
           {status === "success" && (
             <div className="text-center space-y-4">
-              <div className="inline-flex p-3 rounded-full bg-green-500/10 text-green-500">
+              <div className="inline-flex p-3 rounded-full bg-success/10 text-success">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div>
-                <h4 className="font-medium text-green-600">Export Complete!</h4>
+                <h4 className="font-medium text-success">Export Complete!</h4>
                 <p className="text-sm text-muted-foreground">
                   Your vault has been saved to your local file system.
                 </p>

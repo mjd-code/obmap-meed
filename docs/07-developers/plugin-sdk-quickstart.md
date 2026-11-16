@@ -1,6 +1,6 @@
 ---
 id: DOC-DEV-001
-title: Quickstart Membangun Plugin Pertama dengan `@obmap/sdk`
+title: Quickstart Membangun Plugin Pertama dengan `@vk/sdk`
 type: developer
 status: [PLANNED]
 owner: Developer Ecosystem Lead
@@ -15,24 +15,24 @@ related:
 source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/workspace/CommandRegistry.ts
 ---
 
-# Quickstart Membangun Plugin Pertama dengan `@obmap/sdk`
+# Quickstart Membangun Plugin Pertama dengan `@vk/sdk`
 
 ## Ringkasan 3 Baris
 - Panduan langkah demi langkah membuat ekstensi ObMap pertama tanpa menyentuh source code inti `src/`.
 - Menjelaskan struktur minimal direktori plugin (`manifest.json`, entrypoint modul, dan panel pengaturan terisolasi di `configRegistry`).
-- Menetapkan standar lifecycle `activate(ctx)` / `deactivate()`, deklarasi *Permission Manifest*, dan mekanisme distribusi lokal `.obmap/plugins/` maupun direktori resmi.
+- Menetapkan standar lifecycle `activate(ctx)` / `deactivate()`, deklarasi *Permission Manifest*, dan mekanisme distribusi lokal `.vk/plugins/` (fallback `.obmap/plugins/`) maupun direktori resmi.
 
 ---
 
 ## 1. Struktur Direktori Plugin Standar
 
 ```text
-my-obmap-citation-helper/
+my-vk-citation-helper/
 ├── manifest.json          # Identitas plugin, versi minimum SDK, & permission manifest
 ├── src/
 │   ├── index.ts           # Lifecycle activate(ctx) & deactivate()
 │   └── styles.css         # Scoped CSS opsional untuk UI iframe plugin
-└── package.json           # Dependensi @obmap/sdk (types & mock test harness)
+└── package.json           # Dependensi @vk/sdk (aliased ke brand.sdkPackageName)
 ```
 
 ### Contoh Spesifikasi `manifest.json`
@@ -41,7 +41,7 @@ my-obmap-citation-helper/
   "id": "org.scholar.citation-helper",
   "name": "Academic Citation Helper",
   "version": "1.0.0",
-  "minObMapVersion": "2.0.0",
+  "minEngineVersion": "2.0.0",
   "entry": "dist/index.js",
   "permissions": ["ui:only", "vault:read", "metadata:read"],
   "extensionPoints": ["CommandRegistry", "WorkspaceViewRegistry", "ConfigSectionRegistry"]
@@ -64,7 +64,7 @@ Semua ekstensi pihak ketiga berinteraksi melalui objek `PluginContext` terisolas
 ---
 
 ## 3. Pengujian Lokal & Siklus Distribusi
-1. **Local Vault Testing (`.obmap/plugins/<plugin-id>/`):** Pengembang dapat memuat paket lokal pada Local Vault (`FileSystemService.ts`) dalam mode developer tanpa menunggu publikasi.
+1. **Local Vault Testing (`.vk/plugins/<plugin-id>/` | fallback `.obmap/plugins/<plugin-id>/`):** Pengembang dapat memuat paket lokal pada Local Vault (`FileSystemService.ts`) dalam mode developer tanpa menunggu publikasi.
 2. **Community Directory & Verification:** Plugin publik harus menyertakan repositori sumber terbuka, melewati pemeriksaan izin statis (*Permission Audit*), dan tidak meminta izin lebih luas dari fitur yang dijalankan.
 3. **Enterprise Governance (`Team / Academic`):** Administrator organisasi pada `/admin` dapat mengaktifkan mode **Enterprise Allowlist** agar anggota tim hanya dapat mengaktifkan plugin yang telah diaudit secara internal.
 

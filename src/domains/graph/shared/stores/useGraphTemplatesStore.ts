@@ -1,8 +1,13 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { GraphConfigState } from '@/domains/graph/shared/stores/useGraphStore';
 import type { LayoutMode, MindmapOrientation } from '@/domains/graph/shared/utils/graph.types';
 import { defaultGraphConfig, mergeGraphConfig } from '@/domains/graph/shared/stores/useGraphStore';
+import {
+  LEGACY_OBMAP_KEYS,
+  VK_STORAGE_KEYS,
+  createMigratingStateStorage,
+} from '@/global/utils/storageKeyMigrator';
 
 export interface GraphTemplate {
   id: string;
@@ -84,7 +89,13 @@ export const useGraphTemplatesStore = create<GraphTemplatesState>()(
         }),
     }),
     {
-      name: 'obmap-graph-templates',
+      name: VK_STORAGE_KEYS.LS_GRAPH_TEMPLATES,
+      storage: createJSONStorage(() =>
+        createMigratingStateStorage(
+          VK_STORAGE_KEYS.LS_GRAPH_TEMPLATES,
+          LEGACY_OBMAP_KEYS.LS_GRAPH_TEMPLATES,
+        ),
+      ),
     }
   )
 );

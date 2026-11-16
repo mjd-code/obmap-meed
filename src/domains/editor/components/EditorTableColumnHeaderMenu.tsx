@@ -57,7 +57,7 @@ export const EditorTableColumnHeaderMenu: React.FC<
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="px-1 py-0.2 rounded bg-muted/90 text-muted-foreground hover:bg-primary hover:text-primary-foreground text-[9px] shadow-sm cursor-pointer"
+            className="px-1 py-0.2 rounded bg-muted/90 text-muted-foreground hover:bg-primary hover:text-primary-foreground vk-text-2xs shadow-sm cursor-pointer"
             title="Opsi Kolom"
           >
             :::
@@ -65,17 +65,17 @@ export const EditorTableColumnHeaderMenu: React.FC<
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="center"
-          className="w-48 p-1 text-[11px] backdrop-blur-md"
+          className="w-48 p-1 vk-text-xs backdrop-blur-md"
         >
           <DropdownMenuItem
-            className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+            className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
             onClick={() => onSort(colIndex, "asc")}
           >
             <ArrowUpAZ className="w-3.5 h-3.5 opacity-70" />
             <span>Sort by column (A to Z)</span>
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+            className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
             onClick={() => onSort(colIndex, "desc")}
           >
             <ArrowDownZA className="w-3.5 h-3.5 opacity-70" />
@@ -85,7 +85,7 @@ export const EditorTableColumnHeaderMenu: React.FC<
           <DropdownMenuSeparator className="my-0.5" />
 
           <DropdownMenuItem
-            className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+            className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
             onClick={() => onTogglePin(colIndex)}
           >
             <Pin className="w-3.5 h-3.5 opacity-70" />
@@ -96,7 +96,7 @@ export const EditorTableColumnHeaderMenu: React.FC<
             </span>
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+            className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
             onClick={() => onToggleWrap(colIndex)}
           >
             <WrapText className="w-3.5 h-3.5 opacity-70" />
@@ -111,14 +111,14 @@ export const EditorTableColumnHeaderMenu: React.FC<
             <>
               <DropdownMenuSeparator className="my-0.5" />
               <DropdownMenuItem
-                className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+                className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
                 onClick={() => onAddColumn(colIndex)}
               >
                 <ArrowLeft className="w-3.5 h-3.5 opacity-70" />
                 <span>Add column to left</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+                className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
                 onClick={() => onAddColumn(colIndex + 1)}
               >
                 <ArrowRight className="w-3.5 h-3.5 opacity-70" />
@@ -127,21 +127,21 @@ export const EditorTableColumnHeaderMenu: React.FC<
 
               <DropdownMenuSeparator className="my-0.5" />
               <DropdownMenuItem
-                className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+                className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
                 onClick={() => onAlign(colIndex, "left")}
               >
                 <AlignLeft className="w-3.5 h-3.5 opacity-70" />
                 <span>Align left</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+                className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
                 onClick={() => onAlign(colIndex, "center")}
               >
                 <AlignCenter className="w-3.5 h-3.5 opacity-70" />
                 <span>Align center</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+                className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
                 onClick={() => onAlign(colIndex, "right")}
               >
                 <AlignRight className="w-3.5 h-3.5 opacity-70" />
@@ -150,7 +150,7 @@ export const EditorTableColumnHeaderMenu: React.FC<
 
               <DropdownMenuSeparator className="my-0.5" />
               <DropdownMenuItem
-                className="py-1 px-2 text-[11px] gap-2 cursor-pointer"
+                className="py-1 px-2 vk-text-xs gap-2 cursor-pointer"
                 onClick={() => onDuplicateColumn(colIndex)}
               >
                 <Copy className="w-3.5 h-3.5 opacity-70" />
@@ -159,7 +159,7 @@ export const EditorTableColumnHeaderMenu: React.FC<
 
               {columnsCount > 1 && (
                 <DropdownMenuItem
-                  className="py-1 px-2 text-[11px] gap-2 text-destructive focus:text-destructive cursor-pointer"
+                  className="py-1 px-2 vk-text-xs gap-2 text-destructive focus:text-destructive cursor-pointer"
                   onClick={() => onDeleteColumn(colIndex)}
                 >
                   <Trash2 className="w-3.5 h-3.5 opacity-70" />

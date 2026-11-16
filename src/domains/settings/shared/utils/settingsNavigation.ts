@@ -1,6 +1,8 @@
 import {
   Cloud,
   Database,
+  Network,
+  Palette,
   Pencil,
   ShieldCheck,
   SlidersHorizontal,
@@ -15,7 +17,9 @@ export type SettingsSectionId =
   | 'system'
   | 'features'
   | 'configuration'
+  | 'appearance'
   | 'editor'
+  | 'graph-engine'
   | 'schema'
   | 'roles'; // Dipertahankan di level tipe untuk backward compatibility
 
@@ -26,6 +30,8 @@ export interface SettingsSection {
   icon: LucideIcon;
   description: string;
 }
+
+export type SettingsSectionConfig = SettingsSection;
 
 // 4 Grup Utama yang Rapi & Ringkas (Grup 'Collaboration' dilebur ke 'Account & Profile')
 export const SETTINGS_GROUPS = [
@@ -72,11 +78,25 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Penyimpanan preferensi aplikasi, ekspor, impor, dan reset.' 
   },
   { 
+    id: 'appearance', 
+    label: 'Appearance & Accessibility', 
+    group: 'Editor & Schema', 
+    icon: Palette, 
+    description: 'Tema preset, palet warna, tipografi UI/Prose/Mono, skala ukuran, densitas, dan aksesibilitas.' 
+  },
+  { 
     id: 'editor', 
     label: 'Editor', 
     group: 'Editor & Schema', 
     icon: Pencil, 
     description: 'Tipografi, pengetikan, asisten penulisan, dan bilah alat markdown.' 
+  },
+  { 
+    id: 'graph-engine', 
+    label: 'Graph Engine', 
+    group: 'Editor & Schema', 
+    icon: Network, 
+    description: 'Opsi mesin tata letak graf, gaya simpul/tautan, fisika, dan statistik bawaan.' 
   },
   { 
     id: 'schema', 

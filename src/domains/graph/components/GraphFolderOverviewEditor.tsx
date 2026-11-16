@@ -38,11 +38,11 @@ export const FolderOverviewEditor: React.FC<FolderOverviewEditorProps> = ({
 
   const renderStatusBadge = (itemId: string) =>
     ctrl.publishedMap[itemId]?.status === "published" ? (
-      <Badge className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 text-[9px] px-1.5 py-0 gap-1 h-4">
+      <Badge className="bg-success/15 text-success border border-success/30 vk-text-2xs px-1.5 py-0 gap-1 h-4">
         <CheckCircle className="w-2.5 h-2.5" /> Terbit
       </Badge>
     ) : (
-      <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground h-4">Draf</Badge>
+      <Badge variant="outline" className="vk-text-2xs px-1.5 py-0 text-muted-foreground h-4">Draf</Badge>
     );
 
   const renderNodeTitle = (item: Node) => {
@@ -59,7 +59,7 @@ export const FolderOverviewEditor: React.FC<FolderOverviewEditorProps> = ({
             autoFocus
             className="h-7 text-xs bg-background border-primary/50 focus-visible:ring-1 flex-1 min-w-0"
           />
-          <Button size="icon" variant="ghost" onClick={() => ctrl.commitRename(item)} className="h-6 w-6 text-emerald-500 hover:text-emerald-600 shrink-0">
+          <Button size="icon" variant="ghost" onClick={() => ctrl.commitRename(item)} className="h-6 w-6 text-success hover:text-success shrink-0">
             <Check className="w-3.5 h-3.5" />
           </Button>
           <Button size="icon" variant="ghost" onClick={() => ctrl.setEditingId(null)} className="h-6 w-6 text-muted-foreground hover:text-foreground shrink-0">
@@ -70,7 +70,7 @@ export const FolderOverviewEditor: React.FC<FolderOverviewEditorProps> = ({
     }
 
     const Icon = item.type === "folder" ? Folder : item.type === "media" || item.type === "pdf" ? Image : FileText;
-    const iconColor = item.type === "folder" ? "text-amber-500" : item.type === "media" || item.type === "pdf" ? "text-emerald-500" : "text-blue-500";
+    const iconColor = item.type === "folder" ? "text-warning" : item.type === "media" || item.type === "pdf" ? "text-success" : "text-info";
 
     return (
       <button
@@ -88,22 +88,22 @@ export const FolderOverviewEditor: React.FC<FolderOverviewEditorProps> = ({
     <div className="w-full max-w-full min-w-0 flex flex-col gap-4 sm:gap-5 py-1 overflow-hidden">
       {/* Header Statistik & Deskripsi Folder */}
       <div className="w-full max-w-full min-w-0 rounded-lg border border-border/40 bg-muted/15 p-3 sm:p-3.5 space-y-2 sm:space-y-2.5 overflow-hidden">
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 vk-text-xs sm:text-xs">
           <Badge variant="outline" className="gap-1.5 font-medium bg-background/50 px-2.5 py-0.5">
             <Layers className="w-3.5 h-3.5 text-primary" />
             Total: {ctrl.stats.total} item
           </Badge>
           <Badge variant="outline" className="gap-1.5 font-medium bg-background/50 px-2.5 py-0.5">
-            <FileText className="w-3.5 h-3.5 text-blue-500" />
+            <FileText className="w-3.5 h-3.5 text-info" />
             {ctrl.stats.notes} Catatan
           </Badge>
           <Badge variant="outline" className="gap-1.5 font-medium bg-background/50 px-2.5 py-0.5">
-            <Folder className="w-3.5 h-3.5 text-amber-500" />
+            <Folder className="w-3.5 h-3.5 text-warning" />
             {ctrl.stats.subfolders} Subfolder
           </Badge>
           {ctrl.stats.media > 0 && (
             <Badge variant="outline" className="gap-1.5 font-medium bg-background/50 px-2.5 py-0.5">
-              <Image className="w-3.5 h-3.5 text-emerald-500" />
+              <Image className="w-3.5 h-3.5 text-success" />
               {ctrl.stats.media} Media
             </Badge>
           )}
@@ -206,7 +206,7 @@ export const FolderOverviewEditor: React.FC<FolderOverviewEditorProps> = ({
                 <div className="flex-1 min-w-0 max-w-full flex flex-col gap-1 overflow-hidden">
                   {renderNodeTitle(item)}
                   <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                    <Badge variant="secondary" className="text-[9px] uppercase py-0 px-1 h-4">
+                    <Badge variant="secondary" className="vk-text-2xs uppercase py-0 px-1 h-4">
                       {item.type}
                     </Badge>
                     {renderStatusBadge(item.id)}
@@ -269,7 +269,7 @@ export const FolderOverviewEditor: React.FC<FolderOverviewEditorProps> = ({
                       {renderNodeTitle(item)}
                     </td>
                     <td className="w-20 px-3 py-2 shrink-0">
-                      <Badge variant="secondary" className="text-[9px] uppercase py-0 px-1.5 h-4">
+                      <Badge variant="secondary" className="vk-text-2xs uppercase py-0 px-1.5 h-4">
                         {item.type}
                       </Badge>
                     </td>

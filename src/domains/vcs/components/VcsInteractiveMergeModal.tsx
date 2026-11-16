@@ -119,20 +119,20 @@ export const VcsInteractiveMergeModal: React.FC<VcsInteractiveMergeModalProps> =
                     <FileCode2 className="w-3.5 h-3.5" />
                     Konflik
                     {unresolvedCount > 0 ? (
-                      <Badge variant="destructive" className="h-4 px-1 text-[10px] ml-1">
+                      <Badge variant="destructive" className="h-4 px-1 vk-text-2xs ml-1">
                         {unresolvedCount}
                       </Badge>
                     ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 ml-1" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-success ml-1" />
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="graph-links" className="text-xs h-7 px-3 gap-1.5">
-                    <Link2Off className="w-3.5 h-3.5 text-amber-500" />
+                    <Link2Off className="w-3.5 h-3.5 text-warning" />
                     Relasi Graf
                     {graphIssues.length > 0 && (
                       <Badge
                         variant="outline"
-                        className="h-4 px-1 text-[10px] ml-1 border-amber-500/40 text-amber-500"
+                        className="h-4 px-1 vk-text-2xs ml-1 border-warning/40 text-warning"
                       >
                         {graphIssues.length}
                       </Badge>
@@ -160,11 +160,11 @@ export const VcsInteractiveMergeModal: React.FC<VcsInteractiveMergeModalProps> =
         <DialogFooter className="p-3 border-t border-border/60 bg-muted/20 flex items-center justify-between sm:justify-between flex-shrink-0">
           <div className="text-xs text-muted-foreground font-mono">
             {unresolvedCount > 0 ? (
-              <span className="text-amber-500 font-medium">
+              <span className="text-warning font-medium">
                 ⚠️ {unresolvedCount} konflik tersisa
               </span>
             ) : (
-              <span className="text-emerald-500 font-medium flex items-center gap-1">
+              <span className="text-success font-medium flex items-center gap-1">
                 <Check className="w-3.5 h-3.5" /> Siap digabungkan
               </span>
             )}

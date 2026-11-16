@@ -9,6 +9,7 @@ import { parse as parseYaml } from 'yaml';
 import type {
   GraphProjection,
   Link,
+  MindmapLayoutMode,
   Node,
   NodeAttachments,
   NodeMarker,
@@ -17,6 +18,14 @@ import type {
   RenderNode,
   TopicShape,
 } from '@/domains/graph/shared/utils/graph.types';
+
+const VALID_STRUCTURE_CLASSES = new Set<MindmapLayoutMode>([
+  'mindmap',
+  'org-chart',
+  'brace-map',
+  'timeline',
+  'fishbone',
+]);
 
 const VALID_TOPIC_SHAPES = new Set<TopicShape>([
   'rounded-rect',
@@ -64,10 +73,11 @@ export function countWikilinks(content: string): number {
   return matches ? matches.length : 0;
 }
 
-/** Extracts XMind attachments (`markers`, `sticker`, `labels`), `topicShape`, `branchColor`, and local `styleOverride` from YAML frontmatter. */
+/** Extracts XMind attachments (`markers`, `sticker`, `labels`), `topicShape`, `structureClass`, `branchColor`, and local `styleOverride` from YAML frontmatter. */
 export function extractRichMetadata(content: string): {
   attachments?: NodeAttachments;
   topicShape?: TopicShape;
+  structureClass?: MindmapLayoutMode;
   branchColor?: string;
   styleOverride?: NodeStyleOverride;
 } {
@@ -153,6 +163,11 @@ export function extractRichMetadata(content: string): {
     .toLowerCase() as TopicShape;
   const topicShape = VALID_TOPIC_SHAPES.has(rawShape) ? rawShape : undefined;
 
+  const rawStructure = String(fm.structure_class ?? fm.structureClass ?? '')
+    .trim()
+    .toLowerCase() as MindmapLayoutMode;
+  const structureClass = VALID_STRUCTURE_CLASSES.has(rawStructure) ? rawStructure : undefined;
+
   const branchColor =
     typeof fm.branch_color === 'string' && fm.branch_color.trim()
       ? fm.branch_color.trim()
@@ -189,6 +204,7 @@ export function extractRichMetadata(content: string): {
         }
       : undefined,
     topicShape,
+    structureClass,
     branchColor,
     styleOverride: hasStyleOverride ? styleOverride : undefined,
   };
@@ -314,6 +330,7 @@ export function buildGraphProjection(
       childCount: (childrenByParent.get(node.id) ?? []).length,
       attachments: mergedAttachments,
       topicShape: node.topicShape ?? extracted.topicShape,
+      structureClass: node.structureClass ?? extracted.structureClass,
       wikilinkCount,
     };
   });

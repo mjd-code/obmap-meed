@@ -4,6 +4,7 @@ import { PropertiesPanel } from "@/domains/editor/components/EditorPropertiesPan
 import type { EditorMode } from "@/domains/editor/shared/utils/editor.types";
 import { FoldableMarkdown } from "@/domains/editor/components/EditorFoldableMarkdown";
 import { FootnotePopover } from "@/domains/editor/components/EditorFootnotePopover";
+import { EditorFormatToolbar } from "@/domains/editor/components/EditorFormatToolbar";
 import { useEditorMarkdownViewController } from "@/domains/editor/shared/hooks/useEditorMarkdownViewController";
 
 interface MarkdownViewProps {
@@ -25,6 +26,7 @@ export const MarkdownView = ({
   onChange,
   mode = "live",
   placeholder,
+  showToolbar = true,
   showProperties = false,
   onWikilinkClick,
   onTagClick,
@@ -50,6 +52,13 @@ export const MarkdownView = ({
     >
       {showProperties && ctrl.toolbarSettings.showProperties && (
         <PropertiesPanel value={value} onChange={onChange} />
+      )}
+
+      {!ctrl.isReading && showToolbar && ctrl.toolbarSettings.showToolbar && (
+        <EditorFormatToolbar
+          api={ctrl.api}
+          groups={ctrl.toolbarSettings.groups}
+        />
       )}
 
       {ctrl.editingPopover.isOpen && ctrl.editingPopover.virtualElement && (
@@ -89,7 +98,7 @@ export const MarkdownView = ({
       )}
 
       {ctrl.toolbarSettings.showWordCount && (
-        <div className="px-1 text-[11px] text-muted-foreground/60">
+        <div className="px-1 vk-text-xs text-muted-foreground/70">
           {ctrl.words} {ctrl.words === 1 ? "word" : "words"}
         </div>
       )}

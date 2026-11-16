@@ -63,7 +63,7 @@ export function SettingsSecurityModals({
                 className="h-8 text-xs"
               />
               {passwordForm.formState.errors.currentPassword && (
-                <p className="text-[10px] text-destructive">
+                <p className="vk-text-2xs text-destructive">
                   {passwordForm.formState.errors.currentPassword.message}
                 </p>
               )}
@@ -77,7 +77,7 @@ export function SettingsSecurityModals({
                 className="h-8 text-xs"
               />
               {passwordForm.formState.errors.newPassword && (
-                <p className="text-[10px] text-destructive">
+                <p className="vk-text-2xs text-destructive">
                   {passwordForm.formState.errors.newPassword.message}
                 </p>
               )}
@@ -91,7 +91,7 @@ export function SettingsSecurityModals({
                 className="h-8 text-xs"
               />
               {passwordForm.formState.errors.confirmPassword && (
-                <p className="text-[10px] text-destructive">
+                <p className="vk-text-2xs text-destructive">
                   {passwordForm.formState.errors.confirmPassword.message}
                 </p>
               )}

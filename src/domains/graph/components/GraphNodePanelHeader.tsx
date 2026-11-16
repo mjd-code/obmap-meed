@@ -94,7 +94,7 @@ export function GraphNodePanelHeader({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52 shadow-lg">
-            <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
+            <DropdownMenuLabel className="vk-text-2xs uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
               Tampilan & Format
             </DropdownMenuLabel>
 
@@ -102,12 +102,12 @@ export function GraphNodePanelHeader({
               {layoutMode === "wide" ? (
                 <>
                   <Minimize className="w-3.5 h-3.5 mr-2" />
-                  <span>Narrow</span>
+                  <span>Lebar Sempit</span>
                 </>
               ) : (
                 <>
                   <Maximize className="w-3.5 h-3.5 mr-2" />
-                  <span>Full Width</span>
+                  <span>Lebar Penuh</span>
                 </>
               )}
             </DropdownMenuItem>
@@ -117,19 +117,19 @@ export function GraphNodePanelHeader({
                 {editorMode === "editor" ? (
                   <>
                     <BookOpen className="w-3.5 h-3.5 mr-2 text-primary" />
-                    <span>Reading</span>
+                    <span>Mode Baca</span>
                   </>
                 ) : (
                   <>
                     <PenLine className="w-3.5 h-3.5 mr-2 text-primary" />
-                    <span>Editing</span>
+                    <span>Mode Sunting</span>
                   </>
                 )}
               </DropdownMenuItem>
             )}
 
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
+            <DropdownMenuLabel className="vk-text-2xs uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
               Aksi Dokumen
             </DropdownMenuLabel>
 

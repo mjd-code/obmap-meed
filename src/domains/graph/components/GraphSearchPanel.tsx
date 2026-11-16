@@ -53,7 +53,7 @@ export function SearchPanel({
 
         <div className="space-y-2.5">
           <div className="space-y-1">
-            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+            <span className="vk-text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Search className="h-3 w-3 text-primary" /> Judul Catatan
             </span>
             <Input
@@ -66,7 +66,7 @@ export function SearchPanel({
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+              <span className="vk-text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                 <Tag className="h-3 w-3 text-primary" /> Filter Tag
               </span>
               <Input
@@ -77,7 +77,7 @@ export function SearchPanel({
               />
             </div>
             <div className="space-y-1">
-              <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+              <span className="vk-text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                 <FileText className="h-3 w-3 text-primary" /> Teks Konten
               </span>
               <Input
@@ -102,7 +102,7 @@ export function SearchPanel({
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-medium text-foreground">Rentang Level Ditampilkan</span>
-            <span className="font-mono text-[10px] rounded bg-muted/80 px-2 py-0.5 font-semibold text-foreground">
+            <span className="font-mono vk-text-2xs rounded bg-muted/80 px-2 py-0.5 font-semibold text-foreground">
               Level {minDepth} s/d Level {maxDepth}
             </span>
           </div>
@@ -121,13 +121,13 @@ export function SearchPanel({
 
           {/* Quick Depth Presets */}
           <div className="flex items-center gap-1.5 pt-1">
-            <span className="text-[10px] text-muted-foreground shrink-0">Preset Cepat:</span>
+            <span className="vk-text-2xs text-muted-foreground shrink-0">Preset Cepat:</span>
             <div className="flex flex-wrap gap-1">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-5 px-1.5 text-[9px]"
+                className="h-5 px-1.5 vk-text-2xs"
                 onClick={() => { onMinDepthChange(0); onMaxDepthChange(1); }}
               >
                 Root Saja (0-1)
@@ -136,7 +136,7 @@ export function SearchPanel({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-5 px-1.5 text-[9px]"
+                className="h-5 px-1.5 vk-text-2xs"
                 onClick={() => { onMinDepthChange(0); onMaxDepthChange(3); }}
               >
                 Dangkal (0-3)
@@ -145,7 +145,7 @@ export function SearchPanel({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-5 px-1.5 text-[9px]"
+                className="h-5 px-1.5 vk-text-2xs"
                 onClick={() => { onMinDepthChange(0); onMaxDepthChange(10); }}
               >
                 Semua (0-10)

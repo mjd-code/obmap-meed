@@ -56,9 +56,9 @@ source_of_truth: src/domains/, supabase/migrations/
 | **`FEAT-GROWTH-001`** | Landing Page 5-DNA & In-Memory Live Sandbox (`< 65KB`) | `pages`, `vault` | `[PARTIAL]` | `STEP-02.2` — `src/pages/Landing.tsx` + CTA adaptif stage |
 | **`FEAT-GROWTH-002`** | Five-Stage Hybrid Onboarding & Sandbox Migration | `auth`, `workspace` | `[PLANNED]` | `STEP-02.3` — Splash + Skip → Sandbox transfer → Survey → Coach Marks |
 | **`FEAT-BILL-001`** | Dynamic Admin-Managed Plans/Quotas & **Xendit/Midtrans** First Checkout | `admin`, `supabase` | `[VISION]` | `STEP-04.1`–`04.2` — Tabel `plans`/`plan_quotas` di `/admin`, **Xendit/Midtrans** lalu Stripe |
-| **`FEAT-SET-001`** | 6-Layer Cascading Config (`ConfigService`, `Local/CloudConfigStore`) & Unified Theme Engine | `settings`, `graph` | `[IMPLEMENTED]` | `STEP-01.5` (`CHG-20261114-004`) — `resolveCascadingConfig`, Org-Lock, `--ob-*` DOM↔Canvas2D + `refresh()` |
+| **`FEAT-SET-001`** | 6-Layer Cascading Config (`ConfigService`, `Local/CloudConfigStore`) & Unified Theme Engine | `settings`, `graph` | `[IMPLEMENTED]` | `STEP-01.5` (`CHG-20261114-004`) — `resolveCascadingConfig`, Org-Lock, `--vk-*` (alias `--ob-*`) DOM↔Canvas2D + `refresh()` |
 | **`FEAT-LMS-001`** | Interactive Graph LMS, `prerequisites` DAG & Skill Tree Progress | `graph`, `community` | `[VISION]` | `STEP-05.1` — State *Locked / Available / Mastered* + kuis |
-| **`FEAT-EXT-001`** | Sandboxed `@obmap/sdk` (Worker/Iframe CSP), Permission Manifest & 12 Hooks | `settings` | `[PARTIAL]` | `STEP-05.3` — Berevolusi dari `pluginRegistry.ts`, `schemaRegistry.ts`, `registerConfigSections.ts` |
+| **`FEAT-EXT-001`** | Sandboxed `@vk/sdk` (aliased ke `brand.sdkPackageName`, Worker/Iframe CSP), Permission Manifest & 12 Hooks | `settings` | `[PARTIAL]` | `STEP-05.3` — Berevolusi dari `pluginRegistry.ts`, `schemaRegistry.ts`, `registerConfigSections.ts` |
 
 ---
 

@@ -36,7 +36,7 @@ export function StatusBar() {
   const progressPercent = timeLapseTotal > 0 ? Math.round((timeLapseStep / timeLapseTotal) * 100) : 0;
 
   return (
-    <div className="relative h-6 shrink-0 flex items-center justify-between px-3 border-b lg:border-b-0 lg:border-t border-border bg-muted/30 text-[11px] text-muted-foreground select-none overflow-hidden">
+    <div className="relative h-6 shrink-0 flex items-center justify-between px-3 border-b lg:border-b-0 lg:border-t border-border bg-muted/30 vk-text-xs text-muted-foreground select-none overflow-hidden">
       {/* ========================================================================= */}
       {/* KIRI: DYNAMIC NOTIFICATION & TIME-LAPSE STATUS DENGAN OVERFLOW SHADOW    */}
       {/* ========================================================================= */}
@@ -45,7 +45,7 @@ export function StatusBar() {
           /* NOTIFIKASI TIME-LAPSE EVOLUSI CATATAN */
           <div className="relative flex items-center gap-2 text-foreground font-medium truncate pr-6 animate-in fade-in-50 slide-in-from-bottom-1 duration-200">
             <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="absolute inline-flex h-full w-full animate-ping motion-reduce:animate-none rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
             <span className="truncate">

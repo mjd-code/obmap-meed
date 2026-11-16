@@ -67,7 +67,7 @@ export function GlobalTemplatesPanel({
           </form>
 
           <div className="border-t border-border/40 pt-2 space-y-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="vk-text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               Aksi Global
             </span>
             <Button
@@ -115,13 +115,13 @@ export function GlobalTemplatesPanel({
                         {isDefault && (
                           <Badge
                             variant="secondary"
-                            className="h-4 px-1 text-[9px] font-mono leading-none text-primary"
+                            className="h-4 px-1 vk-text-2xs font-mono leading-none text-primary"
                           >
                             Default
                           </Badge>
                         )}
                       </div>
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="vk-text-2xs text-muted-foreground">
                         {tmpl.layoutMode || "free-force"} •{" "}
                         {new Date(tmpl.updatedAt).toLocaleDateString()}
                       </div>
@@ -152,7 +152,7 @@ export function GlobalTemplatesPanel({
                             className={cn(
                               "h-6 w-6",
                               isDefault
-                                ? "text-primary hover:text-amber-500"
+                                ? "text-primary hover:text-warning"
                                 : "text-muted-foreground hover:text-foreground",
                             )}
                             onClick={() => ctrl.handleToggleDefault(tmpl)}
@@ -200,31 +200,31 @@ export function GlobalTemplatesPanel({
           <div className="grid grid-cols-2 gap-1.5 text-center">
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
               <div className="text-sm font-bold text-foreground">{ctrl.stats.totalCount}</div>
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+              <div className="vk-text-2xs uppercase tracking-wider text-muted-foreground">
                 Koneksi
               </div>
             </div>
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
               <div className="text-sm font-bold text-foreground">{ctrl.stats.hierarchyCount}</div>
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+              <div className="vk-text-2xs uppercase tracking-wider text-muted-foreground">
                 Hierarki
               </div>
             </div>
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
               <div className="text-sm font-bold text-foreground">{ctrl.stats.backlinkCount}</div>
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+              <div className="vk-text-2xs uppercase tracking-wider text-muted-foreground">
                 Backlinks
               </div>
             </div>
             <div className="rounded-lg border border-border/60 bg-secondary/30 p-2">
               <div className="text-sm font-bold text-foreground">{ctrl.stats.tagCount}</div>
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Tags</div>
+              <div className="vk-text-2xs uppercase tracking-wider text-muted-foreground">Tags</div>
             </div>
           </div>
 
           {ctrl.stats.topHubs.length > 0 && (
             <div className="space-y-1 pt-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="vk-text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Top Connected Hubs
               </span>
               <div className="space-y-1 max-h-[85px] overflow-y-auto pr-0.5">
@@ -234,12 +234,12 @@ export function GlobalTemplatesPanel({
                     className="flex items-center justify-between gap-2 rounded-md border border-border/50 bg-secondary/20 px-2 py-1"
                   >
                     <div className="flex min-w-0 items-center gap-1.5">
-                      <span className="text-[9px] font-mono text-muted-foreground">
+                      <span className="vk-text-2xs font-mono text-muted-foreground">
                         #{index + 1}
                       </span>
                       <span className="truncate text-xs text-foreground">{hub.nodeName}</span>
                     </div>
-                    <span className="shrink-0 text-[10px] font-mono font-semibold text-primary">
+                    <span className="shrink-0 vk-text-2xs font-mono font-semibold text-primary">
                       {hub.connectionCount}
                     </span>
                   </div>

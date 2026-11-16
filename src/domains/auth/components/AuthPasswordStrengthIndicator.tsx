@@ -56,10 +56,10 @@ const calculateStrength = (password: string): StrengthResult => {
   const labels = ['Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
   const colors = [
     'bg-destructive',
-    'bg-orange-500',
-    'bg-yellow-500',
-    'bg-green-500',
-    'bg-emerald-500',
+    'bg-warning',
+    'bg-warning',
+    'bg-info',
+    'bg-success',
   ];
 
   return {
@@ -92,8 +92,8 @@ export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicato
         <span className={cn(
           'font-medium',
           strength.score <= 1 && 'text-destructive',
-          strength.score === 2 && 'text-yellow-600',
-          strength.score >= 3 && 'text-green-600'
+          strength.score === 2 && 'text-warning',
+          strength.score >= 3 && 'text-success'
         )}>
           {strength.label}
         </span>

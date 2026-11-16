@@ -103,7 +103,7 @@ export const FootnotePopover: React.FC<FootnotePopoverProps> = ({
       >
         {/* Header Ultra-Compact: Badge + Aksi Kanan (Link & Lompat) */}
         <div className="flex items-center justify-between pb-1 border-b border-border/30">
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-primary/10 text-primary border border-primary/20 leading-none">
+          <span className="px-1.5 py-0.5 rounded vk-text-2xs font-mono font-semibold bg-primary/10 text-primary border border-primary/20 leading-none">
             [^{label}]
           </span>
           <div className="flex items-center gap-0.5">

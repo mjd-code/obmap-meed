@@ -20,6 +20,14 @@ interface PublicMarkdownReaderProps {
   className?: string;
 }
 
+const PUBLIC_PROSE_STYLE: React.CSSProperties = {
+  fontFamily: "var(--vk-font-prose)",
+  fontSize: "var(--vk-prose-size)",
+  lineHeight: "var(--vk-prose-line-height)",
+  letterSpacing: "var(--vk-prose-letter-spacing)",
+  maxWidth: "var(--vk-prose-max-width)",
+};
+
 export const PublicMarkdownReader: React.FC<PublicMarkdownReaderProps> = ({
   content,
   username,
@@ -77,6 +85,7 @@ export const PublicMarkdownReader: React.FC<PublicMarkdownReaderProps> = ({
 
   return (
     <div
+      style={PUBLIC_PROSE_STYLE}
       className={cn(
         "prose prose-neutral dark:prose-invert max-w-none break-words leading-relaxed",
         "prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl",

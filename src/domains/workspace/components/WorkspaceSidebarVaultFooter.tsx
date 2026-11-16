@@ -71,7 +71,7 @@ export function WorkspaceSidebarVaultFooter({
                   <VaultIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium">{vault.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="vk-text-2xs text-muted-foreground">
                       {vault.nodeCount} {vault.nodeCount === 1 ? "item" : "items"}
                     </p>
                   </div>
@@ -99,7 +99,7 @@ export function WorkspaceSidebarVaultFooter({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mt-1.5 px-2 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-2 mt-1.5 px-2 vk-text-xs text-muted-foreground">
         <span>
           {folderCount} {folderCount === 1 ? "folder" : "folders"}
         </span>

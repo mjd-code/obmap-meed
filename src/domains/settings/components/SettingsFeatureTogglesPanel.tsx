@@ -68,7 +68,7 @@ export function FeatureTogglesPanel() {
                 <PanelBottom className="w-3.5 h-3.5 text-primary" />
                 <span>Horizontal Expandable Toolbar</span>
               </div>
-              <p className="text-[11px] leading-relaxed">
+              <p className="vk-text-xs leading-relaxed">
                 Pita kontrol tepat di atas footer dengan tab navigasi ala Microsoft Office.
               </p>
             </div>
@@ -89,7 +89,7 @@ export function FeatureTogglesPanel() {
                 <Settings2 className="w-3.5 h-3.5 text-primary" />
                 <span>Gear Option Button (Default)</span>
               </div>
-              <p className="text-[11px] leading-relaxed">
+              <p className="vk-text-xs leading-relaxed">
                 Tombol melayang klasik di sudut kiri bawah dengan popup menu.
               </p>
             </div>

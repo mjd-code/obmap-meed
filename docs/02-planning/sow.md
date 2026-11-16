@@ -36,7 +36,7 @@ Arsitektur 12 domain DDD, penghapusan *god components* (`OVER_300=0`), 4 solver 
 | **`WP-0`: Documentation Overhaul (`G1`–`G7`)** | Pre-Code Gate | Docs Waves `G1`–`G7` | Penyelarasan penuh `docs/`, `AGENTS.md`, `llms.txt`, `ADR-0007`–`0012`, `docs/07-developers/`, dan `docs/_machine/*.json` tanpa broken link atau kontradiksi. |
 | **`WP-1`: Stage 1 Pilot Readiness (`H1`)** | `stage_1_partner` | `STEP-01.1` – `STEP-01.5` | Clean type-safety (`TD-005`), domain `community` + *hard cutover* `/p/*` → `/:username`, `ReleaseStageGate`, approval individual `/admin`, `PolicyEngine` + `CC BY-SA 4.0`, & 6-Layer Config + Theme sync. |
 | **`WP-2`: Stage 2 Community Beta (`H2` + `H3`)** | `stage_2_community_beta` | `STEP-02.1` – `STEP-03.3` | Domain ke-13 `dashboard` (`/vaults` + 5 derived views), Landing Sandbox `< 65KB`, Hybrid Onboarding 5-tahap, Profil `/:username`, `/explore`, *Verified Scholar* manual Admin, `[[@user/vault/note]]`, & Fork/MR. |
-| **`WP-3`: Stage 3 Commercial GA (`H4` + `H5`)** | `stage_3_commercial_ga` | `STEP-04.1` – `STEP-05.4` | Skema tarif/kuota dinamis di `/admin`, webhook **Xendit/Midtrans first** + Stripe, Teamspaces + *Org-Lock*, CRDT Yjs, Interactive LMS DAG, solver `argument-map`/`citation-tree`, Pitch Mode, `@obmap/sdk`, & audit WCAG/OWASP. |
+| **`WP-3`: Stage 3 Commercial GA (`H4` + `H5`)** | `stage_3_commercial_ga` | `STEP-04.1` – `STEP-05.4` | Skema tarif/kuota dinamis di `/admin`, webhook **Xendit/Midtrans first** + Stripe, Teamspaces + *Org-Lock*, CRDT Yjs, Interactive LMS DAG, solver `argument-map`/`citation-tree`, Pitch Mode, `@vk/sdk`, & audit WCAG/OWASP. |
 
 ---
 

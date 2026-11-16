@@ -39,7 +39,7 @@ flowchart LR
     end
     subgraph S3 ["Stage 3: Public Commercial GA (H4 + H5)"]
         H4["EPIC-10..12 (STEP-04.1..04.3): Dynamic Quotas/Pricing Admin, Xendit/Midtrans -> Stripe, Teamspaces & CRDT"]
-        H5["EPIC-13..15 (STEP-05.1..05.4): LMS Skill Tree DAG, Argument/Citation Solvers, @obmap/sdk, Audit GA"]
+        H5["EPIC-13..15 (STEP-05.1..05.4): LMS Skill Tree DAG, Argument/Citation Solvers, @vk/sdk, Audit GA"]
         H4 --> H5
     end
     S1 --> S2 --> S3
@@ -55,7 +55,7 @@ flowchart LR
 | **Stage 2 (`stage_2_community_beta`)** | **H2** | `EPIC-04`–`06` | `STEP-02.1`–`02.3` | Domain ke-13 `dashboard` (`/vaults`, 5 derived views), Landing Live Sandbox (`< 65KB`), Hybrid Onboarding 5 tahap + approval per-user di `/admin`. |
 | **Stage 2 (`stage_2_community_beta`)** | **H3** | `EPIC-07`–`09` | `STEP-03.1`–`03.3` | Profil `/:username`, `/explore`, kurasi manual *Verified Scholar*, rujukan `[[@user/vault/note]]` (`CC BY-SA 4.0`), *Fork & Knowledge Merge Request*, anotasi paragraf. |
 | **Stage 3 (`stage_3_commercial_ga`)** | **H4** | `EPIC-10`–`12` | `STEP-04.1`–`04.3` | Paket/kuota dinamis di `/admin` (`plans`, `plan_quotas`), gateway **Xendit/Midtrans first** lalu Stripe, Teamspaces + Org-Lock, CRDT Yjs real-time. |
-| **Stage 3 (`stage_3_commercial_ga`)** | **H5** | `EPIC-13`–`15` | `STEP-05.1`–`05.4` | Interactive LMS Skill Tree DAG, solver `argument-map` & `citation-tree`, Pitch Mode & PDF/SVG/OPML, `@obmap/sdk` ber-sandbox, audit GA & WCAG 2.2 AA. |
+| **Stage 3 (`stage_3_commercial_ga`)** | **H5** | `EPIC-13`–`15` | `STEP-05.1`–`05.4` | Interactive LMS Skill Tree DAG, solver `argument-map` & `citation-tree`, Pitch Mode & PDF/SVG/OPML, `@vk/sdk` ber-sandbox, audit GA & WCAG 2.2 AA. |
 
 ---
 

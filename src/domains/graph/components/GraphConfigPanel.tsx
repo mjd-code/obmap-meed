@@ -36,6 +36,7 @@ import {
 } from "@/domains/graph/shared/stores/useGraphStore";
 import { NodeStylingTab } from '@/domains/graph/components/GraphNodeStylingTab';
 import { LinkStylingTab } from '@/domains/graph/components/GraphLinkStylingTab';
+import { FreeForceControls } from '@/domains/graph/components/GraphFreeForceControls';
 import { AnalyticsTab } from '@/domains/graph/components/GraphAnalyticsTab';
 import { useIsMobile } from "@/global/hooks/useMobile";
 
@@ -83,7 +84,7 @@ export function GraphConfigPanel({
     <Button variant="outline" size="sm" className="w-full justify-start gap-2">
       <Settings2 className="w-4 h-4" />
       <span className="flex-1 text-left">Configure</span>
-      <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+      <Badge variant="secondary" className="px-1.5 py-0 vk-text-2xs">
         {stats.totalCount}
       </Badge>
     </Button>
@@ -171,6 +172,13 @@ export function GraphConfigPanel({
                     onUpdate={onLinkConfigUpdate}
                     onTopologyUpdate={onTopologyConfigUpdate}
                     onTopologyStyleUpdate={onTopologyStyleUpdate}
+                  />
+                </TabsContent>
+
+                <TabsContent value="forces" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <FreeForceControls
+                    forces={config.forces}
+                    onUpdate={onForceConfigUpdate}
                   />
                 </TabsContent>
                 

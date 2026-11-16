@@ -18,6 +18,13 @@ import { getFileSystemService } from "@/domains/vault/shared/api/FileSystemServi
 import { directoryHandleStore } from "@/domains/vault/shared/api/directoryHandleStore";
 import { writeVaultConfigFile } from "@/domains/settings/shared/api/VaultConfigFile";
 import {
+  LEGACY_OBMAP_KEYS,
+  VK_STORAGE_KEYS,
+  readMigratedLocalStorageItem,
+  removeBothLocalStorageKeys,
+  writeCanonicalLocalStorageItem,
+} from "@/global/utils/storageKeyMigrator";
+import {
   BackupConfig,
   VaultLocation,
   VaultGraphConfig,
@@ -71,7 +78,7 @@ const newVaultId = (): string =>
 export class VaultManager {
   private vaults: Map<string, Vault> = new Map();
   private activeVaultId: string | null = null;
-  private static readonly ACTIVE_KEY = "obmap.activeVaultId";
+  private static readonly ACTIVE_KEY = VK_STORAGE_KEYS.LS_ACTIVE_VAULT_ID;
   private storage: VaultStorage;
   private backupService: VaultBackupService;
   private initialized = false;
@@ -132,7 +139,10 @@ export class VaultManager {
 
   private restoreActiveVault(): void {
     try {
-      const saved = localStorage.getItem(VaultManager.ACTIVE_KEY);
+      const saved = readMigratedLocalStorageItem(
+        VaultManager.ACTIVE_KEY,
+        LEGACY_OBMAP_KEYS.LS_ACTIVE_VAULT_ID,
+      );
       if (saved && this.vaults.has(saved)) {
         this.activeVaultId = saved;
         return;
@@ -147,8 +157,12 @@ export class VaultManager {
   private rememberActiveVault(): void {
     try {
       if (this.activeVaultId)
-        localStorage.setItem(VaultManager.ACTIVE_KEY, this.activeVaultId);
-      else localStorage.removeItem(VaultManager.ACTIVE_KEY);
+        writeCanonicalLocalStorageItem(VaultManager.ACTIVE_KEY, this.activeVaultId);
+      else
+        removeBothLocalStorageKeys(
+          VaultManager.ACTIVE_KEY,
+          LEGACY_OBMAP_KEYS.LS_ACTIVE_VAULT_ID,
+        );
     } catch {
       /* ignore */
     }

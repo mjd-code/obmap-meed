@@ -74,17 +74,17 @@ export const DiagnosticsTableView: React.FC<Props> = ({ telemetry }) => {
                     <TableRow key={d.id}>
                       <TableCell>
                         {d.severity === "error" ? (
-                          <Badge variant="destructive" className="text-[10px] flex items-center gap-1 w-fit">
+                          <Badge variant="destructive" className="vk-text-2xs flex items-center gap-1 w-fit">
                             <XCircle className="h-3 w-3" />
                             Error
                           </Badge>
                         ) : d.severity === "warning" ? (
-                          <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] flex items-center gap-1 w-fit">
+                          <Badge className="bg-warning/10 text-warning border-warning/20 vk-text-2xs flex items-center gap-1 w-fit">
                             <AlertTriangle className="h-3 w-3" />
                             Warning
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-[10px] flex items-center gap-1 w-fit">
+                          <Badge variant="secondary" className="vk-text-2xs flex items-center gap-1 w-fit">
                             <Info className="h-3 w-3" />
                             Info
                           </Badge>

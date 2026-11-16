@@ -1,11 +1,19 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { resolveCascadingConfig } from "@/domains/settings/shared/api/ConfigService";
+import { getConfigSection } from "@/domains/settings/shared/api/configRegistry";
+import { registerConfigSections } from "@/domains/settings/shared/api/registerConfigSections";
 import {
   applyThemeToDOM,
   defaultTheme,
   sanitizeScopedCssSnippet,
   useThemeStore,
 } from "@/domains/settings/shared/stores/useThemeStore";
+import { THEME_PRESET_LIST } from "@/domains/settings/shared/utils/themePresets";
+import {
+  autoAdjustContrastHsl,
+  computeContrastRatio,
+  evaluateContrastCompliance,
+} from "@/global/utils/color-utils";
 import { resolveSemanticCanvasTokens } from "@/domains/graph/shared/utils/theme";
 
 describe("STEP-01.5: 6-Layer Cascading Config & Unified Theme Engine", () => {
@@ -111,5 +119,51 @@ describe("STEP-01.5: 6-Layer Cascading Config & Unified Theme Engine", () => {
     expect(tokens.bgCanvas).toBeTruthy();
     expect(tokens.nodeFolder).toBeTruthy();
     expect(tokens.edgeDefault).toBeTruthy();
+  });
+
+  it("validates WCAG contrast across all 6 UI-STEP-01 presets and projects --vk-* surface/semantic/typography tokens", () => {
+    for (const preset of THEME_PRESET_LIST) {
+      const evalResult = evaluateContrastCompliance(
+        preset.colors.foreground,
+        preset.colors.background,
+      );
+      expect(evalResult.passesAA).toBe(true);
+      if (preset.isHighContrast) {
+        expect(evalResult.passesAAA).toBe(true);
+      }
+    }
+
+    const lowContrastAdjusted = autoAdjustContrastHsl("240 10% 25%", "240 15% 5%", 4.5);
+    expect(computeContrastRatio(lowContrastAdjusted, "240 15% 5%")).toBeGreaterThanOrEqual(4.5);
+
+    const store = useThemeStore.getState();
+    store.setPreset("daylight-paper");
+    store.updateTypography({ uiScale: 1.1, uiFont: "Plus Jakarta Sans" });
+    store.updateLayout({ density: "compact" });
+
+    const root = document.documentElement;
+    expect(root.getAttribute("data-theme")).toBe("daylight-paper");
+    expect(root.getAttribute("data-density")).toBe("compact");
+    expect(root.classList.contains("light")).toBe(true);
+    expect(root.style.getPropertyValue("--vk-ui-scale")).toBe("1.1");
+    expect(root.style.getPropertyValue("--vk-font-ui")).toContain("Plus Jakarta Sans");
+    expect(root.style.getPropertyValue("--vk-success")).toBeTruthy();
+    expect(root.style.getPropertyValue("--vk-warning")).toBeTruthy();
+    expect(root.style.getPropertyValue("--vk-danger")).toBeTruthy();
+    expect(root.style.getPropertyValue("--vk-info")).toBeTruthy();
+
+    store.setPreset("vk-midnight");
+    expect(root.getAttribute("data-theme")).toBe("vk-midnight");
+    expect(root.classList.contains("dark")).toBe(true);
+  });
+
+  it("registers the 'appearance' config section and syncs boot hydration", () => {
+    registerConfigSections();
+    const appearanceSection = getConfigSection("appearance");
+    expect(appearanceSection).toBeDefined();
+    expect(appearanceSection?.scope).toBe("user");
+
+    useThemeStore.getState().hydrateAppearanceOnBoot();
+    expect(document.documentElement.style.getPropertyValue("--vk-bg-canvas")).toBeTruthy();
   });
 });

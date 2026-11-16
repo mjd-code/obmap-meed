@@ -22,8 +22,10 @@ import {
   Loader2,
   Database,
 } from "lucide-react";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 export const AdminPage: React.FC = () => {
+  const brand = useBrandConfig();
   const { isAuthorized, needsSetup, loading: guardLoading } = useSuperadminGuard();
   const navigate = useNavigate();
 
@@ -95,17 +97,17 @@ export const AdminPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-tight leading-none">Superadmin Cockpit</h1>
-              <p className="text-[11px] text-muted-foreground mt-0.5">ObMap Knowledge Ecosystem</p>
+              <p className="vk-text-xs text-muted-foreground mt-0.5">{brand.name} Knowledge Ecosystem</p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5">
           {/* Badge Ping Supabase Cloud */}
-          <Badge variant="outline" className="hidden sm:flex text-[11px] items-center gap-1.5 py-1 px-2.5">
-            <Database className="w-3 h-3 text-emerald-500" />
+          <Badge variant="outline" className="hidden sm:flex vk-text-xs items-center gap-1.5 py-1 px-2.5">
+            <Database className="w-3 h-3 text-success" />
             <span>Supabase Cloud:</span>
-            <span className="font-mono text-emerald-600 font-semibold">{metrics?.dbPingMs ?? "..."} ms</span>
+            <span className="font-mono text-success font-semibold">{metrics?.dbPingMs ?? "..."} ms</span>
           </Badge>
 
           <Button

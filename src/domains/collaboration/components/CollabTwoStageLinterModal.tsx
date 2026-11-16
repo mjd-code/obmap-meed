@@ -120,7 +120,7 @@ export const TwoStageLinterModal: React.FC<TwoStageLinterModalProps> = ({
                 </div>
                 <Badge
                   variant={auditResult?.ghostLinksCount ? "outline" : "default"}
-                  className={auditResult?.ghostLinksCount ? "text-amber-500 border-amber-500/30" : ""}
+                  className={auditResult?.ghostLinksCount ? "text-warning border-warning/30" : ""}
                 >
                   {auditResult?.ghostLinksCount
                     ? `${auditResult.ghostLinksCount} Tautan Draf`
@@ -128,7 +128,7 @@ export const TwoStageLinterModal: React.FC<TwoStageLinterModalProps> = ({
                 </Badge>
               </div>
               {auditResult?.ghostLinksCount ? (
-                <div className="text-xs text-amber-500 flex items-start gap-1.5 mt-1">
+                <div className="text-xs text-warning flex items-start gap-1.5 mt-1">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>
                     Tautan ke catatan yang belum terbit akan ditampilkan redup (*graceful ghost link*)
@@ -136,7 +136,7 @@ export const TwoStageLinterModal: React.FC<TwoStageLinterModalProps> = ({
                   </span>
                 </div>
               ) : (
-                <div className="text-xs text-emerald-500 flex items-center gap-1.5 mt-1">
+                <div className="text-xs text-success flex items-center gap-1.5 mt-1">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Tidak ada tautan rusak yang terdeteksi.</span>
                 </div>

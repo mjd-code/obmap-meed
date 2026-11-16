@@ -103,12 +103,12 @@ export const ClaimUsernameModal: React.FC<ClaimUsernameModalProps> = ({
               />
               <div className="absolute right-3 top-2.5 text-muted-foreground">
                 {isChecking && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-                {!isChecking && isAvailable === true && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                {!isChecking && isAvailable === true && <CheckCircle2 className="w-4 h-4 text-success" />}
                 {!isChecking && isAvailable === false && <XCircle className="w-4 h-4 text-destructive" />}
               </div>
             </div>
             {feedback && (
-              <p className={`text-xs ${isAvailable ? "text-emerald-500" : "text-destructive"}`}>
+              <p className={`text-xs ${isAvailable ? "text-success" : "text-destructive"}`}>
                 {feedback}
               </p>
             )}

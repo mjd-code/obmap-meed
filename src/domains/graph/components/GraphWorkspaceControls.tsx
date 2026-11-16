@@ -127,9 +127,9 @@ export function GraphWorkspaceControls({
         className,
       )}
     >
-      <div className="pointer-events-auto flex items-center rounded-lg border border-border/60 bg-card/90 p-1 shadow-md shadow-black/25 backdrop-blur-md transition-all">
+      <div className="pointer-events-auto flex items-center rounded-lg border border-border/60 bg-card/90 p-1 shadow-md shadow-black/25 backdrop-blur-md transition-all motion-reduce:transition-none">
         {ctrl.isGearOpen && (
-          <div className="mr-1 flex max-w-[calc(100vw-80px)] sm:max-w-[280px] items-center gap-1 overflow-x-auto overscroll-contain pr-1 border-r border-border/50 no-scrollbar animate-in fade-in-0 slide-in-from-right-2 duration-150">
+          <div className="mr-1 flex max-w-[calc(100vw-80px)] sm:max-w-[280px] items-center gap-1 overflow-x-auto overscroll-contain pr-1 border-r border-border/50 no-scrollbar animate-in fade-in-0 slide-in-from-right-2 duration-150 motion-reduce:animate-none">
             {GRAPH_CONTROL_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = ctrl.gearActivePanel === item.id;
@@ -179,10 +179,10 @@ export function GraphWorkspaceControls({
         <section
           role="region"
           aria-label="Graph Control Settings Panel"
-          className="pointer-events-auto w-[min(340px,calc(100vw-1.5rem))] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-xl border border-border/70 bg-card/95 shadow-2xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-150"
+          className="pointer-events-auto w-[min(340px,calc(100vw-1.5rem))] max-h-[calc(100vh-6.5rem)] flex flex-col rounded-xl border border-border/70 bg-card/95 shadow-2xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-150 motion-reduce:animate-none"
         >
           <div className="flex h-8 items-center justify-between border-b border-border/50 px-3 shrink-0">
-            <span className="text-[11px] font-semibold text-foreground/90">
+            <span className="vk-text-xs font-semibold text-foreground/90">
               {PANEL_TITLES[ctrl.gearActivePanel]}
             </span>
             <Button

@@ -134,7 +134,7 @@ export function LayoutPanel({
                   <Icon className={cn('h-3.5 w-3.5 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
                   <span className="text-xs font-semibold truncate">{item.label}</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground/80 truncate w-full">{item.desc}</span>
+                <span className="vk-text-2xs text-muted-foreground/80 truncate w-full">{item.desc}</span>
               </button>
             );
           })}
@@ -153,7 +153,7 @@ export function LayoutPanel({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-foreground">Penataan Posisi Node</span>
-            <span className="font-mono text-[10px] text-muted-foreground">
+            <span className="font-mono vk-text-2xs text-muted-foreground">
               {layoutArrangement === 'auto' ? 'Auto Snap' : 'Free Drag'}
             </span>
           </div>
@@ -183,7 +183,7 @@ export function LayoutPanel({
         <div className="space-y-1.5 pt-2 border-t border-border/40">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-foreground">Detail Saat Zoom Out</span>
-            <span className="font-mono text-[10px] text-muted-foreground">
+            <span className="font-mono vk-text-2xs text-muted-foreground">
               {zoomOutRendering === 'optimized' ? 'Optimized' : 'Full Detail'}
             </span>
           </div>

@@ -117,17 +117,17 @@ export function SidebarPanel({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
                   <DropdownMenuItem onClick={() => controller.triggerUpload("image/*")}>
-                    <ImageIcon className="w-4 h-4 mr-2 text-emerald-500" />
+                    <ImageIcon className="w-4 h-4 mr-2 text-success" />
                     Upload Image
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => controller.triggerUpload("audio/*")}>
-                    <Mic className="w-4 h-4 mr-2 text-purple-500" />
+                    <Mic className="w-4 h-4 mr-2 text-accent" />
                     Upload Sound / Voice
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => controller.triggerUpload(".pdf,application/pdf")}
                   >
-                    <FileText className="w-4 h-4 mr-2 text-rose-500" />
+                    <FileText className="w-4 h-4 mr-2 text-danger" />
                     Upload PDF
                   </DropdownMenuItem>
                   <DropdownMenuItem

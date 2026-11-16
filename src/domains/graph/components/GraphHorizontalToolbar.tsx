@@ -135,7 +135,7 @@ export function GraphHorizontalToolbar({
                         <TabsTrigger
                           key={item.id}
                           value={item.id}
-                          className="h-6 px-2.5 text-[11px] font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs flex items-center gap-1.5 shrink-0 transition-colors"
+                          className="h-6 px-2.5 vk-text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs flex items-center gap-1.5 shrink-0 transition-colors"
                         >
                           <Icon className={cn('h-3 w-3', item.iconClassName)} />
                           <span>{item.label}</span>
@@ -159,7 +159,7 @@ export function GraphHorizontalToolbar({
               <button
                 type="button"
                 onClick={onToggleExpanded}
-                className="group flex items-center gap-1.5 text-[11px] font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-1.5 py-0.5 shrink-0 bg-transparent ml-2"
+                className="group flex items-center gap-1.5 vk-text-xs font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-1.5 py-0.5 shrink-0 bg-transparent ml-2"
                 aria-label="Tutup Toolbar"
               >
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -180,7 +180,7 @@ export function GraphHorizontalToolbar({
         <button
           type="button"
           onClick={onToggleExpanded}
-          className="group flex items-center gap-1.5 text-[11px] font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-1.5 py-0.5 bg-transparent"
+          className="group flex items-center gap-1.5 vk-text-xs font-medium text-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-1.5 py-0.5 bg-transparent"
           aria-label={isExpanded ? 'Tutup toolbar' : 'Buka toolbar graph'}
         >
           {isExpanded ? (
@@ -190,13 +190,13 @@ export function GraphHorizontalToolbar({
           )}
           <span>Toolbar</span>
           {filterCount > 0 && (
-            <span className="flex items-center justify-center rounded-full bg-primary px-1.5 py-0.2 text-[9px] font-semibold text-primary-foreground">
+            <span className="flex items-center justify-center rounded-full bg-primary px-1.5 py-0.2 vk-text-2xs font-semibold text-primary-foreground">
               {filterCount}
             </span>
           )}
         </button>
 
-        <span className="text-[10px] text-muted-foreground/70 hidden sm:inline">
+        <span className="vk-text-2xs text-muted-foreground/70 hidden sm:inline">
           {isExpanded ? PANEL_TITLES[activeTab] : 'Klik toolbar untuk konfigurasi graph'}
         </span>
       </div>

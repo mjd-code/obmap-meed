@@ -47,7 +47,7 @@ export function UnlinkedMentions({
                   {hit.nodeName}
                 </button>
                 {hit.count > 1 && (
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="vk-text-2xs">
                     {hit.count}
                   </Badge>
                 )}

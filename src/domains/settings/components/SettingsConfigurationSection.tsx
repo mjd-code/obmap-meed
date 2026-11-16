@@ -160,14 +160,14 @@ export function ConfigurationSettings() {
                 {resolved.isLockedByAdmin && (
                   <Badge
                     variant="secondary"
-                    className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600"
+                    className="vk-text-2xs gap-1 px-1.5 py-0 border-warning/40 bg-warning/10 text-warning"
                   >
                     <Lock className="w-2.5 h-2.5" />
                     Locked by Admin
                   </Badge>
                 )}
               </div>
-              <span className="text-[11px] uppercase tracking-wide text-muted-foreground shrink-0">
+              <span className="vk-text-xs uppercase tracking-wide text-muted-foreground shrink-0">
                 {resolved.sourceLayer} · {section.scope === "vault" ? "Per vault" : "Account-wide"} · v
                 {section.version}
               </span>

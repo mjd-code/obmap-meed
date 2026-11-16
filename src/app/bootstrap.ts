@@ -24,12 +24,16 @@ import { registerEditorCommands } from "@/domains/editor/shared/api/editorComman
 import { syncEngine } from "@/domains/sync/shared/api/SyncEngine";
 import { syncCoordinator } from "@/domains/sync/shared/api/SyncCoordinator";
 import { registerToggleableFeatures } from "@/domains/settings/shared/utils/featureToggles";
+import { useThemeStore } from "@/domains/settings/shared/stores/useThemeStore";
 
 let bootstrapped = false;
 
 export function bootstrapApp(): void {
   if (bootstrapped) return;
   bootstrapped = true;
+
+  // Synchronous boot paint before initial React mount to prevent FOUC (UI-STEP-01)
+  useThemeStore.getState().hydrateAppearanceOnBoot();
 
   container.registerInstance(ServiceIds.EventBus, eventBus);
   container.registerInstance(ServiceIds.PluginRegistry, pluginRegistry);

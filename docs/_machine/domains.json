@@ -180,7 +180,7 @@
         "src/domains/settings/shared/api/VaultConfigFile.ts",
         "src/domains/settings/shared/stores/useThemeStore.ts"
       ],
-      "responsibility": "Klaim username & RESERVED_SLUGS, konfigurasi 6-lapis (Org-Lock), Unified --ob-* Theme Engine + CSS sanitizer, dan host @obmap/sdk sandbox (terencana)."
+      "responsibility": "Klaim username & RESERVED_SLUGS, konfigurasi 6-lapis (Org-Lock), Unified --vk-* (alias --ob-*) Theme Engine + CSS sanitizer, dan host @vk/sdk sandbox (terencana)."
     }
   ]
 }

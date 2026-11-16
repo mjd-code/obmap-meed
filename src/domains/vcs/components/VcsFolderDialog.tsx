@@ -219,7 +219,7 @@ export const FolderVcsDialog: React.FC<FolderVcsDialogProps> = ({
                           </span>
                           <span className="font-medium text-foreground">{c.message}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-3 vk-text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <User className="w-3 h-3" /> {c.author?.displayName || "Pengguna"}
                           </span>
@@ -232,7 +232,7 @@ export const FolderVcsDialog: React.FC<FolderVcsDialogProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-xs text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 gap-1.5"
+                        className="h-7 text-xs text-warning hover:text-warning hover:bg-warning/10 gap-1.5"
                         disabled={isReverting}
                         onClick={() => handleRevertFolder(c)}
                       >

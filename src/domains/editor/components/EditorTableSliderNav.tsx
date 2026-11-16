@@ -132,7 +132,7 @@ export const TableSliderNav: React.FC<TableSliderNavProps> = ({
       </div>
 
       {/* Indikator Kolom Aktif */}
-      <span className="font-mono text-[11px] font-medium text-foreground/75 whitespace-nowrap bg-background/50 px-2 py-0.5 rounded border border-border/40">
+      <span className="font-mono vk-text-xs font-medium text-foreground/75 whitespace-nowrap bg-background/50 px-2 py-0.5 rounded border border-border/40">
         {visibleColInfo}
       </span>
 

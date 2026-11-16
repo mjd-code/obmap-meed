@@ -2,9 +2,16 @@ import { supabase } from "@/global/api/supabaseClient";
 import type { Json } from "@/global/api/supabaseTypes";
 import type { PartnerInvitationRecord } from "@/types/admin";
 import type { AccountLifecycleStatus, ReleaseStage } from "@/types/collaboration";
+import { getBrandConfig } from "@/global/config/brand.config";
+import {
+  LEGACY_OBMAP_KEYS,
+  VK_STORAGE_KEYS,
+  readMigratedLocalStorageItem,
+  removeBothLocalStorageKeys,
+} from "@/global/utils/storageKeyMigrator";
 
 const STAGE_CACHE_TTL_MS = 60_000;
-const LOCAL_STAGE_OVERRIDE_KEY = "obmap_release_stage_override";
+const LOCAL_STAGE_OVERRIDE_KEY = VK_STORAGE_KEYS.LS_RELEASE_STAGE_OVERRIDE;
 
 export interface StageGateResult {
   allowed: boolean;
@@ -91,7 +98,10 @@ export class ReleaseStageService {
   /** Reads active release stage from `platform_settings` with local override & safe default. */
   static async getActiveStage(): Promise<ReleaseStage> {
     if (typeof localStorage !== "undefined") {
-      const localOverride = localStorage.getItem(LOCAL_STAGE_OVERRIDE_KEY);
+      const localOverride = readMigratedLocalStorageItem(
+        LOCAL_STAGE_OVERRIDE_KEY,
+        LEGACY_OBMAP_KEYS.LS_RELEASE_STAGE_OVERRIDE,
+      );
       if (isValidReleaseStage(localOverride)) {
         return localOverride;
       }
@@ -142,7 +152,10 @@ export class ReleaseStageService {
 
     cachedStage = { value: stage, fetchedAt: Date.now() };
     if (typeof localStorage !== "undefined") {
-      localStorage.removeItem(LOCAL_STAGE_OVERRIDE_KEY);
+      removeBothLocalStorageKeys(
+        LOCAL_STAGE_OVERRIDE_KEY,
+        LEGACY_OBMAP_KEYS.LS_RELEASE_STAGE_OVERRIDE,
+      );
     }
 
     await supabase.from("audit_logs").insert({
@@ -259,7 +272,7 @@ export class ReleaseStageService {
     }
 
     const randomPart = crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
-    const inviteCode = `OBMAP-${randomPart}`;
+    const inviteCode = `${getBrandConfig().inviteCodePrefix}-${randomPart}`;
     const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
 
     const { data, error } = await supabase

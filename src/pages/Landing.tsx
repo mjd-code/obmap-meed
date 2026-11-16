@@ -7,7 +7,6 @@ import {
   Network,
   Sparkles,
   Shield,
-  Zap,
   Cloud,
   FolderTree,
   Download,
@@ -16,18 +15,21 @@ import {
   GitBranch,
   Link2,
   Tags,
+  Compass,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 export default function Landing() {
+  const brand = useBrandConfig();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { canInstall, installApp, isInstalled } = usePWA();
 
-  // Redirect authenticated users to main app
+  // Redirect authenticated users to vault dashboard
   useEffect(() => {
     if (!loading && user) {
-      navigate("/app");
+      navigate("/vaults");
     }
   }, [user, loading, navigate]);
 
@@ -101,10 +103,10 @@ export default function Landing() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Network className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold tracking-tight">ObMap</span>
+            <span className="text-xl font-bold tracking-tight">{brand.name}</span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {canInstall && !isInstalled && (
               <Button
                 variant="ghost"
@@ -113,9 +115,18 @@ export default function Landing() {
                 className="gap-2"
               >
                 <Download className="w-4 h-4" />
-                Install App
+                <span className="hidden sm:inline">Install App</span>
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/explore")}
+              className="gap-1.5"
+            >
+              <Compass className="w-4 h-4 text-primary" />
+              <span>Explore</span>
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -222,7 +233,7 @@ export default function Landing() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {storageOptions.map((option, index) => (
             <div
               key={index}
@@ -257,7 +268,7 @@ export default function Landing() {
             </p>
             <Button size="lg" onClick={installApp} className="gap-2">
               <Download className="w-4 h-4" />
-              Install ObMap
+              Install {brand.name}
             </Button>
           </div>
         </section>
@@ -267,7 +278,7 @@ export default function Landing() {
       <section className="relative z-10 container mx-auto px-6 py-24 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start?</h2>
         <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-          Join thousands of thinkers building their second brain with ObMap.
+          Join thousands of thinkers building their second brain with {brand.name}.
         </p>
         <Button
           size="lg"
@@ -284,7 +295,7 @@ export default function Landing() {
         <div className="container mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Network className="w-4 h-4" />
-            <span>ObMap — Your Knowledge Graph</span>
+            <span>{brand.name} — Your Knowledge Graph</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <button

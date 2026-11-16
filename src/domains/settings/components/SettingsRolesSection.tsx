@@ -80,7 +80,7 @@ export function RolesSettings() {
               </div>
             </div>
             {ctrl.currentVaultId && (
-              <Badge variant="outline" className="text-[11px] font-mono">
+              <Badge variant="outline" className="vk-text-xs font-mono">
                 Vault ID: {ctrl.currentVaultId.substring(0, 8)}...
               </Badge>
             )}
@@ -159,7 +159,7 @@ export function RolesSettings() {
               <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-semibold text-foreground">{r.name}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{r.desc}</p>
+                <p className="vk-text-xs text-muted-foreground mt-0.5">{r.desc}</p>
               </div>
             </div>
           ))}

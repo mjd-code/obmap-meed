@@ -76,21 +76,21 @@ export function SettingsAccountProfileTab({
                   {profile?.username && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-4.5 px-1.5 font-mono"
+                      className="vk-text-2xs h-4.5 px-1.5 font-mono"
                     >
                       @{profile.username}
                     </Badge>
                   )}
                   <Badge
                     variant={profile?.email_verified ? "default" : "outline"}
-                    className="text-[10px] h-4.5 px-1.5"
+                    className="vk-text-2xs h-4.5 px-1.5"
                   >
                     <ShieldCheck className="mr-1 h-2.5 w-2.5" />
                     {profile?.email_verified
                       ? "Terverifikasi"
                       : "Belum Verifikasi"}
                   </Badge>
-                  <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5">
+                  <Badge variant="secondary" className="vk-text-2xs h-4.5 px-1.5">
                     <Sparkles className="mr-1 h-2.5 w-2.5 text-primary" />
                     Akun Cloud
                   </Badge>
@@ -122,7 +122,7 @@ export function SettingsAccountProfileTab({
                 <Label htmlFor="username" className="text-xs font-medium">
                   Username Publik
                 </Label>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="vk-text-xs text-muted-foreground">
                   Karakter a-z, 0-9, _, - (3-30 karakter)
                 </span>
               </div>
@@ -145,7 +145,7 @@ export function SettingsAccountProfileTab({
                     <Loader2 className="w-4 h-4 animate-spin text-primary" />
                   )}
                   {usernameStatus === "available" && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-success" />
                   )}
                   {(usernameStatus === "taken" ||
                     usernameStatus === "invalid") && (
@@ -157,9 +157,9 @@ export function SettingsAccountProfileTab({
               {/* Status Helper Message */}
               {usernameMessage && (
                 <p
-                  className={`text-[11px] flex items-center gap-1 ${
+                  className={`vk-text-xs flex items-center gap-1 ${
                     usernameStatus === "available"
-                      ? "text-emerald-500 font-medium"
+                      ? "text-success font-medium"
                       : "text-destructive"
                   }`}
                 >
@@ -175,10 +175,10 @@ export function SettingsAccountProfileTab({
               {/* Live URL Preview Pill */}
               <div className="mt-1.5 p-2 rounded-md bg-muted/40 border border-border/60 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-muted-foreground text-[11px]">
+                  <span className="text-muted-foreground vk-text-xs">
                     URL Publik Anda:
                   </span>
-                  <code className="text-primary font-mono text-[11px] truncate">
+                  <code className="text-primary font-mono vk-text-xs truncate">
                     {window.location.origin}/@{currentDisplayUsername}
                   </code>
                 </div>
@@ -187,7 +187,7 @@ export function SettingsAccountProfileTab({
                     href={`/@${profile.username}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 shrink-0 ml-2"
+                    className="vk-text-xs text-muted-foreground hover:text-primary flex items-center gap-1 shrink-0 ml-2"
                   >
                     Buka Web <ExternalLink className="w-3 h-3" />
                   </a>
@@ -196,13 +196,13 @@ export function SettingsAccountProfileTab({
 
               {/* 14-Day Redirect Reservation Alert Banner */}
               {isUsernameChanged && profile?.username && (
-                <div className="mt-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs flex items-start gap-2.5">
+                <div className="mt-2 p-3 rounded-lg border border-warning/30 bg-warning/10 text-warning text-xs flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                   <div className="space-y-0.5">
                     <p className="font-semibold">
                       Perhatian Pengalihan Alamat (14 Hari)
                     </p>
-                    <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    <p className="vk-text-xs leading-relaxed text-muted-foreground">
                       Mengubah username akan mencadangkan alamat lama Anda (
                       <strong className="text-foreground">
                         @{profile.username}
@@ -228,7 +228,7 @@ export function SettingsAccountProfileTab({
                 className="h-9 text-sm"
               />
               {profileForm.formState.errors.display_name && (
-                <p className="text-[11px] text-destructive">
+                <p className="vk-text-xs text-destructive">
                   {profileForm.formState.errors.display_name.message}
                 </p>
               )}
@@ -257,7 +257,7 @@ export function SettingsAccountProfileTab({
                 >
                   Profil Penulis Publik
                 </Label>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="vk-text-xs text-muted-foreground">
                   Izinkan nama dan avatar Anda muncul di header portal pembaca
                   publik ketika menerbitkan catatan.
                 </p>

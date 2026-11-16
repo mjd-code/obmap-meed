@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "last_updated": "2026-11-14",
+  "last_updated": "2026-11-16",
   "root_portal": "docs/README.md",
   "execution_playbook": "docs/02-planning/README.md",
   "changelog_stream": "docs/_machine/changelog.jsonl",
@@ -323,9 +323,16 @@
     {
       "id": "DOC-ARCH-ADR-0012",
       "path": "docs/03-architecture/adr/ADR-0012-sandboxed-plugin-sdk-and-extension-points.md",
-      "title": "ADR-0012 — Ekosistem Ekstensi @obmap/sdk Ber-Sandbox & 12 Extension Points",
+      "title": "ADR-0012 — Ekosistem Ekstensi @vk/sdk Ber-Sandbox & 12 Extension Points",
       "category": "adr",
       "status": "PLANNED"
+    },
+    {
+      "id": "DOC-ARCH-ADR-0013",
+      "path": "docs/03-architecture/adr/ADR-0013-brand-agnostic-infrastructure-and-dynamic-branding.md",
+      "title": "ADR-0013 — Infrastruktur Teknis Brand-Agnostic, Dynamic Brand Registry & Engine Auto-Rebranding Aman",
+      "category": "adr",
+      "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-FEAT-000",
@@ -393,21 +400,21 @@
     {
       "id": "DOC-DEV-000",
       "path": "docs/07-developers/README.md",
-      "title": "Portal Pengembang Ekstensi & Tema ObMap (@obmap/sdk)",
+      "title": "Portal Pengembang Ekstensi & Tema ObMap (@vk/sdk)",
       "category": "developer",
       "status": "PLANNED"
     },
     {
       "id": "DOC-DEV-001",
       "path": "docs/07-developers/plugin-sdk-quickstart.md",
-      "title": "Quickstart Membangun Plugin Pertama dengan @obmap/sdk",
+      "title": "Quickstart Membangun Plugin Pertama dengan @vk/sdk",
       "category": "developer",
       "status": "PLANNED"
     },
     {
       "id": "DOC-DEV-002",
       "path": "docs/07-developers/extension-points-reference.md",
-      "title": "Referensi 12 Extension Points Standar @obmap/sdk",
+      "title": "Referensi 12 Extension Points Standar @vk/sdk",
       "category": "developer",
       "status": "PLANNED"
     },
@@ -421,7 +428,7 @@
     {
       "id": "DOC-DEV-004",
       "path": "docs/07-developers/security-and-sandbox.md",
-      "title": "Model Keamanan Ekstensi, Izin & Sandbox @obmap/sdk",
+      "title": "Model Keamanan Ekstensi, Izin & Sandbox @vk/sdk",
       "category": "developer",
       "status": "PLANNED"
     }

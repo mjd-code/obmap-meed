@@ -80,7 +80,7 @@ export function ProfileSettings() {
                   {!ctrl.isCheckingUsername &&
                     ctrl.isUsernameChanged &&
                     ctrl.usernameAvailable === true && (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <CheckCircle2 className="w-4 h-4 text-success" />
                     )}
                   {!ctrl.isCheckingUsername &&
                     ctrl.isUsernameChanged &&
@@ -91,7 +91,7 @@ export function ProfileSettings() {
               </div>
 
               {ctrl.isUsernameChanged && (
-                <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500 space-y-1">
+                <div className="rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning space-y-1">
                   <div className="flex items-center gap-1.5 font-medium">
                     <AlertTriangle className="w-4 h-4" />
                     Pemberitahuan Pengalihan 14 Hari
@@ -107,7 +107,7 @@ export function ProfileSettings() {
 
               {ctrl.usernameMessage && ctrl.isUsernameChanged && (
                 <p
-                  className={`text-xs ${ctrl.usernameAvailable ? "text-emerald-500" : "text-destructive"}`}
+                  className={`text-xs ${ctrl.usernameAvailable ? "text-success" : "text-destructive"}`}
                 >
                   {ctrl.usernameMessage}
                 </p>

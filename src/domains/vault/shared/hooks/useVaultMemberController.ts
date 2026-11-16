@@ -16,19 +16,19 @@ export const VAULT_MEMBER_ROLE_CONFIG: Record<VaultMemberRole, VaultRoleDisplayC
   admin: {
     label: "Admin",
     icon: ShieldCheck,
-    color: "bg-red-500/10 text-red-500 border-red-500/20",
+    color: "bg-danger/10 text-danger border-danger/20",
     desc: "Kelola anggota, sunting, dan hapus catatan",
   },
   editor: {
     label: "Editor",
     icon: Edit3,
-    color: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    color: "bg-info/10 text-info border-info/20",
     desc: "Sunting, buat, dan publikasikan catatan",
   },
   contributor: {
     label: "Contributor",
     icon: Shield,
-    color: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    color: "bg-warning/10 text-warning border-warning/20",
     desc: "Buat draft dan ajukan review catatan",
   },
   viewer: {

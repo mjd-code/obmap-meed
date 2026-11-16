@@ -25,7 +25,7 @@ source_of_truth: docs/
 ---
 
 ## 1. Dokumen Induk & Tata Kelola (`00-meta/` & `changelogs/`)
-- [Master Blueprint v2.0 (`DOC-META-000`)](00-meta/00-0-master-blueprint.md) — Spesifikasi sistem menyeluruh (5 DNA, rute `/:username`, 3-Stage Shipping Gate, RBAC, monetisasi, `dashboard`, 6-layer config, `@obmap/sdk`).
+- [Master Blueprint v2.0 (`DOC-META-000`)](00-meta/00-0-master-blueprint.md) — Spesifikasi sistem menyeluruh (5 DNA, rute `/:username`, 3-Stage Shipping Gate, RBAC, monetisasi, `dashboard`, 6-layer config, `@vk/sdk`).
 - [Quo Vadis v2.0 (`DOC-META-005`)](00-meta/00-2-quovadis.md) — Retrospektif teknis Wave 1–3, audit kesiapan 20 dimensi, daftar drift, & roadmap `EPIC-01`–`15`.
 - [Quo Vadis v1.0 (`00-1-quovadis.md`)](00-meta/00-1-quovadis.md) — Arsip historis cetak biru Wave 3.
 - [Modular Changelog Hub (`DOC-CHLOG-000`)](changelogs/README.md) & [Machine JSONL](_machine/changelog.jsonl) — Pusat riwayat perubahan hemat-token & SOP wajib agen.
@@ -39,7 +39,7 @@ source_of_truth: docs/
 - Arsitektur: [System Overview](03-architecture/system-overview.md) · [Repository Structure](03-architecture/repository-structure.md) · [Domain Map](03-architecture/domain-map.md) · [Data & Storage](03-architecture/data-and-storage.md) · [Layout Engine](03-architecture/layout-engine.md) · [Collaboration & Publishing](03-architecture/collaboration-and-publishing.md) · [ADR Index](03-architecture/adr/README.md).
 - Fitur & LMS: [Feature Catalog](04-features/feature-catalog.md) · [LMS Vision](06-lms/lms-vision.md).
 - Engineering: [Coding Standards](05-engineering/coding-standards.md) · [Testing Strategy](05-engineering/testing-strategy.md) · [Repository Rules](05-engineering/repository-rules.md) · [Contribution Guide](05-engineering/contribution-guide.md) · [Tech Debt Register](05-engineering/tech-debt-register.md) · [Doc Drift Log](05-engineering/doc-drift-log.md).
-- Developer SDK (`@obmap/sdk`): [Dev Portal](07-developers/README.md) · [SDK Quickstart](07-developers/plugin-sdk-quickstart.md) · [Extension Points](07-developers/extension-points-reference.md) · [Theme Guide](07-developers/theme-authoring-guide.md) · [Security & Sandbox](07-developers/security-and-sandbox.md).
+- Developer SDK (`@vk/sdk`): [Dev Portal](07-developers/README.md) · [SDK Quickstart](07-developers/plugin-sdk-quickstart.md) · [Extension Points](07-developers/extension-points-reference.md) · [Theme Guide](07-developers/theme-authoring-guide.md) · [Security & Sandbox](07-developers/security-and-sandbox.md).
 
 ---
 

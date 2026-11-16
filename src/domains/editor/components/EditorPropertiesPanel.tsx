@@ -54,7 +54,7 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
           />
           <span>Properties</span>
           {!ctrl.isExpanded && ctrl.properties.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.2 rounded-full bg-muted/50 text-[10px] font-normal text-muted-foreground/70">
+            <span className="ml-1 px-1.5 py-0.2 rounded-full bg-muted/50 vk-text-2xs font-normal text-muted-foreground/70">
               {ctrl.properties.length}
             </span>
           )}
@@ -120,7 +120,7 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-6 px-2 text-[10px]"
+                      className="h-6 px-2 vk-text-2xs"
                       onClick={ctrl.addMissingRequired}
                     >
                       Add Required
@@ -160,7 +160,7 @@ export const PropertiesPanel = ({ value, onChange }: PropertiesPanelProps) => {
                   />
                 </div>
                 {ctrl.duplicateKey && (
-                  <span className="text-[10px] text-destructive">
+                  <span className="vk-text-2xs text-destructive">
                     Key exists
                   </span>
                 )}

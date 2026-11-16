@@ -22,8 +22,10 @@ import {
   Cloud,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 const Install = () => {
+  const brand = useBrandConfig();
   const {
     canInstall,
     isInstalled,
@@ -95,7 +97,7 @@ const Install = () => {
               )}
             </div>
             <h1 className="text-3xl font-bold text-foreground">
-              Install VaultGraph
+              Install {brand.name}
             </h1>
             <p className="text-muted-foreground max-w-md mx-auto">
               Get quick access from your home screen with offline support and a
@@ -113,7 +115,7 @@ const Install = () => {
                     Already Installed!
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    VaultGraph is installed on your device. You can open it from
+                    {brand.name} is installed on your device. You can open it from
                     your home screen.
                   </p>
                 </div>
@@ -128,10 +130,10 @@ const Install = () => {
                   onClick={handleInstall}
                 >
                   <Download className="w-5 h-5" />
-                  Install VaultGraph
+                  Install {brand.name}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
-                  Click above to add VaultGraph to your device
+                  Click above to add {brand.name} to your device
                 </p>
               </CardContent>
             </Card>
@@ -193,7 +195,7 @@ const Install = () => {
             <CardHeader>
               <CardTitle className="text-lg">Supported Platforms</CardTitle>
               <CardDescription>
-                VaultGraph works on all major platforms
+                {brand.name} works on all major platforms
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -242,7 +244,7 @@ const Install = () => {
                     Does it work offline?
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Yes! VaultGraph is fully functional offline. Changes sync
+                    Yes! {brand.name} is fully functional offline. Changes sync
                     when you reconnect.
                   </p>
                 </CardContent>
@@ -253,7 +255,7 @@ const Install = () => {
                     How do I uninstall?
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Remove VaultGraph like any other app - long press on mobile
+                    Remove {brand.name} like any other app - long press on mobile
                     or use your OS's app management.
                   </p>
                 </CardContent>

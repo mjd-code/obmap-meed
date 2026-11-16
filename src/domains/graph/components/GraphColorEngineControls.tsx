@@ -41,7 +41,7 @@ export function ColorEngineControls({
             <Palette className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="text-xs font-semibold text-foreground">Color Engine Mode</span>
           </div>
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary capitalize tracking-wider">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 vk-text-2xs font-medium text-primary capitalize tracking-wider">
             {ctrl.activeMode}
           </span>
         </div>
@@ -57,7 +57,7 @@ export function ColorEngineControls({
                 : "text-muted-foreground hover:text-foreground hover:bg-background/40",
             )}
           >
-            <Layers className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <Layers className="h-3.5 w-3.5 text-warning shrink-0" />
             <span className="truncate">Hierarchy</span>
           </button>
 
@@ -71,7 +71,7 @@ export function ColorEngineControls({
                 : "text-muted-foreground hover:text-foreground hover:bg-background/40",
             )}
           >
-            <Tag className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+            <Tag className="h-3.5 w-3.5 text-info shrink-0" />
             <span className="truncate">Category</span>
           </button>
 
@@ -133,10 +133,10 @@ export function ColorEngineControls({
                   onNodeConfigUpdate({ autoColorBy: "tags" });
                 }}
               >
-                <Tag className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                <Tag className="h-3.5 w-3.5 text-info shrink-0" />
                 <div className="flex flex-col text-left">
                   <span className="font-medium">Markdown Tags</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="vk-text-2xs text-muted-foreground">
                     Warna berdasarkan tag (#proyek, #catatan)
                   </span>
                 </div>
@@ -156,10 +156,10 @@ export function ColorEngineControls({
                   onNodeConfigUpdate({ autoColorBy: "branch" });
                 }}
               >
-                <Layers className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <Layers className="h-3.5 w-3.5 text-success shrink-0" />
                 <div className="flex flex-col text-left">
                   <span className="font-medium">Subtree Cabang</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="vk-text-2xs text-muted-foreground">
                     Keturunan mewarisi corak cabang akar
                   </span>
                 </div>
@@ -179,10 +179,10 @@ export function ColorEngineControls({
                   onNodeConfigUpdate({ autoColorBy: "type" });
                 }}
               >
-                <Palette className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                <Palette className="h-3.5 w-3.5 text-warning shrink-0" />
                 <div className="flex flex-col text-left">
                   <span className="font-medium">Tipe Entitas</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="vk-text-2xs text-muted-foreground">
                     Pemisahan warna Folder vs Catatan
                   </span>
                 </div>

@@ -40,16 +40,16 @@ interface EventLogEntry {
 
 const eventTypeColors: Partial<Record<EventType, string>> = {
   [EventType.NODE_CREATED]:
-    "bg-green-500/20 text-green-400 border-green-500/30",
-  [EventType.NODE_UPDATED]: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  [EventType.NODE_DELETED]: "bg-red-500/20 text-red-400 border-red-500/30",
+    "bg-success/20 text-success border-success/30",
+  [EventType.NODE_UPDATED]: "bg-info/20 text-info border-info/30",
+  [EventType.NODE_DELETED]: "bg-danger/20 text-danger border-danger/30",
   [EventType.NODE_MOVED]:
-    "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    "bg-accent/20 text-accent border-accent/30",
   [EventType.GRAPH_UPDATED]:
-    "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    "bg-warning/20 text-warning border-warning/30",
   [EventType.VAULT_SAVED]:
-    "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  [EventType.VAULT_SWITCHED]: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+    "bg-success/20 text-success border-success/30",
+  [EventType.VAULT_SWITCHED]: "bg-info/20 text-info border-info/30",
   [EventType.UNDO_PERFORMED]:
     "bg-orange-500/20 text-orange-400 border-orange-500/30",
   [EventType.REDO_PERFORMED]:
@@ -129,7 +129,7 @@ export function EventDebugPanel() {
       >
         <Bug className="h-4 w-4" />
         {events.length > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] flex items-center justify-center text-primary-foreground">
+          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary vk-text-2xs flex items-center justify-center text-primary-foreground">
             {events.length > 99 ? "99+" : events.length}
           </span>
         )}
@@ -216,7 +216,7 @@ export function EventDebugPanel() {
                     <span className="text-xs font-mono flex-1 truncate">
                       {formatEventType(entry.event.type)}
                     </span>
-                    <span className="text-[10px] opacity-70 flex-shrink-0">
+                    <span className="vk-text-2xs opacity-70 flex-shrink-0">
                       {entry.timestamp.toLocaleTimeString("en-US", {
                         hour12: false,
                         hour: "2-digit",
@@ -233,12 +233,12 @@ export function EventDebugPanel() {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="mt-1 ml-5 p-2 rounded bg-muted/30 border border-border/50">
-                    <pre className="text-[10px] font-mono text-muted-foreground overflow-x-auto whitespace-pre-wrap">
+                    <pre className="vk-text-2xs font-mono text-muted-foreground overflow-x-auto whitespace-pre-wrap">
                       {JSON.stringify(entry.event.payload, null, 2)}
                     </pre>
                     {entry.event.vaultId && (
                       <div className="mt-1 pt-1 border-t border-border/30">
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="vk-text-2xs text-muted-foreground">
                           Vault: {entry.event.vaultId}
                         </span>
                       </div>
@@ -253,8 +253,8 @@ export function EventDebugPanel() {
 
       {/* Status Bar */}
       {isPaused && (
-        <div className="px-3 py-1.5 bg-amber-500/10 border-t border-amber-500/30 text-center">
-          <span className="text-xs text-amber-400">
+        <div className="px-3 py-1.5 bg-warning/10 border-t border-warning/30 text-center">
+          <span className="text-xs text-warning">
             Paused - events are not being captured
           </span>
         </div>

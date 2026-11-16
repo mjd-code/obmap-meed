@@ -159,7 +159,7 @@ export const TabContextMenu: React.FC<TabContextMenuProps> = ({
             <>
               <Pin className="w-3.5 h-3.5 text-muted-foreground" />
               <span>Pin tab</span>
-              <span className="ml-auto text-[10px] text-muted-foreground font-mono">
+              <span className="ml-auto vk-text-2xs text-muted-foreground font-mono">
                 {pinnedCount}/7
               </span>
             </>

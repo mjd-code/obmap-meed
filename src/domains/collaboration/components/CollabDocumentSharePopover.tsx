@@ -64,7 +64,7 @@ export const DocumentSharePopover: React.FC<DocumentSharePopoverProps> = ({
 
             {/* Indikator Titik Sinkronisasi Offline */}
             {controller.pendingSyncCount > 0 && (
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse motion-reduce:animate-none" />
             )}
           </Button>
         </PopoverTrigger>
@@ -89,7 +89,7 @@ export const DocumentSharePopover: React.FC<DocumentSharePopoverProps> = ({
                 vaultId={controller.currentVaultId}
                 noteId={noteId}
               />
-              <span className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+              <span className="flex items-center gap-1 font-mono vk-text-2xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
                 <GitBranch className="w-2.5 h-2.5 text-primary" />
                 <span className="max-w-[70px] truncate">
                   {controller.activeBranchName || "main"}
@@ -103,27 +103,27 @@ export const DocumentSharePopover: React.FC<DocumentSharePopoverProps> = ({
             <TabsList className="grid grid-cols-3 h-7.5 p-0.5 bg-muted/60 rounded-lg">
               <TabsTrigger
                 value="publish"
-                className="text-[11px] h-6.5 px-1 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="vk-text-xs h-6.5 px-1 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
               >
                 <Globe className="w-3 h-3 text-primary shrink-0" />
                 <span className="truncate">Publikasi</span>
               </TabsTrigger>
               <TabsTrigger
                 value="commit"
-                className="text-[11px] h-6.5 px-1 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="vk-text-xs h-6.5 px-1 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
               >
                 <GitCommit className="w-3 h-3 text-primary shrink-0" />
                 <span className="truncate">Commit</span>
               </TabsTrigger>
               <TabsTrigger
                 value="history"
-                className="text-[11px] h-6.5 px-1 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="vk-text-xs h-6.5 px-1 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
               >
                 <History className="w-3 h-3 text-primary shrink-0" />
                 <span className="truncate">Riwayat</span>
                 {(controller.cloudCommits.length > 0 ||
                   controller.microRevisions.length > 0) && (
-                  <span className="text-[9px] font-mono text-muted-foreground ml-0.5">
+                  <span className="vk-text-2xs font-mono text-muted-foreground ml-0.5">
                     (
                     {controller.cloudCommits.length +
                       controller.microRevisions.length}
@@ -158,14 +158,14 @@ export const DocumentSharePopover: React.FC<DocumentSharePopoverProps> = ({
 
             {/* TAB 2: INLINE QUICK COMMIT */}
             <TabsContent value="commit" className="mt-2.5 space-y-2">
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground bg-muted/30 px-2 py-1 rounded border border-border/40">
+              <div className="flex items-center justify-between vk-text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded border border-border/40">
                 <span className="flex items-center gap-1">
                   <GitBranch className="w-3 h-3 text-primary" />
                   Target:
                 </span>
                 <Badge
                   variant="outline"
-                  className="font-mono text-[10px] bg-background/80 px-1.5 py-0 h-4.5"
+                  className="font-mono vk-text-2xs bg-background/80 px-1.5 py-0 h-4.5"
                 >
                   {controller.activeBranchName || "main"}
                 </Badge>
@@ -206,7 +206,7 @@ export const DocumentSharePopover: React.FC<DocumentSharePopoverProps> = ({
                 <span>Simpan Commit (Enter)</span>
               </Button>
 
-              <p className="text-[10px] text-muted-foreground text-center">
+              <p className="vk-text-2xs text-muted-foreground text-center">
                 {controller.permissions.isReadOnly
                   ? "Peran viewer hanya memiliki akses baca (read-only)."
                   : "Menyimpan snapshot perubahan dokumen ke branch aktif."}

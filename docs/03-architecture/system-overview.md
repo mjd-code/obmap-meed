@@ -22,7 +22,7 @@ source_of_truth: src/App.tsx, src/domains/, supabase/migrations/
 ## Ringkasan 3 Baris
 - Menjelaskan arsitektur menyeluruh ObMap v2.0 berbasis *Local-First Single Page Application* (React 18, TypeScript 5, Vite 5, Zustand, CodeMirror 6, Canvas2D/D3) dengan backend Supabase (Auth, Postgres RLS, Edge Functions, Storage).
 - Menetapkan arsitektur target **13 Domain DDD Terisolasi** (`community` menggantikan `public-reader` + penambahan `dashboard`), rute kanonik root `/:username` & `/@:username` (*hard cutover* tanpa `/p/*`), serta gerbang **3-Stage Progressive Shipping**.
-- Mewajibkan pola **Headless Controller (`ADR-0006`)**, penegakan keamanan simetris (`PolicyEngine` ↔ Postgres RLS), konfigurasi dinamis paket & kuota melalui `/admin`, dan sandbox `@obmap/sdk`.
+- Mewajibkan pola **Headless Controller (`ADR-0006`)**, penegakan keamanan simetris (`PolicyEngine` ↔ Postgres RLS), konfigurasi dinamis paket & kuota melalui `/admin`, dan sandbox `@vk/sdk`.
 
 ---
 

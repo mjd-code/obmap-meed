@@ -3,12 +3,14 @@ import type { SubsystemNode } from "@/types/admin";
 import { Badge } from "@/global/ui/badge";
 import { Card, CardContent } from "@/global/ui/card";
 import { Activity, ShieldCheck, Database, Layers, ArrowRight } from "lucide-react";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 interface Props {
   nodes: SubsystemNode[];
 }
 
 export const LivingGraphView: React.FC<Props> = ({ nodes }) => {
+  const brand = useBrandConfig();
   const [selectedId, setSelectedId] = useState<string>(nodes[0]?.id || "");
   const activeNode = nodes.find((n) => n.id === selectedId) || nodes[0];
 
@@ -19,7 +21,7 @@ export const LivingGraphView: React.FC<Props> = ({ nodes }) => {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold tracking-tight flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary animate-pulse" />
+              <Activity className="h-4 w-4 text-primary animate-pulse motion-reduce:animate-none" />
               Living Architecture Graph (Topologi Subsistem)
             </h3>
             <Badge variant="outline" className="text-xs">
@@ -27,7 +29,7 @@ export const LivingGraphView: React.FC<Props> = ({ nodes }) => {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mb-6">
-            Peta hidup konektivitas antar-engine ObMap. Klik node subsistem untuk melihat detail relasi ketergantungan.
+            Peta hidup konektivitas antar-engine {brand.name}. Klik node subsistem untuk melihat detail relasi ketergantungan.
           </p>
         </div>
 
@@ -49,16 +51,16 @@ export const LivingGraphView: React.FC<Props> = ({ nodes }) => {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
                     </span>
                     <span className="text-sm font-semibold text-foreground">{node.name}</span>
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-1 line-clamp-1">
+                  <div className="vk-text-xs text-muted-foreground mt-1 line-clamp-1">
                     {node.description}
                   </div>
                 </div>
-                <Badge variant="secondary" className="text-[10px] shrink-0 font-mono">
+                <Badge variant="secondary" className="vk-text-2xs shrink-0 font-mono">
                   {node.latencyMs}ms
                 </Badge>
               </button>
@@ -66,7 +68,7 @@ export const LivingGraphView: React.FC<Props> = ({ nodes }) => {
           })}
         </div>
 
-        <div className="mt-4 pt-3 border-t flex items-center justify-between text-[11px] text-muted-foreground">
+        <div className="mt-4 pt-3 border-t flex items-center justify-between vk-text-xs text-muted-foreground">
           <span>Status denyut hijau menandakan verifikasi zero-trust RLS & ping realtime optimal.</span>
           <span className="font-mono">Uptime: 99.96%</span>
         </div>
@@ -78,10 +80,10 @@ export const LivingGraphView: React.FC<Props> = ({ nodes }) => {
           <div>
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className="uppercase text-[10px] tracking-wider">
+                <Badge variant="outline" className="uppercase vk-text-2xs tracking-wider">
                   {activeNode.category}
                 </Badge>
-                <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+                <Badge className="bg-success/10 text-success border-success/20 text-xs">
                   {activeNode.status}
                 </Badge>
               </div>
@@ -131,7 +133,7 @@ export const LivingGraphView: React.FC<Props> = ({ nodes }) => {
             </CardContent>
           </div>
 
-          <div className="p-4 border-t bg-muted/10 text-[11px] text-muted-foreground">
+          <div className="p-4 border-t bg-muted/10 vk-text-xs text-muted-foreground">
             ID Internal: <code className="font-mono text-foreground">{activeNode.id}</code>
           </div>
         </Card>

@@ -68,7 +68,7 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
         </div>
         <div>
           <p className="text-xs font-medium text-foreground">Kolaborasi Khusus Cloud Vault</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="vk-text-xs text-muted-foreground mt-0.5">
             Aktifkan Sinkronisasi Cloud untuk mengundang kolaborator ke vault ini.
           </p>
         </div>
@@ -87,7 +87,7 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
       {/* Form Tambah Anggota (Khusus Owner/Admin) */}
       {isOwnerOrAdmin && (
         <div className="p-2.5 rounded-lg border border-border/70 bg-secondary/20 space-y-2">
-          <div className="flex items-center gap-1.5 text-muted-foreground font-medium text-[11px]">
+          <div className="flex items-center gap-1.5 text-muted-foreground font-medium vk-text-xs">
             <UserPlus className="w-3.5 h-3.5 text-primary" />
             <span>Undang Kolaborator ke {vaultName}</span>
           </div>
@@ -121,7 +121,7 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                     >
                       <Avatar className="w-5 h-5 shrink-0">
                         <AvatarImage src={user.avatar_url || ""} />
-                        <AvatarFallback className="text-[9px]">
+                        <AvatarFallback className="vk-text-2xs">
                           {(user.display_name || user.email || "U").charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -129,7 +129,7 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                         <p className="font-medium text-foreground truncate">
                           {user.display_name || "Pengguna Terdaftar"}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate">{user.email || user.id}</p>
+                        <p className="vk-text-2xs text-muted-foreground truncate">{user.email || user.id}</p>
                       </div>
                     </button>
                   ))}
@@ -137,7 +137,7 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
               )}
 
               {showSuggestions && !isSearching && suggestions.length === 0 && searchQuery.length >= 2 && (
-                <div className="absolute z-50 left-0 right-0 mt-1 rounded-md border border-border bg-popover p-2 text-center text-[11px] text-muted-foreground shadow-md">
+                <div className="absolute z-50 left-0 right-0 mt-1 rounded-md border border-border bg-popover p-2 text-center vk-text-xs text-muted-foreground shadow-md">
                   Tidak ada pengguna cocok ditemukan.
                 </div>
               )}
@@ -180,13 +180,13 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
 
       {/* Daftar Anggota Aktif */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
+        <div className="flex items-center justify-between vk-text-xs text-muted-foreground px-0.5">
           <span>Anggota Vault ({members.length})</span>
           {loading && <Loader2 className="w-3 h-3 animate-spin" />}
         </div>
 
         {members.length === 0 && !loading ? (
-          <p className="text-[11px] text-muted-foreground text-center py-2 bg-muted/10 rounded-md border border-border/40">
+          <p className="vk-text-xs text-muted-foreground text-center py-2 bg-muted/10 rounded-md border border-border/40">
             Belum ada kolaborator luar yang ditambahkan ke vault ini.
           </p>
         ) : (
@@ -194,7 +194,7 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
             {members.map((member) => {
               const isOwnerRow = member.id.startsWith("owner-");
               const cfg = isOwnerRow
-                ? { label: "Pemilik", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" }
+                ? { label: "Pemilik", color: "bg-success/10 text-success border-success/20" }
                 : VAULT_MEMBER_ROLE_CONFIG[member.role] || VAULT_MEMBER_ROLE_CONFIG.viewer;
               const isSelf = member.user_id === currentUserId;
 
@@ -203,22 +203,22 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                   <div className="flex items-center gap-2 min-w-0">
                     <Avatar className="w-6 h-6 shrink-0">
                       <AvatarImage src={member.avatar_url || ""} />
-                      <AvatarFallback className="text-[9px]">
+                      <AvatarFallback className="vk-text-2xs">
                         {(member.display_name || member.email || "U").charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="font-medium text-foreground truncate text-[11px]">
+                      <p className="font-medium text-foreground truncate vk-text-xs">
                         {member.display_name || member.email || "Anggota"}
-                        {isSelf && <span className="ml-1 text-[10px] text-muted-foreground">(Anda)</span>}
+                        {isSelf && <span className="ml-1 vk-text-2xs text-muted-foreground">(Anda)</span>}
                       </p>
-                      <p className="text-[10px] text-muted-foreground truncate">{member.email || member.user_id}</p>
+                      <p className="vk-text-2xs text-muted-foreground truncate">{member.email || member.user_id}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
                     {isOwnerRow ? (
-                      <Badge variant="outline" className={`text-[10px] h-5 px-1.5 font-medium ${cfg.color}`}>
+                      <Badge variant="outline" className={`vk-text-2xs h-5 px-1.5 font-medium ${cfg.color}`}>
                         Pemilik Utama
                       </Badge>
                     ) : isOwnerOrAdmin && !isSelf ? (
@@ -227,12 +227,12 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                           value={member.role}
                           onValueChange={(val) => handleRoleChange(member.user_id, val as VaultMemberRole)}
                         >
-                          <SelectTrigger className="h-6 text-[10px] px-2 w-24">
+                          <SelectTrigger className="h-6 vk-text-2xs px-2 w-24">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {INVITABLE_ROLES.map((r) => (
-                              <SelectItem key={r} value={r} className="text-[11px]">
+                              <SelectItem key={r} value={r} className="vk-text-xs">
                                 {VAULT_MEMBER_ROLE_CONFIG[r].label}
                               </SelectItem>
                             ))}
@@ -250,7 +250,7 @@ export const VaultMemberSection: React.FC<VaultMemberSectionProps> = ({
                         </Button>
                       </>
                     ) : (
-                      <Badge variant="outline" className={`text-[10px] h-5 px-1.5 font-medium ${cfg.color}`}>
+                      <Badge variant="outline" className={`vk-text-2xs h-5 px-1.5 font-medium ${cfg.color}`}>
                         {cfg.label}
                       </Badge>
                     )}

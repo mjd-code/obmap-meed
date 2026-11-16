@@ -10,6 +10,7 @@ import { PublicInteractiveGraph } from "@/domains/community/components/PublicRea
 import { PublicFileTree } from "@/domains/community/components/PublicReaderFileTree";
 import { PublicBreadcrumbs } from "@/domains/community/components/PublicReaderBreadcrumbs";
 import { PublicFolderOverview } from "@/domains/community/components/PublicReaderFolderOverview";
+import { PublicReaderQuickPreferencesPopover } from "@/domains/community/components/PublicReaderQuickPreferencesPopover";
 import { isReservedSlug } from "@/domains/community/shared/utils/reservedSlugs";
 import type { NoteRecord } from "@/types/collaboration";
 import type { GraphData } from "@/domains/graph/shared/utils/graph.types";
@@ -30,12 +31,14 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 export interface PublicReaderProps {
   mode?: "reader" | "explore";
 }
 
 export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) => {
+  const brand = useBrandConfig();
   const { username, vaultSlug, noteSlug } = useParams<{
     username?: string;
     vaultSlug?: string;
@@ -199,7 +202,7 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
         <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
           <Compass className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight mb-2">Jelajahi Komunitas Pengetahuan ObMap</h1>
+        <h1 className="text-2xl font-bold tracking-tight mb-2">Jelajahi Komunitas Pengetahuan {brand.name}</h1>
         <p className="text-muted-foreground max-w-md mb-6 text-xs leading-relaxed">
           Akses profil cendekiawan dan vault publik langsung melalui alamat kanonikal{" "}
           <code className="font-mono text-foreground">/@username</code> atau{" "}
@@ -263,7 +266,7 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
             >
               <Avatar className="w-6 h-6 border border-border">
                 {vaultInfo.owner.avatarUrl && <AvatarImage src={vaultInfo.owner.avatarUrl} />}
-                <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                <AvatarFallback className="vk-text-2xs bg-primary/10 text-primary font-bold">
                   {currentUsername.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -277,7 +280,7 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
 
           <Badge
             variant="secondary"
-            className="hidden sm:inline-flex text-[10px] h-4 font-normal px-1.5"
+            className="hidden sm:inline-flex vk-text-2xs h-4 font-normal px-1.5"
           >
             Publik
           </Badge>
@@ -306,6 +309,8 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
             </Button>
           </div>
 
+          <PublicReaderQuickPreferencesPopover />
+
           <Button
             variant="ghost"
             size="icon"
@@ -318,7 +323,7 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
 
           <Link to="/auth" target="_blank">
             <Button variant="outline" size="sm" className="h-8 text-xs gap-1 hidden md:flex">
-              <span>Buka di ObMap</span>
+              <span>Buka di {brand.name}</span>
               <ExternalLink className="w-3 h-3 opacity-60" />
             </Button>
           </Link>
@@ -346,7 +351,7 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
             <div className="flex items-center gap-2 min-w-0">
               <Avatar className="w-5 h-5 border border-border shrink-0">
                 {vaultInfo.owner.avatarUrl && <AvatarImage src={vaultInfo.owner.avatarUrl} />}
-                <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-bold">
+                <AvatarFallback className="vk-text-2xs bg-primary/10 text-primary font-bold">
                   {currentUsername.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -390,12 +395,12 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
 
           {/* Pinned Minimalist Footer */}
           <div className="p-2.5 px-3 border-t border-border/70 bg-muted/20 flex items-center justify-between text-xs text-muted-foreground shrink-0 select-none">
-            <div className="flex items-center gap-1.5 font-medium text-[11px]">
+            <div className="flex items-center gap-1.5 font-medium vk-text-xs">
               <BookOpen className="w-3.5 h-3.5 text-primary" />
               <span>{publishedNotes.length} Dokumen Terbit</span>
             </div>
-            <Badge variant="secondary" className="text-[10px] h-4 font-mono px-1.5">
-              ObMap
+            <Badge variant="secondary" className="vk-text-2xs h-4 font-mono px-1.5">
+              {brand.name}
             </Badge>
           </div>
         </aside>
@@ -456,7 +461,7 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
                           </span>
                         </div>
                       )}
-                      <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                      <Badge variant="outline" className="vk-text-2xs uppercase font-mono">
                         v{activeNote.version}
                       </Badge>
                     </div>

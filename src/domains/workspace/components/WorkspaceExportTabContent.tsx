@@ -118,7 +118,7 @@ export function WorkspaceExportTabContent({
                   onClick={() => onToggleNodeSelection(folder.id)}
                 >
                   <Checkbox checked={selectedExportNodes.has(folder.id)} />
-                  <Folder className="w-4 h-4 text-yellow-500" />
+                  <Folder className="w-4 h-4 text-warning" />
                   <span className="text-sm truncate">{folder.name}</span>
                 </div>
               ))}
@@ -153,13 +153,13 @@ export function WorkspaceExportTabContent({
                 >
                   <Checkbox checked={selectedExportNodes.has(m.id)} />
                   {m.mediaType === "image" && (
-                    <Image className="w-4 h-4 text-green-500" />
+                    <Image className="w-4 h-4 text-success" />
                   )}
                   {m.mediaType === "audio" && (
-                    <Music className="w-4 h-4 text-purple-500" />
+                    <Music className="w-4 h-4 text-accent" />
                   )}
                   {m.mediaType === "video" && (
-                    <Video className="w-4 h-4 text-red-500" />
+                    <Video className="w-4 h-4 text-danger" />
                   )}
                   <span className="text-sm truncate">{m.name}</span>
                 </div>

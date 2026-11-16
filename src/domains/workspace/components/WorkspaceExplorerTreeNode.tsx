@@ -192,7 +192,7 @@ export const WorkspaceExplorerTreeNode: React.FC<
             {node.tags.length > 0 && (
               <Badge
                 variant="outline"
-                className="text-[10px] px-1 py-0 h-4 shrink-0 ml-auto"
+                className="vk-text-2xs px-1 py-0 h-4 shrink-0 ml-auto"
               >
                 {node.tags.length}
               </Badge>

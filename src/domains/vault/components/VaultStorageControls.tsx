@@ -18,7 +18,7 @@ export function VaultLocationBadge({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <Badge variant="secondary" className="h-5 gap-1 text-[10px]">
+      <Badge variant="secondary" className="h-5 gap-1 vk-text-2xs">
         {location === "folder" ? (
           <HardDrive className="h-3 w-3" />
         ) : (
@@ -29,7 +29,7 @@ export function VaultLocationBadge({
       {cloudSync && (
         <Badge
           variant="outline"
-          className="h-5 gap-1 text-[10px] text-blue-400"
+          className="h-5 gap-1 vk-text-2xs text-info"
         >
           <Cloud className="h-3 w-3" />
           Synced
@@ -57,7 +57,7 @@ export function VaultStorageControls({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs">
           {cloudSync ? (
-            <Cloud className="h-3.5 w-3.5 text-blue-400" />
+            <Cloud className="h-3.5 w-3.5 text-info" />
           ) : (
             <CloudOff className="h-3.5 w-3.5 text-muted-foreground" />
           )}
@@ -70,7 +70,7 @@ export function VaultStorageControls({
         />
       </div>
 
-      <p className="text-[11px] text-muted-foreground">
+      <p className="vk-text-xs text-muted-foreground">
         {location === "folder"
           ? "Notes are Markdown files in your folder."
           : "Notes live in your account."}

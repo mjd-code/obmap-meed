@@ -39,7 +39,7 @@ obmap-meed/
 │   ├── 04-features/                 # Katalog Fitur Master
 │   ├── 05-engineering/              # Standar Koding, Testing Strategy, Repo Rules, Tech Debt, Doc Drift Log
 │   ├── 06-lms/                      # Spesifikasi LMS Skill Tree DAG
-│   ├── 07-developers/               # Portal SDK (@obmap/sdk), Extension Points, Theme Guide, Sandbox
+│   ├── 07-developers/               # Portal SDK (@vk/sdk), Extension Points, Theme Guide, Sandbox
 │   └── _machine/                    # Metadata JSON + changelog.jsonl (append-only machine stream)
 ├── src/
 │   ├── App.tsx                      # Router utama + guard stage/auth

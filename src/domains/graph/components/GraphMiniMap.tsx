@@ -132,7 +132,7 @@ export function GraphMiniMap({
         />
         {nodes.length === 0 && <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">No nodes</span>}
       </div>
-      <div className="flex min-w-0 justify-between gap-2 pt-2 text-[10px] text-muted-foreground">
+      <div className="flex min-w-0 justify-between gap-2 pt-2 vk-text-2xs text-muted-foreground">
         <span className="truncate">{nodes.length} nodes</span>
         <span className="truncate">{links.length} links</span>
       </div>

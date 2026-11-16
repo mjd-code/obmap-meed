@@ -28,7 +28,7 @@ source_of_truth: docs/
 
 | Prioritas | Dokumen | Peran & Kegunaan |
 | :---: | :--- | :--- |
-| **1** | [**Master Blueprint v2.0**](00-meta/00-0-master-blueprint.md) (`DOC-META-000`) | Spesifikasi arsitektur target, 5 sistem referensi, rute `/:username`, 3-Stage Shipping Gate, RBAC, monetisasi, dashboard, & `@obmap/sdk` |
+| **1** | [**Master Blueprint v2.0**](00-meta/00-0-master-blueprint.md) (`DOC-META-000`) | Spesifikasi arsitektur target, 5 sistem referensi, rute `/:username`, 3-Stage Shipping Gate, RBAC, monetisasi, dashboard, & `@vk/sdk` |
 | **2** | [**Quo Vadis v2.0**](00-meta/00-2-quovadis.md) (`DOC-META-005`) | Audit kesiapan 20 dimensi sistem, register *Doc Drift*, strategi rilis bertahap, roadmap `EPIC-01`–`15`, & rencana perombakan docs |
 | **3** | [**Modular Changelog Hub**](changelogs/README.md) (`DOC-CHLOG-000`) | Ringkasan *Rolling Top-10*, log bulanan (`2026-11.md`), dan SOP update wajib 3-langkah bagi setiap AI agent |
 | **4** | [**Machine Changelog Stream**](_machine/changelog.jsonl) | Stream JSONL *append-only* untuk konteks cepat AI agent (`tail -n 15` `< 500` token) |
@@ -59,7 +59,7 @@ source_of_truth: docs/
 | `docs/04-features/` | Katalog fitur master & status verifikasi | [feature-catalog.md](04-features/feature-catalog.md), [README.md](04-features/README.md) |
 | `docs/05-engineering/` | Standar kode, pengujian, aturan repo, hutang teknis & drift | [coding-standards.md](05-engineering/coding-standards.md), [testing-strategy.md](05-engineering/testing-strategy.md), [repository-rules.md](05-engineering/repository-rules.md), [tech-debt-register.md](05-engineering/tech-debt-register.md), [doc-drift-log.md](05-engineering/doc-drift-log.md) |
 | `docs/06-lms/` | Spesifikasi kurikulum graf DAG & gamifikasi | [lms-vision.md](06-lms/lms-vision.md) |
-| `docs/07-developers/` | Portal SDK Ekstensi (`@obmap/sdk`) & Tema | [README.md](07-developers/README.md), [plugin-sdk-quickstart.md](07-developers/plugin-sdk-quickstart.md), [extension-points-reference.md](07-developers/extension-points-reference.md), [theme-authoring-guide.md](07-developers/theme-authoring-guide.md), [security-and-sandbox.md](07-developers/security-and-sandbox.md) |
+| `docs/07-developers/` | Portal SDK Ekstensi (`@vk/sdk`) & Tema | [README.md](07-developers/README.md), [plugin-sdk-quickstart.md](07-developers/plugin-sdk-quickstart.md), [extension-points-reference.md](07-developers/extension-points-reference.md), [theme-authoring-guide.md](07-developers/theme-authoring-guide.md), [security-and-sandbox.md](07-developers/security-and-sandbox.md) |
 | `docs/_machine/` | Indeks JSON & JSONL untuk konsumsi mesin | `changelog.jsonl`, `docs-index.json`, `domains.json`, `features.json`, `requirements.json`, `repo-map.json` |
 
 ---

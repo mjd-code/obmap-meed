@@ -28,26 +28,26 @@ source_of_truth: src/domains/settings/shared/stores/useThemeStore.ts, src/domain
 
 ```mermaid
 flowchart LR
-    T["theme.json (Token Semantik --ob-*)"] --> STORE["useThemeStore.ts (Layer 1-6 Cascade)"]
-    STORE --> DOM["CSS Variables pada :root / .obmap-themed-root"]
+    T["theme.json (Token Semantik --vk-*)"] --> STORE["useThemeStore.ts (Layer 1-6 Cascade)"]
+    STORE --> DOM["CSS Variables pada :root / .vk-themed-root"]
     STORE --> CANVAS["graph/shared/utils/theme.ts & atmosphereConfig.ts"]
     CANVAS --> REFRESH["Trigger graphRef.current?.refresh?.() pada cooldownTicks === 0"]
 ```
 
 ### Daftar Token Semantik Wajib
 Setiap tema ObMap minimal mendefinisikan kelompok token berikut pada berkas `theme.json`:
-- **Permukaan & Teks DOM:** `--ob-bg-canvas`, `--ob-bg-surface`, `--ob-bg-elevated`, `--ob-border-subtle`, `--ob-text-primary`, `--ob-text-muted`, `--ob-accent-primary`.
-- **Kanvas Graf Canvas2D (`theme.ts` & `atmosphereConfig.ts`):** `--ob-graph-node-default`, `--ob-graph-node-evergreen`, `--ob-graph-node-locked`, `--ob-graph-edge-default`, `--ob-graph-edge-citation`, `--ob-graph-label-bg`.
-- **Tipografi & Sudut:** `--ob-font-sans`, `--ob-font-mono`, `--ob-font-display`, `--ob-radius-md`.
+- **Permukaan & Teks DOM:** `--vk-bg-canvas`, `--vk-bg-surface`, `--vk-bg-elevated`, `--vk-border-subtle`, `--vk-text-primary`, `--vk-text-muted`, `--vk-accent-primary`.
+- **Kanvas Graf Canvas2D (`theme.ts` & `atmosphereConfig.ts`):** `--vk-graph-node-default`, `--vk-graph-node-evergreen`, `--vk-graph-node-locked`, `--vk-graph-edge-default`, `--vk-graph-edge-citation`, `--vk-graph-label-bg`.
+- **Tipografi & Sudut:** `--vk-font-sans`, `--vk-font-mono`, `--vk-font-display`, `--vk-radius-md`.
 
 > **Catatan Arsitektural:** Karena mode deterministik (`Mindmap`, `Org`, `Timeline`, `Fishbone`, dll.) merender kanvas statis (`cooldownTicks === 0`), pergantian token tema secara otomatis memanggil `graphRef.current?.refresh?.()` agar perubahan warna simpul langsung terlihat tanpa memuat ulang tab.
 
 ---
 
 ## 2. Scoped CSS Snippets (Gaya Komunitas Ala Obsidian yang Aman)
-1. **Lingkup Workspace Privat (`.obmap/snippets/*.css`):** Pengguna dapat menyesuaikan kerapatan sidebar, gaya callout Markdown, atau font pembaca.
+1. **Lingkup Workspace Privat (`.vk/snippets/*.css` | fallback `.obmap/snippets/*.css`):** Pengguna dapat menyesuaikan kerapatan sidebar, gaya callout Markdown, atau font pembaca.
 2. **Lingkup Halaman Publik (`/:username` di `domains/community/`):**
-   - Seluruh selektor CSS otomatis di-*scope* ke kontainer akar `.obmap-themed-root`.
+   - Seluruh selektor CSS otomatis di-*scope* ke kontainer akar `.vk-themed-root` (alias kompatibilitas `.obmap-themed-root` per `ADR-0013`).
    - Aturan CSS yang mengandung `javascript:`, `@import` ke domain eksternal tak tepercaya, atau properti berbahaya ditolak oleh parser sanitasi sebelum tayang publik.
 3. **Kepatuhan Aksesibilitas & Org-Lock:** Tema resmi direktori komunitas wajib memenuhi rasio kontras teks WCAG 2.2 AA (`>= 4.5:1`), serta tunduk pada penguncian kebijakan apabila admin organisasi menetapkan *Org-Locked Theme* (`ADR-0011`).
 

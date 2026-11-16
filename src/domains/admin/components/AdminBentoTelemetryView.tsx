@@ -48,12 +48,12 @@ export const BentoTelemetryView: React.FC<Props> = ({ nodes }) => {
         <Card className="bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
               Status Zero-Trust RLS
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 flex items-center gap-1.5">
+            <div className="text-2xl font-bold text-success flex items-center gap-1.5">
               Aktif Penuh
             </div>
             <p className="text-xs text-muted-foreground mt-1">6 tabel berproteksi kebijakan database</p>
@@ -99,7 +99,7 @@ export const BentoTelemetryView: React.FC<Props> = ({ nodes }) => {
                   <div className="space-y-1">
                     <div className="text-sm font-semibold flex items-center gap-2">
                       {node.name}
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="vk-text-2xs">
                         {node.category}
                       </Badge>
                     </div>

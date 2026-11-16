@@ -33,7 +33,7 @@ Pengguna pengetahuan saat ini terpaksa memecah alur kerjanya di 4–5 alat terpi
 - **Dashboard Hub (`/vaults` — `domains/dashboard/`):** Manajemen multi-vault + 5 mode tampilan derivatif frontmatter (Grid, Tree, Kanban, Calendar/Timeline, Analytics) + Community Feed & Template Gallery.
 - **Community & Scholarly Network (`/:username`, `/@:username`, `/explore` — `domains/community/`):** Profil intelektual, konstelasi vault publik (`CC BY-SA 4.0`), *Cite this Note*, sitasi lintas-vault `[[@user/vault/note]]`, *Fork & Merge Request*, anotasi paragraf, dan lencana kurasi manual *Verified Scholar*.
 - **Growth, Gate & Admin (`/` Landing Sandbox, Onboarding 5-Tahap, `/admin`):** *ReleaseStageGate* 3 tahap, antrean approval individual Stage 2, manajemen harga/kuota paket dinamis, dan gerbang pembayaran Xendit/Midtrans → Stripe.
-- **Extensibility (`@obmap/sdk`):** Sandbox plugin Worker/Iframe CSP + *Scoped CSS Snippets* + Enterprise Allowlist.
+- **Extensibility (`@vk/sdk`):** Sandbox plugin Worker/Iframe CSP + *Scoped CSS Snippets* + Enterprise Allowlist.
 
 ---
 
@@ -67,7 +67,7 @@ flowchart LR
 | **Citations, Fork/MR & Annotations** | Wikilink `[[@user/vault/note]]`, *Cite Exporter*, `CC BY-SA 4.0`, *Fork to My Vault*, MR lintas user, anotasi hash paragraf | `[PARTIAL]` / `[VISION]` | `STEP-03.2`–`03.3` |
 | **Stage Gate & RBAC PolicyEngine** | `ReleaseStageGate` (Stage 1–3), approval per-user Stage 2 di `/admin`, `PolicyEngine` simetris Postgres RLS, 4 state visibilitas | `[PARTIAL]` / `[VISION]` | `STEP-01.3`–`01.4` |
 | **Dynamic Billing & Teamspaces** | Konfigurasi tarif/kuota dinamis di `/admin`, **Xendit/Midtrans** first → Stripe, Teamspaces + *Org-Lock*, CRDT Yjs | `[VISION]` | `STEP-04.1`–`04.3` |
-| **6-Layer Config, Theme & `@obmap/sdk`** | 6-lapis resolusi config, CSS Variables ↔ Canvas2D tokens, *Scoped CSS Snippets*, `@obmap/sdk` 12 Extension Points | `[PARTIAL]` / `[VISION]` | `STEP-01.5`, `05.3` |
+| **6-Layer Config, Theme & `@vk/sdk`** | 6-lapis resolusi config, CSS Variables ↔ Canvas2D tokens, *Scoped CSS Snippets*, `@vk/sdk` 12 Extension Points | `[PARTIAL]` / `[VISION]` | `STEP-01.5`, `05.3` |
 | **Interactive Graph LMS** | DAG `prerequisites`, state node *Locked/Available/Mastered*, kuis & progres pelajar | `[VISION]` | `STEP-05.1` |
 
 ---
@@ -81,7 +81,7 @@ flowchart LR
 | **`RISK-03`** | Pelanggaran hak akses dan konflik skema saat menambah domain `dashboard` & `community` | Tinggi | Tegakkan aturan DDD & Headless Controller (`<= 300` baris); hapuskan `/p/*` via *hard cutover* bersih (`STEP-01.2`). |
 | **`RISK-04`** | Tabrakan root URL `/:username` dengan rute aplikasi (`/app`, `/vaults`, `/explore`, `/admin`) | Kritis | Validasi tiga lapis `RESERVED_SLUGS` pada urutan route `src/App.tsx`, `ProfileService.ts`, dan constraint PostgreSQL `CHECK` (`STEP-01.2`). |
 | **`RISK-05`** | Kerusakan data atau ketidakpuasan saat masa berlangganan berakhir (*downgrade*) | Tinggi | Terapkan *Grace Period* 7 hari dan *Non-Destructive Downgrade* (`downgraded_readonly` — tetap bisa baca & ekspor ke lokal/ZIP). |
-| **`RISK-06`** | Serangan XSS atau pencurian token oleh plugin komunitas atau CSS kustom | Kritis | Isolasi `@obmap/sdk` dalam Web Worker / Iframe CSP, *Permission Manifest* eksplisit, sanitasi `rehype-sanitize` pada HTML/CSS publik (`STEP-05.3`). |
+| **`RISK-06`** | Serangan XSS atau pencurian token oleh plugin komunitas atau CSS kustom | Kritis | Isolasi `@vk/sdk` dalam Web Worker / Iframe CSP, *Permission Manifest* eksplisit, sanitasi `rehype-sanitize` pada HTML/CSS publik (`STEP-05.3`). |
 
 ---
 

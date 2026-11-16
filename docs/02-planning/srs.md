@@ -71,10 +71,10 @@ source_of_truth: src/domains/, supabase/migrations/
 | **`FR-ADM-010`** | `admin` | Konsol `/admin` lengkap: Approval per-user Stage 2, edit harga & kuota dinamis paket, kurasi *Verified Scholar*, kupon/beasiswa, & override akun. | `[VISION]` | `STEP-04.2` |
 | **`FR-COLLAB-003`** | `collaboration`, `sync` | Sinkronisasi CRDT (Yjs) multi-kursor real-time untuk Team/Lab tanpa memutus mode offline `IndexedDB` / `FS Access API`. | `[VISION]` | `STEP-04.3` |
 | **`FR-COLLAB-010`** | `collaboration`, `admin` | Teamspaces organisasi dengan *Admin-Locked Config* dan manajemen seat (`org_teamspaces`, `org_seats`). | `[VISION]` | `STEP-04.2` |
-| **`FR-SET-001`** | `settings` | Resolusi 6-Layer Cascading Config (*System → Org Locked → Vault `.obmap/` → User → Leaf → Session*) melalui `configRegistry.ts`, `LocalConfigStore.ts`, `CloudConfigStore.ts`. | `[PARTIAL]` | `STEP-01.5` |
+| **`FR-SET-001`** | `settings` | Resolusi 6-Layer Cascading Config (*System → Org Locked → Vault `.vk/` [fallback `.obmap/`] → User → Leaf → Session*) melalui `configRegistry.ts`, `LocalConfigStore.ts`, `CloudConfigStore.ts`. | `[PARTIAL]` | `STEP-01.5` |
 | **`FR-SET-002`** | `settings`, `graph` | Unified Theme Engine menghubungkan `useThemeStore.ts` (CSS Variables DOM) dengan `graph/shared/utils/theme.ts` & `atmosphereConfig.ts` secara reaktif (`refresh()`). | `[PARTIAL]` | `STEP-01.5` |
 | **`FR-LMS-001`** | `graph`, `community` | Evaluator DAG `prerequisites` YAML pada kanvas (deteksi siklus), state simpul (*Locked / Available / Mastered*), progres pelajar, & kuis integratif. | `[VISION]` | `STEP-05.1` |
-| **`FR-EXT-001`** | `settings` | SDK `@obmap/sdk` ber-sandbox Web Worker / Iframe CSP, manifest izin eksplisit, *Scoped CSS Snippets* (`rehype-sanitize`), dan 12 Extension Points standar. | `[PARTIAL]` | `STEP-05.3` |
+| **`FR-EXT-001`** | `settings` | SDK `@vk/sdk` (aliased ke `brand.sdkPackageName`) ber-sandbox Web Worker / Iframe CSP, manifest izin eksplisit, *Scoped CSS Snippets* (`rehype-sanitize`), dan 12 Extension Points standar. | `[PARTIAL]` | `STEP-05.3` |
 
 ---
 

@@ -144,7 +144,7 @@ export const useEditorSettingsStore = create<EditorSettingsState>()(
 );
 
 export const FONT_FAMILY_CSS: Record<EditorFontFamily, string> = {
-  sans: 'inherit',
-  serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
-  mono: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  sans: 'var(--vk-font-sans, inherit)',
+  serif: 'var(--vk-font-prose, Georgia, "Iowan Old Style", "Times New Roman", serif)',
+  mono: 'var(--vk-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
 };

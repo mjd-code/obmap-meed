@@ -45,7 +45,7 @@ export function AutoSaveIndicator({
       className={cn(
         "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs transition-all duration-300",
         status === 'saving' && "bg-primary/10 text-primary",
-        (status === 'saved' || showSaved) && "bg-green-500/10 text-green-500",
+        (status === 'saved' || showSaved) && "bg-success/10 text-success",
         status === 'error' && "bg-destructive/10 text-destructive",
         className
       )}

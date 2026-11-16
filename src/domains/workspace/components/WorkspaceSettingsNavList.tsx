@@ -56,7 +56,7 @@ export function WorkspaceSettingsNavList({
         <nav className="p-2 space-y-4" aria-label="Settings navigation">
           {filteredSections ? (
             <div className="space-y-1">
-              <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              <p className="px-2 vk-text-2xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Hasil Pencarian ({filteredSections.length})
               </p>
               {filteredSections.length === 0 ? (
@@ -88,7 +88,7 @@ export function WorkspaceSettingsNavList({
                       />
                       <div className="min-w-0 flex-1 text-left flex items-center justify-between gap-1">
                         <span className="truncate">{section.label}</span>
-                        <span className="text-[10px] text-muted-foreground/60 shrink-0">
+                        <span className="vk-text-2xs text-muted-foreground/60 shrink-0">
                           {section.group}
                         </span>
                       </div>
@@ -106,7 +106,7 @@ export function WorkspaceSettingsNavList({
 
               return (
                 <div key={group} className="space-y-1">
-                  <h3 className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 select-none">
+                  <h3 className="px-2 vk-text-2xs font-semibold uppercase tracking-wider text-muted-foreground/70 select-none">
                     {group}
                   </h3>
                   <div className="space-y-0.5">

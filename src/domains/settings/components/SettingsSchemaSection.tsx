@@ -101,7 +101,7 @@ export function SchemaSettings() {
               {rule.required && (
                 <Badge
                   variant="secondary"
-                  className="text-[10px] flex-shrink-0"
+                  className="vk-text-2xs flex-shrink-0"
                 >
                   Mandatory
                 </Badge>

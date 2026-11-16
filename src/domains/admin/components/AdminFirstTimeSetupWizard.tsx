@@ -48,7 +48,7 @@ export const FirstTimeSetupWizard: React.FC<Props> = ({ onClaimed }) => {
           <div className="p-3.5 rounded-lg border bg-muted/30 space-y-2">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Akun Yang Sedang Login:</span>
-              <Badge variant="outline" className="text-[10px] bg-background">
+              <Badge variant="outline" className="vk-text-2xs bg-background">
                 Sesi Aktif
               </Badge>
             </div>
@@ -65,7 +65,7 @@ export const FirstTimeSetupWizard: React.FC<Props> = ({ onClaimed }) => {
             </div>
           </div>
 
-          <div className="p-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+          <div className="p-3 rounded-lg border border-warning/20 bg-warning/5 text-xs text-warning flex items-start gap-2">
             <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
             <span>
               Setelah Anda mengklaim hak ini, halaman aktivasi awal akan <strong>terkunci permanen</strong> demi keamanan. Superadmin berikutnya hanya bisa ditunjuk dari dalam dasbor.

@@ -1,6 +1,6 @@
 ---
 id: DOC-DEV-002
-title: Referensi 12 Extension Points Standar `@obmap/sdk`
+title: Referensi 12 Extension Points Standar `@vk/sdk`
 type: developer
 status: [PLANNED]
 owner: Principal Software Architect & Developer Ecosystem Lead
@@ -16,7 +16,7 @@ related:
 source_of_truth: src/domains/settings/shared/api/, src/domains/workspace/, src/domains/graph/
 ---
 
-# Referensi 12 Extension Points Standar (`@obmap/sdk`)
+# Referensi 12 Extension Points Standar (`@vk/sdk`)
 
 ## Ringkasan 3 Baris
 - Katalog teknis **12 titik perluasan resmi** (`Extension Points`) untuk Workspace, Dashboard `/vaults`, Konfigurasi, Editor CodeMirror 6, Kanvas Graf Canvas2D, serta Ekspor Data.

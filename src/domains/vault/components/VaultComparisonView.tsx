@@ -122,10 +122,10 @@ export const VaultComparisonView = ({
 
     if (values.length < 2) return null;
     if (value === maxValue && maxValue !== minValue) {
-      return <TrendingUp className="w-3 h-3 text-green-500" />;
+      return <TrendingUp className="w-3 h-3 text-success" />;
     }
     if (value === minValue && maxValue !== minValue) {
-      return <TrendingDown className="w-3 h-3 text-amber-500" />;
+      return <TrendingDown className="w-3 h-3 text-warning" />;
     }
     return <Minus className="w-3 h-3 text-muted-foreground" />;
   };
@@ -172,7 +172,7 @@ export const VaultComparisonView = ({
                 <div key={vault.id} className="flex items-center gap-2">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {vault.location === "cloud" ? (
-                      <Zap className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      <Zap className="w-4 h-4 text-warning flex-shrink-0" />
                     ) : (
                       <HardDrive className="w-4 h-4 text-primary flex-shrink-0" />
                     )}
@@ -255,16 +255,16 @@ export const VaultComparisonView = ({
                     <div key={index} className="flex items-center gap-2">
                       <Badge
                         variant={orphaned > 0 ? "outline" : "secondary"}
-                        className={orphaned > 0 ? "text-amber-500 border-amber-500/50" : ""}
+                        className={orphaned > 0 ? "text-warning border-warning/50" : ""}
                       >
                         {orphaned}
                       </Badge>
                       {/* For orphaned, lower is better, so reverse the indicator */}
                       {orphanedValues.length > 1 && orphaned === Math.min(...orphanedValues) && (
-                        <TrendingDown className="w-3 h-3 text-green-500" />
+                        <TrendingDown className="w-3 h-3 text-success" />
                       )}
                       {orphanedValues.length > 1 && orphaned === Math.max(...orphanedValues) && orphaned !== Math.min(...orphanedValues) && (
-                        <TrendingUp className="w-3 h-3 text-amber-500" />
+                        <TrendingUp className="w-3 h-3 text-warning" />
                       )}
                     </div>
                   );

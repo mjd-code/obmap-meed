@@ -37,7 +37,7 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
   return (
     <TabsContent value="history" className="mt-2.5 space-y-2">
       {/* Sub-Switch: Cloud vs Lokal */}
-      <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground pb-1 border-b border-border/30">
+      <div className="flex items-center justify-between vk-text-2xs font-medium text-muted-foreground pb-1 border-b border-border/30">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -85,7 +85,7 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
           </div>
         ) : historyTab === "cloud" ? (
           cloudCommits.length === 0 ? (
-            <div className="text-center py-8 text-[11px] text-muted-foreground">
+            <div className="text-center py-8 vk-text-xs text-muted-foreground">
               Belum ada commit cloud pada branch ini.
             </div>
           ) : (
@@ -96,10 +96,10 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
                   className="p-1.5 rounded-md border border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors flex items-center justify-between gap-1.5 text-xs"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-[11px] text-foreground truncate">
+                    <div className="font-medium vk-text-xs text-foreground truncate">
                       {c.message}
                     </div>
-                    <div className="text-[10px] text-muted-foreground flex items-center gap-1 font-mono">
+                    <div className="vk-text-2xs text-muted-foreground flex items-center gap-1 font-mono">
                       <span>{c.commitHash.substring(0, 6)}</span>
                       <span>•</span>
                       <span>{new Date(c.createdAt).toLocaleDateString()}</span>
@@ -110,7 +110,7 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => onInspectCloudCommit(c)}
-                      className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                      className="h-5 px-1.5 vk-text-2xs text-muted-foreground hover:text-foreground"
                       title="Bandingkan dengan editan saat ini"
                     >
                       <Eye className="w-2.5 h-2.5 mr-0.5" />
@@ -120,7 +120,7 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onRestoreCloudCommit(c)}
-                      className="h-5 px-1.5 text-[10px] gap-0.5 border-border/60 hover:border-primary/50"
+                      className="h-5 px-1.5 vk-text-2xs gap-0.5 border-border/60 hover:border-primary/50"
                       title="Pulihkan catatan ke versi ini"
                     >
                       <RotateCcw className="w-2.5 h-2.5" />
@@ -132,7 +132,7 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
             </div>
           )
         ) : microRevisions.length === 0 ? (
-          <div className="text-center py-8 text-[11px] text-muted-foreground">
+          <div className="text-center py-8 vk-text-xs text-muted-foreground">
             Belum ada snapshot lokal tersimpan (retensi 6 hari).
           </div>
         ) : (
@@ -143,10 +143,10 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
                 className="p-1.5 rounded-md border border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors flex items-center justify-between gap-1.5 text-xs"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium text-[11px] text-foreground truncate">
+                  <div className="font-medium vk-text-xs text-foreground truncate">
                     Snapshot {new Date(rev.timestamp).toLocaleTimeString()}
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="vk-text-2xs text-muted-foreground">
                     {new Date(rev.timestamp).toLocaleDateString()} •{" "}
                     {rev.content.length} karakter
                   </div>
@@ -156,7 +156,7 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onInspectLocalRevision(rev)}
-                    className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                    className="h-5 px-1.5 vk-text-2xs text-muted-foreground hover:text-foreground"
                   >
                     <Eye className="w-2.5 h-2.5 mr-0.5" />
                     Diff
@@ -165,7 +165,7 @@ export const CollabShareHistoryTab: React.FC<CollabShareHistoryTabProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => onRestoreLocalRevision(rev)}
-                    className="h-5 px-1.5 text-[10px] gap-0.5 border-border/60 hover:border-primary/50"
+                    className="h-5 px-1.5 vk-text-2xs gap-0.5 border-border/60 hover:border-primary/50"
                   >
                     <RotateCcw className="w-2.5 h-2.5" />
                     Pulihkan

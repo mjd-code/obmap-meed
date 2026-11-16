@@ -1,6 +1,7 @@
 ﻿import { useState } from "react";
 import type { GraphConfigState } from "@/domains/graph/shared/stores/useGraphStore";
 import type { LayoutMode } from "@/domains/graph/shared/utils/graph.types";
+import { getBrandConfig } from "@/global/config/brand.config";
 
 export interface ColorThemePreset {
   id: string;
@@ -14,7 +15,7 @@ export interface ColorThemePreset {
 export const GRAPH_THEME_PRESETS: ColorThemePreset[] = [
   {
     id: "default",
-    name: "Classic ObMap",
+    name: `Classic ${getBrandConfig().name}`,
     fileColor: "#3b82f6",
     folderColor: "#eab308",
     linkColor: "#60a5fa",

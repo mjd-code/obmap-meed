@@ -5,7 +5,7 @@ type: engineering
 status: [IMPLEMENTED]
 owner: Principal Software Architect
 version: 2.0.0
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-16
 audience: both
 related:
   - DOC-META-000
@@ -20,7 +20,7 @@ source_of_truth: git status, git log, src/App.tsx, docs/
 ## Ringkasan 3 Baris
 - Mencatat seluruh selisih antara materi instruksi/dokumen lama dengan kondisi riil kode sumber saat ini.
 - Memastikan fakta kode menjadi satu-satunya sumber kebenaran teknis tanpa asumsi yang tertinggal.
-- Menyimpan arsip audit link, ADR, dan path kode Wave 3 serta daftar drift v2.0 (`DRFT-006` s/d `DRFT-016`).
+- Menyimpan arsip audit link, ADR, dan path kode Wave 3 serta daftar drift v2.0 (`DRFT-006` s/d `DRFT-017`).
 
 ---
 
@@ -44,6 +44,7 @@ source_of_truth: git status, git log, src/App.tsx, docs/
 | **DRFT-014** | `docs/02-planning/brd.md` memakai placeholder `{{TBD_PRO_PRICE}}`. | Sebelumnya belum mencerminkan model XMind+Notion dan tarif dinamis Admin. | **Diselaraskan (Wave `G3`).** Digantikan model tarif/kuota dinamis di `/admin` (`plans`, `plan_quotas`) & gateway **Xendit/Midtrans** first di `brd.md`. |
 | **DRFT-015** | `src/App.tsx` & `publicUrlHelper.ts` memakai rute `/p/:username/:vaultSlug`. | `src/domains/community/` aktif dengan `CommunityOrchestrator`, rute root `/:username` / `/@:username`, guard 3-lapis `RESERVED_SLUGS`, & `/p/*` dimatikan langsung. | **Diselaraskan (`STEP-01.2`, `CHG-20261114-003`).** |
 | **DRFT-016** | `src/domains/auth/` mengizinkan akses langsung setelah signup. | `ReleaseStageService` (`stage_1_partner`/`stage_2_community_beta`/`stage_3_commercial_ga`), `AuthProtectedRoute`, & antrean approval individual `/admin` aktif. | **Diselesaikan (`STEP-01.3`, `CHG-20261114-004`).** |
+| **DRFT-017** | Identitas merek masih hardcoded & terpecah: `index.html` memakai `VaultGraph`, `package.json` `vite_react_shadcn_ts`, komponen UI memakai `ObMap`, dan kunci browser memakai `ObmapConfigDB` / `obmap-*` / `.obmap/`. | `BrandManifest` (`"Sidra"` default dinamis di `brand.config.ts`), `useBrandConfig()`, `viteBrandHtmlPlugin` + `VitePWA`, `storageKeyMigrator.ts` (`VkConfigDB`/`vk-*` dengan fallback zero-loss `obmap-*`), & CLI `scripts/rebrand.ts` kini aktif. | **Diselesaikan (`BRAND-STEP-01`, `CHG-20261116-002`).** |
 
 ---
 

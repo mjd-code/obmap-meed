@@ -44,7 +44,7 @@ source_of_truth: src/App.tsx, src/pages/Landing.tsx, src/domains/vault/
 
 ## 3. Konsekuensi
 - Berkas `.md` pengguna tetap 100% portabel ketika disinkronkan via folder lokal atau Git.
-- Menghindari god-component di beranda berkat pemisahan `DashboardWidgetRegistry.ts` yang juga berfungsi sebagai *Extension Point* bagi `@obmap/sdk` (`ADR-0012`).
+- Menghindari god-component di beranda berkat pemisahan `DashboardWidgetRegistry.ts` yang juga berfungsi sebagai *Extension Point* bagi `@vk/sdk` (`ADR-0012`).
 
 ---
 

@@ -6,10 +6,15 @@
  */
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import { DEFAULT_SCHEMA, normalizeSchema } from "@/domains/settings/shared/api/schemaRegistry";
 import type { PropertyRule, VaultSchema } from "@/domains/settings/shared/utils/schema.types";
+import {
+  LEGACY_OBMAP_KEYS,
+  VK_STORAGE_KEYS,
+  createMigratingStateStorage,
+} from "@/global/utils/storageKeyMigrator";
 
 interface SchemaState {
   schema: VaultSchema;
@@ -122,7 +127,13 @@ export const useSchemaStore = create<SchemaState>()(
       },
     }),
     {
-      name: "obmap-vault-schema",
+      name: VK_STORAGE_KEYS.LS_VAULT_SCHEMA,
+      storage: createJSONStorage(() =>
+        createMigratingStateStorage(
+          VK_STORAGE_KEYS.LS_VAULT_SCHEMA,
+          LEGACY_OBMAP_KEYS.LS_VAULT_SCHEMA,
+        ),
+      ),
       partialize: (state) => ({ schema: state.schema }),
       merge: (persisted, current) => {
         const p = persisted as { schema?: unknown } | undefined;

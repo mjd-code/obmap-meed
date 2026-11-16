@@ -328,6 +328,16 @@ export function useGraphCanvasController(
     props.graphConfig.nodes.showFileNodes,
   ]);
 
+  const effectiveSubtreeOverrides = useMemo(() => {
+    const merged = { ...subtreeLayoutOverrides };
+    for (const node of projection.nodes) {
+      if (!merged[node.id] && node.structureClass) {
+        merged[node.id] = node.structureClass;
+      }
+    }
+    return merged;
+  }, [projection.nodes, subtreeLayoutOverrides]);
+
   // Layout Engine Computation (menggunakan parameter jarak dari useGraphEngineStore)
   const geometry = useLayoutEngine(projection, {
     mode: layoutMode,
@@ -341,7 +351,7 @@ export function useGraphCanvasController(
     rootId: focusedRootId ?? undefined,
     visibleIds,
     nodeMetrics: metrics,
-    subtreeOverrides: subtreeLayoutOverrides,
+    subtreeOverrides: effectiveSubtreeOverrides,
     boundaries,
     summaries,
     manualOffsets: layoutArrangement === 'custom' ? manualNodeOffsets : undefined,
@@ -729,7 +739,7 @@ export function useGraphCanvasController(
     minZoomLimit,
     layoutMode,
     canvasMode,
-    subtreeLayoutOverrides,
+    subtreeLayoutOverrides: effectiveSubtreeOverrides,
     branchColorOverrides,
     nodeStyleOverrides,
     boundaries,
@@ -798,13 +808,13 @@ export function useGraphCanvasController(
           source.id,
           layoutMode,
           projection.parentByChild,
-          subtreeLayoutOverrides,
+          effectiveSubtreeOverrides,
         );
         const targetMode = resolveNodeSubtreeMode(
           target.id,
           layoutMode,
           projection.parentByChild,
-          subtreeLayoutOverrides,
+          effectiveSubtreeOverrides,
         );
 
         if (

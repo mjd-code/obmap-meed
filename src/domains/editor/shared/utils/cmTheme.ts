@@ -7,12 +7,13 @@ export const editorTheme = EditorView.theme({
   "&": {
     color: "hsl(var(--foreground))",
     backgroundColor: "transparent",
-    fontSize: "0.95rem",
+    fontSize: "var(--vk-prose-size, 0.95rem)",
     height: "100%",
   },
   ".cm-scroller": {
-    fontFamily: "inherit",
-    lineHeight: "1.7",
+    fontFamily: "var(--vk-font-prose, inherit)",
+    lineHeight: "var(--vk-prose-line-height, 1.7)",
+    letterSpacing: "var(--vk-prose-letter-spacing, 0em)",
     overflow: "auto",
     overflowX: "hidden",
   },
@@ -78,14 +79,14 @@ export const editorTheme = EditorView.theme({
   ".cm-md-em": { fontStyle: "italic" },
   ".cm-md-strike": { textDecoration: "line-through", opacity: "0.7" },
   ".cm-md-code": {
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    fontFamily: "var(--vk-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
     fontSize: "0.9em",
     backgroundColor: "hsl(var(--muted) / 0.6)",
     borderRadius: "4px",
     padding: "0.1em 0.3em",
   },
   ".cm-md-fenced": {
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    fontFamily: "var(--vk-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
     fontSize: "0.9em",
   },
   ".cm-md-quote": { color: "hsl(var(--muted-foreground))", fontStyle: "italic" },

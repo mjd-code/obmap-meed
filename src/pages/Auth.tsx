@@ -3,8 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { AuthForm } from "@/domains/auth/components/AuthForm";
 import { Loader2 } from "lucide-react";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 export default function Auth() {
+  const brand = useBrandConfig();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
@@ -35,7 +37,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-muted/30">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">ObMap</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{brand.name}</h1>
           <p className="text-muted-foreground mt-2">
             Your knowledge graph workspace
           </p>

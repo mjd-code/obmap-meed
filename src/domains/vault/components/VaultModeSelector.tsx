@@ -108,7 +108,7 @@ export const VaultModeSelector = ({
                 </div>
                 <div>
                   <div className="font-medium text-foreground">Folder on this computer</div>
-                  <Badge variant="secondary" className="mt-0.5 text-[10px]">
+                  <Badge variant="secondary" className="mt-0.5 vk-text-2xs">
                     Markdown files
                   </Badge>
                 </div>
@@ -125,12 +125,12 @@ export const VaultModeSelector = ({
               onClick={selectCloudMode}
             >
               <div className="mb-3 flex items-center gap-3">
-                <div className="rounded-lg bg-blue-500/10 p-2 text-blue-400">
+                <div className="rounded-lg bg-info/10 p-2 text-info">
                   <Cloud className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="font-medium text-foreground">Cloud vault</div>
-                  <Badge variant="outline" className="mt-0.5 text-[10px]">
+                  <Badge variant="outline" className="mt-0.5 vk-text-2xs">
                     {isAuthenticated ? "Synced" : "Sign in to sync"}
                   </Badge>
                 </div>
@@ -151,7 +151,7 @@ export const VaultModeSelector = ({
                 onClick={selectCreateNewFolder}
               >
                 <div className="mb-2 flex items-center gap-3">
-                  <div className="rounded-lg bg-green-500/10 p-2 text-green-400">
+                  <div className="rounded-lg bg-success/10 p-2 text-success">
                     <Plus className="h-4 w-4" />
                   </div>
                   <span className="font-medium text-foreground">Create new</span>
@@ -167,7 +167,7 @@ export const VaultModeSelector = ({
                 onClick={handleOpenExisting}
               >
                 <div className="mb-2 flex items-center gap-3">
-                  <div className="rounded-lg bg-blue-500/10 p-2 text-blue-400">
+                  <div className="rounded-lg bg-info/10 p-2 text-info">
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FolderOpen className="h-4 w-4" />}
                   </div>
                   <span className="font-medium text-foreground">Open existing</span>

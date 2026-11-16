@@ -1,26 +1,72 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import { resolveEnvBrandManifest } from "./src/global/config/brand.config";
+
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function viteBrandHtmlPlugin(brand: ReturnType<typeof resolveEnvBrandManifest>): Plugin {
+  const fullTitle = escapeHtmlAttr(`${brand.name} - ${brand.tagline}`);
+  const desc = escapeHtmlAttr(brand.description);
+  const name = escapeHtmlAttr(brand.name);
+  const shortName = escapeHtmlAttr(brand.shortName);
+  const origin = escapeHtmlAttr(`${brand.canonicalOrigin}/`);
+  const themeColor = escapeHtmlAttr(brand.themeColor);
+
+  return {
+    name: "vite-brand-html-plugin",
+    transformIndexHtml(html) {
+      return html
+        .replace(/<title>[\s\S]*?<\/title>/, `<title>${fullTitle}</title>`)
+        .replace(/<meta name="title" content="[^"]*" \/>/, `<meta name="title" content="${fullTitle}" />`)
+        .replace(/<meta name="description" content="[^"]*" \/>/, `<meta name="description" content="${desc}" />`)
+        .replace(/<meta name="author" content="[^"]*" \/>/, `<meta name="author" content="${name}" />`)
+        .replace(/<meta name="theme-color" content="[^"]*" \/>/, `<meta name="theme-color" content="${themeColor}" />`)
+        .replace(/<meta name="apple-mobile-web-app-title" content="[^"]*" \/>/, `<meta name="apple-mobile-web-app-title" content="${shortName}" />`)
+        .replace(/<meta name="application-name" content="[^"]*" \/>/, `<meta name="application-name" content="${shortName}" />`)
+        .replace(/<meta name="msapplication-TileColor" content="[^"]*" \/>/, `<meta name="msapplication-TileColor" content="${themeColor}" />`)
+        .replace(/<meta property="og:url" content="[^"]*" \/>/, `<meta property="og:url" content="${origin}" />`)
+        .replace(/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${fullTitle}" />`)
+        .replace(/<meta property="og:description" content="[^"]*" \/>/, `<meta property="og:description" content="${desc}" />`)
+        .replace(/<meta property="og:site_name" content="[^"]*" \/>/, `<meta property="og:site_name" content="${name}" />`)
+        .replace(/<meta name="twitter:url" content="[^"]*" \/>/, `<meta name="twitter:url" content="${origin}" />`)
+        .replace(/<meta name="twitter:title" content="[^"]*" \/>/, `<meta name="twitter:title" content="${fullTitle}" />`)
+        .replace(/<meta name="twitter:description" content="[^"]*" \/>/, `<meta name="twitter:description" content="${desc}" />`)
+        .replace(/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${origin}" />`);
+    },
+  };
+}
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "VITE_");
+  const brand = resolveEnvBrandManifest(env);
+
+  return {
   server: {
     host: "::",
     port: 8080,
   },
   plugins: [
     react(),
+    viteBrandHtmlPlugin(brand),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: {
-        name: "VaultGraph - Knowledge Network",
-        short_name: "VaultGraph",
-        description: "A powerful knowledge graph and vault management system for organizing your notes and ideas. Works offline with automatic sync.",
-        theme_color: "#7c3aed",
+        name: `${brand.name} - ${brand.tagline}`,
+        short_name: brand.shortName,
+        description: brand.description,
+        theme_color: brand.themeColor,
         background_color: "#0a0a0f",
         display: "standalone",
         orientation: "any",
@@ -75,14 +121,14 @@ export default defineConfig(({ mode }) => ({
             sizes: "1280x720",
             type: "image/png",
             form_factor: "wide",
-            label: "VaultGraph Desktop View"
+            label: `${brand.name} Desktop View`
           },
           {
             src: "screenshot-narrow.png",
             sizes: "720x1280",
             type: "image/png",
             form_factor: "narrow",
-            label: "VaultGraph Mobile View"
+            label: `${brand.name} Mobile View`
           }
         ]
       },
@@ -272,4 +318,5 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     exclude: ['three/webgpu'],
   },
-}));
+  };
+});

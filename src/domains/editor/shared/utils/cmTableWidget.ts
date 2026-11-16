@@ -104,7 +104,7 @@ class ObsidianTableWidget extends WidgetType {
       closeAnyMenu();
       const rect = anchorEl.getBoundingClientRect();
       const menu = document.createElement("div");
-      menu.className = "fixed z-50 w-48 p-1 bg-popover text-popover-foreground border border-border/80 rounded-md shadow-lg text-[11px] flex flex-col backdrop-blur-md";
+      menu.className = "fixed z-50 w-48 p-1 bg-popover text-popover-foreground border border-border/80 rounded-md shadow-lg vk-text-xs flex flex-col backdrop-blur-md";
       menu.style.top = `${rect.bottom + 4}px`;
       menu.style.left = `${Math.min(window.innerWidth - 200, Math.max(8, rect.left - 20))}px`;
 
@@ -149,8 +149,8 @@ class ObsidianTableWidget extends WidgetType {
     const blockGrip = document.createElement("button");
     blockGrip.type = "button";
     blockGrip.title = "Opsi Tabel (Hapus, Duplikat, Salin)";
-    blockGrip.className = "text-[10px] text-muted-foreground/60 hover:text-foreground font-mono px-1.5 py-0.5 rounded hover:bg-muted/40 cursor-pointer flex items-center gap-1";
-    blockGrip.innerHTML = `<span>:::</span><span class="text-[9px] uppercase tracking-wider font-sans opacity-70">Tabel</span>`;
+    blockGrip.className = "vk-text-2xs text-muted-foreground/60 hover:text-foreground font-mono px-1.5 py-0.5 rounded hover:bg-muted/40 cursor-pointer flex items-center gap-1";
+    blockGrip.innerHTML = `<span>:::</span><span class="vk-text-2xs uppercase tracking-wider font-sans opacity-70">Tabel</span>`;
     blockGrip.addEventListener("click", (e) => {
       e.stopPropagation();
       showCompactMenu(blockGrip, [
@@ -289,7 +289,7 @@ class ObsidianTableWidget extends WidgetType {
       const colGrip = document.createElement("button");
       colGrip.type = "button";
       colGrip.title = "Opsi Kolom";
-      colGrip.className = "absolute top-1 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-muted/90 text-muted-foreground hover:bg-primary hover:text-primary-foreground text-[9px] leading-none opacity-0 group-hover/th:opacity-100 transition-opacity cursor-pointer z-10 shadow-sm border border-border/40";
+      colGrip.className = "absolute top-1 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-muted/90 text-muted-foreground hover:bg-primary hover:text-primary-foreground vk-text-2xs leading-none opacity-0 group-hover/th:opacity-100 transition-opacity cursor-pointer z-10 shadow-sm border border-border/40";
       colGrip.textContent = ":::";
       colGrip.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -622,7 +622,7 @@ class ObsidianTableWidget extends WidgetType {
     const addRowBtn = document.createElement("button");
     addRowBtn.type = "button";
     addRowBtn.textContent = "+ Tambah Baris";
-    addRowBtn.className = "text-[11px] text-muted-foreground/60 hover:text-foreground font-medium px-1.5 py-0.5 rounded hover:bg-muted/30 transition-colors cursor-pointer";
+    addRowBtn.className = "vk-text-xs text-muted-foreground/60 hover:text-foreground font-medium px-1.5 py-0.5 rounded hover:bg-muted/30 transition-colors cursor-pointer";
     addRowBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const nextRows = [...tableData.rows, tableData.columns.map(() => "")];

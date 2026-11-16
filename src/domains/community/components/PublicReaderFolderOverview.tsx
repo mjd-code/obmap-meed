@@ -65,7 +65,7 @@ export const PublicFolderOverview: React.FC<PublicFolderOverviewProps> = ({
       {/* Folder Header Banner */}
       <div className="p-5 md:p-6 rounded-2xl border border-border/80 bg-card shadow-sm space-y-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-warning/10 text-warning flex items-center justify-center shrink-0">
             <FolderOpen className="w-6 h-6" />
           </div>
 
@@ -86,11 +86,11 @@ export const PublicFolderOverview: React.FC<PublicFolderOverviewProps> = ({
             Total {childNodes.length} Item
           </Badge>
           <Badge variant="outline" className="gap-1.5 font-medium bg-background/50">
-            <Folder className="w-3.5 h-3.5 text-amber-500" />
+            <Folder className="w-3.5 h-3.5 text-warning" />
             {subfolders.length} Subfolder
           </Badge>
           <Badge variant="outline" className="gap-1.5 font-medium bg-background/50">
-            <FileText className="w-3.5 h-3.5 text-blue-500" />
+            <FileText className="w-3.5 h-3.5 text-info" />
             {fileNotes.length} Catatan
           </Badge>
         </div>
@@ -113,7 +113,7 @@ export const PublicFolderOverview: React.FC<PublicFolderOverviewProps> = ({
       {filteredSubfolders.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Folder className="w-3.5 h-3.5 text-amber-500" />
+            <Folder className="w-3.5 h-3.5 text-warning" />
             Subfolder ({filteredSubfolders.length})
           </h2>
 
@@ -129,15 +129,15 @@ export const PublicFolderOverview: React.FC<PublicFolderOverviewProps> = ({
                 <div
                   key={sub.id}
                   onClick={() => onSelectNode(sub)}
-                  className="group p-3.5 rounded-xl border border-border/80 bg-card hover:border-amber-500/50 hover:bg-accent/40 cursor-pointer transition-all flex items-center justify-between"
+                  className="group p-3.5 rounded-xl border border-border/80 bg-card hover:border-warning/50 hover:bg-accent/40 cursor-pointer transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Folder className="w-5 h-5 text-amber-500 shrink-0 group-hover:scale-105 transition-transform" />
+                    <Folder className="w-5 h-5 text-warning shrink-0 group-hover:scale-105 transition-transform" />
                     <div className="min-w-0">
                       <div className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">
                         {sub.title}
                       </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                      <div className="vk-text-2xs text-muted-foreground mt-0.5">
                         {subItemsCount} item di dalam
                       </div>
                     </div>
@@ -154,7 +154,7 @@ export const PublicFolderOverview: React.FC<PublicFolderOverviewProps> = ({
       {filteredFileNotes.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-blue-500" />
+            <FileText className="w-3.5 h-3.5 text-info" />
             Catatan ({filteredFileNotes.length})
           </h2>
 
@@ -172,7 +172,7 @@ export const PublicFolderOverview: React.FC<PublicFolderOverviewProps> = ({
                       {note.title}
                     </span>
                     {note.published_at && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <span className="vk-text-2xs text-muted-foreground flex items-center gap-1 mt-0.5">
                         <Calendar className="w-3 h-3" />
                         {new Date(note.published_at).toLocaleDateString("id-ID", {
                           day: "numeric",
@@ -185,7 +185,7 @@ export const PublicFolderOverview: React.FC<PublicFolderOverviewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px] h-4 font-mono">
+                  <Badge variant="secondary" className="vk-text-2xs h-4 font-mono">
                     v{note.version}
                   </Badge>
                   <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />

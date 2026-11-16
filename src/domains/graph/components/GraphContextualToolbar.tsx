@@ -3,11 +3,13 @@ import {
   GitBranch, 
   Plus, 
   Focus, 
-  ZoomIn,
   Trash2, 
   Settings2,
   X,
-  BoxSelectIcon
+  BoxSelectIcon,
+  SquareDashed,
+  Sigma,
+  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/global/ui/button";
 import {
@@ -34,11 +36,15 @@ interface ContextualToolbarProps {
   nodeId: string;
   nodeName: string;
   isFolder: boolean;
+  isTask?: boolean;
   canvasMode?: CanvasMode;
   currentOverride?: MindmapLayoutMode;
   isFocused: boolean;
   onSetStructure: (layout: MindmapLayoutMode | null) => void;
   onAddSub: (type: "file" | "folder") => void;
+  onAddBoundary?: () => void;
+  onAddSummary?: () => void;
+  onToggleTask?: () => void;
   onToggleFocus: () => void;
   onZoomToSelection: () => void;
   onDelete: () => void;
@@ -48,19 +54,23 @@ interface ContextualToolbarProps {
 export function ContextualToolbar({
   x,
   y,
+  isTask = false,
   canvasMode = "mindmap",
   currentOverride,
   isFocused,
   onSetStructure,
   onAddSub,
+  onAddBoundary,
+  onAddSummary,
+  onToggleTask,
   onToggleFocus,
-   onZoomToSelection,
+  onZoomToSelection,
   onDelete,
   onClose,
 }: ContextualToolbarProps) {
   // Default expanded saat dibuka melalui klik kanan / double tap
   const [isExpanded, setIsExpanded] = useState(true);
-  const toolbarWidth = isExpanded ? (canvasMode === "graph" ? 176 : 212) : 36;
+  const toolbarWidth = isExpanded ? (canvasMode === "graph" ? 176 : 272) : 36;
   
   // Clamping koordinat toolbar agar tidak terpotong tepi layar
   const clampedX = typeof window !== "undefined"
@@ -178,6 +188,46 @@ export function ContextualToolbar({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Boundary & Summary quick actions (Mindmap Mode) */}
+          {canvasMode === "mindmap" && onAddBoundary && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-foreground"
+              onClick={onAddBoundary}
+              title="Wrap Subtree in Boundary"
+              aria-label="Wrap Subtree in Boundary"
+            >
+              <SquareDashed className="h-3.5 w-3.5" />
+            </Button>
+          )}
+
+          {canvasMode === "mindmap" && onAddSummary && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-foreground"
+              onClick={onAddSummary}
+              title="Create Summary Brace"
+              aria-label="Create Summary Brace"
+            >
+              <Sigma className="h-3.5 w-3.5" />
+            </Button>
+          )}
+
+          {isTask && onToggleTask && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-primary"
+              onClick={onToggleTask}
+              title="Toggle Task Checkbox"
+              aria-label="Toggle Task Checkbox"
+            >
+              <CheckSquare className="h-3.5 w-3.5" />
+            </Button>
+          )}
 
                    {/* Zoom to Selection */}
           <Button

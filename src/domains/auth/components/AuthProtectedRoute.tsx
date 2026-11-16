@@ -13,12 +13,14 @@ import { Badge } from "@/global/ui/badge";
 import { Button } from "@/global/ui/button";
 import { Input } from "@/global/ui/input";
 import { Loader2, ShieldAlert, Clock, KeyRound, LogOut, RefreshCw } from "lucide-react";
+import { useBrandConfig } from "@/global/config/brand.config";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const brand = useBrandConfig();
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
   const [attemptedAutoLogin, setAttemptedAutoLogin] = useState(false);
@@ -73,7 +75,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         {isAutoLoggingIn && (
-          <p className="text-xs text-muted-foreground animate-pulse font-mono">
+          <p className="text-xs text-muted-foreground animate-pulse motion-reduce:animate-none font-mono">
             Auto-authenticating dev workspace...
           </p>
         )}
@@ -117,10 +119,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="max-w-md w-full rounded-xl border border-border bg-card p-6 shadow-lg space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <Badge variant="outline" className="text-[11px] font-mono">
+            <Badge variant="outline" className="vk-text-xs font-mono">
               {RELEASE_STAGE_LABELS[activeStage]}
             </Badge>
-            <Badge variant={isSuspended ? "destructive" : "secondary"} className="text-[11px]">
+            <Badge variant={isSuspended ? "destructive" : "secondary"} className="vk-text-xs">
               {isSuspended ? "Suspended" : "Pending Approval"}
             </Badge>
           </div>
@@ -129,7 +131,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
             {isSuspended ? (
               <ShieldAlert className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
             ) : (
-              <Clock className="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+              <Clock className="h-6 w-6 text-warning shrink-0 mt-0.5" />
             )}
             <div className="space-y-1">
               <h1 className="text-base font-semibold text-foreground">
@@ -141,7 +143,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
                 {isSuspended
                   ? "Akses workspace Anda sedang ditangguhkan oleh administrator platform."
                   : activeStage === "stage_1_partner"
-                  ? "ObMap saat ini berada di fase Closed Partner Pilot. Masukkan kode undangan mitra atau tunggu persetujuan manual administrator di panel kurator."
+                  ? `${brand.name} saat ini berada di fase Closed Partner Pilot. Masukkan kode undangan mitra atau tunggu persetujuan manual administrator di panel kurator.`
                   : "Pendaftaran komunitas Anda masuk ke antrean persetujuan individual administrator untuk menjaga kualitas trafik dan kurasi."}
               </p>
             </div>
@@ -157,7 +159,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
                 <Input
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value)}
-                  placeholder="OBMAP-XXXXXXXX"
+                  placeholder={`${brand.inviteCodePrefix}-XXXXXXXX`}
                   className="h-9 text-xs font-mono uppercase"
                 />
                 <Button type="submit" size="sm" disabled={redeeming || !inviteCode.trim()}>

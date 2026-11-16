@@ -52,14 +52,14 @@ export const EditorWorkflowToolbar: React.FC<EditorWorkflowToolbarProps> = ({
     switch (status) {
       case "published":
         return (
-          <Badge className="bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 gap-1.5 font-medium px-2 py-0.5">
+          <Badge className="bg-success/15 text-success border border-success/30 gap-1.5 font-medium px-2 py-0.5">
             <CheckCircle className="w-3.5 h-3.5" />
             Terbit ke Web
           </Badge>
         );
       case "in_review":
         return (
-          <Badge className="bg-amber-500/15 text-amber-500 border border-amber-500/30 gap-1.5 font-medium px-2 py-0.5">
+          <Badge className="bg-warning/15 text-warning border border-warning/30 gap-1.5 font-medium px-2 py-0.5">
             <Clock className="w-3.5 h-3.5" />
             Menunggu Review
           </Badge>

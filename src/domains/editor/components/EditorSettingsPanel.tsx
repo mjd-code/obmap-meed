@@ -35,7 +35,7 @@ export function EditorSettingsPanel({
       >
         <Pencil className="w-4 h-4" />
         <span className="flex-1 text-left">Configure</span>
-        <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+        <Badge variant="secondary" className="px-1.5 py-0 vk-text-2xs">
           {ctrl.enabledCount}
         </Badge>
       </Button>

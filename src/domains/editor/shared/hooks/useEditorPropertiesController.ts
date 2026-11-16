@@ -164,6 +164,14 @@ export function useEditorPropertiesController(
       "status",
       "author",
       "cssclasses",
+      "icon",
+      "priority",
+      "progress",
+      "checkbox",
+      "structure_class",
+      "branch_color",
+      "topic_shape",
+      "parent",
     ]);
     rules.forEach((r) => set.add(r.key));
     nodes.forEach((n) => {

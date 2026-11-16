@@ -91,7 +91,7 @@ export const VcsCreateBranchModal: React.FC<VcsCreateBranchModalProps> = ({
                 }
               }}
             />
-            <span className="text-[11px] text-muted-foreground mt-1 block">
+            <span className="vk-text-xs text-muted-foreground mt-1 block">
               Format otomatis: huruf kecil tanpa spasi (dipisahkan tanda hubung).
             </span>
           </div>
@@ -100,10 +100,10 @@ export const VcsCreateBranchModal: React.FC<VcsCreateBranchModalProps> = ({
             <div className="flex items-center justify-between p-2.5 rounded border border-border/50 bg-muted/20">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5 font-medium text-foreground">
-                  <Shield className="w-3.5 h-3.5 text-amber-500" />
+                  <Shield className="w-3.5 h-3.5 text-warning" />
                   Kunci Cabang (Branch Protection)
                 </div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="vk-text-xs text-muted-foreground">
                   Hanya Admin & Owner yang dapat menggabungkan perubahan ke cabang ini.
                 </div>
               </div>
@@ -119,7 +119,7 @@ export const VcsCreateBranchModal: React.FC<VcsCreateBranchModalProps> = ({
           <div className="flex items-center justify-between p-2.5 rounded border border-border/50 bg-muted/20">
             <div className="space-y-0.5">
               <div className="font-medium text-foreground">Hapus Otomatis Pasca-Merge</div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="vk-text-xs text-muted-foreground">
                 Arsipkan cabang ini secara otomatis setelah berhasil digabungkan.
               </div>
             </div>

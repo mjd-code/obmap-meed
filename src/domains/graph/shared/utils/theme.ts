@@ -16,9 +16,14 @@ export interface SemanticCanvasTokens {
   nodeFile: string;
   nodeFolder: string;
   textPrimary: string;
+  nodeEvergreen: string;
+  nodeLocked: string;
+  edgeCitation: string;
+  glow: string;
+  labelBg: string;
 }
 
-/** Reads live `--ob-*` CSS custom properties injected by `useThemeStore`. */
+/** Reads live `--vk-*` (or legacy `--ob-*`) CSS custom properties injected by `useThemeStore`. */
 export function resolveSemanticCanvasTokens(): SemanticCanvasTokens {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return {
@@ -29,23 +34,35 @@ export function resolveSemanticCanvasTokens(): SemanticCanvasTokens {
       nodeFile: resolveColor('hsl(var(--file-node))'),
       nodeFolder: resolveColor('hsl(var(--folder-node))'),
       textPrimary: resolveColor('hsl(var(--foreground))'),
+      nodeEvergreen: resolveColor('hsl(152 69% 50%)'),
+      nodeLocked: resolveColor('hsl(38 92% 58%)'),
+      edgeCitation: resolveColor('hsl(205 90% 62%)'),
+      glow: resolveColor('hsl(var(--node-glow))'),
+      labelBg: resolveColor('hsl(var(--card))'),
     };
   }
 
   const cs = getComputedStyle(document.documentElement);
-  const readVar = (name: string, fallbackExpr: string) => {
-    const raw = cs.getPropertyValue(name).trim();
+  const readVar = (canonicalName: string, legacyName: string, fallbackExpr: string) => {
+    const raw =
+      cs.getPropertyValue(canonicalName).trim() ||
+      (legacyName ? cs.getPropertyValue(legacyName).trim() : '');
     return resolveColor(raw || fallbackExpr);
   };
 
   return {
-    bgCanvas: readVar('--ob-bg-canvas', 'hsl(var(--canvas-bg))'),
-    surface: readVar('--ob-surface', 'hsl(var(--card))'),
-    accent: readVar('--ob-accent', 'hsl(var(--accent))'),
-    edgeDefault: readVar('--ob-edge-default', 'hsl(var(--primary))'),
-    nodeFile: readVar('--ob-node-file', 'hsl(var(--file-node))'),
-    nodeFolder: readVar('--ob-node-folder', 'hsl(var(--folder-node))'),
-    textPrimary: readVar('--ob-text-primary', 'hsl(var(--foreground))'),
+    bgCanvas: readVar('--vk-bg-canvas', '--ob-bg-canvas', 'hsl(var(--canvas-bg))'),
+    surface: readVar('--vk-surface', '--ob-surface', 'hsl(var(--card))'),
+    accent: readVar('--vk-accent', '--ob-accent', 'hsl(var(--accent))'),
+    edgeDefault: readVar('--vk-edge-default', '--ob-edge-default', 'hsl(var(--primary))'),
+    nodeFile: readVar('--vk-graph-node-file', '--ob-node-file', 'hsl(var(--file-node))'),
+    nodeFolder: readVar('--vk-graph-node-folder', '--ob-node-folder', 'hsl(var(--folder-node))'),
+    textPrimary: readVar('--vk-text-primary', '--ob-text-primary', 'hsl(var(--foreground))'),
+    nodeEvergreen: readVar('--vk-graph-node-evergreen', '', 'hsl(152 69% 50%)'),
+    nodeLocked: readVar('--vk-graph-node-locked', '', 'hsl(38 92% 58%)'),
+    edgeCitation: readVar('--vk-graph-edge-citation', '', 'hsl(205 90% 62%)'),
+    glow: readVar('--vk-graph-glow', '', 'hsl(var(--node-glow))'),
+    labelBg: readVar('--vk-graph-label-bg', '', 'hsl(var(--card))'),
   };
 }
 

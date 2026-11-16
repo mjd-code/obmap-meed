@@ -53,7 +53,7 @@ flowchart TD
 ## 3. Kesesuaian dengan 3-Stage Progressive Rollout
 - **Stage 1 (`stage_1_partner`):** Berfokus pada **Pilar 3** dan fondasi privat **Pilar 4 & 5** bersama institusi/rekan pilot.
 - **Stage 2 (`stage_2_community_beta`):** Membuka **Pilar 1, 2, dan 5** untuk publik (*read-only* `approved` vaults & profil `/:username`), dengan penerimaan akun baru dikontrol manual oleh Admin di `/admin`.
-- **Stage 3 (`stage_3_commercial_ga`):** Membuka seluruh pilar beserta kuota/tarif dinamis, Teamspaces enterprise, pembayaran **Xendit/Midtrans** & Stripe, serta `@obmap/sdk`.
+- **Stage 3 (`stage_3_commercial_ga`):** Membuka seluruh pilar beserta kuota/tarif dinamis, Teamspaces enterprise, pembayaran **Xendit/Midtrans** & Stripe, serta `@vk/sdk`.
 
 ---
 

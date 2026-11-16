@@ -67,7 +67,7 @@ export function AtmosphereControls({
                   size="sm"
                   variant={ctrl.explorerGraphSyncMode === opt.value ? "secondary" : "ghost"}
                   aria-pressed={ctrl.explorerGraphSyncMode === opt.value}
-                  className="h-auto min-h-8 whitespace-normal px-2 py-1 text-left text-[11px] leading-tight font-normal"
+                  className="h-auto min-h-8 whitespace-normal px-2 py-1 text-left vk-text-xs leading-tight font-normal"
                   onClick={() => ctrl.setExplorerGraphSyncMode(opt.value)}
                 >
                   {opt.label}
@@ -75,7 +75,7 @@ export function AtmosphereControls({
               ))}
             </div>
             {ctrl.activeSyncDesc && (
-              <p className="text-[10px] text-muted-foreground leading-tight px-0.5">
+              <p className="vk-text-2xs text-muted-foreground leading-tight px-0.5">
                 {ctrl.activeSyncDesc}
               </p>
             )}
@@ -90,7 +90,7 @@ export function AtmosphereControls({
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
                 Highlight Connected Path
               </Label>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="vk-text-2xs text-muted-foreground">
                 Redupkan node lain & sorot cabang aktif saat kursor diarahkan.
               </p>
             </div>
@@ -122,7 +122,7 @@ export function AtmosphereControls({
                   type="button"
                   size="sm"
                   variant={atmosphere.cosmicParticles === preset.intensity ? "secondary" : "ghost"}
-                  className="h-7 text-[11px] font-normal"
+                  className="h-7 vk-text-xs font-normal"
                   onClick={() => onAtmosphereUpdate({ cosmicParticles: preset.intensity })}
                 >
                   {preset.label}
@@ -214,7 +214,7 @@ export function AtmosphereControls({
               />
             </div>
           ) : (
-            <p className="text-[11px] text-muted-foreground italic py-4 text-center">
+            <p className="vk-text-xs text-muted-foreground italic py-4 text-center">
               Nyalakan toggle di atas untuk memancarkan partikel energi pada tautan.
             </p>
           )}

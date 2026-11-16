@@ -53,7 +53,7 @@ export function GraphNodeShapeSection({
         {config.autoShapeByFormat ? (
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50 text-xs">
             <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
-              <Hexagon className="w-3.5 h-3.5 text-amber-500" />
+              <Hexagon className="w-3.5 h-3.5 text-warning" />
               <span>Folder: Hexagon</span>
             </div>
             <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
@@ -61,15 +61,15 @@ export function GraphNodeShapeSection({
               <span>Note: Circle</span>
             </div>
             <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
-              <Square className="w-3.5 h-3.5 text-emerald-500" />
+              <Square className="w-3.5 h-3.5 text-success" />
               <span>Image: Square</span>
             </div>
             <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40">
-              <Triangle className="w-3.5 h-3.5 text-purple-500" />
+              <Triangle className="w-3.5 h-3.5 text-accent" />
               <span>Sound/Voice: Triangle</span>
             </div>
             <div className="flex items-center gap-2 p-1.5 rounded bg-muted/40 col-span-2">
-              <Diamond className="w-3.5 h-3.5 text-rose-500" />
+              <Diamond className="w-3.5 h-3.5 text-danger" />
               <span>PDF Document: Diamond</span>
             </div>
           </div>

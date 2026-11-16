@@ -5,11 +5,12 @@ type: engineering
 status: [IMPLEMENTED]
 owner: Principal Software Architect
 version: 2.0.0
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-16
 audience: engineering
 related:
   - DOC-ARCH-ADR-0001
   - DOC-ARCH-ADR-0006
+  - DOC-ARCH-ADR-0013
   - DOC-ENG-002
   - DOC-ENG-004
   - DOC-CHLOG-000
@@ -37,6 +38,10 @@ source_of_truth: AGENTS.md, src/domains/
    - Setiap *per-leaf store* (`LeafGraphConfigStore`, `LeafGraphInteractionStore`) menerapkan *Write-Through & Broadcast Bridge* terhadap store globalnya (`useGraphStore`, `globalGraphInteractionStore`).
 4. **Canvas2D Frame Invalidation:** Setiap mutasi warna tema, gaya node, atau override sub-pohon pada kanvas deterministik statis (`cooldownTicks === 0`) wajib memicu `graphRef.current?.refresh?.()`.
 5. **Deterministic Graph Solvers (`ADR-0003`):** Hanya `Free-Force` yang mengaktifkan simulasi D3 kontinu; seluruh solver terstruktur (`Mindmap`, `Org`, `Timeline`, `Fishbone`, serta terencana `Argument Map` & `Citation Tree`) bersifat deterministik.
+6. **Infrastruktur *Brand-Agnostic* & Brand Manifest Terpusat (`ADR-0013`):**
+   - **Dilarang *hardcode* nama merek** pada teks UI JSX, `<title>`/`index.html`, email template, nama tabel/bucket backend, kunci `IndexedDB`/`localStorage`, maupun kelas CSS.
+   - Seluruh identitas merek tampilan (*name*, *tagline*, *domain*, *logo*, *SDK package*) wajib dibaca dari `BRAND` / `useBrandConfig()` (`src/global/config/brand.config.ts`) dengan dukungan override runtime dari `platform_settings` / `Org Policy`.
+   - Seluruh kunci persistensi lokal dan scoping CSS wajib memakai prefix domain netral (`vk-*`, `VkConfigDB`, `.vk-themed-root`, `.vk/`) melalui `storageKeyMigrator.ts` agar kompatibel mundur dengan `.obmap/` dan `obmap-*`.
 
 ---
 
@@ -62,3 +67,4 @@ Setiap perubahan kode, skema SQL, atau konfigurasi **wajib** menyertakan tiga pe
 - [Aturan Repositori (`repository-rules.md`)](repository-rules.md)
 - [Strategi Pengujian (`testing-strategy.md`)](testing-strategy.md)
 - [ADR-0006: Reactive State & Headless Controller](../03-architecture/adr/ADR-0006-reactive-state-and-headless-controller-governance.md)
+- [ADR-0013: Brand-Agnostic Infrastructure & Dynamic Branding](../03-architecture/adr/ADR-0013-brand-agnostic-infrastructure-and-dynamic-branding.md)

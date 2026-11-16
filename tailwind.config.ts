@@ -59,6 +59,30 @@ export default {
         },
         "graph-bg": "hsl(var(--graph-bg))",
         "node-glow": "hsl(var(--node-glow))",
+        surface: "color-mix(in srgb, var(--vk-bg-surface) calc(<alpha-value> * 100%), transparent)",
+        elevated: "color-mix(in srgb, var(--vk-bg-elevated) calc(<alpha-value> * 100%), transparent)",
+        success: {
+          DEFAULT: "color-mix(in srgb, var(--vk-success) calc(<alpha-value> * 100%), transparent)",
+          subtle: "color-mix(in srgb, var(--vk-success-subtle) calc(<alpha-value> * 100%), transparent)",
+        },
+        warning: {
+          DEFAULT: "color-mix(in srgb, var(--vk-warning) calc(<alpha-value> * 100%), transparent)",
+          subtle: "color-mix(in srgb, var(--vk-warning-subtle) calc(<alpha-value> * 100%), transparent)",
+        },
+        danger: {
+          DEFAULT: "color-mix(in srgb, var(--vk-danger) calc(<alpha-value> * 100%), transparent)",
+          subtle: "color-mix(in srgb, var(--vk-danger-subtle) calc(<alpha-value> * 100%), transparent)",
+        },
+        info: {
+          DEFAULT: "color-mix(in srgb, var(--vk-info) calc(<alpha-value> * 100%), transparent)",
+          subtle: "color-mix(in srgb, var(--vk-info-subtle) calc(<alpha-value> * 100%), transparent)",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--vk-font-ui)", "sans-serif"],
+        prose: ["var(--vk-font-prose)", "serif"],
+        mono: ["var(--vk-font-mono)", "monospace"],
+        display: ["var(--vk-font-display)", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

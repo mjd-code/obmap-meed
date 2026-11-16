@@ -12,6 +12,12 @@ import { listConfigSections, getConfigSection } from '@/domains/settings/shared/
 import { localConfigStore } from '@/domains/settings/shared/stores/LocalConfigStore';
 import { cloudConfigStore } from '@/domains/settings/shared/stores/CloudConfigStore';
 import {
+  LEGACY_OBMAP_KEYS,
+  VK_STORAGE_KEYS,
+  readMigratedLocalStorageItem,
+  writeCanonicalLocalStorageItem,
+} from '@/global/utils/storageKeyMigrator';
+import {
   CONFIG_LAYER_PRIORITY,
   CONFIG_SCHEMA_VERSION,
   emptyDocument,
@@ -69,15 +75,18 @@ export function resolveCascadingConfig<T>(
   };
 }
 
-const DEVICE_KEY = 'obmap-device-id';
+const DEVICE_KEY = VK_STORAGE_KEYS.LS_DEVICE_ID;
 const SAVE_DEBOUNCE_MS = 800;
 
 function deviceId(): string {
   try {
-    const existing = localStorage.getItem(DEVICE_KEY);
+    const existing = readMigratedLocalStorageItem(
+      DEVICE_KEY,
+      LEGACY_OBMAP_KEYS.LS_DEVICE_ID,
+    );
     if (existing) return existing;
     const id = crypto.randomUUID();
-    localStorage.setItem(DEVICE_KEY, id);
+    writeCanonicalLocalStorageItem(DEVICE_KEY, id);
     return id;
   } catch {
     return 'unknown-device';

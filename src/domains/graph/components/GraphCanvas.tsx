@@ -15,6 +15,7 @@ export interface GraphCanvasProps {
   onNodeMove?: (nodeId: string, newParentId: string | null) => Promise<void> | void;
   onNodeDelete?: (nodeId: string) => Promise<void> | void;
   onAddSubNode?: (parentId: string, type: 'file' | 'folder') => Promise<void> | void;
+  onToggleTask?: (nodeId: string) => Promise<void> | void;
   search: string;
   minDepth: number;
   maxDepth: number;
@@ -121,6 +122,38 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
             }
           }}
           onAddSubNode={props.onAddSubNode}
+          onAddBoundary={(node) => {
+            const ids = new Set<string>([node.id]);
+            let added = true;
+            while (added) {
+              added = false;
+              for (const candidate of props.graphData.nodes) {
+                if (candidate.parentId && ids.has(candidate.parentId) && !ids.has(candidate.id)) {
+                  ids.add(candidate.id);
+                  added = true;
+                }
+              }
+            }
+            actions.upsertBoundary({
+              id: `boundary-${node.id}`,
+              title: node.name,
+              nodeIds: Array.from(ids),
+              shape: 'rounded',
+              padding: 16,
+            });
+          }}
+          onAddSummary={(node) => {
+            if (!node.parentId) return;
+            actions.upsertSummary({
+              id: `sumgrp-${node.id}`,
+              parentId: node.parentId,
+              rangeNodeIds: [node.id, node.id],
+              summaryNodeId: `summary-${node.id}`,
+              braceStyle: 'curly',
+              label: `Ringkasan ${node.name}`,
+            });
+          }}
+          onToggleTask={props.onToggleTask}
           onNodeDelete={props.onNodeDelete}
           onToggleFocus={() => {
             if (props.selectedNode) {

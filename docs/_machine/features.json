@@ -301,7 +301,7 @@
     },
     {
       "id": "FEAT-EXT-001",
-      "name": "Sandboxed @obmap/sdk, Permission Manifest, Scoped CSS & 12 Extension Points",
+      "name": "Sandboxed @vk/sdk, Permission Manifest, Scoped CSS & 12 Extension Points",
       "domain": "settings",
       "status": "PARTIAL",
       "release_stage": "stage_3_commercial_ga",

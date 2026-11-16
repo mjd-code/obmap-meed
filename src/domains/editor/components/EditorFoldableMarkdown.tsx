@@ -5,7 +5,7 @@
  * inline di samping teks judul, tanpa border, tanpa box-fill, dan interaktif.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ChevronRight } from "lucide-react";
 import { MarkdownRenderer } from "@/domains/graph/components/GraphMarkdownRenderer";
 import { buildHeadingTree, type HeadingNode } from "@/domains/editor/shared/utils/headingTree";
@@ -171,6 +171,14 @@ const Section = ({
 };
 
 
+const PROSE_TYPOGRAPHY_STYLE: CSSProperties = {
+  fontFamily: "var(--vk-font-prose)",
+  fontSize: "var(--vk-prose-size)",
+  lineHeight: "var(--vk-prose-line-height)",
+  letterSpacing: "var(--vk-prose-letter-spacing)",
+  maxWidth: "var(--vk-prose-max-width)",
+};
+
 export const FoldableMarkdown = ({
   content,
   definitionsMap,
@@ -217,19 +225,20 @@ export const FoldableMarkdown = ({
 
   if (tree.length === 0) {
     return (
-      <MarkdownRenderer
-        content={content}
-        definitionsMap={definitionsMap}
-        onSaveFootnote={onSaveFootnote}
-        onWikilinkClick={onWikilinkClick}
-        onTagClick={onTagClick}
-        className={className}
-      />
+      <div className={cn("w-full", className)} style={PROSE_TYPOGRAPHY_STYLE}>
+        <MarkdownRenderer
+          content={content}
+          definitionsMap={definitionsMap}
+          onSaveFootnote={onSaveFootnote}
+          onWikilinkClick={onWikilinkClick}
+          onTagClick={onTagClick}
+        />
+      </div>
     );
   }
 
   return (
-    <div className={cn("pl-6 pr-2", className)}>
+    <div className={cn("pl-6 pr-2 w-full", className)} style={PROSE_TYPOGRAPHY_STYLE}>
       {preamble && (
         <MarkdownRenderer
           content={preamble}

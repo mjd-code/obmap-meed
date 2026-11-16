@@ -45,7 +45,7 @@ export const NodeBacklinksSection = ({
           <Link2 className="w-3.5 h-3.5 text-primary/70" />
           <span>Backlinks</span>
         </div>
-        <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">
+        <Badge variant="secondary" className="vk-text-2xs h-4 px-1.5 font-normal">
           {backlinks.length}
         </Badge>
       </CollapsibleTrigger>
@@ -53,7 +53,7 @@ export const NodeBacklinksSection = ({
       <CollapsibleContent className="pt-3 space-y-2">
         {explicitLinks.length > 0 && (
           <div className="space-y-1">
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block px-1">
+            <span className="vk-text-2xs font-medium text-muted-foreground uppercase tracking-wider block px-1">
               Linked Mentions ({explicitLinks.length})
             </span>
             <div className="space-y-1.5">
@@ -70,7 +70,7 @@ export const NodeBacklinksSection = ({
                         {link.nodeName}
                       </span>
                       {link.nodePath && link.nodePath !== link.nodeName && (
-                        <span className="text-[10px] text-muted-foreground truncate">
+                        <span className="vk-text-2xs text-muted-foreground truncate">
                           {link.nodePath}
                         </span>
                       )}
@@ -85,7 +85,7 @@ export const NodeBacklinksSection = ({
 
         {mentions.length > 0 && (
           <div className="space-y-1 pt-1.5">
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block px-1">
+            <span className="vk-text-2xs font-medium text-muted-foreground uppercase tracking-wider block px-1">
               Unlinked Mentions ({mentions.length})
             </span>
             <div className="space-y-1.5">
@@ -100,7 +100,7 @@ export const NodeBacklinksSection = ({
                     <div className="flex flex-col min-w-0">
                       <span className="truncate">{link.nodeName}</span>
                       {link.nodePath && link.nodePath !== link.nodeName && (
-                        <span className="text-[10px] text-muted-foreground truncate">
+                        <span className="vk-text-2xs text-muted-foreground truncate">
                           {link.nodePath}
                         </span>
                       )}

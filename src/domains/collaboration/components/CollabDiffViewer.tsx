@@ -83,10 +83,10 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
           <span className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">
             Pemeriksaan Perubahan
           </span>
-          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">
+          <Badge variant="outline" className="text-success border-success/30">
             +{stats.additions} Baris
           </Badge>
-          <Badge variant="outline" className="text-rose-500 border-rose-500/30">
+          <Badge variant="outline" className="text-danger border-danger/30">
             -{stats.deletions} Baris
           </Badge>
         </div>
@@ -105,7 +105,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
                 key={`orig-${idx}`}
                 className={cn(
                   "flex items-start gap-2 px-1 py-0.5 rounded leading-relaxed text-xs",
-                  line.type === "removed" && "bg-rose-500/15 text-rose-300"
+                  line.type === "removed" && "bg-danger/15 text-danger"
                 )}
               >
                 <span className="select-none text-muted-foreground/40 w-6 text-right">
@@ -130,7 +130,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
                 key={`mod-${idx}`}
                 className={cn(
                   "flex items-start gap-2 px-1 py-0.5 rounded leading-relaxed text-xs",
-                  line.type === "added" && "bg-emerald-500/15 text-emerald-300"
+                  line.type === "added" && "bg-success/15 text-success"
                 )}
               >
                 <span className="select-none text-muted-foreground/40 w-6 text-right">

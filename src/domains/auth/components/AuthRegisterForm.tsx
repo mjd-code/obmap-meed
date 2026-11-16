@@ -53,7 +53,7 @@ export function AuthRegisterForm({
           <div className="absolute right-3 top-3">
             {isCheckingUsername && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
             {!isCheckingUsername && usernameAvailable === true && (
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
             )}
             {!isCheckingUsername && usernameAvailable === false && (
               <XCircle className="w-4 h-4 text-destructive" />
@@ -61,14 +61,14 @@ export function AuthRegisterForm({
           </div>
         </div>
         {usernameMessage && (
-          <p className={`text-xs ${usernameAvailable ? "text-emerald-500" : "text-destructive"}`}>
+          <p className={`text-xs ${usernameAvailable ? "text-success" : "text-destructive"}`}>
             {usernameMessage}
           </p>
         )}
         {form.formState.errors.username && (
           <p className="text-xs text-destructive">{form.formState.errors.username.message}</p>
         )}
-        <p className="text-[11px] text-muted-foreground">
+        <p className="vk-text-xs text-muted-foreground">
           Digunakan untuk alamat URL publik Anda: /@
           <span className="text-foreground font-mono">{watchedUsername || "username"}</span>
         </p>

@@ -198,7 +198,7 @@ export const InteractiveTable: React.FC<InteractiveTableProps> = ({
           <button
             type="button"
             onClick={ctrl.handleAddRow}
-            className="text-[11px] text-muted-foreground/60 hover:text-foreground font-medium px-1.5 py-0.5 rounded hover:bg-muted/30 transition-colors cursor-pointer inline-flex items-center gap-1"
+            className="vk-text-xs text-muted-foreground/60 hover:text-foreground font-medium px-1.5 py-0.5 rounded hover:bg-muted/30 transition-colors cursor-pointer inline-flex items-center gap-1"
           >
             <Plus className="w-3 h-3 opacity-70" />
             <span>Tambah Baris</span>

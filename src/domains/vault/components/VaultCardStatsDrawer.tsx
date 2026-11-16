@@ -57,7 +57,7 @@ export const VaultCardStatsDrawer = ({
           <button
             type="button"
             onClick={onToggleStats}
-            className="flex items-center justify-between w-full py-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center justify-between w-full py-1 vk-text-2xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <span>
               {isStatsExpanded ? "Sembunyikan Statistik Rinci" : "Detail Statistik Vault"}
@@ -70,28 +70,28 @@ export const VaultCardStatsDrawer = ({
           </button>
 
           {isStatsExpanded && (
-            <div className="grid grid-cols-4 gap-1.5 pt-2 text-[10px] animate-in fade-in duration-150">
+            <div className="grid grid-cols-4 gap-1.5 pt-2 vk-text-2xs animate-in fade-in duration-150">
               <div className="flex flex-col items-center p-1.5 rounded-md bg-secondary/40 border border-border/40">
                 <FileText className="w-3 h-3 text-muted-foreground mb-0.5" />
                 <span className="font-semibold text-foreground">{stats.fileCount}</span>
-                <span className="text-[9px] text-muted-foreground">Berkas</span>
+                <span className="vk-text-2xs text-muted-foreground">Berkas</span>
               </div>
               <div className="flex flex-col items-center p-1.5 rounded-md bg-secondary/40 border border-border/40">
                 <FolderOpen className="w-3 h-3 text-muted-foreground mb-0.5" />
                 <span className="font-semibold text-foreground">{stats.folderCount}</span>
-                <span className="text-[9px] text-muted-foreground">Folder</span>
+                <span className="vk-text-2xs text-muted-foreground">Folder</span>
               </div>
               <div className="flex flex-col items-center p-1.5 rounded-md bg-secondary/40 border border-border/40">
                 <Tag className="w-3 h-3 text-muted-foreground mb-0.5" />
                 <span className="font-semibold text-foreground">{stats.tagCount}</span>
-                <span className="text-[9px] text-muted-foreground">Tag</span>
+                <span className="vk-text-2xs text-muted-foreground">Tag</span>
               </div>
               <div className="flex flex-col items-center p-1.5 rounded-md bg-secondary/40 border border-border/40">
                 <Network className="w-3 h-3 text-muted-foreground mb-0.5" />
                 <span className="font-semibold text-foreground">
                   {stats.avgConnections.toFixed(1)}
                 </span>
-                <span className="text-[9px] text-muted-foreground">Rata Tautan</span>
+                <span className="vk-text-2xs text-muted-foreground">Rata Tautan</span>
               </div>
             </div>
           )}
@@ -103,7 +103,7 @@ export const VaultCardStatsDrawer = ({
         <button
           type="button"
           onClick={onToggleMembers}
-          className="flex items-center justify-between w-full py-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center justify-between w-full py-1 vk-text-2xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <span className="flex items-center gap-1.5 font-medium">
             <Users className="w-3 h-3 text-primary" />

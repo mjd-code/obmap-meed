@@ -66,7 +66,7 @@ export const ListValueInput = ({
               if (dragIndex.current !== null) move(dragIndex.current, index);
               dragIndex.current = null;
             }}
-            className="cursor-grab gap-0.5 px-1.5 py-0 text-[11px] font-normal text-muted-foreground bg-muted hover:bg-muted/80"
+            className="cursor-grab gap-0.5 px-1.5 py-0 vk-text-xs font-normal text-muted-foreground bg-muted hover:bg-muted/80"
           >
             {isTags && segments.length > 1 ? (
               segments.map((seg, i) => (

@@ -107,9 +107,9 @@ export const PublicBreadcrumbs: React.FC<PublicBreadcrumbsProps> = ({
                 {item.isRoot ? (
                   <Home className="w-3.5 h-3.5 text-primary shrink-0" />
                 ) : item.isFolder ? (
-                  <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <Folder className="w-3.5 h-3.5 text-warning shrink-0" />
                 ) : (
-                  <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  <FileText className="w-3.5 h-3.5 text-info shrink-0" />
                 )}
                 <span className="truncate max-w-[140px] sm:max-w-[180px] md:max-w-[220px]">
                   {item.title}

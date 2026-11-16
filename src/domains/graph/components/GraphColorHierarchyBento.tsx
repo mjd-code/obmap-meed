@@ -66,7 +66,7 @@ export function GraphColorHierarchyBento({
           />
 
           <div className="space-y-1 rounded-lg border border-border/60 bg-muted/20 p-2">
-            <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+            <div className="flex justify-between vk-text-2xs text-muted-foreground font-medium">
               <span>Akar (L0)</span>
               <span>Cabang Terdalam</span>
             </div>
@@ -78,7 +78,7 @@ export function GraphColorHierarchyBento({
                   style={{ backgroundColor: col }}
                   title={`Level ${idx}: ${col}`}
                 >
-                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-black/80 drop-shadow-xs opacity-80 group-hover:opacity-100">
+                  <span className="absolute inset-0 flex items-center justify-center vk-text-2xs font-bold text-black/80 drop-shadow-xs opacity-80 group-hover:opacity-100">
                     {idx === 0 ? "R" : `L${idx}`}
                   </span>
                 </div>
@@ -93,17 +93,17 @@ export function GraphColorHierarchyBento({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7 text-[11px] gap-1 px-1.5 border-border/80 hover:border-primary/50"
+                className="h-7 vk-text-xs gap-1 px-1.5 border-border/80 hover:border-primary/50"
                 onClick={onGenerateHarmony}
               >
-                <Wand2 className="h-3 w-3 text-amber-400" />
+                <Wand2 className="h-3 w-3 text-warning" />
                 Harmony
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7 text-[11px] gap-1 px-1.5 border-border/80 hover:border-primary/50"
+                className="h-7 vk-text-xs gap-1 px-1.5 border-border/80 hover:border-primary/50"
                 onClick={() => onApplyPreset("pastel")}
               >
                 <SunMedium className="h-3 w-3 text-pink-400" />
@@ -113,10 +113,10 @@ export function GraphColorHierarchyBento({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7 text-[11px] gap-1 px-1.5 border-border/80 hover:border-primary/50"
+                className="h-7 vk-text-xs gap-1 px-1.5 border-border/80 hover:border-primary/50"
                 onClick={() => onApplyPreset("neon")}
               >
-                <Zap className="h-3 w-3 text-cyan-400" />
+                <Zap className="h-3 w-3 text-info" />
                 Neon
               </Button>
             </div>
@@ -225,7 +225,7 @@ export function GraphColorHierarchyBento({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-6 gap-1 px-1.5 text-[10px] text-primary"
+              className="h-6 gap-1 px-1.5 vk-text-2xs text-primary"
               onClick={onAddLevel}
             >
               <Plus className="h-3 w-3" /> Tambah Level

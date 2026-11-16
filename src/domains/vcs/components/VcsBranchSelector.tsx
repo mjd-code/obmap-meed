@@ -85,7 +85,7 @@ export const BranchSelector: React.FC<BranchSelectorProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56 shadow-lg">
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
+        <DropdownMenuLabel className="vk-text-2xs uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">
           Cabang Vault (Branches)
         </DropdownMenuLabel>
 
@@ -109,14 +109,14 @@ export const BranchSelector: React.FC<BranchSelectorProps> = ({
                   {b.name}
                 </span>
                 {b.isDefault && (
-                  <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                  <Badge variant="secondary" className="vk-text-2xs px-1 py-0 h-4">
                     default
                   </Badge>
                 )}
               </div>
               {b.isProtected && (
                 <span title="Protected Branch" className="inline-flex items-center">
-                  <Shield className="w-3 h-3 text-amber-500 shrink-0 ml-1" />
+                  <Shield className="w-3 h-3 text-warning shrink-0 ml-1" />
                 </span>
               )}
             </DropdownMenuItem>

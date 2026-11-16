@@ -100,7 +100,7 @@ export function GraphBottomOverlays({
                   onClick={toggleTimeLapse}
                   className={cn(
                     'h-7 w-7 shrink-0 rounded-md text-muted-foreground shadow-none touch-manipulation',
-                    isTimeLapseActive && 'bg-primary text-primary-foreground animate-pulse'
+                    isTimeLapseActive && 'bg-primary text-primary-foreground animate-pulse motion-reduce:animate-none'
                   )}
                 >
                   {isTimeLapseActive ? (
@@ -130,7 +130,7 @@ export function GraphBottomOverlays({
           className="flex max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-lg border-border/60 bg-popover/95 p-0 shadow-lg backdrop-blur-md"
         >
           <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-2.5 py-1">
-            <span className="text-[11px] font-medium text-foreground/80">{label}</span>
+            <span className="vk-text-xs font-medium text-foreground/80">{label}</span>
             <Button
               type="button"
               variant="ghost"

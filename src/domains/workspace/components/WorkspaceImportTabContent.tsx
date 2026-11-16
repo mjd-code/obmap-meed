@@ -71,15 +71,15 @@ export function WorkspaceImportTabContent({
         <div
           className={`p-3 rounded-lg border ${
             lastResult.success
-              ? "border-green-500/30 bg-green-500/10"
-              : "border-yellow-500/30 bg-yellow-500/10"
+              ? "border-success/30 bg-success/10"
+              : "border-warning/30 bg-warning/10"
           }`}
         >
           <div className="flex items-center gap-2 mb-2">
             {lastResult.success ? (
-              <Check className="w-4 h-4 text-green-500" />
+              <Check className="w-4 h-4 text-success" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-yellow-500" />
+              <AlertCircle className="w-4 h-4 text-warning" />
             )}
             <span className="text-sm font-medium">
               {lastResult.success

@@ -43,12 +43,12 @@ export const HealthMetricsTab: React.FC<Props> = ({ metrics, auditLogs }) => {
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Latensi Database
             </CardTitle>
-            <Activity className="h-4 w-4 text-emerald-500" />
+            <Activity className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold flex items-baseline gap-1.5">
               {metrics ? `${metrics.dbPingMs} ms` : "..."}
-              <Badge variant="outline" className="text-[10px] text-emerald-600 bg-emerald-500/10">
+              <Badge variant="outline" className="vk-text-2xs text-success bg-success/10">
                 Lancar
               </Badge>
             </div>
@@ -66,7 +66,7 @@ export const HealthMetricsTab: React.FC<Props> = ({ metrics, auditLogs }) => {
           <CardContent>
             <div className="text-2xl font-bold">{metrics?.totalNotes ?? 0}</div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-              <span className="text-emerald-600 font-medium">{metrics?.publishedNotes ?? 0} Terbit</span>
+              <span className="text-success font-medium">{metrics?.publishedNotes ?? 0} Terbit</span>
               <span>•</span>
               <span>{metrics?.inReviewNotes ?? 0} Review</span>
               <span>•</span>
@@ -151,12 +151,12 @@ export const HealthMetricsTab: React.FC<Props> = ({ metrics, auditLogs }) => {
                               {log.action}
                             </span>
                             <span className="text-muted-foreground text-xs">pada entitas</span>
-                            <Badge variant="outline" className="text-[10px]">
+                            <Badge variant="outline" className="vk-text-2xs">
                               {log.resource_type}
                             </Badge>
                           </div>
                           {log.metadata && Object.keys(log.metadata).length > 0 && (
-                            <pre className="text-[11px] text-muted-foreground font-mono mt-1 bg-muted/30 p-1.5 rounded overflow-x-auto max-w-xl">
+                            <pre className="vk-text-xs text-muted-foreground font-mono mt-1 bg-muted/30 p-1.5 rounded overflow-x-auto max-w-xl">
                               {JSON.stringify(log.metadata)}
                             </pre>
                           )}

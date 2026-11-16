@@ -4,14 +4,26 @@
  */
 
 import { isConfigDocument, type ConfigDocument } from '@/domains/settings/shared/utils/config.types';
+import {
+  LEGACY_OBMAP_KEYS,
+  VK_STORAGE_KEYS,
+  readLegacyIdbConfigRecord,
+  readMigratedLocalStorageItem,
+  removeBothLocalStorageKeys,
+  writeCanonicalLocalStorageItem,
+} from '@/global/utils/storageKeyMigrator';
 
-const DB_NAME = 'ObmapConfigDB';
+const DB_NAME = VK_STORAGE_KEYS.IDB_CONFIG_DB;
 const DB_VERSION = 1;
 const STORE = 'config';
-const LS_PREFIX = 'obmap-config:';
+const LS_PREFIX = VK_STORAGE_KEYS.LS_CONFIG_PREFIX;
 
 function lsKey(key: string) {
   return `${LS_PREFIX}${key}`;
+}
+
+function legacyLsKey(key: string) {
+  return `${LEGACY_OBMAP_KEYS.LS_CONFIG_PREFIX}${key}`;
 }
 
 export class LocalConfigStore {
@@ -59,10 +71,16 @@ export class LocalConfigStore {
         }
       });
       if (isConfigDocument(fromIdb)) return fromIdb;
+
+      const legacyIdb = await readLegacyIdbConfigRecord(STORE, key);
+      if (isConfigDocument(legacyIdb)) {
+        await this.set(key, legacyIdb);
+        return legacyIdb;
+      }
     }
 
     try {
-      const raw = localStorage.getItem(lsKey(key));
+      const raw = readMigratedLocalStorageItem(lsKey(key), legacyLsKey(key));
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       return isConfigDocument(parsed) ? parsed : null;
@@ -86,11 +104,7 @@ export class LocalConfigStore {
       });
     }
 
-    try {
-      localStorage.setItem(lsKey(key), JSON.stringify(doc));
-    } catch {
-      /* quota — IndexedDB copy still applies */
-    }
+    writeCanonicalLocalStorageItem(lsKey(key), JSON.stringify(doc));
   }
 
   async remove(key: string): Promise<void> {
@@ -107,11 +121,7 @@ export class LocalConfigStore {
         }
       });
     }
-    try {
-      localStorage.removeItem(lsKey(key));
-    } catch {
-      /* ignore */
-    }
+    removeBothLocalStorageKeys(lsKey(key), legacyLsKey(key));
   }
 }
 

@@ -59,7 +59,7 @@ export function BacklinksView({
                     <FileText className="w-3 h-3 text-primary shrink-0" />
                     <span className="text-sm truncate">{ref.nodeName}</span>
                     {ref.count > 1 && (
-                      <Badge variant="outline" className="ml-auto text-[10px]">
+                      <Badge variant="outline" className="ml-auto vk-text-2xs">
                         {ref.count}
                       </Badge>
                     )}

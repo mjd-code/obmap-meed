@@ -77,13 +77,13 @@ export function SettingsRolesMembersTable({
                     <div className="flex items-center gap-2.5">
                       <Avatar className="h-7 w-7 border">
                         <AvatarImage src={m.avatar_url || ""} />
-                        <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                        <AvatarFallback className="vk-text-2xs">{initials}</AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="text-xs font-semibold text-foreground flex items-center gap-1">
                           {m.display_name || "Tanpa Nama"}
                           {isSelf && (
-                            <Badge variant="outline" className="text-[9px] px-1 py-0">
+                            <Badge variant="outline" className="vk-text-2xs px-1 py-0">
                               Anda
                             </Badge>
                           )}
@@ -101,7 +101,7 @@ export function SettingsRolesMembersTable({
                           value={m.role}
                           onValueChange={(val) => onRoleChange(m.user_id, val as VaultMemberRole)}
                         >
-                          <SelectTrigger className="h-7 text-[11px]">
+                          <SelectTrigger className="h-7 vk-text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -113,7 +113,7 @@ export function SettingsRolesMembersTable({
                         </Select>
                       </div>
                     ) : (
-                      <Badge variant="secondary" className="capitalize text-[10px]">
+                      <Badge variant="secondary" className="capitalize vk-text-2xs">
                         {m.role}
                       </Badge>
                     )}

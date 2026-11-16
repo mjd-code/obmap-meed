@@ -26,6 +26,7 @@ import type {
 } from '@/domains/graph/shared/utils/graph.types';
 import type { GraphConfigState } from '@/domains/graph/shared/stores/useGraphStore';
 import type { GraphTheme } from '@/domains/graph/shared/utils/theme';
+import { getBrandConfig } from '@/global/config/brand.config';
 import {
   contrastRatio,
   HIERARCHY_PRESETS,
@@ -53,7 +54,7 @@ export interface SkeletonPreset {
 export const SKELETON_PRESETS: Record<SkeletonPresetId, SkeletonPreset> = {
   'obmap-midnight': {
     id: 'obmap-midnight',
-    label: 'ObMap Midnight',
+    label: `${getBrandConfig().name} Midnight`,
     isDark: true,
     canvasBg: '#0B1120',
     surfaceBg: '#0F172A',
@@ -237,14 +238,26 @@ const FONT_WEIGHT_MAP: Record<NonNullable<NodeStyleOverride['fontWeight']>, '500
 };
 
 export function resolveSkeletonPreset(
-  presetId?: SkeletonPresetId | string,
+  presetId?: SkeletonPresetId | 'vk-midnight' | string,
   canvasBackground?: string,
 ): SkeletonPreset {
+  if (presetId === 'vk-midnight' || presetId === 'obmap-midnight') {
+    return {
+      ...SKELETON_PRESETS['obmap-midnight'],
+      label: `${getBrandConfig().name} Midnight`,
+    };
+  }
   if (presetId && presetId in SKELETON_PRESETS) {
     return SKELETON_PRESETS[presetId as SkeletonPresetId];
   }
   const dark = canvasBackground ? isDarkSurface(canvasBackground) : true;
-  return dark ? SKELETON_PRESETS['obmap-midnight'] : SKELETON_PRESETS['daylight-paper'];
+  if (dark) {
+    return {
+      ...SKELETON_PRESETS['obmap-midnight'],
+      label: `${getBrandConfig().name} Midnight`,
+    };
+  }
+  return SKELETON_PRESETS['daylight-paper'];
 }
 
 export function resolveTopicRole(

@@ -35,7 +35,7 @@ source_of_truth: docs/00-meta/00-0-master-blueprint.md
 | **`PER-05`** | **Pembaca Publik & Pembelajar Mandiri** | Pilar 1, 4 | Menemukan konstelasi topik terkurasi di `/explore` tanpa login, memahami relasi konsep lewat dual-pane reader, serta mem-*fork* catatan `CC BY-SA 4.0`. | `/explore`, `/:username/:vaultSlug` |
 | **`PER-06`** | **System / Platform Admin** *(Superadmin)* | Infrastruktur & Tata Kelola | Mengontrol *ReleaseStageGate*, menyetujui pendaftar Stage 2 **secara individual per-user**, mengonfigurasi **harga & kuota paket secara dinamis**, dan melakukan **kurasi manual *Verified Scholar***. | `/admin`, `audit_logs` |
 | **`PER-07`** | **Kreator Pengetahuan Publik** *(Scholar / Public Thinker)* | Pilar 2, 1 | Membangun portofolio intelektual hidup di `/:username`, mempublikasikan vault terbuka (`CC BY-SA 4.0`), dan menumbuhkan *Impact Index* berbasis sitasi asli. | `/:username`, `community`, Analytics |
-| **`PER-08`** | **Kepala Lab Riset / Admin Kampus** | Pilar 3, 5, 4 | Mengelola Teamspaces institusi, menegakkan konfigurasi terkunci organisasi (*Org-Lock Policy*), mengontrol *seat* tim, serta meninjau allowlist plugin `@obmap/sdk`. | `/vaults`, `/admin` (Org Teamspaces) |
+| **`PER-08`** | **Kepala Lab Riset / Admin Kampus** | Pilar 3, 5, 4 | Mengelola Teamspaces institusi, menegakkan konfigurasi terkunci organisasi (*Org-Lock Policy*), mengontrol *seat* tim, serta meninjau allowlist plugin `@vk/sdk`. | `/vaults`, `/admin` (Org Teamspaces) |
 | **`PER-09`** | **Kontributor Terbuka & Peer Reviewer** | Pilar 5, 1 | Mem-*fork* vault pengetahuan publik, memperbaiki atau memperkaya catatan, mengajukan *Knowledge Merge Request*, dan memberi anotasi kritis di tingkat paragraf. | `/:username/:vaultSlug`, `vcs` |
 
 ---

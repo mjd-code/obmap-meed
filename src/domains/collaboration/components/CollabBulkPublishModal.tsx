@@ -62,7 +62,7 @@ export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
         <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-xl max-h-[86vh] flex flex-col p-4 sm:p-6 gap-3.5 sm:gap-5 rounded-2xl bg-card text-foreground shadow-2xl border border-border/80 overflow-hidden">
           <DialogHeader className="space-y-1.5 pb-2 border-b border-border">
             <DialogTitle className="flex items-center gap-2 text-base font-semibold">
-              <Folder className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+              <Folder className="w-4 h-4 text-warning fill-warning/20" />
               <span>Publikasi Subfolder: {folderNode?.name}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -104,38 +104,38 @@ export const BulkPublishModal: React.FC<BulkPublishModalProps> = ({
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     {item.type === "folder" ? (
-                      <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <Folder className="w-3.5 h-3.5 text-warning shrink-0" />
                     ) : (
-                      <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      <FileText className="w-3.5 h-3.5 text-info shrink-0" />
                     )}
                     <span className="truncate font-medium">{item.title}</span>
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 uppercase">
+                    <Badge variant="outline" className="vk-text-2xs px-1 py-0 uppercase">
                       {item.type}
                     </Badge>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
                     {item.status === "bundling" && (
-                      <span className="flex items-center gap-1 text-muted-foreground text-[11px]">
+                      <span className="flex items-center gap-1 text-muted-foreground vk-text-xs">
                         <Loader2 className="w-3 h-3 animate-spin text-primary" />
                         Bundling aset...
                       </span>
                     )}
                     {item.status === "publishing" && (
-                      <span className="flex items-center gap-1 text-muted-foreground text-[11px]">
+                      <span className="flex items-center gap-1 text-muted-foreground vk-text-xs">
                         <Loader2 className="w-3 h-3 animate-spin text-primary" />
                         Menerbitkan...
                       </span>
                     )}
                     {item.status === "success" && (
-                      <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[10px] gap-1">
+                      <Badge className="bg-success/15 text-success border-success/30 vk-text-2xs gap-1">
                         <CheckCircle2 className="w-3 h-3" />
                         Terbit
                       </Badge>
                     )}
                     {item.status === "failed" && (
                       <div className="flex items-center gap-1.5">
-                        <Badge variant="destructive" className="text-[10px]">
+                        <Badge variant="destructive" className="vk-text-2xs">
                           Gagal
                         </Badge>
                         <Button

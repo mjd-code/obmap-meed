@@ -75,13 +75,13 @@ export const VcsSidebarPanel: React.FC = () => {
       >
         <div className="px-2 pt-1.5 border-b border-sidebar-border">
           <TabsList className="grid grid-cols-3 h-7 w-full p-0.5 bg-sidebar-accent/40">
-            <TabsTrigger value="branches" className="text-[11px] px-1 py-0.5">
+            <TabsTrigger value="branches" className="vk-text-xs px-1 py-0.5">
               Branches
             </TabsTrigger>
-            <TabsTrigger value="history" className="text-[11px] px-1 py-0.5">
+            <TabsTrigger value="history" className="vk-text-xs px-1 py-0.5">
               History
             </TabsTrigger>
-            <TabsTrigger value="merges" className="text-[11px] px-1 py-0.5">
+            <TabsTrigger value="merges" className="vk-text-xs px-1 py-0.5">
               Merges
             </TabsTrigger>
           </TabsList>
@@ -104,17 +104,17 @@ export const VcsSidebarPanel: React.FC = () => {
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono font-medium truncate">{b.name}</span>
                       {b.isDefault && (
-                        <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                        <Badge variant="secondary" className="vk-text-2xs px-1 py-0 h-4">
                           default
                         </Badge>
                       )}
                       {b.isProtected && (
                         <span title="Protected" className="inline-flex items-center">
-                          <Shield className="w-3 h-3 text-amber-500 shrink-0" />
+                          <Shield className="w-3 h-3 text-warning shrink-0" />
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="vk-text-2xs text-muted-foreground">
                       Dibuat {new Date(b.createdAt).toLocaleDateString()}
                     </div>
                   </div>
@@ -124,7 +124,7 @@ export const VcsSidebarPanel: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleSwitchBranch(b.id, b.name)}
-                      className="h-6 text-[10px] px-1.5 text-muted-foreground hover:text-foreground"
+                      className="h-6 vk-text-2xs px-1.5 text-muted-foreground hover:text-foreground"
                     >
                       Beralih
                     </Button>
@@ -138,7 +138,7 @@ export const VcsSidebarPanel: React.FC = () => {
         {/* TAB 2: COMMIT HISTORY */}
         <TabsContent value="history" className="flex-1 min-h-0 m-0 flex flex-col">
           <div className="p-2 border-b border-sidebar-border flex items-center justify-between shrink-0">
-            <span className="text-[11px] text-muted-foreground">
+            <span className="vk-text-xs text-muted-foreground">
               {commits.length} commit di{" "}
               <span className="font-mono font-medium">{activeBranchName}</span>
             </span>
@@ -146,7 +146,7 @@ export const VcsSidebarPanel: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={handleExportAuditTrail}
-              className="h-6 text-[11px] px-1.5 gap-1 text-muted-foreground hover:text-foreground"
+              className="h-6 vk-text-xs px-1.5 gap-1 text-muted-foreground hover:text-foreground"
               title="Ekspor Jejak Audit JSON"
             >
               <Download className="w-3 h-3" />
@@ -175,19 +175,19 @@ export const VcsSidebarPanel: React.FC = () => {
                       <span className="font-medium text-foreground break-words line-clamp-2">
                         {c.message}
                       </span>
-                      <Badge variant="outline" className="font-mono text-[9px] px-1 shrink-0">
+                      <Badge variant="outline" className="font-mono vk-text-2xs px-1 shrink-0">
                         {c.commitHash.substring(0, 7)}
                       </Badge>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-sidebar-border/40">
+                    <div className="flex items-center justify-between vk-text-2xs text-muted-foreground pt-1 border-t border-sidebar-border/40">
                       <span>{c.author?.displayName || "Pengguna"}</span>
                       <div className="flex items-center gap-1.5">
                         <span>{new Date(c.createdAt).toLocaleDateString()}</span>
                         {canManage && !c.isRevert && (
                           <button
                             onClick={() => handleRevertCommit(c.id)}
-                            className="text-amber-500 hover:text-amber-400 p-0.5 rounded transition-colors"
+                            className="text-warning hover:text-warning p-0.5 rounded transition-colors"
                             title="Revert Commit Ini"
                           >
                             <RotateCcw className="w-3 h-3" />

@@ -9,6 +9,7 @@
  */
 
 import { configService } from '@/domains/settings/shared/api/ConfigService';
+import { getBrandConfig } from '@/global/config/brand.config';
 
 export const VAULT_CONFIG_FILE = '.vault-config.json';
 
@@ -18,7 +19,7 @@ export function serializeConfigExport(): string {
 }
 
 export function configExportFileName(): string {
-  return `obmap-config-${new Date().toISOString().slice(0, 10)}.json`;
+  return `${getBrandConfig().slug}-config-${new Date().toISOString().slice(0, 10)}.json`;
 }
 
 /** Write `.vault-config.json` into the vault folder. Best effort. */
