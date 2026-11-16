@@ -201,12 +201,18 @@ export function setRuntimeBrandOverride(
 export function syncBrandToDocumentMeta(
   brand: BrandManifest = getBrandConfig(),
 ): void {
-  if (typeof document === 'undefined') return;
+  const doc = (globalThis as typeof globalThis & {
+    document?: {
+      title: string;
+      querySelector: (selector: string) => { setAttribute: (name: string, value: string) => void } | null;
+    };
+  }).document;
+  if (!doc) return;
   const fullTitle = `${brand.name} - ${brand.tagline}`;
-  document.title = fullTitle;
+  doc.title = fullTitle;
 
   const setMetaContent = (selector: string, content: string) => {
-    const el = document.querySelector<HTMLMetaElement>(selector);
+    const el = doc.querySelector(selector);
     if (el) el.setAttribute('content', content);
   };
 

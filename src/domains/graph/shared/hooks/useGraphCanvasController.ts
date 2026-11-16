@@ -526,7 +526,7 @@ export function useGraphCanvasController(
     [collapsedIds, projection, geometry.targets, displayData.nodes, layoutMode, toggleCollapsed, setTransitionStatus],
   );
 
-  const appTheme = useThemeStore((state) => state.theme);
+  const appTheme = useThemeStore((state) => state.appearance.presetId);
   const customCssSnippet = useThemeStore((state) => state.customCssSnippet);
 
   // Tema Grafis (terhubung ke unified `--ob-*` DOM tokens -> memicu repaint Rule 10)
@@ -868,7 +868,7 @@ export function useGraphCanvasController(
               ? hierarchyPaint.color
               : usesDefaultTypeColor
                 ? isMindmapNonHierarchy
-                  ? theme.accent || theme.link
+                  ? theme.selected || theme.link
                   : theme.link
                 : style.color);
 

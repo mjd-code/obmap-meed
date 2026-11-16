@@ -1,6 +1,6 @@
 import React from 'react';
 import { SettingsHub } from '@/domains/settings/components/SettingsHub';
-export { SettingsCommandPalette as CommandPalette } from '@/domains/settings/components/SettingsCommandPalette';
+export { CommandPalette } from '@/domains/settings/components/SettingsCommandPalette';
 export { useThemeStore } from '@/domains/settings/shared/stores/useThemeStore';
 export { useSchemaStore } from '@/domains/settings/shared/stores/useSchemaStore';
 

@@ -37,6 +37,18 @@ export const VAULT_MEMBER_ROLE_CONFIG: Record<VaultMemberRole, VaultRoleDisplayC
     color: "bg-muted text-muted-foreground border-border",
     desc: "Hanya dapat membaca catatan graf",
   },
+  commenter: {
+    label: "Commenter",
+    icon: Eye,
+    color: "bg-info/10 text-info border-info/20",
+    desc: "Dapat membaca dan memberikan komentar",
+  },
+  guest: {
+    label: "Guest",
+    icon: Eye,
+    color: "bg-muted text-muted-foreground border-border",
+    desc: "Akses terbatas sebagai tamu",
+  },
 };
 
 export interface UseVaultMemberControllerParams {

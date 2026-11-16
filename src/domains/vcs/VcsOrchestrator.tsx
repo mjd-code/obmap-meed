@@ -1,6 +1,6 @@
 import React from 'react';
 import { VcsSidebarPanel } from '@/domains/vcs/components/VcsSidebarPanel';
-import { VcsBranchSelector } from '@/domains/vcs/components/VcsBranchSelector';
+import { BranchSelector } from '@/domains/vcs/components/VcsBranchSelector';
 export { useVcsStore } from '@/domains/vcs/shared/stores/useVcsStore';
 
 /**

@@ -19,7 +19,7 @@ interface CoordinatorResult {
 
 const DEBOUNCE_MS = 300;
 
-class SyncCoordinator {
+export class SyncCoordinator {
   private started = false;
   private runPromise: Promise<CoordinatorResult | undefined> | null = null;
   private rerun = false;

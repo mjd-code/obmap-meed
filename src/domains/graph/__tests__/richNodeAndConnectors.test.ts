@@ -465,7 +465,7 @@ describe('XMIND-STEP-02 — Rich Flexbox Node Box Model, TopicShapes & Connector
       },
     });
 
-    const overlaps = findAABBOverlaps(geometry.targets, metrics, 2);
+    const overlaps = findAABBOverlaps(geometry.targets, metrics, undefined, 2);
     expect(overlaps.length).toBe(0);
   });
 });

@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   SETTINGS_SECTIONS,
+  isSettingsSectionId,
   type SettingsSectionId,
 } from "@/domains/settings/shared/utils/settingsNavigation";
 import type { RibbonTool } from "@/domains/workspace/components/WorkspaceIconRibbon";
@@ -90,7 +91,9 @@ export function useWorkspaceSidebarController({
   const [lastSettingsSection, setLastSettingsSection] =
     useState<SettingsSectionId>("account");
   const activeSettingsSection: SettingsSectionId =
-    activeLeafSettingsSection ?? lastSettingsSection;
+    isSettingsSectionId(activeLeafSettingsSection)
+      ? activeLeafSettingsSection
+      : lastSettingsSection;
   const [settingsSearch, setSettingsSearch] = useState("");
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);

@@ -39,6 +39,7 @@ export const settingsPasswordSchema = z
 
 export type SettingsProfileFormData = z.infer<typeof settingsProfileSchema>;
 export type SettingsPasswordFormData = z.infer<typeof settingsPasswordSchema>;
+export type PasswordFormValues = SettingsPasswordFormData;
 
 /**
  * Headless controller for SettingsProfileSettings.
