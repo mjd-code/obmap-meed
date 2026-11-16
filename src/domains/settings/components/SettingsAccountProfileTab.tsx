@@ -12,7 +12,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import type { UserProfile } from "@/types/vault";
+import type { UserProfile } from "@/domains/auth/shared/hooks/useAuth";
 import { Button } from "@/global/ui/button";
 import { Badge } from "@/global/ui/badge";
 import { Input } from "@/global/ui/input";

@@ -12,7 +12,7 @@ import type { Json } from "@/global/api/supabaseTypes";
 import { vaultSyncService } from "@/domains/vault/shared/api/VaultSyncService";
 import type { AccountLifecycleStatus } from "@/types/collaboration";
 
-interface Profile {
+export interface Profile {
   id: string;
   user_id: string;
   username: string | null;
@@ -27,6 +27,7 @@ interface Profile {
   created_at: string;
   updated_at: string;
 }
+export type UserProfile = Profile;
 
 type ProfileUpdate = {
    username?: string;

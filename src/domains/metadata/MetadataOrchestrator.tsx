@@ -2,7 +2,7 @@ import React from 'react';
 import { BacklinksView } from '@/domains/metadata/components/MetadataBacklinksView';
 import { UnlinkedMentions } from '@/domains/metadata/components/MetadataUnlinkedMentions';
 import type { Node } from '@/domains/graph/shared/utils/graph.types';
-export { metadataCache as MetadataCache } from '@/domains/metadata/shared/api/MetadataCache';
+export type { MetadataCache } from '@/domains/metadata/shared/api/MetadataCache';
 export { useMetadataVersion, useIndexedNodes } from '@/domains/metadata/shared/hooks/useMetadataCache';
 
 export interface MetadataOrchestratorProps {
