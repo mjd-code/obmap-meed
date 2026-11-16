@@ -868,7 +868,7 @@ export function useGraphCanvasController(
               ? hierarchyPaint.color
               : usesDefaultTypeColor
                 ? isMindmapNonHierarchy
-                  ? theme.accent || theme.link
+                  ? theme.selected || theme.link
                   : theme.link
                 : style.color);
 
