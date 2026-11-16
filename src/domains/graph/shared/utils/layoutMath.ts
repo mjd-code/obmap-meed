@@ -1,6 +1,6 @@
 /** Pure math helpers shared by every layout strategy. */
 
-import type { Bounds, LayoutPoint, NodeTarget } from '@/domains/graph/shared/utils/graph.types';
+import type { Bounds, LayoutDecoration, LayoutPoint, NodeTarget } from '@/domains/graph/shared/utils/graph.types';
 
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -69,4 +69,46 @@ export function anchorOnCard(
   const x = center.x + dx * scale;
   const y = center.y + dy * scale;
   return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : { ...center };
+}
+
+/** Expands node bounding box to include all layout decorations (boundaries, braces, spines, ribs, axes). */
+export function mergeBoundsWithDecorations(
+  base: Bounds,
+  decorations: LayoutDecoration[],
+): Bounds {
+  let { minX, minY, maxX, maxY } = base;
+  for (const dec of decorations) {
+    if (dec.kind === 'boundary') {
+      minX = Math.min(minX, dec.x);
+      minY = Math.min(minY, dec.y);
+      maxX = Math.max(maxX, dec.x + dec.width);
+      maxY = Math.max(maxY, dec.y + dec.height);
+    } else if (dec.kind === 'summary-brace') {
+      minX = Math.min(minX, dec.x1, dec.x2, dec.apexX);
+      minY = Math.min(minY, dec.y1, dec.y2, dec.apexY);
+      maxX = Math.max(maxX, dec.x1, dec.x2, dec.apexX);
+      maxY = Math.max(maxY, dec.y1, dec.y2, dec.apexY);
+    } else if (dec.kind === 'fishbone-spine' || dec.kind === 'fishbone-rib') {
+      minX = Math.min(minX, dec.x1, dec.x2);
+      minY = Math.min(minY, dec.y1, dec.y2);
+      maxX = Math.max(maxX, dec.x1, dec.x2);
+      maxY = Math.max(maxY, dec.y1, dec.y2);
+    } else if (dec.kind === 'timeline-axis') {
+      const y1 = dec.y1 ?? dec.y;
+      const y2 = dec.y2 ?? dec.y;
+      minX = Math.min(minX, dec.x1, dec.x2);
+      minY = Math.min(minY, y1, y2, dec.y);
+      maxX = Math.max(maxX, dec.x1, dec.x2);
+      maxY = Math.max(maxY, y1, y2, dec.y);
+      for (const tick of dec.ticks) {
+        minX = Math.min(minX, tick.x);
+        maxX = Math.max(maxX, tick.x);
+        if (tick.y !== undefined) {
+          minY = Math.min(minY, tick.y);
+          maxY = Math.max(maxY, tick.y);
+        }
+      }
+    }
+  }
+  return { minX, minY, maxX, maxY };
 }

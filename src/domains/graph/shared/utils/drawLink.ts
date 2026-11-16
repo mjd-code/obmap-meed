@@ -132,12 +132,20 @@ function createTimelineGeometry(
   const sMetric = metricOf(source);
   const tMetric = metricOf(target);
 
-  const targetX = boxed ? tx - tMetric.width / 2 : tx;
+  const dirX = tx >= sx ? 1 : -1;
+  const targetEdgeX = boxed ? tx - dirX * (tMetric.width / 2) : tx;
   const targetY = ty;
 
-  const isFromBaseline = Math.abs(sy) < 5;
+  const sLane = source.layoutLane;
+  const isFromBaseline =
+    sLane === 0 ||
+    (sLane === undefined &&
+      Math.abs(sy) < 5 &&
+      Math.abs(ty - sy) >= 50 &&
+      Math.abs(tx - sx) >= (sMetric.width + tMetric.width) / 2 + 20);
+
   if (isFromBaseline) {
-    const a: Point = { x: sx + (boxed ? sMetric.width / 2 : sMetric.width), y: sy };
+    const a: Point = { x: sx + dirX * (boxed ? sMetric.width / 2 : sMetric.width), y: sy };
     const b: Point = {
       x: tx,
       y: ty < sy ? ty + (boxed ? tMetric.height / 2 : 6) : ty - (boxed ? tMetric.height / 2 : 6),
@@ -145,31 +153,35 @@ function createTimelineGeometry(
     return createElbowGeometry([a, { x: tx, y: a.y }, b], 8);
   }
 
-  const isTrunkLink = Math.abs(tx - sx) <= 50;
-  if (isTrunkLink) {
+  const isFromMilestone =
+    sLane === -1 ||
+    sLane === 1 ||
+    (sLane === undefined && Math.abs(tx - sx) <= Math.max(50, tMetric.width * 0.6) && Math.abs(ty - sy) >= 24);
+
+  if (isFromMilestone) {
     const a: Point = {
       x: sx,
-      y: sy < 0 ? sy - (boxed ? sMetric.height / 2 : 6) : sy + (boxed ? sMetric.height / 2 : 6),
+      y: ty < sy ? sy - (boxed ? sMetric.height / 2 : 6) : sy + (boxed ? sMetric.height / 2 : 6),
     };
-    const b: Point = { x: targetX, y: targetY };
+    const b: Point = { x: targetEdgeX, y: targetY };
     return createElbowGeometry([a, { x: sx, y: b.y }, b], 6);
   }
 
-  const sourceRightX = boxed ? sx + sMetric.width / 2 : sx + sMetric.width + 4;
+  const sourcePortX = boxed ? sx + dirX * (sMetric.width / 2) : dirX > 0 ? sx + sMetric.width + 4 : sx - 4;
   const sourceY = sy;
 
-  const dx = targetX - sourceRightX;
+  const dx = targetEdgeX - sourcePortX;
   const dy = targetY - sourceY;
 
   if (Math.abs(dy) < 3) {
-    return createStraightGeometry({ x: sourceRightX, y: sourceY }, { x: targetX, y: targetY });
+    return createStraightGeometry({ x: sourcePortX, y: sourceY }, { x: targetEdgeX, y: targetY });
   }
 
   const k = 0.42;
-  const c1 = { x: sourceRightX + dx * k, y: sourceY };
-  const c2 = { x: targetX - dx * k, y: targetY };
+  const c1 = { x: sourcePortX + dx * k, y: sourceY };
+  const c2 = { x: targetEdgeX - dx * k, y: targetY };
 
-  return createCubicGeometry({ x: sourceRightX, y: sourceY }, c1, c2, { x: targetX, y: targetY });
+  return createCubicGeometry({ x: sourcePortX, y: sourceY }, c1, c2, { x: targetEdgeX, y: targetY });
 }
 
 // ==========================================
@@ -363,6 +375,9 @@ export function drawLink(
   if (state.routedRelationship) {
     const r = state.routedRelationship;
     geometry = createCubicGeometry(r.p0, r.c1, r.c2, r.p3);
+  } else if (sourceMode === 'timeline') {
+    // Timeline parent owns baseline & trunk-gutter exit even when child adopts another layout mode
+    geometry = createTimelineGeometry(source, target, state.metricOf, boxed);
   } else if (sourceMode !== targetMode) {
     // Dynamic Cross-Structure Boundary Anchor Routing
     const start = resolveCardPort(
@@ -384,15 +399,14 @@ export function drawLink(
       'target',
     );
     geometry = createCrossStructureGeometry(start, end, sourceMode, targetMode);
-  } else if (effectiveMode === 'timeline') {
-    geometry = createTimelineGeometry(source, target, state.metricOf, boxed);
   } else if (effectiveMode === 'org-chart') {
     const top = sy <= ty;
     const a = { x: sx, y: sy + (top ? 1 : -1) * (sMetric.height / 2) };
     const b = { x: tx, y: ty - (top ? 1 : -1) * (tMetric.height / 2) };
-    const midY = (a.y + b.y) / 2;
+    const gapY = b.y - a.y;
+    const busY = top && gapY > 96 ? b.y - 14 : (a.y + b.y) / 2;
     const radius = state.branchLineStyle === 'orthogonal' ? 0 : 6;
-    geometry = createElbowGeometry([a, { x: a.x, y: midY }, { x: b.x, y: midY }, b], radius);
+    geometry = createElbowGeometry([a, { x: a.x, y: busY }, { x: b.x, y: busY }, b], radius);
   } else if (effectiveMode === 'brace-map') {
     const start = resolveCardPort(
       { x: sx, y: sy },

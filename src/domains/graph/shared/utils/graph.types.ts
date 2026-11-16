@@ -225,6 +225,8 @@ export interface RenderNode {
   vy?: number;
   fx?: number;
   fy?: number;
+  layoutSide?: -1 | 0 | 1;
+  layoutLane?: number;
   /** Toggle hit region in graph space, written by the node renderer. */
   toggle?: { x: number; y: number; r: number } | null;
 }

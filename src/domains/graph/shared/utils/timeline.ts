@@ -117,7 +117,7 @@ export function timelineLayout({
     measureBox(id);
   }
 
-  // 4. Rekursif Penempatan Cabang Horizontal (Level 3 hingga Level 15+)
+  // 4. Rekursif Penempatan Cabang Horizontal Berbasis Center-Anchor (Level 3+)
   function placeHorizontalSubtree(
     parentId: string,
     parentX: number,
@@ -129,8 +129,8 @@ export function timelineLayout({
     if (kids.length === 0) return;
 
     const parentMetric = metric(parentId);
-    // Ujung kanan parent (tempat teks berakhir) + celah level
-    const branchX = parentX + parentMetric.width + levelGapX;
+    // Ujung kanan parent (berbasis center-anchor) + celah level
+    const branchLeftX = parentX + parentMetric.width / 2 + levelGapX;
 
     const kidsBoxes = kids.map((k) => measureBox(k));
     const totalKidsSpanY = kidsBoxes.reduce(
@@ -143,36 +143,39 @@ export function timelineLayout({
     for (let i = 0; i < kids.length; i++) {
       const kidId = kids[i];
       const kidBox = kidsBoxes[i];
+      const kidMetric = metric(kidId);
 
       const kidSlotY = cursorY;
       const kidSlotHeight = kidBox.spanY;
       const kidY = kidSlotY + kidSlotHeight / 2;
 
-      // Pusat bulatan node anak ditaruh tepat di branchX (tanpa ditambah width/2 yang membuat celah)
-      const kidActualX = branchX;
+      // Rata kiri semua sibling terhadap branchLeftX, posisikan center node = branchLeftX + width/2
+      const kidCenterX = branchLeftX + kidMetric.width / 2;
 
       targets.set(kidId, {
-        x: kidActualX,
+        x: kidCenterX,
         y: kidY,
         side: lane,
-        lane,
+        lane: lane * 3,
       });
 
       // Lanjut rekursif ke Level 4, Level 5, dst.
-      placeHorizontalSubtree(kidId, kidActualX, kidSlotY, kidSlotHeight, lane);
+      placeHorizontalSubtree(kidId, kidCenterX, kidSlotY, kidSlotHeight, lane);
 
       cursorY += kidBox.spanY + siblingGapY;
     }
   }
 
   // 5. Penempatan Pohon Milestone
+  const l2TrunkOffsetX = Math.max(28, Math.round(levelGapX * 0.45));
+
   function placeMilestoneTree(
     mId: string,
     mX: number,
     lane: -1 | 1
   ): { maxX: number } {
     const mMetric = metric(mId);
-    const mY = baselineY + lane * laneGap;
+    const mY = baselineY + lane * Math.max(laneGap, minBaselineClearance + mMetric.height / 2);
 
     targets.set(mId, {
       x: mX,
@@ -183,12 +186,14 @@ export function timelineLayout({
 
     const l2Kids = childrenOf(mId).filter((c) => visible.has(c));
     if (l2Kids.length === 0) {
-      return { maxX: mX + mMetric.width };
+      return { maxX: mX + mMetric.width / 2 };
     }
 
     const l2Boxes = l2Kids.map((k) => measureBox(k));
-    // Indentasi tiang vertikal Level 2
-    const trunkX = mX + 32;
+    // Tiang vertikal sejajar center milestone; semua cabang Level 2 rata kiri di kanannya
+    // agar proxy sub-tree lebar (misal org-chart) tidak pernah melintasi kiri atau tertusuk garis tiang.
+    const trunkGutterX = mX;
+    const l2LeftEdgeX = trunkGutterX + l2TrunkOffsetX;
 
     let currentY: number;
     if (lane === -1) {
@@ -201,20 +206,22 @@ export function timelineLayout({
     for (let i = 0; i < l2Kids.length; i++) {
       const kidId = l2Kids[i];
       const kidBox = l2Boxes[i];
+      const kidMetric = metric(kidId);
 
       const slotY = currentY;
       const slotHeight = kidBox.spanY;
       const kidY = slotY + slotHeight / 2;
+      const kidCenterX = l2LeftEdgeX + kidMetric.width / 2;
 
       targets.set(kidId, {
-        x: trunkX,
+        x: kidCenterX,
         y: kidY,
         side: lane,
-        lane,
+        lane: lane * 2,
       });
 
       // Cabang Level 3+ bertumbuh horizontal ke kanan
-      placeHorizontalSubtree(kidId, trunkX, slotY, slotHeight, lane);
+      placeHorizontalSubtree(kidId, kidCenterX, slotY, slotHeight, lane);
 
       if (lane === -1) {
         if (i < l2Kids.length - 1) {
@@ -226,11 +233,11 @@ export function timelineLayout({
       }
     }
 
-    let maxX = mX + mMetric.width;
+    let maxX = mX + mMetric.width / 2;
     function collectMaxX(nodeId: string) {
       const t = targets.get(nodeId);
       if (t) {
-        maxX = Math.max(maxX, t.x + metric(nodeId).width);
+        maxX = Math.max(maxX, t.x + metric(nodeId).width / 2);
       }
       for (const c of childrenOf(nodeId).filter((k) => visible.has(k))) {
         collectMaxX(c);
@@ -271,8 +278,9 @@ export function timelineLayout({
   let orphanCursorX = Math.max(lastSameLaneMaxX[-1], lastSameLaneMaxX[1]) + 80;
   for (const id of ids) {
     if (!targets.has(id)) {
-      targets.set(id, { x: orphanCursorX, y: baselineY, side: 0, lane: 0 });
-      orphanCursorX += metric(id).width + 50;
+      const om = metric(id);
+      targets.set(id, { x: orphanCursorX + om.width / 2, y: baselineY, side: 0, lane: 0 });
+      orphanCursorX += om.width + 50;
     }
   }
 

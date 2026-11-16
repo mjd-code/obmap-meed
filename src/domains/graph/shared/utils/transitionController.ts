@@ -44,7 +44,15 @@ export class LayoutTransitionController {
         if (!target) return null;
         const fromX = Number.isFinite(node.fx) ? node.fx! : Number.isFinite(node.x) ? node.x! : target.x;
         const fromY = Number.isFinite(node.fy) ? node.fy! : Number.isFinite(node.y) ? node.y! : target.y;
-        return { node, fromX, fromY, toX: target.x, toY: target.y };
+        return {
+          node,
+          fromX,
+          fromY,
+          toX: target.x,
+          toY: target.y,
+          layoutSide: target.side,
+          layoutLane: target.lane,
+        };
       })
       .filter(Boolean) as {
       node: RenderNode;
@@ -52,7 +60,14 @@ export class LayoutTransitionController {
       fromY: number;
       toX: number;
       toY: number;
+      layoutSide?: -1 | 0 | 1;
+      layoutLane?: number;
     }[];
+
+    for (const item of plan) {
+      item.node.layoutSide = item.layoutSide;
+      item.node.layoutLane = item.layoutLane;
+    }
 
     const settle = () => {
       for (const item of plan) {
@@ -62,6 +77,8 @@ export class LayoutTransitionController {
         item.node.y = item.toY;
         item.node.vx = 0;
         item.node.vy = 0;
+        item.node.layoutSide = item.layoutSide;
+        item.node.layoutLane = item.layoutLane;
       }
       options.onTick?.();
       options.onDone?.();

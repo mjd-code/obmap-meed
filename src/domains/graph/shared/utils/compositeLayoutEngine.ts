@@ -16,10 +16,12 @@ import {
   inflateMetricsForBoundariesAndSummaries,
   solveBoundariesAndSummaries,
 } from '@/domains/graph/shared/utils/boundarySummarySolver';
-import { resolveAABBCollisions } from '@/domains/graph/shared/utils/collisionResolver';
+import {
+  resolveAABBCollisions,
+  resolveBlockAABBCollisions,
+} from '@/domains/graph/shared/utils/collisionResolver';
 import { fishboneLayout } from '@/domains/graph/shared/utils/fishbone';
 import type {
-  Bounds,
   BoundaryGroup,
   LayoutContext,
   LayoutDecoration,
@@ -31,7 +33,7 @@ import type {
   SubtreeLayoutMap,
   SummaryGroup,
 } from '@/domains/graph/shared/utils/graph.types';
-import { boundsOf } from '@/domains/graph/shared/utils/layoutMath';
+import { boundsOf, mergeBoundsWithDecorations } from '@/domains/graph/shared/utils/layoutMath';
 import { mindmapLayout } from '@/domains/graph/shared/utils/mindmap';
 import { timelineLayout } from '@/domains/graph/shared/utils/timeline';
 import { braceMapLayout, orgChartLayout } from '@/domains/graph/shared/utils/treeLayouts';
@@ -91,15 +93,62 @@ export function computeCrossStructureMargin(
 function shouldMirrorHorizontalSubtree(
   parentMode: MindmapLayoutMode,
   childMode: MindmapLayoutMode,
-  side: -1 | 0 | 1
+  anchorIsLeft: boolean
 ): boolean {
-  if (side === -1 && (childMode === 'brace-map' || childMode === 'timeline')) {
+  if (anchorIsLeft && (childMode === 'brace-map' || childMode === 'timeline')) {
     return true;
   }
-  if (side === 1 && childMode === 'fishbone' && parentMode !== 'fishbone') {
+  if (!anchorIsLeft && childMode === 'fishbone' && parentMode !== 'fishbone') {
     return true;
   }
   return false;
+}
+
+function flipHorizontalSide(side: -1 | 0 | 1 | undefined): -1 | 0 | 1 | undefined {
+  if (side === -1) return 1;
+  if (side === 1) return -1;
+  return side;
+}
+
+function computeParentDepths(
+  roots: string[],
+  childrenOf: (id: string) => string[]
+): Map<string, number> {
+  const depths = new Map<string, number>();
+  const queue: Array<[string, number]> = [];
+  for (const r of roots) {
+    if (!depths.has(r)) {
+      depths.set(r, 0);
+      queue.push([r, 0]);
+    }
+  }
+  while (queue.length > 0) {
+    const [cur, d] = queue.shift()!;
+    for (const child of childrenOf(cur)) {
+      if (!depths.has(child)) {
+        depths.set(child, d + 1);
+        queue.push([child, d + 1]);
+      }
+    }
+  }
+  return depths;
+}
+
+function syncMovedParentRib(
+  dec: LayoutDecoration,
+  targets: Map<string, NodeTarget>
+): LayoutDecoration {
+  if (dec.kind !== 'fishbone-rib' || !dec.targetId) return dec;
+  const dst = targets.get(dec.targetId);
+  if (!dst) return dec;
+  const src = !dec.major && dec.sourceId ? targets.get(dec.sourceId) : undefined;
+  return {
+    ...dec,
+    x1: src ? src.x : dec.x1,
+    y1: src ? src.y : dec.y1,
+    x2: dst.x,
+    y2: dst.y,
+  };
 }
 
 function transformDecoration(
@@ -247,10 +296,13 @@ function solveCompositeRegion(
     }
   }
 
-  // Bangun proxy nodeMetrics: tiap boundarySubtree diukur sebagai kotak komposit utuhnya
+  // Bangun proxy nodeMetrics: tiap boundarySubtree diukur sebagai kotak komposit utuhnya (termasuk dekorasi spine/rib/brace)
   const proxyMetrics = new Map<string, NodeMetric>(tree.context.nodeMetrics);
   for (const [bId, subGeo] of boundarySubtrees.entries()) {
-    const subBounds = boundsOf(subGeo.targets, tree.context.nodeMetrics);
+    const subBounds = mergeBoundsWithDecorations(
+      boundsOf(subGeo.targets, tree.context.nodeMetrics),
+      subGeo.decorations
+    );
     const crossPad = computeCrossStructureMargin(
       activeMode,
       boundaryModes.get(bId) ?? activeMode,
@@ -294,67 +346,149 @@ function solveCompositeRegion(
     mode: activeMode,
     minGap: Math.max(10, Math.round(tree.context.siblingGap * 0.35)),
     preserveSpineSide: activeMode === 'fishbone' || activeMode === 'timeline',
+    maxIterations: 48,
   });
 
+  const prunedParentMap = buildFallbackParentMap(prunedIds, prunedChildrenOf);
+  const parentDepthMap = computeParentDepths(regionRoots, prunedChildrenOf);
   const finalTargets = new Map<string, NodeTarget>(stabilizedParentTargets);
-  const finalDecorations: LayoutDecoration[] = [...parentGeo.decorations];
+  const finalDecorations: LayoutDecoration[] = parentGeo.decorations.map((d) =>
+    syncMovedParentRib(d, stabilizedParentTargets)
+  );
+  const parentDecorationCount = finalDecorations.length;
 
-  // Ekspansi setiap Composite Subtree ke dalam amplop kotak proxy-nya masing-masing
+  const blockOf = new Map<string, string>();
+  const blockMembers = new Map<string, string[]>();
+  const blockDepth = new Map<string, number>();
+  const decorationsByBlock = new Map<string, number[]>();
+
+  for (const id of stabilizedParentTargets.keys()) {
+    if (!boundarySubtrees.has(id)) {
+      blockOf.set(id, id);
+      blockMembers.set(id, [id]);
+      blockDepth.set(id, parentDepthMap.get(id) ?? 1);
+    }
+  }
+
+  // Ekspansi setiap Composite Subtree ke dalam amplop kotak proxy-nya secara kaku (Rigid Block)
   for (const [bId, subGeo] of boundarySubtrees.entries()) {
     const anchorTarget = stabilizedParentTargets.get(bId);
     if (!anchorTarget) continue;
 
     const subMode = boundaryModes.get(bId) ?? activeMode;
     const subRootTarget = subGeo.targets.get(bId);
-    const side = anchorTarget.side ?? 0;
+    const parentId = prunedParentMap.get(bId);
+    const parentTarget = parentId ? stabilizedParentTargets.get(parentId) : undefined;
+    const anchorSide = anchorTarget.side ?? 0;
+
+    // Arah horizontal aktual relatif parent (tidak tertukar flag vertical lane pada Timeline)
+    const anchorIsLeft =
+      activeMode === 'mindmap' &&
+      (anchorSide === -1 || (parentTarget ? anchorTarget.x < parentTarget.x - 1 : false));
+
     const mirrorX =
-      subRootTarget && shouldMirrorHorizontalSubtree(activeMode, subMode, side)
+      subRootTarget && shouldMirrorHorizontalSubtree(activeMode, subMode, anchorIsLeft)
         ? subRootTarget.x
         : null;
 
     const orientedTargets = new Map<string, NodeTarget>();
     for (const [subId, t] of subGeo.targets.entries()) {
+      const mirroredSide =
+        mirrorX !== null && subMode !== 'timeline' ? flipHorizontalSide(t.side) : t.side;
+      const resolvedSide =
+        mirroredSide !== undefined
+          ? mirroredSide
+          : activeMode === 'mindmap' && anchorSide !== 0
+            ? anchorSide
+            : undefined;
       orientedTargets.set(subId, {
         ...t,
         x: mirrorX !== null ? 2 * mirrorX - t.x : t.x,
-        side: side !== 0 ? side : t.side,
+        ...(resolvedSide !== undefined ? { side: resolvedSide } : {}),
       });
     }
 
-    const subBounds = boundsOf(orientedTargets, tree.context.nodeMetrics);
+    const orientedDecorations = subGeo.decorations.map((dec) =>
+      transformDecoration(dec, mirrorX, 0, 0)
+    );
+    const subBounds = mergeBoundsWithDecorations(
+      boundsOf(orientedTargets, tree.context.nodeMetrics),
+      orientedDecorations
+    );
     const subCenterX = (subBounds.minX + subBounds.maxX) / 2;
     const subCenterY = (subBounds.minY + subBounds.maxY) / 2;
     const shiftX = anchorTarget.x - subCenterX;
     const shiftY = anchorTarget.y - subCenterY;
 
+    const members: string[] = [];
     for (const [subId, t] of orientedTargets.entries()) {
       finalTargets.set(subId, {
         ...t,
         x: t.x + shiftX,
         y: t.y + shiftY,
       });
+      blockOf.set(subId, bId);
+      members.push(subId);
     }
+    blockMembers.set(bId, members);
+    blockDepth.set(bId, parentDepthMap.get(bId) ?? 1);
 
-    for (const dec of subGeo.decorations) {
-      finalDecorations.push(transformDecoration(dec, mirrorX, shiftX, shiftY));
+    const decIndices: number[] = [];
+    for (const dec of orientedDecorations) {
+      decIndices.push(finalDecorations.length);
+      finalDecorations.push(transformDecoration(dec, null, shiftX, shiftY));
     }
+    decorationsByBlock.set(bId, decIndices);
   }
 
-  // Jaring pengaman AABB final terhadap nodeMetrics asli (tanpa menggeser root)
-  const verifiedTargets = resolveAABBCollisions({
+  // Isolasi blok kaku: jika masih ada persinggungan, seluruh blok + dekorasinya bergeser bersama
+  const verifiedTargets = resolveBlockAABBCollisions({
     targets: finalTargets,
     metrics: tree.context.nodeMetrics,
-    roots: regionRoots,
-    childrenOf: childrenInRegion,
+    blockOf,
+    blockMembers,
+    pinnedBlocks: new Set(regionRoots),
+    blockDepth,
     mode: activeMode,
     minGap: 8,
     preserveSpineSide: activeMode === 'fishbone' || activeMode === 'timeline',
+    maxIterations: 40,
+    onShiftBlock: (moverBlock, dx, dy) => {
+      const decIndices = decorationsByBlock.get(moverBlock);
+      if (!decIndices) return;
+      for (const idx of decIndices) {
+        finalDecorations[idx] = transformDecoration(finalDecorations[idx], null, dx, dy);
+      }
+    },
+    onShiftNode: (moverId, dx, dy) => {
+      for (let i = 0; i < finalDecorations.length; i += 1) {
+        const dec = finalDecorations[i];
+        if (dec.kind !== 'fishbone-rib') continue;
+        const matchSrc = !dec.major && dec.sourceId === moverId;
+        const matchDst = dec.targetId === moverId;
+        if (!matchSrc && !matchDst) continue;
+        finalDecorations[i] = {
+          ...dec,
+          x1: matchSrc ? dec.x1 + dx : dec.x1,
+          y1: matchSrc ? dec.y1 + dy : dec.y1,
+          x2: matchDst ? dec.x2 + dx : dec.x2,
+          y2: matchDst ? dec.y2 + dy : dec.y2,
+        };
+      }
+    },
   });
+
+  for (let i = 0; i < parentDecorationCount; i += 1) {
+    finalDecorations[i] = syncMovedParentRib(finalDecorations[i], verifiedTargets);
+  }
 
   return {
     mode: activeMode,
     targets: verifiedTargets,
-    bounds: boundsOf(verifiedTargets, tree.context.nodeMetrics),
+    bounds: mergeBoundsWithDecorations(
+      boundsOf(verifiedTargets, tree.context.nodeMetrics),
+      finalDecorations
+    ),
     decorations: finalDecorations,
   };
 }
@@ -377,27 +511,6 @@ function buildFallbackParentMap(
     }
   }
   return parentMap;
-}
-
-function mergeBoundsWithDecorations(
-  base: Bounds,
-  decorations: LayoutDecoration[],
-): Bounds {
-  let { minX, minY, maxX, maxY } = base;
-  for (const dec of decorations) {
-    if (dec.kind === 'boundary') {
-      minX = Math.min(minX, dec.x);
-      minY = Math.min(minY, dec.y);
-      maxX = Math.max(maxX, dec.x + dec.width);
-      maxY = Math.max(maxY, dec.y + dec.height);
-    } else if (dec.kind === 'summary-brace') {
-      minX = Math.min(minX, dec.x1, dec.x2, dec.apexX);
-      minY = Math.min(minY, dec.y1, dec.y2, dec.apexY);
-      maxX = Math.max(maxX, dec.x1, dec.x2, dec.apexX);
-      maxY = Math.max(maxY, dec.y1, dec.y2, dec.apexY);
-    }
-  }
-  return { minX, minY, maxX, maxY };
 }
 
 /**
@@ -467,20 +580,26 @@ export function computeCompositeMindmapLayout(
           : effectiveRootMode === 'mindmap' || effectiveRootMode === 'brace-map'
             ? 'vertical'
             : 'auto';
-    const resolvedTargets = resolveAABBCollisions({
-      targets: rawGeo.targets,
-      metrics: workingTree.context.nodeMetrics,
-      roots: visibleRoots,
-      childrenOf: childrenInVisible,
-      mode: effectiveRootMode,
-      minGap: 8,
-      primaryAxis,
-      preserveSpineSide: effectiveRootMode === 'fishbone' || effectiveRootMode === 'timeline',
-    });
+    const resolvedTargets =
+      effectiveRootMode === 'fishbone'
+        ? rawGeo.targets
+        : resolveAABBCollisions({
+            targets: rawGeo.targets,
+            metrics: workingTree.context.nodeMetrics,
+            roots: visibleRoots,
+            childrenOf: childrenInVisible,
+            mode: effectiveRootMode,
+            minGap: 8,
+            primaryAxis,
+            preserveSpineSide: effectiveRootMode === 'timeline',
+          });
     baseGeo = {
       ...rawGeo,
       targets: resolvedTargets,
-      bounds: boundsOf(resolvedTargets, tree.context.nodeMetrics),
+      bounds: mergeBoundsWithDecorations(
+        boundsOf(resolvedTargets, tree.context.nodeMetrics),
+        rawGeo.decorations
+      ),
     };
   } else {
     baseGeo = solveCompositeRegion(

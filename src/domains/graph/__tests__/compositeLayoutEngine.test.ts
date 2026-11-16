@@ -6,6 +6,8 @@ import {
 } from '@/domains/graph/shared/utils/collisionResolver';
 import {
   MINDMAP_LAYOUT_MODES,
+  type FishboneRib,
+  type FishboneSpine,
   type GraphProjection,
   type MindmapLayoutMode,
   type NodeMetric,
@@ -282,5 +284,209 @@ describe('Two-Pass Composite Layout Engine & Zero-Collision Solver (XMIND-STEP-0
     expect(geo.targets.size).toBe(2000);
     expect(findAABBOverlaps(geo.targets, graph.metrics)).toEqual([]);
     expect(elapsedMs).toBeLessThan(1000);
+  });
+
+  it('prevents multi-layer collisions, wraps 19-leaf org-chart cleanly, and clears timeline trunk gutter', () => {
+    const specs: Array<[string, string | null, string]> = [
+      ['root', null, 'Project Timeline Root'],
+      ['m1', 'root', 'Phase 1 Launch'],
+      ['m2', 'root', 'Phase 2 Analysis'],
+      ['m3', 'root', 'Phase 3 Rollout'],
+      ['orgRoot', 'm1', 'Engineering Module'],
+      ['orgBranch', 'orgRoot', 'Leaf Spec Files'],
+      ...Array.from({ length: 19 }, (_, idx): [string, string, string] => [
+        `leaf-${idx}`,
+        'orgBranch',
+        `Spec File ${idx + 1}`,
+      ]),
+      ['orgMid', 'orgRoot', 'Sub Architecture'],
+      ['orgMid-a', 'orgMid', 'API Contract'],
+      ['orgMid-b', 'orgMid', 'Schema Check'],
+      ['fishRoot', 'm2', 'Root Cause'],
+      ['cat-0', 'fishRoot', 'People'],
+      ['cat-1', 'fishRoot', 'Process'],
+      ['cat-2', 'fishRoot', 'Tooling'],
+      ['cat-3', 'fishRoot', 'Infra'],
+      ['sub-0', 'cat-0', 'Training Gap'],
+      ['sub-1', 'cat-1', 'Manual QA'],
+      ['sub-2', 'cat-2', 'Stale Metrics'],
+      ['sub-3', 'cat-3', 'Trunk Overlap'],
+      ['braceRoot', 'm3', 'Target Scope'],
+      ['brace-a', 'braceRoot', 'Web Client'],
+      ['mindRoot', 'braceRoot', 'Core Services'],
+      ['mind-1', 'mindRoot', 'Auth Service'],
+      ['mind-2', 'mindRoot', 'Sync Engine'],
+      ['mind-3', 'mindRoot', 'Graph Worker'],
+      ['mind-4', 'mindRoot', 'Search Index'],
+    ];
+
+    const childrenByParent = new Map<string, string[]>();
+    const parentByChild = new Map<string, string | null>();
+    const metrics = new Map<string, NodeMetric>();
+    const nodes: RenderNode[] = specs.map(([id]) => {
+      childrenByParent.set(id, []);
+      return {
+        id,
+        name: id,
+        type: id.startsWith('leaf-') || id.startsWith('sub-') || id.startsWith('mind-') ? 'file' : 'folder',
+        parentId: null,
+        depth: 0,
+        tags: [],
+        content: '',
+        childCount: 0,
+      };
+    });
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    for (const [id, parentId, name] of specs) {
+      const node = byId.get(id)!;
+      node.name = name;
+      node.parentId = parentId;
+      parentByChild.set(id, parentId);
+      if (parentId) {
+        childrenByParent.get(parentId)!.push(id);
+        node.depth = byId.get(parentId)!.depth + 1;
+      }
+    }
+    for (const n of nodes) {
+      n.childCount = childrenByParent.get(n.id)!.length;
+      metrics.set(
+        n.id,
+        cardLayout(n.name, { root: n.parentId === null, badge: n.childCount > 0, depth: n.depth })
+      );
+    }
+
+    const graph: SyntheticGraph = {
+      projection: { nodes, links: [], byId, childrenByParent, parentByChild, roots: ['root'] },
+      metrics,
+    };
+
+    const geo = computeLayout(
+      graph.projection,
+      defaultEngineOptions(graph, {
+        mode: 'timeline',
+        subtreeOverrides: {
+          orgRoot: 'org-chart',
+          fishRoot: 'fishbone',
+          braceRoot: 'brace-map',
+          mindRoot: 'mindmap',
+        },
+      })
+    );
+
+    expect(geo.targets.size).toBe(specs.length);
+    expect(findAABBOverlaps(geo.targets, metrics)).toEqual([]);
+
+    // 19 leaves in org-chart wrap into compact matrix rows (<= 6 columns -> width < 1200px)
+    let minLeafX = Infinity;
+    let maxLeafX = -Infinity;
+    const distinctRows = new Set<number>();
+    for (let i = 0; i < 19; i += 1) {
+      const id = `leaf-${i}`;
+      const t = geo.targets.get(id)!;
+      const m = metrics.get(id)!;
+      minLeafX = Math.min(minLeafX, t.x - m.width / 2);
+      maxLeafX = Math.max(maxLeafX, t.x + m.width / 2);
+      distinctRows.add(Math.round(t.y));
+    }
+    expect(maxLeafX - minLeafX).toBeLessThan(1200);
+    expect(distinctRows.size).toBeGreaterThanOrEqual(4);
+
+    // Every L2 org-chart node sits strictly right of milestone m1's vertical trunk gutter
+    const m1X = geo.targets.get('m1')!.x;
+    const orgSubtreeIds = [
+      'orgRoot',
+      'orgBranch',
+      'orgMid',
+      'orgMid-a',
+      'orgMid-b',
+      ...Array.from({ length: 19 }, (_, idx) => `leaf-${idx}`),
+    ];
+    for (const id of orgSubtreeIds) {
+      const t = geo.targets.get(id)!;
+      const m = metrics.get(id)!;
+      expect(t.x - m.width / 2).toBeGreaterThan(m1X);
+    }
+  });
+
+  it('keeps fishbone ribs attached tightly and applies Smart Flow orientation across left/right subtrees', () => {
+    const specs: Array<[string, string | null, string]> = [
+      ['root', null, 'Central Hub'],
+      ['right-fish', 'root', 'Fishbone Analysis'],
+      ['rc-0', 'right-fish', 'Factor A'],
+      ['rc-1', 'right-fish', 'Factor B'],
+      ['rc-2', 'right-fish', 'Factor C'],
+      ['rl-0', 'rc-0', 'Detail A1'],
+      ['rl-1', 'rc-1', 'Detail B1'],
+      ['left-brace', 'root', 'Left Brace Structure'],
+      ['lb-0', 'left-brace', 'Brace Child 1'],
+      ['lb-1', 'left-brace', 'Brace Child 2'],
+      ['right-sib', 'root', 'Adjacent Mindmap Topic'],
+      ['rs-0', 'right-sib', 'Sibling Note A'],
+      ['rs-1', 'right-sib', 'Sibling Note B'],
+    ];
+
+    const childrenByParent = new Map<string, string[]>();
+    const parentByChild = new Map<string, string | null>();
+    const metrics = new Map<string, NodeMetric>();
+    const nodes: RenderNode[] = specs.map(([id, parentId, name]) => {
+      childrenByParent.set(id, []);
+      parentByChild.set(id, parentId);
+      return {
+        id,
+        name,
+        type: 'folder',
+        parentId,
+        depth: parentId ? (parentId === 'root' ? 1 : 2) : 0,
+        tags: [],
+        content: '',
+        childCount: 0,
+      };
+    });
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    for (const [id, parentId] of specs) {
+      if (parentId) childrenByParent.get(parentId)!.push(id);
+    }
+    for (const n of nodes) {
+      n.childCount = childrenByParent.get(n.id)!.length;
+      metrics.set(n.id, cardLayout(n.name, { root: n.parentId === null, badge: n.childCount > 0, depth: n.depth }));
+    }
+
+    const graph: SyntheticGraph = {
+      projection: { nodes, links: [], byId, childrenByParent, parentByChild, roots: ['root'] },
+      metrics,
+    };
+
+    const geo = computeLayout(
+      graph.projection,
+      defaultEngineOptions(graph, {
+        mode: 'mindmap',
+        subtreeOverrides: {
+          'right-fish': 'fishbone',
+          'left-brace': 'brace-map',
+        },
+      })
+    );
+
+    expect(findAABBOverlaps(geo.targets, metrics)).toEqual([]);
+
+    const ribs = geo.decorations.filter((d): d is FishboneRib => d.kind === 'fishbone-rib');
+    expect(ribs.length).toBeGreaterThan(0);
+    for (const rib of ribs) {
+      if (!rib.targetId) continue;
+      const dst = geo.targets.get(rib.targetId)!;
+      expect(Math.hypot(rib.x2 - dst.x, rib.y2 - dst.y)).toBeLessThan(1e-3);
+    }
+
+    // Smart Flow: right-side fishbone places Effect Head to the LEFT of spine tail (spine extends rightward)
+    const spines = geo.decorations.filter((d): d is FishboneSpine => d.kind === 'fishbone-spine');
+    expect(spines.length).toBe(1);
+    const effectPos = geo.targets.get('right-fish')!;
+    const spine = spines[0];
+    expect(Math.min(spine.x1, spine.x2)).toBeGreaterThanOrEqual(effectPos.x - 10);
+
+    // Smart Flow: left-side brace-map grows leftward away from mindmap center
+    const braceAnchor = geo.targets.get('left-brace')!;
+    const braceChild = geo.targets.get('lb-0')!;
+    expect(braceChild.x).toBeLessThan(braceAnchor.x);
   });
 });

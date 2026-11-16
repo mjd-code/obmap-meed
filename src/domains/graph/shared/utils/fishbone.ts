@@ -10,7 +10,7 @@ import type {
   LayoutGeometry,
   NodeTarget,
 } from '@/domains/graph/shared/utils/graph.types';
-import { boundsOf } from '@/domains/graph/shared/utils/layoutMath';
+import { boundsOf, mergeBoundsWithDecorations } from '@/domains/graph/shared/utils/layoutMath';
 
 export interface FishboneInput {
   ids: string[];
@@ -237,7 +237,7 @@ export function fishboneLayout({ ids, roots, childrenOf, context }: FishboneInpu
     minGap: Math.max(8, siblingGap * 0.35),
     primaryAxis: 'horizontal',
     preserveSpineSide: true,
-    maxIterations: 20,
+    maxIterations: 36,
   });
 
   for (const link of subRibLinks) {
@@ -256,5 +256,10 @@ export function fishboneLayout({ ids, roots, childrenOf, context }: FishboneInpu
     } as FishboneRib);
   }
 
-  return { mode: 'fishbone', targets: resolvedTargets, bounds: boundsOf(resolvedTargets, context.nodeMetrics), decorations };
+  return {
+    mode: 'fishbone',
+    targets: resolvedTargets,
+    bounds: mergeBoundsWithDecorations(boundsOf(resolvedTargets, context.nodeMetrics), decorations),
+    decorations,
+  };
 }

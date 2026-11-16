@@ -15,6 +15,20 @@ export interface TreeInput {
 
 type Direction = 'down' | 'right';
 
+const COMPACT_LEAF_THRESHOLD = 8;
+const COMPACT_MAX_COLS = 6;
+const COMPACT_COL_GAP = 22;
+const COMPACT_ROW_GAP = 28;
+const COMPACT_MAX_LEAF_HEIGHT = 120;
+
+interface CompactGridPlan {
+  rows: string[][];
+  leftColWidths: number[];
+  rightColWidths: number[];
+  halfExtent: number;
+  rowHeights: number[];
+}
+
 function tidyTree({ ids, roots, childrenOf, context }: TreeInput, direction: Direction, mode: LayoutMode): LayoutGeometry {
   const targets = new Map<string, NodeTarget>();
   const visible = new Set(ids);
@@ -29,10 +43,79 @@ function tidyTree({ ids, roots, childrenOf, context }: TreeInput, direction: Dir
   const safeGap = Math.max(context.siblingGap, 28);
   const safeLevelGap = Math.max(context.levelGap, 64);
 
+  const compactPlanCache = new Map<string, CompactGridPlan>();
+  const isCompactLeafGrid = (id: string): boolean => {
+    if (direction !== 'down') return false;
+    const kids = children(id);
+    if (kids.length <= COMPACT_LEAF_THRESHOLD) return false;
+    return kids.every((k) => children(k).length === 0 && metric(k).height <= COMPACT_MAX_LEAF_HEIGHT);
+  };
+
+  const getCompactPlan = (id: string): CompactGridPlan => {
+    const cached = compactPlanCache.get(id);
+    if (cached) return cached;
+
+    const kids = children(id);
+    const rows: string[][] = [];
+    for (let i = 0; i < kids.length; i += COMPACT_MAX_COLS) {
+      rows.push(kids.slice(i, i + COMPACT_MAX_COLS));
+    }
+
+    const halfCols = COMPACT_MAX_COLS / 2;
+    const leftColWidths = [0, 0, 0];
+    const rightColWidths = [0, 0, 0];
+    const rowHeights: number[] = [];
+
+    // Baris penuh memakai 3 kolom kiri + gutter tengah + 3 kolom kanan agar spine center bebas tabrakan
+    const fullRowCount = Math.max(0, rows.length - 1);
+    for (let r = 0; r < rows.length; r += 1) {
+      const row = rows[r];
+      let maxH = 0;
+      for (let c = 0; c < row.length; c += 1) {
+        const m = metric(row[c]);
+        maxH = Math.max(maxH, m.height);
+        if (r < fullRowCount) {
+          if (c < halfCols) {
+            leftColWidths[c] = Math.max(leftColWidths[c], m.width);
+          } else {
+            rightColWidths[c - halfCols] = Math.max(rightColWidths[c - halfCols], m.width);
+          }
+        }
+      }
+      rowHeights.push(maxH);
+    }
+
+    const sumSide = (widths: number[]) =>
+      widths.reduce((acc, w) => (w > 0 ? acc + w : acc), 0) +
+      Math.max(0, widths.filter((w) => w > 0).length - 1) * COMPACT_COL_GAP +
+      COMPACT_COL_GAP / 2;
+
+    const lastRow = rows[rows.length - 1] ?? [];
+    const lastRowWidth =
+      lastRow.reduce((sum, kid) => sum + metric(kid).width, 0) +
+      Math.max(0, lastRow.length - 1) * COMPACT_COL_GAP;
+
+    const halfExtent = Math.max(
+      sumSide(leftColWidths),
+      sumSide(rightColWidths),
+      lastRowWidth / 2,
+    );
+
+    const plan: CompactGridPlan = {
+      rows,
+      leftColWidths,
+      rightColWidths,
+      halfExtent,
+      rowHeights,
+    };
+    compactPlanCache.set(id, plan);
+    return plan;
+  };
+
   const spanCache = new Map<string, number>();
   const guard = new Set<string>();
 
-  // 1. Kalkulasi Span Anti-Overlapping: Menambahkan gap antar setiap child secara eksplisit
+  // 1. Kalkulasi Span Anti-Overlapping: lokal per subtree (tidak meluber ke sepupu lintas cabang)
   const span = (id: string): number => {
     const cached = spanCache.get(id);
     if (cached !== undefined) return cached;
@@ -46,48 +129,89 @@ function tidyTree({ ids, roots, childrenOf, context }: TreeInput, direction: Dir
       return own;
     }
 
-    // Hitung total span semua anak DITAMBAH safeGap di antara tiap anak
+    if (isCompactLeafGrid(id)) {
+      const plan = getCompactPlan(id);
+      const value = Math.max(own, plan.halfExtent * 2 + safeGap);
+      spanCache.set(id, value);
+      return value;
+    }
+
     const kidsSpanTotal = kids.reduce((sum, kid) => sum + span(kid), 0) + (kids.length - 1) * 8;
     const value = Math.max(own, kidsSpanTotal);
     spanCache.set(id, value);
     return value;
   };
 
-  // 2. Kalkulasi Kedalaman Level yang Aman dari Potongan Garis Link
-  const levelDepth: number[] = [];
-  const measure = (id: string, level: number, seen: Set<string>) => {
-    if (seen.has(id)) return;
-    seen.add(id);
-    levelDepth[level] = Math.max(levelDepth[level] ?? 0, depthOf(id));
-    for (const kid of children(id)) measure(kid, level + 1, seen);
-  };
-  const seen = new Set<string>();
-  roots.filter((r) => visible.has(r)).forEach((r) => measure(r, 0, seen));
-
-  const levelOffset: number[] = [0];
-  for (let l = 1; l < levelDepth.length; l += 1) {
-    levelOffset[l] = levelOffset[l - 1] + levelDepth[l - 1] / 2 + levelDepth[l] / 2 + safeLevelGap;
-  }
-
-  // 3. Penempatan Koordinat Node yang Terpusat & Tidak Bertabrakan
+  // 2. Penempatan Koordinat Node Lokal per Parent (bebas ledakan levelDepth global)
   const placed = new Set<string>();
-  const place = (id: string, level: number, start: number) => {
+  const placeCompactLeafRows = (parentId: string, centerX: number, parentBottomY: number) => {
+    const plan = getCompactPlan(parentId);
+    let rowTop = parentBottomY + safeLevelGap;
+
+    for (let r = 0; r < plan.rows.length; r += 1) {
+      const row = plan.rows[r];
+      const rowH = plan.rowHeights[r];
+      const rowCenterY = rowTop + rowH / 2;
+      const isLastRow = r === plan.rows.length - 1;
+
+      if (!isLastRow) {
+        // 3 kolom kiri bergerak ke kiri dari gutter tengah; 3 kolom kanan bergerak ke kanan dari gutter tengah
+        let leftEdge = centerX - COMPACT_COL_GAP / 2;
+        for (let c = 2; c >= 0; c -= 1) {
+          const kid = row[c];
+          if (!kid) continue;
+          const colW = plan.leftColWidths[c];
+          targets.set(kid, { x: leftEdge - colW / 2, y: rowCenterY });
+          placed.add(kid);
+          leftEdge -= colW + COMPACT_COL_GAP;
+        }
+        let rightEdge = centerX + COMPACT_COL_GAP / 2;
+        for (let c = 3; c < row.length; c += 1) {
+          const kid = row[c];
+          const colW = plan.rightColWidths[c - 3];
+          targets.set(kid, { x: rightEdge + colW / 2, y: rowCenterY });
+          placed.add(kid);
+          rightEdge += colW + COMPACT_COL_GAP;
+        }
+      } else {
+        const totalRowW =
+          row.reduce((sum, k) => sum + metric(k).width, 0) +
+          Math.max(0, row.length - 1) * COMPACT_COL_GAP;
+        let colCursor = centerX - totalRowW / 2;
+        for (const kid of row) {
+          const m = metric(kid);
+          targets.set(kid, { x: colCursor + m.width / 2, y: rowCenterY });
+          placed.add(kid);
+          colCursor += m.width + COMPACT_COL_GAP;
+        }
+      }
+
+      rowTop += rowH + COMPACT_ROW_GAP;
+    }
+  };
+
+  const place = (id: string, depthCenter: number, start: number) => {
     if (placed.has(id)) return;
     placed.add(id);
 
     const s = span(id);
     const breadth = start + s / 2;
-    const depth = levelOffset[level] ?? 0;
-    targets.set(id, direction === 'down' ? { x: breadth, y: depth } : { x: depth, y: breadth, side: 1 });
+    targets.set(id, direction === 'down' ? { x: breadth, y: depthCenter } : { x: depthCenter, y: breadth, side: 1 });
 
     const kids = children(id);
     if (kids.length === 0) return;
+
+    if (isCompactLeafGrid(id)) {
+      placeCompactLeafRows(id, breadth, depthCenter + depthOf(id) / 2);
+      return;
+    }
 
     const totalKidsSpan = kids.reduce((sum, kid) => sum + span(kid), 0) + (kids.length - 1) * 8;
     let cursor = start + (s - totalKidsSpan) / 2;
 
     for (const kid of kids) {
-      place(kid, level + 1, cursor);
+      const kidDepthCenter = depthCenter + depthOf(id) / 2 + safeLevelGap + depthOf(kid) / 2;
+      place(kid, kidDepthCenter, cursor);
       cursor += span(kid) + 8;
     }
   };
