@@ -214,6 +214,7 @@ export interface RenderNode {
   childCount: number;
   branchId?: string;
   branchColor?: string;
+  structureClass?: MindmapLayoutMode;
   attachments?: NodeAttachments;
   topicShape?: TopicShape;
   styleOverride?: NodeStyleOverride;

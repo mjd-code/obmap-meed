@@ -541,7 +541,7 @@ export function drawLink(
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.fillStyle = state.theme.nodeText || '#f8fafc';
+    ctx.fillStyle = state.theme.label;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, mid.x, mid.y);

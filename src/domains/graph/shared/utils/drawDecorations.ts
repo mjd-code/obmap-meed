@@ -22,7 +22,7 @@ function drawBoundaryDecoration(
   zoom: number,
   preserveDetail: boolean,
 ): void {
-  const strokeColor = boundary.strokeColor ?? theme.accent ?? '#38bdf8';
+  const strokeColor = boundary.strokeColor ?? theme.selected;
   const fillColor = boundary.fillColor ?? dim(strokeColor, 0.08);
   const lineW = preserveDetail ? 1.5 / Math.max(0.05, zoom) : 1.5;
 
@@ -69,7 +69,7 @@ function drawBoundaryDecoration(
     ctx.lineWidth = Math.max(0.8, lineW * 0.75);
     ctx.stroke();
 
-    ctx.fillStyle = theme.nodeText || '#f8fafc';
+    ctx.fillStyle = theme.label;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText(title, pillX + 7, pillY + pillH / 2);
@@ -84,7 +84,7 @@ function drawSummaryBraceDecoration(
   zoom: number,
   preserveDetail: boolean,
 ): void {
-  const strokeColor = brace.color ?? theme.accent ?? '#38bdf8';
+  const strokeColor = brace.color ?? theme.selected;
   const lineW = preserveDetail ? 1.75 / Math.max(0.05, zoom) : 1.75;
   const horizontalSpan = brace.direction === 'down' || brace.direction === 'up';
 
@@ -182,7 +182,7 @@ function drawTimelineAxisDecoration(
   ctx.stroke();
 
   ctx.font = cardFont(10, '500');
-  ctx.fillStyle = dim(theme.nodeText || '#94a3b8', 0.85);
+  ctx.fillStyle = dim(theme.label, 0.85);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   for (const tick of axis.ticks) {

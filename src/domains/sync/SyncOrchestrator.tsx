@@ -1,7 +1,7 @@
 import React from 'react';
-import { SyncAutoSaveIndicator } from '@/domains/sync/components/SyncAutoSaveIndicator';
+import { AutoSaveIndicator } from '@/domains/sync/components/SyncAutoSaveIndicator';
 import { SyncStatusIndicator } from '@/domains/sync/components/SyncStatusIndicator';
-export { SyncCoordinator } from '@/domains/sync/shared/api/SyncCoordinator';
+export { syncCoordinator } from '@/domains/sync/shared/api/SyncCoordinator';
 export { SyncEngine } from '@/domains/sync/shared/api/SyncEngine';
 export { useOfflineStore } from '@/domains/sync/shared/stores/useOfflineStore';
 
@@ -11,7 +11,7 @@ export { useOfflineStore } from '@/domains/sync/shared/stores/useOfflineStore';
 export const SyncOrchestrator: React.FC = () => {
   return (
     <div className="sync-orchestrator flex items-center gap-2">
-      <SyncAutoSaveIndicator />
+      <AutoSaveIndicator />
       <SyncStatusIndicator />
     </div>
   );
