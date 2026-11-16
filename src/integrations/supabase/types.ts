@@ -192,12 +192,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: Database["public"]["Enums"]["account_status"]
           avatar_url: string | null
           bio: string | null
           created_at: string
           display_name: string | null
           email: string | null
           email_verified: boolean
+          full_name: string | null
           id: string
           is_public: boolean
           last_login_attempt: string | null
@@ -208,12 +210,14 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          account_status?: Database["public"]["Enums"]["account_status"]
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
+          full_name?: string | null
           id?: string
           is_public?: boolean
           last_login_attempt?: string | null
@@ -224,12 +228,14 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          account_status?: Database["public"]["Enums"]["account_status"]
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           email_verified?: boolean
+          full_name?: string | null
           id?: string
           is_public?: boolean
           last_login_attempt?: string | null
@@ -355,6 +361,7 @@ export type Database = {
         Row: {
           backup_config: Json | null
           created_at: string
+          default_license?: string
           description: string | null
           encryption_key_hash: string | null
           graph_config: Json | null
@@ -363,13 +370,15 @@ export type Database = {
           is_encrypted: boolean
           last_synced_at: string | null
           name: string
-          slug: string
+          slug?: string
           updated_at: string
           user_id: string
+          visibility?: string
         }
         Insert: {
           backup_config?: Json | null
           created_at?: string
+          default_license?: string
           description?: string | null
           encryption_key_hash?: string | null
           graph_config?: Json | null
@@ -378,13 +387,15 @@ export type Database = {
           is_encrypted?: boolean
           last_synced_at?: string | null
           name: string
-          slug: string
+          slug?: string
           updated_at?: string
           user_id: string
+          visibility?: string
         }
         Update: {
           backup_config?: Json | null
           created_at?: string
+          default_license?: string
           description?: string | null
           encryption_key_hash?: string | null
           graph_config?: Json | null
@@ -396,6 +407,7 @@ export type Database = {
           slug?: string
           updated_at?: string
           user_id?: string
+          visibility?: string
         }
         Relationships: []
       }
@@ -821,13 +833,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_resource: {
+        Args: {
+          _action: string
+          _user_id: string | null
+          _vault_id: string
+        }
+        Returns: boolean
+      }
       can_read_vault: {
         Args: { p_user_id: string; p_vault_id: string }
         Returns: boolean
       }
+      get_public_profile_by_handle: {
+        Args: { p_handle: string }
+        Returns: {
+          account_status: string
+          avatar_url: string | null
+          bio: string | null
+          display_name: string | null
+          full_name: string | null
+          is_public: boolean
+          user_id: string
+          username: string | null
+        }[]
+      }
       get_vault_role: {
         Args: { p_user_id: string; p_vault_id: string }
-        Returns: string
+        Returns: string | null
       }
       has_vault_permission: {
         Args: {
@@ -837,8 +870,40 @@ export type Database = {
         Returns: boolean
       }
       is_superadmin: { Args: never; Returns: boolean }
+      lookup_user_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          avatar_url: string | null
+          display_name: string | null
+          email: string | null
+          user_id: string
+        }[]
+      }
+      resolve_username_redirect: {
+        Args: { p_handle: string }
+        Returns: {
+          current_username: string | null
+          expires_at: string
+          old_username: string
+          user_id: string
+        }[]
+      }
+      search_collaborator_profiles: {
+        Args: { p_query: string }
+        Returns: {
+          avatar_url: string | null
+          display_name: string | null
+          email: string | null
+          user_id: string
+        }[]
+      }
+      shares_vault_with: {
+        Args: { p_target_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      account_status: "pending_approval" | "approved" | "suspended"
       app_role: "superadmin" | "member"
       note_status: "draft" | "in_review" | "published" | "archived"
       vault_member_role: "admin" | "editor" | "contributor" | "viewer"

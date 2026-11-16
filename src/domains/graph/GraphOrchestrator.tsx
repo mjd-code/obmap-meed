@@ -1,7 +1,6 @@
 import React from 'react';
 import { GraphCanvas } from '@/domains/graph/components/GraphCanvas';
-import { GraphWorkspaceControls } from '@/domains/graph/components/GraphWorkspaceControls';
-import { GraphQuickCanvasBar } from '@/domains/graph/components/GraphQuickCanvasBar';
+import { GraphFloatingDock } from '@/domains/graph/components/FloatingDock/GraphFloatingDock';
 import { GraphContextualInspector } from '@/domains/graph/components/GraphContextualInspector';
 import {
   useLeafGraphConfigStore,
@@ -52,24 +51,7 @@ function GraphSurface({
         tagFilter={ctrl.tagFilter}
       />
 
-      <GraphQuickCanvasBar
-        isOutlineMode={ctrl.isOutlineMode}
-        onToggleOutlineMode={ctrl.handleToggleOutlineMode}
-        isInspectorOpen={ctrl.isInspectorOpen}
-        onToggleInspector={ctrl.toggleInspector}
-        onSmartZoom={ctrl.handleSmartZoom}
-      />
-
-      <GraphContextualInspector
-        isOpen={ctrl.isInspectorOpen}
-        onClose={() => ctrl.setIsInspectorOpen(false)}
-        activeOutlineNote={ctrl.activeOutlineNote}
-        isOutlineMode={ctrl.isOutlineMode}
-        isAuthenticated={ctrl.isAuthenticated}
-        onUpdateOutlineContent={ctrl.handleUpdateOutlineContent}
-      />
-
-      <GraphWorkspaceControls
+      <GraphFloatingDock
         leafId={leafId}
         layout={ctrl.layoutMode}
         canvasMode={ctrl.canvasMode}
@@ -77,6 +59,10 @@ function GraphSurface({
         onLayoutChange={ctrl.setLayoutMode}
         orientation={ctrl.orientation}
         onOrientationChange={ctrl.setOrientation}
+        isOutlineMode={ctrl.isOutlineMode}
+        onToggleOutlineMode={ctrl.handleToggleOutlineMode}
+        isInspectorOpen={ctrl.isInspectorOpen}
+        onToggleInspector={ctrl.toggleInspector}
         collapsedCount={ctrl.collapsedIds.length}
         onExpandAll={ctrl.expandAll}
         focused={Boolean(ctrl.focusedRootId)}
@@ -92,6 +78,15 @@ function GraphSurface({
         tagFilter={ctrl.tagFilter}
         onTagFilterChange={ctrl.setTagFilter}
         onSmartZoom={ctrl.handleSmartZoom}
+      />
+
+      <GraphContextualInspector
+        isOpen={ctrl.isInspectorOpen}
+        onClose={() => ctrl.setIsInspectorOpen(false)}
+        activeOutlineNote={ctrl.activeOutlineNote}
+        isOutlineMode={ctrl.isOutlineMode}
+        isAuthenticated={ctrl.isAuthenticated}
+        onUpdateOutlineContent={ctrl.handleUpdateOutlineContent}
       />
     </div>
   );

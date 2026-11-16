@@ -287,7 +287,7 @@ class DynamicPreloadRegistry {
         name: 'Graph Controls & Atmospheric Panels',
         friendlyMessage: 'Menyiapkan bilah pengaturan kamera & efek graf...',
         category: 'graph',
-        loader: () => import('@/domains/graph/components/GraphWorkspaceControls'),
+        loader: () => import('@/domains/graph/components/FloatingDock/GraphFloatingDock'),
       },
 
       // --- ASSETS & TYPOGRAPHY WARMUP ---

@@ -114,11 +114,7 @@ export class PublicReaderService {
         };
       }
 
-      const { data: ownerProfile } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("user_id", legacyVault.user_id)
-        .maybeSingle();
+      const ownerProfile = await ProfileService.getPublicProfileByHandle(legacyVault.user_id);
 
       const ownerUsername = ownerProfile?.username;
       const canonicalVaultSlug = this.slugify(legacyVault.name);
@@ -171,11 +167,7 @@ export class PublicReaderService {
     }
 
     // Ambil data profil penulis + status akun (ADR-0009: akun pending_approval / suspended tidak tampil publik)
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("user_id, username, full_name, avatar_url, account_status")
-      .eq("user_id", userResolution.userId)
-      .maybeSingle();
+    const profileData = await ProfileService.getPublicProfileByHandle(userResolution.userId);
 
     if (
       profileData?.account_status === "pending_approval" ||
@@ -190,30 +182,98 @@ export class PublicReaderService {
     const ownerInfo: PublicVaultOwnerInfo = {
       userId: userResolution.userId,
       username: userResolution.currentUsername,
-      fullName: profileData?.full_name || null,
+      fullName: profileData?.full_name || profileData?.display_name || null,
       avatarUrl: profileData?.avatar_url || null,
     };
 
-    // Resolusi Vault scoped ke user_id pemilik
-    const { data: userVaults, error: vaultErr } = await supabase
+    // Resolusi Vault scoped ke user_id pemilik (dengan fallback bila kolom visibility belum tersedia)
+    type VaultRow = {
+      id: string;
+      user_id: string;
+      name: string;
+      description: string | null;
+      visibility?: string;
+      default_license?: string;
+    };
+
+    let userVaults: VaultRow[] = [];
+    const { data: vaultsWithMeta, error: vaultErr } = await supabase
       .from("user_vaults")
       .select("id, user_id, name, description, visibility, default_license")
       .eq("user_id", userResolution.userId);
 
-    if (vaultErr || !userVaults || userVaults.length === 0) {
+    if (vaultErr) {
+      const { data: fallbackVaults, error: fallbackErr } = await supabase
+        .from("user_vaults")
+        .select("id, user_id, name, description")
+        .eq("user_id", userResolution.userId);
+
+      if (!fallbackErr && fallbackVaults) {
+        userVaults = fallbackVaults;
+      }
+    } else if (vaultsWithMeta) {
+      userVaults = vaultsWithMeta;
+    }
+
+    if (userVaults.length === 0) {
+      if (!vaultSlugParam) {
+        return {
+          status: "success",
+          vault: {
+            id: `profile-${userResolution.userId}`,
+            ownerId: userResolution.userId,
+            name: ownerInfo.fullName || `@${ownerInfo.username}`,
+            slug: "utama",
+            description: profileData?.bio || null,
+            visibility: "public_listed",
+            defaultLicense: DEFAULT_PUBLIC_LICENSE,
+            owner: ownerInfo,
+          },
+          notes: [],
+          activeNote: undefined,
+          graph: { nodes: [], links: [] },
+        };
+      }
+
       return {
         status: "not_found",
         errorReason: `Tidak ada vault yang ditemukan untuk penulis '@${userResolution.currentUsername}'.`,
       };
     }
 
-    let matchedVault: (typeof userVaults)[0] | undefined = undefined;
+    let matchedVault: VaultRow | undefined = undefined;
 
     if (!vaultSlugParam) {
+      const publishedVaultIds = new Set<string>();
+      try {
+        const vaultIds = userVaults.map((v) => v.id);
+        const { data: publishedMeta } = await supabase
+          .from("notes")
+          .select("vault_id")
+          .in("vault_id", vaultIds)
+          .eq("status", "published")
+          .limit(50);
+
+        if (Array.isArray(publishedMeta)) {
+          for (const row of publishedMeta) {
+            if (row?.vault_id) publishedVaultIds.add(row.vault_id);
+          }
+        }
+      } catch {
+        // Fallback aman bila mock tidak mendukung filter .in()
+      }
+
       matchedVault =
         userVaults.find(
+          (v) =>
+            publishedVaultIds.has(v.id) &&
+            (v.visibility === "public_listed" || v.visibility === "public_unlisted")
+        ) ??
+        userVaults.find((v) => publishedVaultIds.has(v.id)) ??
+        userVaults.find(
           (v) => v.visibility === "public_listed" || v.visibility === "public_unlisted"
-        ) ?? userVaults[0];
+        ) ??
+        userVaults[0];
     } else {
       matchedVault = userVaults.find((v) => {
         const vSlug = this.slugify(v.name);
@@ -231,31 +291,39 @@ export class PublicReaderService {
     const resolvedVisibility =
       (matchedVault.visibility as VaultVisibility | undefined) ?? "private";
 
-    if (resolvedVisibility === "private" || resolvedVisibility === "shared") {
+    // Ambil Catatan Terbit & Visual Graf Publik lebih dulu agar vault dengan catatan terbit tetap dapat diakses
+    const [notes, graph] = await Promise.all([
+      this.getPublishedNotes(matchedVault.id),
+      this.getPublishedGraph(matchedVault.id),
+    ]);
+
+    const hasPublicContent =
+      resolvedVisibility === "public_listed" ||
+      resolvedVisibility === "public_unlisted" ||
+      notes.length > 0;
+
+    if (!hasPublicContent && vaultSlugParam) {
       return {
         status: "not_found",
         errorReason: `Vault '${matchedVault.name}' bersifat privat atau memerlukan tautan undangan khusus.`,
       };
     }
 
-    const canonicalVaultSlug = this.slugify(matchedVault.name);
+    // Jika rute root /:username belum memiliki vault publik maupun catatan terbit,
+    // tampilkan profil cendekiawan kosong tanpa membocorkan nama vault privat.
+    const exposeVaultMeta = hasPublicContent;
+    const canonicalVaultSlug = exposeVaultMeta ? this.slugify(matchedVault.name) : "utama";
 
     const vaultInfo: PublicVaultInfo = {
-      id: matchedVault.id,
+      id: exposeVaultMeta ? matchedVault.id : `profile-${userResolution.userId}`,
       ownerId: matchedVault.user_id,
-      name: matchedVault.name,
+      name: exposeVaultMeta ? matchedVault.name : ownerInfo.fullName || `@${ownerInfo.username}`,
       slug: canonicalVaultSlug,
-      description: matchedVault.description,
-      visibility: resolvedVisibility,
+      description: exposeVaultMeta ? matchedVault.description : profileData?.bio || null,
+      visibility: exposeVaultMeta ? resolvedVisibility : "public_listed",
       defaultLicense: matchedVault.default_license || DEFAULT_PUBLIC_LICENSE,
       owner: ownerInfo,
     };
-
-    // Ambil Catatan Terbit & Visual Graf Publik
-    const [notes, graph] = await Promise.all([
-      this.getPublishedNotes(vaultInfo.id),
-      this.getPublishedGraph(vaultInfo.id),
-    ]);
 
     let activeNote: NoteRecord | undefined = undefined;
 

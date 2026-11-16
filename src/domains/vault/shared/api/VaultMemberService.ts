@@ -9,6 +9,13 @@ export interface UserSearchResult {
   avatar_url: string | null;
 }
 
+function isMissingRpcError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  if (error.code === "PGRST202" || error.code === "42883") return true;
+  const msg = error.message || "";
+  return /could not find the function|does not exist/i.test(msg);
+}
+
 export class VaultMemberService {
   /**
    * Mengambil daftar seluruh anggota vault, termasuk Pemilik Vault (Owner) di urutan pertama
@@ -104,14 +111,49 @@ export class VaultMemberService {
 
   /**
    * Pencarian Akun Cerdas (Auto-Suggestion)
-   * Bebas error PostgreSQL UUID type casting
+   * Menggunakan RPC SECURITY DEFINER terisolasi agar pencarian kolaborator tetap aman
+   * setelah RLS tabel profiles dikunci; menyertakan fallback jika RPC belum terdeploy.
    */
   static async searchUsers(query: string, excludeUserIds: string[] = []): Promise<UserSearchResult[]> {
     const cleanQuery = query.trim().toLowerCase();
     if (!cleanQuery || cleanQuery.length < 2) return [];
 
+    const excludeSet = new Set(excludeUserIds);
+    const mapRows = (
+      rows: Array<{
+        user_id: string;
+        email: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      }>
+    ): UserSearchResult[] =>
+      rows
+        .filter((u) => !excludeSet.has(u.user_id))
+        .map((u) => ({
+          id: u.user_id,
+          email: u.email,
+          display_name: u.display_name,
+          avatar_url: u.avatar_url,
+        }));
+
     try {
-      // Cek apakah query adalah UUID valid
+      if (typeof supabase.rpc === "function") {
+        const { data: rpcData, error: rpcError } = await supabase.rpc(
+          "search_collaborator_profiles",
+          { p_query: cleanQuery }
+        );
+
+        if (!rpcError && Array.isArray(rpcData)) {
+          return mapRows(rpcData);
+        }
+
+        if (rpcError && !isMissingRpcError(rpcError)) {
+          console.warn("[VaultMemberService] Gagal mencari profil via RPC:", rpcError.message);
+          return [];
+        }
+      }
+
+      // Fallback sementara bila RPC migrasi belum dijalankan
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
 
       let queryBuilder = supabase
@@ -135,22 +177,14 @@ export class VaultMemberService {
         return [];
       }
 
-      const excludeSet = new Set(excludeUserIds);
-      return data
-        .filter((u) => !excludeSet.has(u.user_id))
-        .map((u) => ({
-          id: u.user_id,
-          email: u.email,
-          display_name: u.display_name,
-          avatar_url: u.avatar_url,
-        }));
+      return mapRows(data);
     } catch (err) {
       console.error("[VaultMemberService] Error pencarian user:", err);
       return [];
     }
   }
 
-    /**
+  /**
    * Mencari satu pengguna berdasarkan email eksak untuk kebutuhan undang anggota (invitation).
    */
   static async lookupUserByEmail(email: string): Promise<UserSearchResult | null> {
@@ -158,6 +192,29 @@ export class VaultMemberService {
     if (!cleanEmail) return null;
 
     try {
+      if (typeof supabase.rpc === "function") {
+        const { data: rpcData, error: rpcError } = await supabase.rpc(
+          "lookup_user_by_email",
+          { p_email: cleanEmail }
+        );
+
+        if (!rpcError) {
+          const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+          if (!row) return null;
+          return {
+            id: row.user_id,
+            email: row.email,
+            display_name: row.display_name,
+            avatar_url: row.avatar_url,
+          };
+        }
+
+        if (!isMissingRpcError(rpcError)) {
+          console.warn("[VaultMemberService] Gagal lookup email via RPC:", rpcError.message);
+          return null;
+        }
+      }
+
       const { data, error } = await supabase
         .from("profiles")
         .select("user_id, email, display_name, avatar_url")

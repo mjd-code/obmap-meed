@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { SettingGroup } from "@/domains/graph/components/GraphWorkspaceControls";
+import type { SettingGroup } from "@/domains/graph/components/GraphSettingContent";
 
 export type GraphControlsDisplayMode = "horizontal_toolbar" | "gear_button";
 

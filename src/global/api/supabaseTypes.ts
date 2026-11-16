@@ -478,6 +478,7 @@ export type Database = {
           is_encrypted: boolean
           last_synced_at: string | null
           name: string
+          slug?: string
           updated_at: string
           user_id: string
           visibility: string
@@ -494,6 +495,7 @@ export type Database = {
           is_encrypted?: boolean
           last_synced_at?: string | null
           name: string
+          slug?: string
           updated_at?: string
           user_id: string
           visibility?: string
@@ -510,6 +512,7 @@ export type Database = {
           is_encrypted?: boolean
           last_synced_at?: string | null
           name?: string
+          slug?: string
           updated_at?: string
           user_id?: string
           visibility?: string
@@ -925,6 +928,27 @@ export type Database = {
         }
         Returns: boolean
       }
+      can_read_vault: {
+        Args: { p_user_id: string; p_vault_id: string }
+        Returns: boolean
+      }
+      get_public_profile_by_handle: {
+        Args: { p_handle: string }
+        Returns: {
+          account_status: string
+          avatar_url: string | null
+          bio: string | null
+          display_name: string | null
+          full_name: string | null
+          is_public: boolean
+          user_id: string
+          username: string | null
+        }[]
+      }
+      get_vault_role: {
+        Args: { p_user_id: string; p_vault_id: string }
+        Returns: string | null
+      }
       has_vault_permission: {
         Args: {
           _required_role: Database["public"]["Enums"]["vault_member_role"]
@@ -934,6 +958,37 @@ export type Database = {
       }
       is_superadmin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      lookup_user_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          avatar_url: string | null
+          display_name: string | null
+          email: string | null
+          user_id: string
+        }[]
+      }
+      resolve_username_redirect: {
+        Args: { p_handle: string }
+        Returns: {
+          current_username: string | null
+          expires_at: string
+          old_username: string
+          user_id: string
+        }[]
+      }
+      search_collaborator_profiles: {
+        Args: { p_query: string }
+        Returns: {
+          avatar_url: string | null
+          display_name: string | null
+          email: string | null
+          user_id: string
+        }[]
+      }
+      shares_vault_with: {
+        Args: { p_target_user_id: string }
         Returns: boolean
       }
     }

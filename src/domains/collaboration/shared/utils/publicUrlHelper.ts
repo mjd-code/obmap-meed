@@ -1,4 +1,5 @@
 import { PublicReaderService } from "@/domains/community/shared/api/PublicReaderService";
+import { ProfileService } from "@/domains/settings/shared/api/ProfileService";
 import { supabase } from "@/global/api/supabaseClient";
 
 /**
@@ -18,12 +19,8 @@ export async function getPublicNoteUrl(vaultId: string, noteSlug: string): Promi
       return `/${vaultId}/${PublicReaderService.slugify(noteSlug)}`;
     }
 
-    // 2. Ambil username pemilik vault
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("user_id", vault.user_id)
-      .maybeSingle();
+    // 2. Ambil username pemilik vault melalui RPC anon-safe
+    const profile = await ProfileService.getPublicProfileByHandle(vault.user_id);
 
     const username = profile?.username;
     // Slug vault diturunkan secara kanonikal dari nama vault

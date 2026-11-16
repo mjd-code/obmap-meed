@@ -43,7 +43,7 @@ export function GraphCanvasUtilityDock({
   return (
     <div
       className={cn(
-        "pointer-events-auto absolute top-16 right-3 z-30 rounded-lg border border-border/70 bg-card/90 p-1 shadow-lg shadow-black/15 backdrop-blur-md sm:top-16 sm:right-4",
+        "pointer-events-auto absolute bottom-3 right-3 z-30 rounded-lg border border-border/70 bg-card/90 p-1 shadow-lg shadow-black/15 backdrop-blur-md sm:bottom-4 sm:right-4",
         isVertical ? "flex flex-col items-center gap-1" : "flex items-center gap-1",
         className,
       )}
@@ -71,7 +71,7 @@ export function GraphCanvasUtilityDock({
           </PopoverTrigger>
 
           <PopoverContent
-            align={isVertical ? "start" : "end"}
+            align="end"
             side={popoverSide}
             sideOffset={8}
             className="w-56 p-2 rounded-lg border-border/80 bg-popover/95 backdrop-blur-md shadow-xl"
@@ -106,7 +106,7 @@ export function GraphCanvasUtilityDock({
         </PopoverTrigger>
 
           <PopoverContent
-            align={isVertical ? "start" : "end"}
+            align="end"
             side={popoverSide}
             sideOffset={8}
             style={{ width: `${panelWidth}px`, height: `${panelHeight}px` }}

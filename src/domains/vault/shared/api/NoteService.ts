@@ -79,14 +79,26 @@ export class NoteService {
       .maybeSingle();
 
     if (!existing) {
+      const nowIso = new Date().toISOString();
       const { error: insertError } = await supabase.from("user_vaults").insert({
         id: targetVaultId,
         user_id: userId,
         name: vaultName,
-        updated_at: new Date().toISOString(),
+        visibility: "public_listed",
+        updated_at: nowIso,
       });
 
-      if (insertError && !insertError.message.includes("duplicate key")) {
+      if (insertError && /column .*visibility.* does not exist/i.test(insertError.message || "")) {
+        const { error: fallbackInsertErr } = await supabase.from("user_vaults").insert({
+          id: targetVaultId,
+          user_id: userId,
+          name: vaultName,
+          updated_at: nowIso,
+        });
+        if (fallbackInsertErr && !fallbackInsertErr.message.includes("duplicate key")) {
+          console.warn("[NoteService] ensureVaultRegistered notice:", fallbackInsertErr.message);
+        }
+      } else if (insertError && !insertError.message.includes("duplicate key")) {
         console.warn("[NoteService] ensureVaultRegistered notice:", insertError.message);
       }
     }
@@ -183,6 +195,20 @@ export class NoteService {
 
     const targetStatus = input.status || "published";
     const nowIso = new Date().toISOString();
+
+    // Promosikan visibilitas vault dari 'private' ke 'public_listed' saat catatan diterbitkan
+    // agar rute publik /:username dan /@:username langsung dapat mengaksesnya.
+    if (targetStatus === "published") {
+      try {
+        await supabase
+          .from("user_vaults")
+          .update({ visibility: "public_listed", updated_at: nowIso })
+          .eq("id", input.vaultId)
+          .eq("visibility", "private");
+      } catch {
+        // Abaikan jika kolom visibility belum tersedia pada skema lama
+      }
+    }
 
     // 1. Cari apakah catatan sudah terdaftar sebelumnya di database
     const existing = await this.findNoteInVault(input.vaultId, input.nodeId, input.title);

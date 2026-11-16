@@ -261,7 +261,11 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
           {/* Breadcrumb Penulis & Vault */}
           <div className="flex items-center gap-2 text-xs md:text-sm font-semibold min-w-0">
             <Link
-              to={`/${currentUsername}/${currentVaultSlug}`}
+              to={
+                vaultInfo.id.startsWith("profile-")
+                  ? `/${currentUsername}`
+                  : `/${currentUsername}/${currentVaultSlug}`
+              }
               className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0"
             >
               <Avatar className="w-6 h-6 border border-border">
@@ -475,6 +479,39 @@ export const PublicReader: React.FC<PublicReaderProps> = ({ mode = "reader" }) =
                   />
                 </article>
               )
+            ) : publishedNotes.length === 0 ? (
+              <div className="max-w-lg mx-auto my-12 p-6 rounded-2xl border border-border bg-card text-center space-y-4 shadow-sm">
+                <Avatar className="w-16 h-16 mx-auto border border-border">
+                  {vaultInfo.owner.avatarUrl && <AvatarImage src={vaultInfo.owner.avatarUrl} />}
+                  <AvatarFallback className="text-lg bg-primary/10 text-primary font-bold">
+                    {currentUsername.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold text-foreground">
+                    {vaultInfo.owner.fullName || vaultInfo.name}
+                  </h2>
+                  <p className="text-xs font-mono text-muted-foreground">@{currentUsername}</p>
+                </div>
+                {vaultInfo.description && (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {vaultInfo.description}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground pt-2 border-t border-border/60">
+                  Belum ada dokumen publik yang diterbitkan pada ruang kerja ini.
+                </p>
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <Link to="/explore">
+                    <Button variant="outline" size="sm">
+                      Jelajahi Komunitas
+                    </Button>
+                  </Link>
+                  <Link to="/app">
+                    <Button size="sm">Buka Workspace</Button>
+                  </Link>
+                </div>
+              </div>
             ) : (
               <div className="text-center py-20 text-muted-foreground text-xs">
                 Pilih dokumen dari menu samping untuk mulai membaca.
