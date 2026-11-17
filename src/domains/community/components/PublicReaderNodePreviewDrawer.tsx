@@ -114,7 +114,7 @@ export const PublicNodePreviewDrawer: React.FC<PublicNodePreviewDrawerProps> = (
       </div>
 
       {/* 2. Scrollable Body Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 text-xs [scrollbar-width:thin]">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 text-xs scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
         {/* Cuplikan Teks */}
         <div className="space-y-1.5">
           <span className="vk-text-2xs font-semibold text-muted-foreground uppercase tracking-wider">

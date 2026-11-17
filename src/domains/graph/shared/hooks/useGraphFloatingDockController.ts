@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CanvasMode, LayoutMode, MindmapOrientation, SkeletonPresetId } from '@/domains/graph/shared/utils/graph.types';
 import { isDeterministicLayout } from '@/domains/graph/shared/utils/layoutCategory';
-import { useGraphStore, useNodeStore } from '@/global/stores';
+import { useGraphStore, useNodeStore, useUIStore } from '@/global/stores';
 import { useGraphInteractionStore } from '@/domains/graph/shared/stores/useGraphInteractionStore';
 import { useLeafGraphConfig, useLeafGraphConfigApi } from '@/domains/graph/shared/stores/useLeafGraphConfigStore';
 import type {
@@ -18,7 +18,7 @@ import type { LinkStyleType } from '@/domains/graph/components/GraphAppearancePa
 import { useWorkspaceStore } from '@/domains/workspace/shared/stores/useWorkspaceStore';
 
 export type DockClusterId = 'layout' | 'filter' | 'appearance' | 'physics' | 'zoom' | 'more';
-export type QuickCanvasMode = 'mindmap' | 'graph' | 'outline';
+export type QuickCanvasMode = 'mindmap' | 'graph';
 export type AppearanceSubTab = 'presets' | 'atmosphere' | 'metrics';
 export type QuickStructureValue =
   | 'mindmap-balanced'
@@ -37,10 +37,6 @@ export interface UseGraphFloatingDockParams {
   onLayoutChange: (layout: LayoutMode) => void;
   orientation: MindmapOrientation;
   onOrientationChange: (orientation: MindmapOrientation) => void;
-  isOutlineMode?: boolean;
-  onToggleOutlineMode?: (active: boolean) => void;
-  isInspectorOpen?: boolean;
-  onToggleInspector?: () => void;
   collapsedCount?: number;
   onExpandAll?: () => void;
   focused?: boolean;
@@ -106,14 +102,11 @@ export function useGraphFloatingDockController(params: UseGraphFloatingDockParam
   const config = leafApi && leafConfig ? leafConfig : globalConfig;
 
   const nodes = useNodeStore((s) => s.nodes);
-  const selectedNode = useNodeStore((s) => s.selectedNode);
   const ix = useGraphInteractionStore();
 
   const canvasMode = params.canvasMode ?? ix.canvasMode;
   const layoutMode = params.layout ?? ix.layoutMode;
   const orientation = params.orientation ?? ix.orientation;
-  const isOutlineMode = params.isOutlineMode ?? false;
-  const isInspectorOpen = params.isInspectorOpen ?? false;
   const collapsedCount = params.collapsedCount ?? ix.collapsedIds.length;
   const focused = params.focused ?? Boolean(ix.focusedRootId);
   const search = params.search ?? '';
@@ -122,9 +115,8 @@ export function useGraphFloatingDockController(params: UseGraphFloatingDockParam
   const contentFilter = params.contentFilter ?? '';
   const tagFilter = params.tagFilter ?? '';
 
-  const activeCanvasTab: QuickCanvasMode = isOutlineMode ? 'outline' : canvasMode;
-  const hasSelectedFileNote = Boolean(selectedNode && selectedNode.type === 'file');
-  const isDeterministic = isOutlineMode || canvasMode === 'mindmap' || isDeterministicLayout(layoutMode);
+  const activeCanvasTab: QuickCanvasMode = canvasMode;
+  const isDeterministic = canvasMode === 'mindmap' || isDeterministicLayout(layoutMode);
 
   const currentStructure: QuickStructureValue = useMemo(() => {
     if (layoutMode === 'free-force' || canvasMode === 'graph') return 'free-force';
@@ -188,20 +180,12 @@ export function useGraphFloatingDockController(params: UseGraphFloatingDockParam
     handleLayoutChange: applyLayout,
     handleOrientationChange: applyOrientation,
     switchCanvasTab: (tab: QuickCanvasMode) => {
-      if (tab === 'outline') {
-        applyMode('mindmap');
-        applyLayout('mindmap');
-        params.onToggleOutlineMode?.(true);
-        return;
-      }
-      params.onToggleOutlineMode?.(false);
       applyMode(tab);
       if (tab === 'graph' && layoutMode !== 'free-force') applyLayout('free-force');
       else if (tab === 'mindmap' && layoutMode === 'free-force') applyLayout('mindmap');
     },
     selectStructure: (value: QuickStructureValue) => {
       if (value === 'free-force') {
-        params.onToggleOutlineMode?.(false);
         applyMode('graph');
         applyLayout('free-force');
         return;
@@ -240,10 +224,6 @@ export function useGraphFloatingDockController(params: UseGraphFloatingDockParam
       else ix.setFocusedRoot(null);
     },
     smartZoom: (action: 'fit' | 'selection' | 'reset') => params.onSmartZoom?.(action),
-    toggleInspector: () => {
-      params.onToggleInspector?.();
-      if (typeof window !== 'undefined' && window.innerWidth < 768) setActiveCluster(null);
-    },
     openWorkspaceGraphSettings: () => {
       setActiveCluster(null);
       useWorkspaceStore.getState().openView({
@@ -251,6 +231,9 @@ export function useGraphFloatingDockController(params: UseGraphFloatingDockParam
         title: 'Graph Engine',
         settingsSection: 'graph-engine',
       });
+      if (typeof window === 'undefined' || window.innerWidth >= 768) {
+        useUIStore.getState().setRightSidebarOpen(true);
+      }
     },
   };
 
@@ -271,10 +254,7 @@ export function useGraphFloatingDockController(params: UseGraphFloatingDockParam
     currentStructure,
     skeletonList,
     activeSkeleton,
-    hasSelectedFileNote,
     isDeterministic,
-    isOutlineMode,
-    isInspectorOpen,
     collapsedCount,
     focused,
     filterCount,

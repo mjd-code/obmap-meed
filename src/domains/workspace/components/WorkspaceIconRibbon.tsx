@@ -7,6 +7,7 @@ export type RibbonTool = "files" | "vcs" | "settings";
 
 interface IconRibbonProps {
   activeTool: RibbonTool | null;
+  rightSidebarOpen?: boolean;
   onToolSelect: (tool: RibbonTool) => void;
   onOpenGraph?: () => void;
   onOpenMindmap?: () => void;
@@ -15,6 +16,7 @@ interface IconRibbonProps {
 
 export function IconRibbon({
   activeTool,
+  rightSidebarOpen = false,
   onToolSelect,
   onOpenGraph,
   onOpenMindmap,
@@ -112,10 +114,12 @@ export function IconRibbon({
             "w-7 h-7 flex items-center justify-center rounded-md transition-all duration-150",
             "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-muted-foreground",
             "focus-visible:ring-1 focus-visible:ring-ring",
-            activeTool === "settings" && "bg-sidebar-accent text-primary font-medium shadow-xs",
+            activeTool === "settings" || rightSidebarOpen
+              ? "bg-sidebar-accent text-primary font-medium shadow-xs"
+              : "",
           )}
           aria-label="Settings"
-          aria-pressed={activeTool === "settings"}
+          aria-pressed={activeTool === "settings" || rightSidebarOpen}
         >
           <Settings2 className="w-3.5 h-3.5" />
         </Button>

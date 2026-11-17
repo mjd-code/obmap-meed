@@ -34,7 +34,7 @@ const CLUSTER_ITEMS: DockClusterMeta[] = [
   { id: 'filter', label: 'Search & Filters', title: 'Pencarian & Filter', icon: Filter, widthClass: 'max-w-[348px]' },
   { id: 'appearance', label: 'Appearance & Living Canvas', title: 'Tampilan & Atmosfer', icon: Palette, widthClass: 'max-w-[368px]' },
   { id: 'physics', label: 'Engine & Physics', title: 'Fisika & Gaya', icon: Cpu, widthClass: 'max-w-[336px]' },
-  { id: 'zoom', label: 'Smart Zoom & Camera', title: 'Kamera & Inspector', icon: Maximize2, widthClass: 'max-w-[312px]' },
+  { id: 'zoom', label: 'Smart Zoom & Camera', title: 'Kamera & Zoom', icon: Maximize2, widthClass: 'max-w-[312px]' },
   { id: 'more', label: 'Templates & Settings', title: 'Template & Pengaturan', icon: MoreHorizontal, widthClass: 'max-w-[340px]' },
 ];
 
@@ -64,7 +64,6 @@ export function GraphFloatingDock({ className, ...controllerParams }: GraphFloat
           const Icon = item.icon;
           const isActive = ctrl.activeCluster === item.id;
           const showFilterBadge = item.id === 'filter' && ctrl.filterCount > 0;
-          const showInspectorDot = item.id === 'zoom' && ctrl.isInspectorOpen;
           const isPhysicsMuted = item.id === 'physics' && ctrl.isDeterministic;
 
           return (
@@ -88,7 +87,7 @@ export function GraphFloatingDock({ className, ...controllerParams }: GraphFloat
                 )}
               >
                 <Icon className={cn('h-3.5 w-3.5', item.id === 'appearance' && 'text-primary')} />
-                {(showFilterBadge || showInspectorDot) && (
+                {showFilterBadge && (
                   <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary ring-1 ring-background" />
                 )}
               </Button>
@@ -127,7 +126,7 @@ export function GraphFloatingDock({ className, ...controllerParams }: GraphFloat
             </Button>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto p-3 [scrollbar-width:thin]">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
             <GraphFloatingDockPopoverContent cluster={ctrl.activeCluster} ctrl={ctrl} />
           </div>
         </section>

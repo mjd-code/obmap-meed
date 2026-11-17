@@ -40,26 +40,56 @@ export function measureText(text: string, font: string): number {
   return width;
 }
 
-/** Wraps by word, then splits oversized single tokens by character. */
-export function wrapText(text: string, font: string, maxWidth: number, maxLines = 2): string[] {
+function truncateTokenToWidth(token: string, font: string, maxWidth: number): string {
+  let end = token.length;
+  while (end > 1 && measureText(`${token.slice(0, end)}…`, font) > maxWidth) {
+    end -= 1;
+  }
+  return end < token.length ? `${token.slice(0, Math.max(1, end))}…` : token;
+}
+
+/** Wraps by word; optionally truncates oversized single tokens with ellipsis instead of mid-word splitting. */
+export function wrapText(
+  text: string,
+  font: string,
+  maxWidth: number,
+  maxLines = 2,
+  breakOversizedWord = true,
+): string[] {
   const words = text.trim().split(/\s+/).filter(Boolean);
   if (!words.length) return [''];
   const lines: string[] = [];
   let current = '';
+  let truncatedEarly = false;
 
   const pushLine = (line: string) => {
     if (lines.length < maxLines) lines.push(line);
   };
 
-  for (const word of words) {
+  for (let i = 0; i < words.length; i += 1) {
+    const word = words[i];
     const candidate = current ? `${current} ${word}` : word;
     if (measureText(candidate, font) <= maxWidth) {
       current = candidate;
       continue;
     }
-    if (current) pushLine(current);
+    if (current) {
+      pushLine(current);
+      current = '';
+      if (lines.length >= maxLines) {
+        truncatedEarly = true;
+        break;
+      }
+    }
     if (measureText(word, font) <= maxWidth) {
       current = word;
+      continue;
+    }
+    if (!breakOversizedWord) {
+      pushLine(truncateTokenToWidth(word, font, maxWidth));
+      truncatedEarly = i < words.length - 1;
+      current = '';
+      if (lines.length >= maxLines) break;
       continue;
     }
     // Oversized token: split by character.
@@ -75,16 +105,25 @@ export function wrapText(text: string, font: string, maxWidth: number, maxLines 
     current = chunk;
     if (lines.length >= maxLines) break;
   }
-  if (current) pushLine(current);
+  if (current && lines.length < maxLines) pushLine(current);
+  else if (current) truncatedEarly = true;
 
   if (lines.length === maxLines) {
     const last = lines[maxLines - 1];
-    if (measureText(last, font) > maxWidth - 8 || words.join(' ') !== lines.join(' ')) {
-      let truncated = last;
-      while (truncated.length > 1 && measureText(`${truncated}…`, font) > maxWidth) {
-        truncated = truncated.slice(0, -1);
+    if (
+      truncatedEarly ||
+      measureText(last, font) > maxWidth - 8 ||
+      words.join(' ') !== lines.join(' ')
+    ) {
+      if (!last.endsWith('…')) {
+        let trimmed = last;
+        while (trimmed.length > 1 && measureText(`${trimmed}…`, font) > maxWidth) {
+          trimmed = trimmed.slice(0, -1);
+        }
+        if (truncatedEarly || words.join(' ') !== lines.join(' ')) {
+          lines[maxLines - 1] = `${trimmed}…`;
+        }
       }
-      if (words.join(' ') !== lines.join(' ')) lines[maxLines - 1] = `${truncated}…`;
     }
   }
   return lines.length ? lines : [''];

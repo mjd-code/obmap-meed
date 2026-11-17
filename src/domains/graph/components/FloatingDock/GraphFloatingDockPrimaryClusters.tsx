@@ -1,4 +1,4 @@
-import { FileCode2, GitBranch, Network, RotateCcw } from 'lucide-react';
+import { GitBranch, Network, RotateCcw } from 'lucide-react';
 import { Button } from '@/global/ui/button';
 import { Switch } from '@/global/ui/switch';
 import { cn } from '@/global/utils';
@@ -13,23 +13,11 @@ import type {
   AppearanceSubTab,
   GraphFloatingDockController,
   QuickCanvasMode,
-  QuickStructureValue,
 } from '@/domains/graph/shared/hooks/useGraphFloatingDockController';
 
 const MODE_OPTIONS: Array<{ id: QuickCanvasMode; label: string; icon: typeof GitBranch }> = [
   { id: 'mindmap', label: 'Mindmap', icon: GitBranch },
   { id: 'graph', label: 'Knowledge', icon: Network },
-  { id: 'outline', label: 'Note AST', icon: FileCode2 },
-];
-
-const STRUCTURE_OPTIONS: Array<{ value: QuickStructureValue; label: string }> = [
-  { value: 'mindmap-balanced', label: 'Mindmap (Seimbang)' },
-  { value: 'mindmap-radial', label: 'Mindmap (Radial)' },
-  { value: 'org-chart', label: 'Org Chart (Atas-Bawah)' },
-  { value: 'brace-map', label: 'Brace Map (Kiri-Kanan)' },
-  { value: 'timeline', label: 'Timeline' },
-  { value: 'fishbone', label: 'Fishbone' },
-  { value: 'free-force', label: 'Free Force Graph' },
 ];
 
 const DEPTH_OPTIONS: Array<{ level: 1 | 2 | 3 | 'all'; label: string }> = [
@@ -48,23 +36,20 @@ const APPEARANCE_TABS: Array<{ id: AppearanceSubTab; label: string }> = [
 export function DockLayoutCluster({ ctrl }: { ctrl: GraphFloatingDockController }) {
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-1 rounded-lg border border-border/60 bg-muted/40 p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-muted/40 p-1">
         {MODE_OPTIONS.map((opt) => {
           const Icon = opt.icon;
           const isActive = ctrl.activeCanvasTab === opt.id;
-          const disabled = opt.id === 'outline' && !ctrl.hasSelectedFileNote && !ctrl.isOutlineMode;
           return (
             <button
               key={opt.id}
               type="button"
-              disabled={disabled}
               onClick={() => ctrl.actions.switchCanvasTab(opt.id)}
-              title={disabled ? 'Pilih catatan Markdown dahulu untuk Note AST' : `Mode ${opt.label}`}
+              title={`Mode ${opt.label}`}
               aria-pressed={isActive}
               className={cn(
                 'inline-flex items-center justify-center gap-1 rounded-md px-2 py-1.5 vk-text-xs font-medium transition-colors',
                 isActive ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground',
-                disabled && 'opacity-40 cursor-not-allowed',
               )}
             >
               <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -78,17 +63,6 @@ export function DockLayoutCluster({ ctrl }: { ctrl: GraphFloatingDockController 
         <label htmlFor="dock-global-structure" className="vk-text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           Struktur & Depth Cabang
         </label>
-        <select
-          id="dock-global-structure"
-          aria-label="Struktur Graf Global"
-          value={ctrl.currentStructure}
-          onChange={(e) => ctrl.actions.selectStructure(e.target.value as QuickStructureValue)}
-          className="h-8 w-full rounded-lg border border-border/60 bg-background/80 px-2.5 vk-text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          {STRUCTURE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
         <div className="grid grid-cols-4 gap-1 rounded-lg border border-border/50 bg-muted/30 p-1">
           {DEPTH_OPTIONS.map((d) => (
             <button

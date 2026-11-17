@@ -9,12 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/global/ui/select";
-import { Type, Palette, Sparkles, GitBranch } from "lucide-react";
+import { Type } from "lucide-react";
 import type { NodeConfig, HierarchyColorConfig } from "@/domains/graph/shared/stores/useGraphStore";
 import { ColorPicker } from "@/domains/graph/components/GraphColorPicker";
-import { ColorEngineControls } from "@/domains/graph/components/GraphColorEngineControls";
 import { CollapsibleSection } from "@/domains/graph/components/GraphCollapsibleSection";
+import { GraphNodeColorSection } from "@/domains/graph/components/GraphNodeColorSection";
+import { GraphLabelPositionControl } from "@/domains/graph/components/GraphLabelPositionControl";
 import { GraphNodeShapeSection } from "@/domains/graph/components/GraphNodeShapeSection";
+import { useGraphEngineStore } from "@/domains/graph/shared/stores/useGraphEngineStore";
 
 export interface GraphNodeLabelSectionProps {
   config: NodeConfig;
@@ -32,89 +34,23 @@ export function GraphNodeLabelSection({
   onUpdate,
   onHierarchyUpdate,
 }: GraphNodeLabelSectionProps) {
+  const engineShowLabels = useGraphEngineStore((s) => s.showLabels);
+  const effectiveShowLabels = engineShowLabels && config.showLabels;
+  const applyShowLabels = (showLabels: boolean, labelBox: boolean) => {
+    if (showLabels && !useGraphEngineStore.getState().showLabels) {
+      useGraphEngineStore.getState().patch({ showLabels: true });
+    }
+    onUpdate({ showLabels, labelBox });
+  };
+
   return (
     <>
-      {/* Color Management */}
-      <CollapsibleSection
-        icon={<Palette className="w-4 h-4 text-primary" />}
-        title="Color Management"
-        defaultOpen={false}
-      >
-        <div className="p-3 rounded-lg bg-card border border-border">
-          <ColorEngineControls
-            hierarchy={hierarchy}
-            nodeConfig={config}
-            onHierarchyUpdate={onHierarchyUpdate}
-            onNodeConfigUpdate={onUpdate}
-          />
-        </div>
-
-        <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Auto-Color By</Label>
-            <Select
-              value={config.autoColorBy}
-              onValueChange={(autoColorBy: NodeConfig["autoColorBy"]) =>
-                onUpdate({ autoColorBy })
-              }
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-muted" />
-                    Manual Colors
-                  </div>
-                </SelectItem>
-                <SelectItem value="type">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" />
-                    Node Type (file/folder)
-                  </div>
-                </SelectItem>
-                <SelectItem value="depth">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" />
-                    Depth Level
-                  </div>
-                </SelectItem>
-                <SelectItem value="branch">
-                  <div className="flex items-center gap-2">
-                    <GitBranch className="w-3 h-3" />
-                    Branch (Inheritance)
-                  </div>
-                </SelectItem>
-                <SelectItem value="tags">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" />
-                    First Tag
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            <ColorPicker
-              label="Folder Color"
-              value={config.folderColor}
-              onChange={(color) => onUpdate({ folderColor: color })}
-            />
-            <ColorPicker
-              label="File Color"
-              value={config.fileColor}
-              onChange={(color) => onUpdate({ fileColor: color })}
-            />
-            <ColorPicker
-              label="Selected Color"
-              value={config.selectedColor}
-              onChange={(color) => onUpdate({ selectedColor: color })}
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
+      <GraphNodeColorSection
+        config={config}
+        hierarchy={hierarchy}
+        onUpdate={onUpdate}
+        onHierarchyUpdate={onHierarchyUpdate}
+      />
 
       {/* Labels Configuration */}
       <CollapsibleSection
@@ -123,14 +59,63 @@ export function GraphNodeLabelSection({
         defaultOpen={false}
       >
         <div className="space-y-4 p-3 rounded-lg bg-card border border-border">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Node Display Mode</Label>
+            <div className="grid grid-cols-3 gap-1 rounded-lg border border-border/60 bg-muted/40 p-1">
+              {[
+                {
+                  id: "nodes",
+                  label: "Only Node",
+                  active: !effectiveShowLabels,
+                  apply: () => applyShowLabels(false, false),
+                },
+                {
+                  id: "labels",
+                  label: "With Text",
+                  active: effectiveShowLabels && !config.labelBox,
+                  apply: () => applyShowLabels(true, false),
+                },
+                {
+                  id: "boxes",
+                  label: "With Label + Text",
+                  active: effectiveShowLabels && config.labelBox,
+                  apply: () => applyShowLabels(true, true),
+                },
+              ].map((mode) => (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={mode.apply}
+                  className={`py-1 px-1.5 vk-text-xs font-medium rounded transition-all truncate ${
+                    mode.active
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <GraphLabelPositionControl
+            value={config.labelPosition ?? "auto"}
+            onChange={(labelPosition) => onUpdate({ labelPosition })}
+          />
+
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-sm font-medium">Show Labels</Label>
               <p className="text-xs text-muted-foreground">Display node names</p>
             </div>
             <Switch
-              checked={config.showLabels}
-              onCheckedChange={(checked) => onUpdate({ showLabels: checked })}
+              checked={effectiveShowLabels}
+              onCheckedChange={(checked) => {
+                if (checked && !useGraphEngineStore.getState().showLabels) {
+                  useGraphEngineStore.getState().patch({ showLabels: true });
+                }
+                onUpdate({ showLabels: checked, ...(checked ? {} : { labelBox: false }) });
+              }}
             />
           </div>
 

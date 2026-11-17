@@ -85,7 +85,7 @@ export const FolderOverviewEditor: React.FC<FolderOverviewEditorProps> = ({
   };
 
   return (
-    <div className="w-full max-w-full min-w-0 flex flex-col gap-4 sm:gap-5 py-1 overflow-hidden">
+    <div className="w-full max-w-full min-w-0 flex flex-col gap-4 sm:gap-5 py-1 overflow-x-hidden">
       {/* Header Statistik & Deskripsi Folder */}
       <div className="w-full max-w-full min-w-0 rounded-lg border border-border/40 bg-muted/15 p-3 sm:p-3.5 space-y-2 sm:space-y-2.5 overflow-hidden">
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 vk-text-xs sm:text-xs">

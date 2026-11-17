@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/domains/auth/shared/hooks/useAuth';
 import { useGraphStore, useNodeStore, useVaultStore } from '@/global/stores';
 import { useLeafGraphConfig } from '@/domains/graph/shared/stores/useLeafGraphConfigStore';
@@ -21,13 +21,6 @@ import {
   loadVaultMindmapManifest,
   saveVaultMindmapManifest,
 } from '@/domains/graph/shared/utils/mindmapLayoutManifest';
-import {
-  addOutlineSubtopicInMarkdown,
-  deleteOutlineTopicInMarkdown,
-  parseMarkdownOutlineToMindmap,
-  reparentOutlineTopicInMarkdown,
-  toggleOutlineTaskInMarkdown,
-} from '@/domains/graph/shared/utils/markdownOutlineMindmapBridge';
 
 export function useGraphOrchestratorController(leafId: string, view?: ViewState) {
   const { user, session } = useAuth();
@@ -146,90 +139,23 @@ export function useGraphOrchestratorController(leafId: string, view?: ViewState)
   const [maxDepth, setMaxDepth] = useState(10);
   const [contentFilter, setContentFilter] = useState('');
   const [tagFilter, setTagFilter] = useState('');
-  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-
-  // In-Note Outline AST Mode state
-  const [isOutlineMode, setIsOutlineMode] = useState(false);
-  const [outlineNoteId, setOutlineNoteId] = useState<string | null>(null);
-  const [selectedOutlineNodeId, setSelectedOutlineNodeId] = useState<string | null>(null);
-
-  const activeOutlineNote = useMemo(() => {
-    if (outlineNoteId) {
-      const exact = nodes.find((n) => n.id === outlineNoteId && n.type === 'file');
-      if (exact) return exact;
-    }
-    if (selectedNode && selectedNode.type === 'file') return selectedNode;
-    return nodes.find((n) => n.type === 'file') ?? null;
-  }, [outlineNoteId, nodes, selectedNode]);
-
-  const handleToggleOutlineMode = useCallback(
-    (active: boolean) => {
-      if (active) {
-        const target =
-          selectedNode && selectedNode.type === 'file'
-            ? selectedNode
-            : activeOutlineNote;
-        if (!target) return;
-        setOutlineNoteId(target.id);
-        setSelectedOutlineNodeId(null);
-        setIsOutlineMode(true);
-      } else {
-        setIsOutlineMode(false);
-        setSelectedOutlineNodeId(null);
-      }
-    },
-    [selectedNode, activeOutlineNote],
-  );
-
-  const outlineProjection = useMemo(() => {
-    if (!isOutlineMode || !activeOutlineNote) return null;
-    return parseMarkdownOutlineToMindmap(
-      activeOutlineNote.id,
-      activeOutlineNote.name,
-      activeOutlineNote.content ?? '',
-    );
-  }, [isOutlineMode, activeOutlineNote]);
-
-  const effectiveGraphData = outlineProjection ? outlineProjection.graphData : vaultGraphData;
-  const effectiveSelectedNode = useMemo(() => {
-    if (!isOutlineMode || !outlineProjection) return selectedNode;
-    const list = outlineProjection.graphData.nodes;
-    return list.find((n) => n.id === selectedOutlineNodeId) ?? list[0] ?? null;
-  }, [isOutlineMode, outlineProjection, selectedOutlineNodeId, selectedNode]);
 
   const handleNodeSelect = useCallback(
     (node: Node | null) => {
-      if (isOutlineMode) {
-        setSelectedOutlineNodeId(node?.id ?? null);
-        return;
-      }
       setSelectedNode(node);
     },
-    [isOutlineMode, setSelectedNode],
+    [setSelectedNode],
   );
 
-  const handleUpdateOutlineContent = useCallback(
-    async (nextMarkdown: string) => {
-      if (!activeOutlineNote) return;
-      await updateNodeAction({ ...activeOutlineNote, content: nextMarkdown }, isAuthenticated);
+  const handleUpdateNodeContent = useCallback(
+    async (node: Node, nextContent: string) => {
+      await updateNodeAction({ ...node, content: nextContent }, isAuthenticated);
     },
-    [activeOutlineNote, isAuthenticated],
+    [isAuthenticated],
   );
 
   const handleAddSubNode = useCallback(
     async (parentId: string, type: 'file' | 'folder') => {
-      if (isOutlineMode && activeOutlineNote) {
-        const nextMd = addOutlineSubtopicInMarkdown(
-          activeOutlineNote.id,
-          activeOutlineNote.name,
-          activeOutlineNote.content ?? '',
-          parentId,
-          type === 'folder' ? 'Bagian Baru' : 'Poin Baru',
-          { asHeading: type === 'folder', asTask: false },
-        );
-        await updateNodeAction({ ...activeOutlineNote, content: nextMd }, isAuthenticated);
-        return;
-      }
       const parentNode = nodes.find((n) => n.id === parentId);
       if (!parentNode) return;
       if (parentNode.type !== 'folder') {
@@ -237,69 +163,27 @@ export function useGraphOrchestratorController(leafId: string, view?: ViewState)
       }
       await addNodeAction(type, isAuthenticated);
     },
-    [isOutlineMode, activeOutlineNote, nodes, isAuthenticated],
+    [nodes, isAuthenticated],
   );
 
   const handleNodeMove = useCallback(
     async (nodeId: string, newParentId: string | null) => {
-      if (isOutlineMode && activeOutlineNote && newParentId) {
-        const nextMd = reparentOutlineTopicInMarkdown(
-          activeOutlineNote.id,
-          activeOutlineNote.name,
-          activeOutlineNote.content ?? '',
-          nodeId,
-          newParentId,
-        );
-        await updateNodeAction({ ...activeOutlineNote, content: nextMd }, isAuthenticated);
-        return;
-      }
       await moveNodeAction(nodeId, newParentId, isAuthenticated);
     },
-    [isOutlineMode, activeOutlineNote, isAuthenticated],
+    [isAuthenticated],
   );
 
   const handleNodeDelete = useCallback(
     async (nodeId: string) => {
-      if (isOutlineMode && activeOutlineNote) {
-        const nextMd = deleteOutlineTopicInMarkdown(
-          activeOutlineNote.id,
-          activeOutlineNote.name,
-          activeOutlineNote.content ?? '',
-          nodeId,
-        );
-        await updateNodeAction({ ...activeOutlineNote, content: nextMd }, isAuthenticated);
-        return;
-      }
       await deleteNodeAction(nodeId, isAuthenticated);
     },
-    [isOutlineMode, activeOutlineNote, isAuthenticated],
+    [isAuthenticated],
   );
 
-  const handleToggleTask = useCallback(
-    async (topicId: string) => {
-      if (!isOutlineMode || !activeOutlineNote) return;
-      const nextMd = toggleOutlineTaskInMarkdown(
-        activeOutlineNote.id,
-        activeOutlineNote.name,
-        activeOutlineNote.content ?? '',
-        topicId,
-      );
-      await updateNodeAction({ ...activeOutlineNote, content: nextMd }, isAuthenticated);
-    },
-    [isOutlineMode, activeOutlineNote, isAuthenticated],
-  );
-
-  const handleOpen = useCallback(
-    (node: Node | null) => {
-      if (!node) return;
-      if (isOutlineMode && activeOutlineNote) {
-        useWorkspaceStore.getState().openFile(activeOutlineNote.id, activeOutlineNote.name);
-        return;
-      }
-      useWorkspaceStore.getState().openFile(node.id, node.name);
-    },
-    [isOutlineMode, activeOutlineNote],
-  );
+  const handleOpen = useCallback((node: Node | null) => {
+    if (!node) return;
+    useWorkspaceStore.getState().openFile(node.id, node.name);
+  }, []);
 
   const graphRef = useRef<GraphCanvasHandle>(null);
 
@@ -307,13 +191,8 @@ export function useGraphOrchestratorController(leafId: string, view?: ViewState)
     isAuthenticated,
     graphRef,
     graphConfig,
-    effectiveGraphData,
-    effectiveSelectedNode,
-    activeOutlineNote,
-    isOutlineMode,
-    isInspectorOpen,
-    setIsInspectorOpen,
-    toggleInspector: () => setIsInspectorOpen((prev) => !prev),
+    graphData: vaultGraphData,
+    selectedNode,
     layoutMode,
     setLayoutMode,
     orientation,
@@ -340,14 +219,12 @@ export function useGraphOrchestratorController(leafId: string, view?: ViewState)
     setContentFilter,
     tagFilter,
     setTagFilter,
-    handleToggleOutlineMode,
     handleNodeSelect,
     handleOpen,
     handleNodeMove,
     handleNodeDelete,
     handleAddSubNode,
-    handleToggleTask,
-    handleUpdateOutlineContent,
+    handleUpdateNodeContent,
     handleSmartZoom: (action: 'fit' | 'selection' | 'reset') => graphRef.current?.smartZoom(action),
   };
 }

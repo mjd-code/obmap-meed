@@ -55,7 +55,7 @@ export const NodePanel = ({
   if (!node) return null;
 
   return (
-    <div className="w-full h-full flex flex-col bg-background">
+    <div className="w-full h-full min-h-0 flex flex-col bg-background">
       <GraphNodePanelHeader
         node={node}
         content={ctrl.content}
@@ -79,13 +79,13 @@ export const NodePanel = ({
         onRefreshHistoryStatus={ctrl.refreshHistoryStatus}
       />
 
-      <ScrollArea className="flex-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent [&>[data-radix-scroll-area-viewport]>div]:!block [&>[data-radix-scroll-area-viewport]>div]:!w-full [&>[data-radix-scroll-area-viewport]>div]:!min-w-0 [&>[data-radix-scroll-area-viewport]>div]:!max-w-full">
+      <ScrollArea className="flex-1 min-h-0 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent [&>[data-radix-scroll-area-viewport]>div]:!block [&>[data-radix-scroll-area-viewport]>div]:!w-full [&>[data-radix-scroll-area-viewport]>div]:!min-w-0 [&>[data-radix-scroll-area-viewport]>div]:!max-w-full">
         <div
           className={cn(
-            "mx-auto transition-all duration-200 w-full min-w-0 max-w-full overflow-hidden",
+            "mx-auto transition-all duration-200 w-full min-w-0 max-w-full overflow-x-hidden",
             ctrl.layoutMode === "wide"
-              ? "max-w-none px-2.5 sm:px-6 py-2 sm:py-2"
-              : "max-w-3xl px-3 sm:px-6 py-2 sm:py-2",
+              ? "max-w-none px-2.5 sm:px-6 pt-2 pb-[45vh] lg:pb-16"
+              : "max-w-3xl px-3 sm:px-6 pt-2 pb-[45vh] lg:pb-16",
           )}
         >
           <div className="w-full min-w-0 max-w-full overflow-hidden">

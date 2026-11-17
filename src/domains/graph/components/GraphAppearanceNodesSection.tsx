@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ControlSliderRow } from "@/global/ui/ControlSliderRow";
 import { SectionHeaderWithReset } from "@/global/ui/SectionHeaderWithReset";
 import { ColorPicker } from "@/domains/graph/components/GraphColorPicker";
+import { GraphLabelPositionControl } from "@/domains/graph/components/GraphLabelPositionControl";
 import { Circle, Type, Shapes } from "lucide-react";
 import type { GraphConfigState, NodeConfig } from "@/domains/graph/shared/stores/useGraphStore";
 import {
@@ -166,23 +167,23 @@ export function GraphAppearanceNodesSection({
           title="Label & Tipografi"
           icon={Type}
           description="Penamaan, kotak teks, dan gaya font"
-          onReset={() =>
+          onReset={() => {
+            setLabelMode("labels");
             updateNodeConfig({
-              showLabels: true,
-              labelBox: false,
               labelSize: 11,
               labelFontStyle: "normal",
-            })
-          }
+              labelPosition: "auto",
+            });
+          }}
         />
 
         <div className="space-y-1.5">
           <span className="vk-text-xs font-medium text-muted-foreground">Mode Tampilan Label</span>
           <div className="grid grid-cols-3 gap-1 rounded-lg border border-border/60 bg-muted/40 p-1">
             {[
-              { id: "nodes", label: "Titik Saja" },
-              { id: "labels", label: "+ Label" },
-              { id: "boxes", label: "+ Kotak" },
+              { id: "nodes", label: "Only Node" },
+              { id: "labels", label: "With Text" },
+              { id: "boxes", label: "With Label + Text" },
             ].map((m) => (
               <button
                 key={m.id}
@@ -199,6 +200,12 @@ export function GraphAppearanceNodesSection({
             ))}
           </div>
         </div>
+
+        <GraphLabelPositionControl
+          compact
+          value={config.nodes.labelPosition ?? "auto"}
+          onChange={(labelPosition) => updateNodeConfig({ labelPosition })}
+        />
 
         <div className="space-y-2.5 pt-1">
           <div className="flex items-center justify-between gap-2">

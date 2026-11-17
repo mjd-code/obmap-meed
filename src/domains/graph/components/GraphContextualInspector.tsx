@@ -93,7 +93,7 @@ export function GraphContextualInspector({
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-4 [scrollbar-width:thin]">
+      <div className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
         {ctrl.selectedNode ? (
           <GraphInspectorTopicSection
             nodeName={ctrl.selectedNode.name}

@@ -46,7 +46,7 @@ export const MarkdownView = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 w-full min-w-0 max-w-full overflow-hidden",
+        "flex flex-col gap-2 w-full min-w-0 max-w-full overflow-x-hidden",
         className,
       )}
     >
@@ -78,7 +78,7 @@ export const MarkdownView = ({
       )}
 
       {ctrl.isReading ? (
-        <div className="prose-container min-h-[50vh] w-full min-w-0 max-w-full overflow-hidden">
+        <div className="prose-container min-h-[50vh] w-full min-w-0 max-w-full overflow-x-hidden">
           <FoldableMarkdown
             content={ctrl.cleanBody}
             definitionsMap={ctrl.definitionsMap}
@@ -88,7 +88,7 @@ export const MarkdownView = ({
           />
         </div>
       ) : (
-        <div className="relative w-full min-w-0 max-w-full overflow-hidden">
+        <div className="relative w-full min-w-0 max-w-full overflow-x-hidden">
           <div
             ref={ctrl.hostRef}
             className="min-h-[50vh] w-full min-w-0 max-w-full text-sm"

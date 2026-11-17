@@ -1,6 +1,6 @@
 /** Card node renderer with XMind TopicShapes, internal Flexbox attachments, LoD, and collapse toggle hit region. */
 
-import type { RenderNode } from '@/domains/graph/shared/utils/graph.types';
+import type { CanvasMode, LayoutMode, RenderNode } from '@/domains/graph/shared/utils/graph.types';
 import type { NodeConfig } from '@/domains/graph/shared/stores/useGraphStore';
 import {
   cardFont,
@@ -8,6 +8,13 @@ import {
   CARD_FONT_SIZE,
   resolveFooterLabels,
 } from '@/domains/graph/shared/utils/textLayout';
+import {
+  measureUnboxedText,
+  resolveNodeDotVisualRadius,
+  resolveNodeMarkerRadius,
+  resolveUnboxedAnchors,
+  resolveUnboxedLabelPosition,
+} from '@/domains/graph/shared/utils/unboxedNodeLayout';
 import { accentFor, dim, type GraphTheme } from '@/domains/graph/shared/utils/theme';
 import type { ResolvedNodePaint } from '@/domains/graph/shared/utils/cascadingStyleResolver';
 import {
@@ -43,24 +50,37 @@ export function formatColorForNode(format: FormatItemType, fallbackAccent: strin
   }
 }
 
-// Cache objek Path2D Lucide (viewBox 24x24)
-const ICON_PATHS = {
-  folder: new Path2D(
-    'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z',
-  ),
-  fileText: new Path2D(
-    'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8',
-  ),
-  image: new Path2D(
-    'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21',
-  ),
-  music: new Path2D(
-    'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
-  ),
-  video: new Path2D(
-    'M4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM16 13l5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5',
-  ),
-};
+// Lazy-cache objek Path2D Lucide (viewBox 24x24) agar aman saat diimpor di lingkungan non-browser
+let cachedIconPaths: {
+  folder: Path2D;
+  fileText: Path2D;
+  image: Path2D;
+  music: Path2D;
+  video: Path2D;
+} | null = null;
+
+function getIconPaths() {
+  if (!cachedIconPaths) {
+    cachedIconPaths = {
+      folder: new Path2D(
+        'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z',
+      ),
+      fileText: new Path2D(
+        'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8',
+      ),
+      image: new Path2D(
+        'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21',
+      ),
+      music: new Path2D(
+        'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+      ),
+      video: new Path2D(
+        'M4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM16 13l5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5',
+      ),
+    };
+  }
+  return cachedIconPaths;
+}
 
 function drawFormatIcon(
   ctx: CanvasRenderingContext2D,
@@ -72,16 +92,17 @@ function drawFormatIcon(
   _boxed: boolean,
   isSelected: boolean,
 ) {
+  const iconPaths = getIconPaths();
   const path =
     format === 'folder'
-      ? ICON_PATHS.folder
+      ? iconPaths.folder
       : format === 'image'
-        ? ICON_PATHS.image
+        ? iconPaths.image
         : format === 'audio'
-          ? ICON_PATHS.music
+          ? iconPaths.music
           : format === 'video'
-            ? ICON_PATHS.video
-            : ICON_PATHS.fileText;
+            ? iconPaths.video
+            : iconPaths.fileText;
 
   const iconSize = Math.max(12, radius * 2.2);
   const scale = iconSize / 24;
@@ -120,6 +141,9 @@ export interface DrawNodeState {
   dropTargetValid?: boolean;
   /** Optional 4-level resolved cascade paint from cascadingStyleResolver. */
   resolvedPaint?: ResolvedNodePaint;
+  /** Active layout & canvas mode for unboxed ('With Text') label orientation. */
+  layoutMode?: LayoutMode;
+  canvasMode?: CanvasMode;
 }
 
 /**
@@ -242,7 +266,7 @@ export function drawNode(
 
   const label = labelForNode(node, state.config);
   const fontSize = state.config.labelSize + (paint ? paint.fontSizeDelta : state.isRoot ? 2 : 0);
-  const boxed = state.config.labelBox;
+  const boxed = Boolean(state.showLabels && state.config.labelBox);
   const topicShape = boxed
     ? resolveEffectiveTopicShape(node, state.config, paint?.topicShape)
     : undefined;
@@ -261,13 +285,18 @@ export function drawNode(
     showTagPills,
   });
 
-  const depthScale = state.config.sizeByDepth
-    ? Math.max(0.45, 1 - node.depth * state.config.depthSizeInterval * 0.08)
-    : 1;
-  const markerRadius = Math.max(3, state.config.relSize * depthScale);
+  const markerRadius = resolveNodeMarkerRadius(node, state.config);
+  const visualDotRadius = resolveNodeDotVisualRadius(node, state.config);
+  const weight =
+    state.config.labelFontStyle.includes('bold')
+      ? '700'
+      : paint?.fontWeight ?? (state.isRoot ? '600' : '500');
+  const unboxedMetrics = !boxed
+    ? measureUnboxedText(label, { fontSize, fontWeight: weight, isRoot: state.isRoot })
+    : null;
 
-  const w = boxed ? layout.width : markerRadius * 2;
-  const h = boxed ? layout.height : markerRadius * 2;
+  const w = boxed ? layout.width : visualDotRadius * 2;
+  const h = boxed ? layout.height : visualDotRadius * 2;
   const innerLeft = x - w / 2 + (boxed ? layout.shapePaddingX / 2 : 0);
   const innerRight = x + w / 2 - (boxed ? layout.shapePaddingX / 2 : 0);
   const mainRowCenterY = boxed
@@ -277,8 +306,8 @@ export function drawNode(
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // Ambient elevation shadow on hover/selection
-  if (state.selected || state.hovered) {
+  // Ambient elevation shadow on hover/selection (only for boxed cards)
+  if (boxed && (state.selected || state.hovered)) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
     ctx.shadowBlur = 22;
   }
@@ -383,6 +412,35 @@ export function drawNode(
     ctx.restore();
   }
 
+  // Pre-compute unboxed text & collapse badge anchors so text never overlaps dots, branches, or toggle badges
+  const unboxedPlacement =
+    !boxed && state.showLabels
+      ? resolveUnboxedLabelPosition(
+          state.config.labelPosition,
+          state.layoutMode ?? 'mindmap',
+          state.canvasMode,
+        )
+      : 'beside';
+  let collapsedPillW = 22;
+  if (node.childCount > 0 && state.collapsed) {
+    ctx.font = cardFont(9, '700');
+    collapsedPillW = Math.max(22, ctx.measureText(`+${node.childCount}`).width + 10);
+  }
+  const unboxedAnchors =
+    !boxed && unboxedMetrics && state.showLabels
+      ? resolveUnboxedAnchors({
+          x,
+          y,
+          dotRadius: visualDotRadius,
+          textMetrics: unboxedMetrics,
+          placement: unboxedPlacement,
+          layoutMode: state.layoutMode ?? 'mindmap',
+          node,
+          collapsed: state.collapsed,
+          pillHalfW: collapsedPillW / 2,
+        })
+      : null;
+
   // Collapse toggle badge (— when open, +N pill when collapsed)
   if (node.childCount > 0) {
     ctx.save();
@@ -391,11 +449,14 @@ export function drawNode(
     if (state.collapsed) {
       const pillText = `+${node.childCount}`;
       ctx.font = cardFont(9, '700');
-      const textMetrics = ctx.measureText(pillText);
-      const pillW = Math.max(22, textMetrics.width + 10);
+      const pillW = collapsedPillW;
       const pillH = 15;
-      const tx = x + (boxed ? w / 2 : markerRadius) + pillW / 2 + 3;
-      const ty = y;
+      const tx = boxed
+        ? x + w / 2 + pillW / 2 + 3
+        : unboxedAnchors
+          ? unboxedAnchors.toggleX
+          : x + visualDotRadius + pillW / 2 + 3;
+      const ty = boxed ? y : unboxedAnchors ? unboxedAnchors.toggleY : y;
 
       ctx.fillStyle = theme.card;
       traceRoundedRectPath(ctx, tx - pillW / 2, ty - pillH / 2, pillW, pillH, pillH / 2);
@@ -417,8 +478,12 @@ export function drawNode(
       };
     } else {
       const r = 6;
-      const tx = x + (boxed ? w / 2 : markerRadius) + r + 2;
-      const ty = y;
+      const tx = boxed
+        ? x + w / 2 + r + 2
+        : unboxedAnchors
+          ? unboxedAnchors.toggleX
+          : x + visualDotRadius + r + 2;
+      const ty = boxed ? y : unboxedAnchors ? unboxedAnchors.toggleY : y;
 
       ctx.beginPath();
       ctx.arc(tx, ty, r, 0, Math.PI * 2);
@@ -466,29 +531,27 @@ export function drawNode(
   // Title text
   if (state.showLabels) {
     const italic = state.config.labelFontStyle.includes('italic') ? 'italic ' : '';
-    const weight =
-      state.config.labelFontStyle.includes('bold')
-        ? '700'
-        : paint?.fontWeight ?? (state.isRoot ? '600' : '500');
     ctx.font = `${italic}${cardFont(fontSize, weight)}`;
     ctx.fillStyle = useCascadePaint && paint ? paint.textColor : theme.label;
-    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    const lineHeight = layout.lineHeight;
-    const startY = mainRowCenterY - ((layout.lines.length - 1) * lineHeight) / 2;
 
-    let toggleOffset = 0;
-    if (!boxed && node.childCount > 0) {
-      toggleOffset = state.collapsed ? 28 : 18;
+    if (boxed) {
+      ctx.textAlign = 'left';
+      const lineHeight = layout.lineHeight;
+      const startY = mainRowCenterY - ((layout.lines.length - 1) * lineHeight) / 2;
+      layout.lines.forEach((line, index) => {
+        ctx.fillText(line, titleX, startY + index * lineHeight);
+      });
+    } else if (unboxedMetrics && unboxedAnchors) {
+      ctx.textAlign = unboxedAnchors.textAlign;
+      unboxedMetrics.lines.forEach((line, index) => {
+        ctx.fillText(
+          line,
+          unboxedAnchors.textX,
+          unboxedAnchors.firstLineCenterY + index * unboxedMetrics.lineHeight,
+        );
+      });
     }
-
-    const effectiveTextX = boxed
-      ? titleX
-      : markerX + markerRadius + 5 + toggleOffset;
-
-    layout.lines.forEach((line, index) => {
-      ctx.fillText(line, effectiveTextX, startY + index * lineHeight);
-    });
   }
 
   // Row 1 Right Slot & Child Count Badge
@@ -556,7 +619,7 @@ export function paintNodePointerArea(
 ) {
   if (config && !config.visible) return;
   const label = config ? labelForNode(node, config) : node.name;
-  const boxed = config ? config.labelBox : true;
+  const boxed = config ? Boolean(config.showLabels && config.labelBox) : true;
   const topicShape = boxed ? resolveEffectiveTopicShape(node, config) : undefined;
   const layout = cardLayout(label, {
     root: isRoot,
@@ -573,15 +636,29 @@ export function paintNodePointerArea(
   const x = node.x ?? 0;
   const y = node.y ?? 0;
   const extra = node.childCount > 0 ? 32 : 0;
-  const markerRadius = Math.max(3, config?.relSize ?? 6);
-  const width = boxed ? layout.width : markerRadius * 2;
-  const height = boxed ? layout.height : markerRadius * 2;
+  const visualDotRadius = resolveNodeDotVisualRadius(node, config);
   const detailScale = preserveDetail ? 1 / Math.max(0.05, zoom) : 1;
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(detailScale, detailScale);
   ctx.translate(-x, -y);
   ctx.fillStyle = color;
-  ctx.fillRect(x - width / 2, y - height / 2, width + extra, height);
+
+  if (boxed) {
+    ctx.fillRect(x - layout.width / 2, y - layout.height / 2, layout.width + extra, layout.height);
+  } else {
+    // Hit area covers ONLY the dot/icon circle (plus collapse badge), keeping text click-through to canvas
+    ctx.beginPath();
+    ctx.arc(x, y, visualDotRadius + 3, 0, Math.PI * 2);
+    ctx.fill();
+    if (node.childCount > 0 && node.toggle) {
+      const localTx = x + (node.toggle.x - x) / detailScale;
+      const localTy = y + (node.toggle.y - y) / detailScale;
+      const localTr = Math.max(8, node.toggle.r / detailScale);
+      ctx.beginPath();
+      ctx.arc(localTx, localTy, localTr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
   ctx.restore();
 }

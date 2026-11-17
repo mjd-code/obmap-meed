@@ -20,7 +20,9 @@ import {
 
 export function Ribbon() {
   const activeTool = useUIStore((s) => s.activeTool);
+  const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen);
   const setActiveTool = useUIStore((s) => s.setActiveTool);
+  const toggleRightSidebar = useUIStore((s) => s.toggleRightSidebar);
   const openView = useWorkspaceStore((s) => s.openView);
 
   const { user, session } = useAuth();
@@ -41,7 +43,7 @@ export function Ribbon() {
 
   const handleToolSelect = (tool: RibbonTool) => {
     if (tool === "settings") {
-      setActiveTool(activeTool === "settings" ? null : "settings");
+      toggleRightSidebar();
       return;
     }
     setActiveTool(activeTool === tool ? null : tool);
@@ -120,48 +122,51 @@ export function Ribbon() {
       nodeCount: item.graphService.getGraphData().nodes.length,
     }));
 
+  const leftTool =
+    activeTool === "files" || activeTool === "vcs" ? activeTool : null;
+
   return (
     <>
       <div className="hidden md:flex h-full shrink-0">
         <IconRibbon
-          activeTool={activeTool}
+          activeTool={leftTool}
+          rightSidebarOpen={rightSidebarOpen}
           onToolSelect={handleToolSelect}
           onOpenGraph={handleOpenGraph}
           onOpenMindmap={handleOpenMindmap}
         />
       </div>
 
-      {activeTool && (
-        <div className="relative md:static z-40">
-          <SidebarPanel
-            activeTool={activeTool}
-            onClose={() => setActiveTool(null)}
-            nodes={nodes}
-            selectedNode={selectedNode}
-            onNodeSelect={(node) => setSelectedNode(node)}
-            onNodeOpen={(node) => {
-              setSelectedNode(node);
-              openView({ type: "markdown", nodeId: node.id, title: node.name });
-              if (window.innerWidth < 768) {
-                setActiveTool(null);
-              }
-            }}
-            onNodeMove={(nodeId, newParentId) => moveNodeAction(nodeId, newParentId)}
-            onNodeDelete={(nodeId) => deleteNodeAction(nodeId, isAuthenticated)}
-            onNodeUpdate={(node) => updateNodeAction(node, isAuthenticated)}
-            onAddNode={(type) => addNodeAction(type)}
-            isVaultMode={!!currentVaultId}
-            vaultName={vaultName}
-            vaultLocation={vaultLocation}
-            currentVaultId={currentVaultId}
-            availableVaults={availableVaults}
-            onSwitchVault={(vaultId) => switchVaultAction(vaultId)}
-            onCloseVault={() => closeVaultAction()}
-            onImportComplete={(imported, updated) =>
-              importCompleteAction(imported, updated, isAuthenticated)
+      {leftTool && (
+        <SidebarPanel
+          side="left"
+          activeTool={leftTool}
+          onClose={() => setActiveTool(null)}
+          nodes={nodes}
+          selectedNode={selectedNode}
+          onNodeSelect={(node) => setSelectedNode(node)}
+          onNodeOpen={(node) => {
+            setSelectedNode(node);
+            openView({ type: "markdown", nodeId: node.id, title: node.name });
+            if (window.innerWidth < 768) {
+              setActiveTool(null);
             }
-          />
-        </div>
+          }}
+          onNodeMove={(nodeId, newParentId) => moveNodeAction(nodeId, newParentId)}
+          onNodeDelete={(nodeId) => deleteNodeAction(nodeId, isAuthenticated)}
+          onNodeUpdate={(node) => updateNodeAction(node, isAuthenticated)}
+          onAddNode={(type) => addNodeAction(type)}
+          isVaultMode={!!currentVaultId}
+          vaultName={vaultName}
+          vaultLocation={vaultLocation}
+          currentVaultId={currentVaultId}
+          availableVaults={availableVaults}
+          onSwitchVault={(vaultId) => switchVaultAction(vaultId)}
+          onCloseVault={() => closeVaultAction()}
+          onImportComplete={(imported, updated) =>
+            importCompleteAction(imported, updated, isAuthenticated)
+          }
+        />
       )}
     </>
   );

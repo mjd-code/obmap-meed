@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
+import { useUIStore } from "@/domains/workspace/shared/stores/useUIStore";
 
 describe("useWorkspaceStore — Settings Navigation Reactivity", () => {
   it("updates settingsSection and title when switching settings sections on an already-open settings tab", () => {
@@ -49,5 +50,38 @@ describe("useWorkspaceStore — Settings Navigation Reactivity", () => {
     const updatedLeaf = useWorkspaceStore.getState().getActiveLeaf();
     expect(updatedLeaf?.view.settingsSection).toBe("vaults");
     expect(updatedLeaf?.view.title).toBe("Settings: Vaults");
+  });
+
+  it("manages independent left/right sidebars and mutually excludes them on mobile screens", () => {
+    useUIStore.getState().reset();
+    const originalWidth = window.innerWidth;
+
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 390,
+    });
+
+    try {
+      useUIStore.getState().setActiveTool("files");
+      expect(useUIStore.getState().activeTool).toBe("files");
+      expect(useUIStore.getState().rightSidebarOpen).toBe(false);
+
+      // Opening right sidebar on mobile closes left sidebar
+      useUIStore.getState().toggleRightSidebar();
+      expect(useUIStore.getState().rightSidebarOpen).toBe(true);
+      expect(useUIStore.getState().activeTool).toBeNull();
+
+      // Opening left sidebar on mobile closes right sidebar
+      useUIStore.getState().setActiveTool("files");
+      expect(useUIStore.getState().activeTool).toBe("files");
+      expect(useUIStore.getState().rightSidebarOpen).toBe(false);
+    } finally {
+      Object.defineProperty(window, "innerWidth", {
+        configurable: true,
+        writable: true,
+        value: originalWidth,
+      });
+    }
   });
 });

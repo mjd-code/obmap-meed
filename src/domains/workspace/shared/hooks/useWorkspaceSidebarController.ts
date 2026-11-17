@@ -25,27 +25,28 @@ export interface SidebarNode {
 
 export interface SidebarPanelProps {
   activeTool: RibbonTool | null;
+  side?: "left" | "right";
   onClose: () => void;
-  nodes: SidebarNode[];
-  selectedNode: SidebarNode | null;
-  onNodeSelect: (node: SidebarNode) => void;
+  nodes?: SidebarNode[];
+  selectedNode?: SidebarNode | null;
+  onNodeSelect?: (node: SidebarNode) => void;
   onNodeOpen?: (node: SidebarNode) => void;
   onNodeMove?: (nodeId: string, newParentId: string | null) => void;
   onNodeDelete?: (nodeId: string) => Promise<void> | void;
   onNodeUpdate?: (node: SidebarNode) => Promise<void> | void;
   onAddNode?: (type: "folder" | "file") => void;
-  isVaultMode: boolean;
-  vaultName: string | null;
+  isVaultMode?: boolean;
+  vaultName?: string | null;
   vaultLocation?: "folder" | "cloud";
-  currentVaultId: string | null;
-  availableVaults: Array<{
+  currentVaultId?: string | null;
+  availableVaults?: Array<{
     id: string;
     name: string;
     location: "folder" | "cloud";
     nodeCount: number;
   }>;
-  onSwitchVault: (vaultId: string) => void;
-  onCloseVault: () => void;
+  onSwitchVault?: (vaultId: string) => void;
+  onCloseVault?: () => void;
   graphConfigTrigger?: React.ReactNode;
   onImportComplete?: (importedNodes: SidebarNode[], updatedNodes?: SidebarNode[]) => void;
 }
@@ -61,6 +62,7 @@ export const SIDEBAR_PANEL_TITLES: Record<RibbonTool, string> = {
 };
 
 interface UseWorkspaceSidebarControllerParams {
+  side?: "left" | "right";
   nodes: SidebarNode[];
   selectedNode: SidebarNode | null;
   onNodeSelect: (node: SidebarNode) => void;
@@ -73,6 +75,7 @@ interface UseWorkspaceSidebarControllerParams {
  * Encapsulates resize dragging, settings search/selection, folder expansion, and media uploads.
  */
 export function useWorkspaceSidebarController({
+  side = "left",
   nodes,
   selectedNode,
   onNodeSelect,
@@ -85,7 +88,7 @@ export function useWorkspaceSidebarController({
     return leaf?.view.type === "settings" ? leaf.view.settingsSection : undefined;
   });
   const setExpandedFolderIds = useUIStore((state) => state.setExpandedFolderIds);
-  const setActiveTool = useUIStore((state) => state.setActiveTool);
+  const setRightSidebarOpen = useUIStore((state) => state.setRightSidebarOpen);
   const { expandedFolders } = useFolderNavigation();
 
   const [lastSettingsSection, setLastSettingsSection] =
@@ -124,20 +127,23 @@ export function useWorkspaceSidebarController({
   }, [settingsSearch]);
 
   const handleOpenSettings = useCallback(() => {
-    setActiveTool("settings");
     openView({
       type: "settings",
       title: "Settings",
       settingsSection: activeSettingsSection,
     });
-  }, [setActiveTool, openView, activeSettingsSection]);
+    setRightSidebarOpen(true);
+  }, [setRightSidebarOpen, openView, activeSettingsSection]);
 
   const selectSettingsSection = useCallback(
     (section: SettingsSectionId, label: string) => {
       setLastSettingsSection(section);
       openView({ type: "settings", title: label, settingsSection: section });
+      if (typeof window !== "undefined" && window.innerWidth < 768) {
+        setRightSidebarOpen(false);
+      }
     },
-    [openView],
+    [openView, setRightSidebarOpen],
   );
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -149,7 +155,8 @@ export function useWorkspaceSidebarController({
     const handleResizeMove = (e: MouseEvent) => {
       if (!isResizing || !panelRef.current) return;
       const panelRect = panelRef.current.getBoundingClientRect();
-      const newWidth = e.clientX - panelRect.left;
+      const newWidth =
+        side === "right" ? panelRect.right - e.clientX : e.clientX - panelRect.left;
       setWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newWidth)));
     };
 
@@ -166,7 +173,7 @@ export function useWorkspaceSidebarController({
       document.removeEventListener("mousemove", handleResizeMove);
       document.removeEventListener("mouseup", handleResizeEnd);
     };
-  }, [isResizing]);
+  }, [isResizing, side]);
 
   const expandAll = useCallback(() => {
     setExpandedFolderIds(

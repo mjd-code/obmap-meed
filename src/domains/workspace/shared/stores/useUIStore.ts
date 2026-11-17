@@ -21,6 +21,7 @@ interface UIState {
   // Sidebar
   activeTool: ActiveTool;
   sidebarOpen: boolean;
+  rightSidebarOpen: boolean;
   
   // Tabs
   tabs: Tab[];
@@ -34,6 +35,8 @@ interface UIState {
   setActiveTool: (tool: ActiveTool) => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+  setRightSidebarOpen: (open: boolean) => void;
+  toggleRightSidebar: () => void;
   expandedFolderIds: string[];
 setExpandedFolderIds: (ids: string[]) => void;
 revealFolderPath: (
@@ -68,17 +71,64 @@ export const useUIStore = create<UIState>()(
         // Initial state
         activeTool: null,
         sidebarOpen: false,
+        rightSidebarOpen: false,
         tabs: defaultTabs,
         activeTabId: 'graph-main',
         editorViewMode: 'source',
         editorLayoutMode: 'narrow',
         
         // Actions - Sidebar
-        setActiveTool: (tool) => set(
-          { activeTool: tool, sidebarOpen: tool !== null },
-          false,
-          'setActiveTool'
-        ),
+        setActiveTool: (tool) =>
+          set(
+            (state) => {
+              const isMobileViewport =
+                typeof window !== 'undefined' && window.innerWidth < 768;
+              if (tool === 'settings') {
+                return {
+                  activeTool:
+                    isMobileViewport || state.activeTool === 'settings'
+                      ? null
+                      : state.activeTool,
+                  sidebarOpen:
+                    !isMobileViewport &&
+                    state.activeTool !== null &&
+                    state.activeTool !== 'settings',
+                  rightSidebarOpen: true,
+                };
+              }
+              return {
+                activeTool: tool,
+                sidebarOpen: tool !== null,
+                rightSidebarOpen:
+                  isMobileViewport && tool !== null
+                    ? false
+                    : state.rightSidebarOpen,
+              };
+            },
+            false,
+            'setActiveTool',
+          ),
+
+        setRightSidebarOpen: (open) =>
+          set(
+            (state) => {
+              const isMobileViewport =
+                typeof window !== 'undefined' && window.innerWidth < 768;
+              return {
+                rightSidebarOpen: open,
+                ...(open && isMobileViewport
+                  ? { activeTool: null, sidebarOpen: false }
+                  : {}),
+              };
+            },
+            false,
+            'setRightSidebarOpen',
+          ),
+
+        toggleRightSidebar: () => {
+          const next = !get().rightSidebarOpen;
+          get().setRightSidebarOpen(next);
+        },
 
         setExpandedFolderIds: (ids) =>
   set(
@@ -107,11 +157,15 @@ revealFolderPath: (folderId, nodes) => {
   }
 
   set(
-    {
+    (state) => ({
       activeTool: "files",
       sidebarOpen: true,
       expandedFolderIds: path,
-    },
+      rightSidebarOpen:
+        typeof window !== 'undefined' && window.innerWidth < 768
+          ? false
+          : state.rightSidebarOpen,
+    }),
     false,
     "revealFolderPath",
   );
@@ -190,6 +244,7 @@ revealFolderPath: (folderId, nodes) => {
         reset: () => set({
           activeTool: null,
           sidebarOpen: false,
+          rightSidebarOpen: false,
           tabs: defaultTabs,
           activeTabId: 'graph-main',
           editorViewMode: 'source',

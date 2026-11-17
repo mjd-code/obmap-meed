@@ -45,7 +45,7 @@ export default function MarkdownLeaf({ leaf }: { leaf: WorkspaceLeaf }) {
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full min-h-0">
       <NodePanel
         node={node}
         nodePath={getNodePath(node.id)}

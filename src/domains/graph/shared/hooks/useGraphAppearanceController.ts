@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useGraphEngineStore } from "@/domains/graph/shared/stores/useGraphEngineStore";
 import type {
   GraphConfigState,
   NodeConfig,
@@ -54,17 +55,28 @@ export function useGraphAppearanceController({
 }: UseGraphAppearanceControllerProps) {
   const [activeTab, setActiveTab] = useState<"nodes" | "links">("nodes");
   const [styleType, setStyleType] = useState<LinkStyleType>("hierarchy");
+  const engineShowLabels = useGraphEngineStore((s) => s.showLabels);
 
-  const labelMode: LabelMode = !config.nodes.showLabels
+  const effectiveShowLabels = engineShowLabels && config.nodes.showLabels;
+  const labelMode: LabelMode = !effectiveShowLabels
     ? "nodes"
     : config.nodes.labelBox
       ? "boxes"
       : "labels";
 
   const setLabelMode = (mode: LabelMode) => {
-    if (mode === "nodes") updateNodeConfig({ showLabels: false, labelBox: false });
-    else if (mode === "labels") updateNodeConfig({ showLabels: true, labelBox: false });
-    else updateNodeConfig({ showLabels: true, labelBox: true });
+    if (mode === "nodes") {
+      updateNodeConfig({ showLabels: false, labelBox: false });
+      return;
+    }
+    if (!useGraphEngineStore.getState().showLabels) {
+      useGraphEngineStore.getState().patch({ showLabels: true });
+    }
+    if (mode === "labels") {
+      updateNodeConfig({ showLabels: true, labelBox: false });
+    } else {
+      updateNodeConfig({ showLabels: true, labelBox: true });
+    }
   };
 
   const currentStyle = config.topology.styles[styleType] ?? {

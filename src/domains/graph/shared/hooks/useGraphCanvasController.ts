@@ -22,6 +22,11 @@ import { defaultLinkConfig, defaultTopologyConfig } from '@/domains/graph/shared
 import { buildGraphProjection } from '@/domains/graph/shared/utils/buildGraphProjection';
 import { buildTheme } from '@/domains/graph/shared/utils/theme';
 import { measureRichNodeMetrics } from '@/domains/graph/shared/utils/textLayout';
+import {
+  computeUnboxedSolverMetric,
+  resolveNodeDotVisualRadius,
+  resolveUnboxedLabelPosition,
+} from '@/domains/graph/shared/utils/unboxedNodeLayout';
 import { resolveEffectiveTopicShape } from '@/domains/graph/shared/utils/drawAttachments';
 import { resolveNodeSubtreeMode } from '@/domains/graph/shared/utils/subtreeCompose';
 import {
@@ -44,7 +49,7 @@ import {
   LayoutTransitionController,
   prefersReducedMotion,
 } from '@/domains/graph/shared/utils/transitionController';
-import { drawNode, paintNodePointerArea } from '@/domains/graph/shared/utils/drawNode';
+import { drawNode, labelForNode, paintNodePointerArea } from '@/domains/graph/shared/utils/drawNode';
 import { drawLink } from '@/domains/graph/shared/utils/drawLink';
 import { usesPhysicsSimulation } from '@/domains/graph/shared/utils/layoutCategory';
 import {
@@ -82,6 +87,15 @@ export function useGraphCanvasController(
   const [size, setSize] = useState({ width: 800, height: 600 });
   const nodeCache = useRef(new Map<string, RenderNode>());
   const [timeLapseVisibleIds, setTimeLapseVisibleIds] = useState<Set<string> | null>(null);
+  const [redrawTick, setRedrawTick] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const forceRedraw = useCallback(() => {
+    setRedrawTick((tick) => (tick + 1) % 1000000);
+  }, []);
+  const nodeCanvasObjectMode = useCallback(
+    () => (redrawTick >= 0 ? ('replace' as const) : ('replace' as const)),
+    [redrawTick],
+  );
 
   const engine = useGraphEngineStore();
   const {
@@ -103,6 +117,7 @@ export function useGraphCanvasController(
     showMindmapRelationships,
     setSubtreeLayoutOverride,
     setBranchColorOverride,
+    promoteColorToBranch,
     setNodeStyleOverride,
     upsertBoundary,
     removeBoundary,
@@ -173,15 +188,18 @@ export function useGraphCanvasController(
     return { ...next, nodes, byId: new Map(nodes.map((node) => [node.id, node])) };
   }, [props.graphData.nodes, props.graphData.links, engine.timeField]);
 
-  // Metrik Kartu Node (mengikuti opsi labelBox, showLabels, relSize & rich XMind metadata)
+  // Metrik Kartu Node (mengikuti opsi labelBox, showLabels, labelPosition, relSize & rich XMind metadata)
   const {
     labelBox,
     showLabels,
     labelField,
     labelSize,
+    labelPosition,
     relSize,
     sizeByDepth,
     depthSizeInterval,
+    autoShapeByFormat,
+    formatMarkerStyle,
     topicShape,
     showMarkers,
     showTagPills,
@@ -202,6 +220,8 @@ export function useGraphCanvasController(
       showMarkers,
       showTagPills,
     };
+    const effectiveShowLabels = engine.showLabels && showLabels;
+    const unboxedPlacement = resolveUnboxedLabelPosition(labelPosition, layoutMode, canvasMode);
 
     for (const node of projection.nodes) {
       const storeShape = nodeStyleOverrides[node.id]?.topicShape;
@@ -209,21 +229,19 @@ export function useGraphCanvasController(
         storeShape && storeShape !== node.styleOverride?.topicShape
           ? { ...node, styleOverride: { ...node.styleOverride, topicShape: storeShape } }
           : node;
-      const depthScale = sizeByDepth
-        ? Math.max(0.45, 1 - node.depth * depthSizeInterval * 0.08)
-        : 1;
-      const diameter = Math.max(3, relSize * depthScale) * 2;
-      const layout = measureRichNodeMetrics(effectiveNode, nodeMetricConfig);
 
-      if (labelBox) {
+      if (effectiveShowLabels && labelBox) {
+        const layout = measureRichNodeMetrics(effectiveNode, nodeMetricConfig);
         map.set(node.id, { width: layout.width, height: layout.height });
-      } else if (showLabels) {
-        map.set(node.id, {
-          width: layout.width,
-          height: Math.max(diameter + 10, layout.height),
-        });
+      } else if (effectiveShowLabels) {
+        const label = labelForNode(effectiveNode, props.graphConfig.nodes);
+        map.set(
+          node.id,
+          computeUnboxedSolverMetric(effectiveNode, props.graphConfig.nodes, label, unboxedPlacement),
+        );
       } else {
-        map.set(node.id, { width: diameter, height: diameter });
+        const dotDiameter = resolveNodeDotVisualRadius(effectiveNode, props.graphConfig.nodes) * 2;
+        map.set(node.id, { width: dotDiameter, height: dotDiameter });
       }
     }
     return map;
@@ -232,11 +250,17 @@ export function useGraphCanvasController(
     projection.nodes,
     labelBox,
     showLabels,
+    engine.showLabels,
     labelField,
     labelSize,
+    labelPosition,
+    layoutMode,
+    canvasMode,
     relSize,
     sizeByDepth,
     depthSizeInterval,
+    autoShapeByFormat,
+    formatMarkerStyle,
     topicShape,
     showMarkers,
     showTagPills,
@@ -413,6 +437,7 @@ export function useGraphCanvasController(
     const map = new Map<string, RoutedRelationshipGeometry>();
     if (canvasMode !== 'mindmap' || !showMindmapRelationships) return map;
 
+    const isBoxed = Boolean(engine.showLabels && showLabels && labelBox);
     const obstacles: ObstacleBox[] = displayData.nodes.map((node) => {
       const t = geometry.targets.get(node.id);
       const m = metrics.get(node.id) ?? { width: 140, height: 38 };
@@ -425,13 +450,21 @@ export function useGraphCanvasController(
       };
     });
     const obstacleById = new Map(obstacles.map((o) => [o.id, o]));
+    const endpointById = new Map(
+      displayData.nodes.map((node) => {
+        const obs = obstacleById.get(node.id)!;
+        if (isBoxed) return [node.id, obs];
+        const dotDia = (resolveNodeDotVisualRadius(node, props.graphConfig.nodes) + 1.5) * 2;
+        return [node.id, { ...obs, width: dotDia, height: dotDia }];
+      }),
+    );
 
     for (const l of displayData.links) {
       if ((l.type ?? 'hierarchy') === 'hierarchy') continue;
       const sId = typeof l.source === 'object' ? (l.source as RenderNode).id : l.source;
       const tId = typeof l.target === 'object' ? (l.target as RenderNode).id : l.target;
-      const sourceBox = obstacleById.get(sId);
-      const targetBox = obstacleById.get(tId);
+      const sourceBox = endpointById.get(sId);
+      const targetBox = endpointById.get(tId);
       if (!sourceBox || !targetBox) continue;
 
       const key = l.relationship?.id ?? `${sId}->${tId}:${l.type ?? 'link'}`;
@@ -448,7 +481,18 @@ export function useGraphCanvasController(
     }
 
     return map;
-  }, [canvasMode, showMindmapRelationships, displayData.nodes, displayData.links, geometry.targets, metrics]);
+  }, [
+    canvasMode,
+    showMindmapRelationships,
+    displayData.nodes,
+    displayData.links,
+    geometry.targets,
+    metrics,
+    engine.showLabels,
+    showLabels,
+    labelBox,
+    props.graphConfig.nodes,
+  ]);
 
   // Eksekutor Transisi Layout & Animasi Deterministik <-> Free-Force
   useEffect(() => {
@@ -459,6 +503,7 @@ export function useGraphCanvasController(
     if (usesPhysicsSimulation(layoutMode)) {
       controller.release(displayData.nodes);
       graphRef.current?.d3ReheatSimulation?.();
+      setIsTransitioning(false);
       setTransitionStatus('idle');
       if (!hasInitialFitRef.current || modeChanged) {
         hasInitialFitRef.current = true;
@@ -467,13 +512,14 @@ export function useGraphCanvasController(
       return;
     }
 
+    setIsTransitioning(true);
     setTransitionStatus('animating');
     controller.run(displayData.nodes, geometry.targets, {
       duration: 480,
       reducedMotion: prefersReducedMotion(),
-      onTick: () => graphRef.current?.refresh?.(),
       onDone: () => {
-        graphRef.current?.refresh?.();
+        setIsTransitioning(false);
+        forceRedraw();
         setTransitionStatus('idle');
         if (!hasInitialFitRef.current || modeChanged) {
           hasInitialFitRef.current = true;
@@ -482,8 +528,11 @@ export function useGraphCanvasController(
       },
     });
 
-    return () => controller.cancel();
-  }, [geometry, displayData.nodes, layoutMode, setTransitionStatus]);
+    return () => {
+      controller.cancel();
+      setIsTransitioning(false);
+    };
+  }, [geometry, displayData.nodes, layoutMode, setTransitionStatus, forceRedraw]);
 
   useEffect(() => () => transition.current.cancel(), []);
 
@@ -512,18 +561,29 @@ export function useGraphCanvasController(
         collapseTargets.set(childId, { x: targetX, y: targetY });
       }
 
+      setIsTransitioning(true);
       setTransitionStatus('animating');
       transition.current.run(displayData.nodes, collapseTargets, {
         duration: 280,
         reducedMotion: prefersReducedMotion(),
-        onTick: () => graphRef.current?.refresh?.(),
         onDone: () => {
+          setIsTransitioning(false);
+          forceRedraw();
           setTransitionStatus('idle');
           toggleCollapsed(nodeId);
         },
       });
     },
-    [collapsedIds, projection, geometry.targets, displayData.nodes, layoutMode, toggleCollapsed, setTransitionStatus],
+    [
+      collapsedIds,
+      projection,
+      geometry.targets,
+      displayData.nodes,
+      layoutMode,
+      toggleCollapsed,
+      setTransitionStatus,
+      forceRedraw,
+    ],
   );
 
   const appTheme = useThemeStore((state) => state.appearance.presetId);
@@ -541,6 +601,8 @@ export function useGraphCanvasController(
     canvasBackground: theme.canvasBackground,
     labelBackground: theme.labelBackground,
     autoColorBy: props.graphConfig.nodes.autoColorBy,
+    labelBox: props.graphConfig.nodes.labelBox,
+    showLabels: engine.showLabels && props.graphConfig.nodes.showLabels,
     hierarchy: props.graphConfig.hierarchy,
     branchLineStyle: props.graphConfig.links.branchLineStyle,
     taperedTrunk: props.graphConfig.links.taperedTrunk,
@@ -695,7 +757,7 @@ export function useGraphCanvasController(
 
   // Reactive Canvas Frame Invalidation (Rule 10): paksa repaint Canvas2D dalam mode statis (< 2ms Visual-Only path)
   useEffect(() => {
-    graphRef.current?.refresh?.();
+    forceRedraw();
   }, [
     props.graphConfig,
     engine,
@@ -709,6 +771,7 @@ export function useGraphCanvasController(
     props.selectedNode?.id,
     collapsedIds,
     pathway,
+    forceRedraw,
   ]);
 
   // Imperative Handle
@@ -716,9 +779,9 @@ export function useGraphCanvasController(
     ref,
     () => ({
       smartZoom: (action) => gestureBridge.smartZoom(action),
-      refresh: () => graphRef.current?.refresh?.(),
+      refresh: () => forceRedraw(),
     }),
-    [gestureBridge],
+    [gestureBridge, forceRedraw],
   );
 
   const visibleDepths = useMemo(() => uniqueDepths(displayData.nodes), [displayData.nodes]);
@@ -736,6 +799,7 @@ export function useGraphCanvasController(
     dragReparent,
     gestureBridge,
     isPhysicsActive,
+    isTransitioning,
     minZoomLimit,
     layoutMode,
     canvasMode,
@@ -752,6 +816,7 @@ export function useGraphCanvasController(
       setFocusedRoot,
       setSubtreeLayoutOverride,
       setBranchColorOverride,
+      promoteColorToBranch,
       setNodeStyleOverride,
       upsertBoundary,
       removeBoundary,
@@ -763,6 +828,7 @@ export function useGraphCanvasController(
       setManualNodeOffset,
       tidyUpLayout,
       toggleCollapsed: handleSmoothToggleCollapse,
+      nodeCanvasObjectMode,
       handleHover: (node: RenderNode | null) => {
         if (node) clearExplorerHoveredNode();
         setHovered(node?.id ?? null);
@@ -786,6 +852,8 @@ export function useGraphCanvasController(
           isDropTarget: dragReparent.dragRef.current.hoveredTargetId === node.id,
           dropTargetValid: dragReparent.dragRef.current.isValidDrop,
           resolvedPaint: resolvedPaintMap.get(node.id),
+          layoutMode,
+          canvasMode,
         });
       },
       paintPointer: (node: RenderNode, color: string, ctx: CanvasRenderingContext2D, globalScale: number) => {
@@ -794,7 +862,10 @@ export function useGraphCanvasController(
           node,
           color,
           node.parentId === null,
-          props.graphConfig.nodes,
+          {
+            ...props.graphConfig.nodes,
+            showLabels: engine.showLabels && props.graphConfig.nodes.showLabels,
+          },
           globalScale || zoomRef.current,
           engine.zoomOutRendering === 'full-detail',
         );
@@ -883,6 +954,14 @@ export function useGraphCanvasController(
                   ? parseDash(props.graphConfig.links.dashArray, style.width * widthScale)
                   : dashFor(style.lineStyle, style.width * widthScale);
 
+        const preserveDetail = engine.zoomOutRendering === 'full-detail';
+        const effectiveZoom = globalScale || zoomRef.current;
+        const dotScale = preserveDetail ? 1 / Math.max(0.05, effectiveZoom) : 1;
+        const sourceDotRadius =
+          (resolveNodeDotVisualRadius(source, props.graphConfig.nodes) + 1.5) * dotScale;
+        const targetDotRadius =
+          (resolveNodeDotVisualRadius(target, props.graphConfig.nodes) + 1.5) * dotScale;
+
         drawLink(ctx, source, target, {
           mode: layoutMode,
           sourceMode,
@@ -897,7 +976,13 @@ export function useGraphCanvasController(
           routedRelationship,
           arrowMode: rel?.arrowMode ?? (isMindmapNonHierarchy ? 'forward' : undefined),
           relationshipLabel: rel?.label,
-          boxed: props.graphConfig.nodes.labelBox,
+          boxed: Boolean(
+            engine.showLabels &&
+              props.graphConfig.nodes.showLabels &&
+              props.graphConfig.nodes.labelBox,
+          ),
+          sourceDotRadius,
+          targetDotRadius,
           theme,
           color: strokeColor,
           width:
@@ -922,8 +1007,8 @@ export function useGraphCanvasController(
           particleWidth: props.graphConfig.links.particleWidth,
           particleColor: hierarchyPaint ? hierarchyPaint.color : props.graphConfig.links.particleColor,
           particleProgress: atmosphere.particleProgress.current,
-          zoom: globalScale || zoomRef.current,
-          preserveDetail: engine.zoomOutRendering === 'full-detail',
+          zoom: effectiveZoom,
+          preserveDetail,
           metricOf,
         });
       },

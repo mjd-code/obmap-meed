@@ -15,7 +15,7 @@ export interface GraphCanvasProps {
   onNodeMove?: (nodeId: string, newParentId: string | null) => Promise<void> | void;
   onNodeDelete?: (nodeId: string) => Promise<void> | void;
   onAddSubNode?: (parentId: string, type: 'file' | 'folder') => Promise<void> | void;
-  onToggleTask?: (nodeId: string) => Promise<void> | void;
+  onUpdateNodeContent?: (node: Node, nextContent: string) => Promise<void> | void;
   search: string;
   minDepth: number;
   maxDepth: number;
@@ -41,9 +41,14 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
       dragReparent,
       gestureBridge,
       isPhysicsActive,
+      isTransitioning,
       minZoomLimit,
       canvasMode,
       subtreeLayoutOverrides,
+      branchColorOverrides,
+      nodeStyleOverrides,
+      boundaries,
+      summaries,
       focusedRootId,
       actions,
     } = useGraphCanvasController(props, ref);
@@ -64,6 +69,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
           maxZoom={8}
           nodeRelSize={props.graphConfig.nodes.relSize}
           nodeCanvasObject={actions.paintNode as any}
+          nodeCanvasObjectMode={actions.nodeCanvasObjectMode}
           nodePointerAreaPaint={actions.paintPointer as any}
           linkCanvasObject={actions.paintLink as any}
           linkCanvasObjectMode={() => 'replace'}
@@ -90,7 +96,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
           d3VelocityDecay={props.graphConfig.forces.velocityDecay}
           onBackgroundClick={gestureBridge.handleBackgroundClick}
           onBackgroundRightClick={gestureBridge.handleBackgroundRightClick}
-          autoPauseRedraw={atmosphere.autoPauseRedraw}
+          autoPauseRedraw={atmosphere.autoPauseRedraw && !isTransitioning}
           onRenderFramePre={actions.renderDecorations}
         />
 
@@ -114,6 +120,11 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
           selectedNode={props.selectedNode}
           toolbarCoords={gestureBridge.toolbarCoords}
           canvasMode={canvasMode}
+          graphConfig={props.graphConfig}
+          currentNodeStyle={nodeStyleOverrides?.[props.selectedNode?.id ?? '']}
+          currentBranchColor={branchColorOverrides?.[props.selectedNode?.id ?? '']}
+          boundaries={boundaries}
+          summaries={summaries}
           currentOverride={subtreeLayoutOverrides?.[props.selectedNode?.id ?? '']}
           isFocused={focusedRootId === props.selectedNode?.id}
           onSetStructure={(mode: MindmapLayoutMode | null) => {
@@ -121,6 +132,13 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
               actions.setSubtreeLayoutOverride(props.selectedNode.id, mode);
             }
           }}
+          onSetNodeStyleOverride={actions.setNodeStyleOverride}
+          onPromoteColorToBranch={actions.promoteColorToBranch}
+          onSetBranchColorOverride={actions.setBranchColorOverride}
+          onUpsertBoundary={actions.upsertBoundary}
+          onRemoveBoundary={actions.removeBoundary}
+          onUpsertSummary={actions.upsertSummary}
+          onRemoveSummary={actions.removeSummary}
           onAddSubNode={props.onAddSubNode}
           onAddBoundary={(node) => {
             const ids = new Set<string>([node.id]);
@@ -153,7 +171,7 @@ export const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(
               label: `Ringkasan ${node.name}`,
             });
           }}
-          onToggleTask={props.onToggleTask}
+          onUpdateNodeContent={props.onUpdateNodeContent}
           onNodeDelete={props.onNodeDelete}
           onToggleFocus={() => {
             if (props.selectedNode) {

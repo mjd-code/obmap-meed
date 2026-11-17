@@ -12,7 +12,8 @@ import {
   SplitSquareHorizontal,
   SplitSquareVertical,
   Plus,
-  PanelLeft, // <-- TAMBAHKAN INI
+  FolderTree,
+  Settings2,
 } from "lucide-react";
 import { useUIStore } from "@/global/stores"; // <-- PASTIKAN DI-IMPORT
 import { Button } from "@/global/ui/button";
@@ -45,6 +46,10 @@ export function WorkspaceGroup({
 
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [edge, setEdge] = useState<Edge>(null);
+  const isLeftSidebarOpen = useUIStore(
+    (s) => s.activeTool === "files" || s.activeTool === "vcs",
+  );
+  const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen);
 
   const activeLeaf =
     group.leaves.find((l) => l.id === group.activeLeafId) ??
@@ -80,20 +85,22 @@ export function WorkspaceGroup({
       */}
       <div className="h-10 flex items-stretch border-t lg:border-t-0 lg:border-b border-border bg-muted/30 shrink-0 select-none order-2 lg:order-1">
 
-        {/* 1. Fixed Left: Sidebar Toggle Button (Muncul di mobile) */}
+        {/* 1. Fixed Left: Explorer Sidebar Toggle Button (Muncul di mobile) */}
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={() => {
-            const current = useUIStore.getState().activeTool;
-            useUIStore.getState().setActiveTool(current ? null : "files");
+            useUIStore.getState().setActiveTool(isLeftSidebarOpen ? null : "files");
           }}
-          className="h-10 w-10 rounded-none border-r border-border shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent/50 md:hidden"
-          title="Toggle Sidebar (Files)"
+          className={cn(
+            "h-10 w-10 rounded-none border-r border-border shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent/50 md:hidden",
+            isLeftSidebarOpen && "bg-accent/60 text-primary",
+          )}
+          title="Toggle Explorer Sidebar (Files)"
           aria-label="Toggle Sidebar"
         >
-          <PanelLeft className="w-3.5 h-3.5" />
+          <FolderTree className="w-3.5 h-3.5" />
         </Button>
 
         {/* 2. Scrollable Middle: Khusus deretan Tabs Window yang bisa discroll */}
@@ -176,7 +183,7 @@ export function WorkspaceGroup({
           />
         </div>
 
-        {/* 3. Fixed Right: Add Tab & Split Tabs Buttons */}
+        {/* 3. Fixed Right: Add Tab, Split Tabs (Desktop), & Settings Sidebar (Mobile) */}
         <div className="flex items-center gap-0.5 px-1 shrink-0 border-l border-border bg-muted/30">
           <Button
             variant="ghost"
@@ -194,7 +201,7 @@ export function WorkspaceGroup({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            className="hidden md:inline-flex h-7 w-7 text-muted-foreground hover:text-foreground"
             aria-label="Split right"
             title="Split right"
             onClick={() => splitGroup(group.id, "horizontal")}
@@ -204,7 +211,7 @@ export function WorkspaceGroup({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            className="hidden md:inline-flex h-7 w-7 text-muted-foreground hover:text-foreground"
             aria-label="Split down"
             title="Split down"
             onClick={() => splitGroup(group.id, "vertical")}
@@ -212,6 +219,21 @@ export function WorkspaceGroup({
             <SplitSquareVertical className="w-3.5 h-3.5" />
           </Button>
         </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => useUIStore.getState().toggleRightSidebar()}
+          className={cn(
+            "h-10 w-10 rounded-none border-l border-border shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent/50 md:hidden",
+            rightSidebarOpen && "bg-accent/60 text-primary",
+          )}
+          title="Toggle Settings Sidebar"
+          aria-label="Toggle Settings Sidebar"
+        >
+          <Settings2 className="w-3.5 h-3.5" />
+        </Button>
       </div>
 
       {/* 
@@ -249,7 +271,7 @@ export function WorkspaceGroup({
           return (
             <div
               key={leaf.id}
-              className={cn("w-full h-full", !isTabActive && "hidden")}
+              className={cn("w-full h-full min-h-0", !isTabActive && "hidden")}
               aria-hidden={!isTabActive}
             >
               <LeafView leaf={leaf} isActive={isTabActive} />

@@ -1,7 +1,6 @@
 import React from 'react';
 import { GraphCanvas } from '@/domains/graph/components/GraphCanvas';
 import { GraphFloatingDock } from '@/domains/graph/components/FloatingDock/GraphFloatingDock';
-import { GraphContextualInspector } from '@/domains/graph/components/GraphContextualInspector';
 import {
   useLeafGraphConfigStore,
   LeafGraphConfigProvider,
@@ -35,14 +34,14 @@ function GraphSurface({
     <div className={`relative h-full w-full overflow-hidden select-none ${className ?? ''}`}>
       <GraphCanvas
         ref={ctrl.graphRef}
-        graphData={ctrl.effectiveGraphData}
-        selectedNode={ctrl.effectiveSelectedNode}
+        graphData={ctrl.graphData}
+        selectedNode={ctrl.selectedNode}
         onNodeSelect={ctrl.handleNodeSelect}
         onNodeOpen={ctrl.handleOpen}
         onNodeMove={ctrl.handleNodeMove}
         onNodeDelete={ctrl.handleNodeDelete}
         onAddSubNode={ctrl.handleAddSubNode}
-        onToggleTask={ctrl.isOutlineMode ? ctrl.handleToggleTask : undefined}
+        onUpdateNodeContent={ctrl.handleUpdateNodeContent}
         graphConfig={ctrl.graphConfig}
         search={ctrl.search}
         minDepth={ctrl.minDepth}
@@ -59,10 +58,6 @@ function GraphSurface({
         onLayoutChange={ctrl.setLayoutMode}
         orientation={ctrl.orientation}
         onOrientationChange={ctrl.setOrientation}
-        isOutlineMode={ctrl.isOutlineMode}
-        onToggleOutlineMode={ctrl.handleToggleOutlineMode}
-        isInspectorOpen={ctrl.isInspectorOpen}
-        onToggleInspector={ctrl.toggleInspector}
         collapsedCount={ctrl.collapsedIds.length}
         onExpandAll={ctrl.expandAll}
         focused={Boolean(ctrl.focusedRootId)}
@@ -78,15 +73,6 @@ function GraphSurface({
         tagFilter={ctrl.tagFilter}
         onTagFilterChange={ctrl.setTagFilter}
         onSmartZoom={ctrl.handleSmartZoom}
-      />
-
-      <GraphContextualInspector
-        isOpen={ctrl.isInspectorOpen}
-        onClose={() => ctrl.setIsInspectorOpen(false)}
-        activeOutlineNote={ctrl.activeOutlineNote}
-        isOutlineMode={ctrl.isOutlineMode}
-        isAuthenticated={ctrl.isAuthenticated}
-        onUpdateOutlineContent={ctrl.handleUpdateOutlineContent}
       />
     </div>
   );

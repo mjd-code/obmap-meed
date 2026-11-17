@@ -32,23 +32,26 @@ import {
 /** Declarative view for the workspace sidebar panel supporting Files, VCS, and Settings tools. */
 export function SidebarPanel({
   activeTool,
+  side = "left",
   onClose,
-  nodes,
-  selectedNode,
-  onNodeSelect,
+  nodes = [],
+  selectedNode = null,
+  onNodeSelect = () => {},
   onNodeOpen,
   onNodeMove,
   onNodeDelete,
   onNodeUpdate,
   onAddNode,
-  isVaultMode,
-  vaultName,
-  currentVaultId,
-  availableVaults,
-  onSwitchVault,
+  isVaultMode = false,
+  vaultName = null,
+  currentVaultId = null,
+  availableVaults = [],
+  onSwitchVault = () => {},
+  onCloseVault = () => {},
   onImportComplete,
 }: SidebarPanelProps) {
   const controller = useWorkspaceSidebarController({
+    side,
     nodes,
     selectedNode,
     onNodeSelect,
@@ -59,23 +62,34 @@ export function SidebarPanel({
   if (!activeTool) return null;
 
   return (
-    <div
+    <aside
       ref={controller.panelRef}
+      aria-label={side === "right" ? "Settings Sidebar" : "Workspace Sidebar"}
       className={cn(
-        "h-full bg-sidebar border-r border-sidebar-border flex flex-col relative",
-        "max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:shadow-2xl max-md:w-[280px] max-md:max-w-[85vw]",
-        "animate-in slide-in-from-left-2 duration-200 ease-out",
+        "h-full bg-sidebar flex flex-col relative shrink-0",
+        "w-[250px] max-w-[78vw] md:w-[var(--vk-sidebar-width)]",
+        side === "right"
+          ? "border-l border-sidebar-border animate-in slide-in-from-right-2 duration-200 ease-out"
+          : "border-r border-sidebar-border animate-in slide-in-from-left-2 duration-200 ease-out",
       )}
-      style={{
-        width: window.innerWidth < 768 ? undefined : `${controller.width}px`,
-      }}
+      style={
+        {
+          "--vk-sidebar-width": `${controller.width}px`,
+        } as React.CSSProperties
+      }
     >
       {/* Panel Header */}
-      <div className="h-8 px-3 flex items-center justify-between border-b border-sidebar-border shrink-0">
+      <div className="h-10 px-3 flex items-center justify-between border-b border-sidebar-border shrink-0">
         <span className="text-sm font-medium text-sidebar-foreground">
           {SIDEBAR_PANEL_TITLES[activeTool]}
         </span>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={onClose}
+          aria-label={`Close ${SIDEBAR_PANEL_TITLES[activeTool]}`}
+        >
           <X className="w-4 h-4" />
         </Button>
       </div>
@@ -84,7 +98,7 @@ export function SidebarPanel({
       <div className="flex-1 min-h-0 overflow-hidden">
         {activeTool === "files" && (
           <div className="h-full flex flex-col">
-            <div className="px-2 py-0.5 border-b border-sidebar-border flex items-center justify-center gap-1 shrink-0">
+            <div className="px-2 py-2 border-b border-sidebar-border flex items-center justify-center gap-1 shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -224,24 +238,26 @@ export function SidebarPanel({
         )}
       </div>
 
-      {/* Resize Handle */}
+      {/* Resize Handle (Desktop / Tablet) */}
       <div
         className={cn(
-          "absolute top-0 right-0 w-1 h-full cursor-col-resize group",
+          "hidden md:block absolute top-0 w-1 h-full cursor-col-resize group",
+          side === "right" ? "left-0" : "right-0",
           "hover:bg-primary/50 transition-colors",
           controller.isResizing && "bg-primary/50",
         )}
         onMouseDown={controller.handleResizeStart}
       >
-        <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity",
+            side === "right" ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2",
+          )}
+        >
           <GripVertical className="w-3 h-3 text-muted-foreground" />
         </div>
       </div>
-      <div
-        className="fixed inset-0 bg-background/60 backdrop-blur-xs z-[-1] md:hidden"
-        onClick={onClose}
-      />
-    </div>
+    </aside>
   );
 }
 

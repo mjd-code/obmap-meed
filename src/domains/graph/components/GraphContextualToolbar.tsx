@@ -1,15 +1,14 @@
 import { useState } from "react";
-import { 
-  GitBranch, 
-  Plus, 
-  Focus, 
-  Trash2, 
+import {
+  GitBranch,
+  Plus,
+  Focus,
+  Trash2,
   Settings2,
   X,
   BoxSelectIcon,
   SquareDashed,
   Sigma,
-  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/global/ui/button";
 import {
@@ -20,7 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/global/ui/dropdown-menu";
-import type { MindmapLayoutMode, CanvasMode } from "@/domains/graph/shared/utils/graph.types";
+import type { CanvasMode, MindmapLayoutMode } from "@/domains/graph/shared/utils/graph.types";
+import type { GraphNodeContextStyleMenuProps } from "@/domains/graph/components/GraphNodeContextStyleMenu";
+import { GraphNodeContextStylePopover } from "@/domains/graph/components/GraphNodeContextStylePopover";
 
 const MINDMAP_STRUCTURES: { mode: MindmapLayoutMode; label: string }[] = [
   { mode: "mindmap", label: "Mindmap (Balanced)" },
@@ -30,21 +31,14 @@ const MINDMAP_STRUCTURES: { mode: MindmapLayoutMode; label: string }[] = [
   { mode: "timeline", label: "Timeline (Sequential)" },
 ];
 
-interface ContextualToolbarProps {
+interface ContextualToolbarProps extends Omit<GraphNodeContextStyleMenuProps, "canvasMode" | "onAddBoundary" | "onAddSummary"> {
   x: number;
   y: number;
-  nodeId: string;
-  nodeName: string;
-  isFolder: boolean;
-  isTask?: boolean;
   canvasMode?: CanvasMode;
-  currentOverride?: MindmapLayoutMode;
   isFocused: boolean;
-  onSetStructure: (layout: MindmapLayoutMode | null) => void;
   onAddSub: (type: "file" | "folder") => void;
   onAddBoundary?: () => void;
   onAddSummary?: () => void;
-  onToggleTask?: () => void;
   onToggleFocus: () => void;
   onZoomToSelection: () => void;
   onDelete: () => void;
@@ -54,23 +48,20 @@ interface ContextualToolbarProps {
 export function ContextualToolbar({
   x,
   y,
-  isTask = false,
   canvasMode = "mindmap",
-  currentOverride,
   isFocused,
-  onSetStructure,
   onAddSub,
   onAddBoundary,
   onAddSummary,
-  onToggleTask,
   onToggleFocus,
   onZoomToSelection,
   onDelete,
   onClose,
+  ...styleMenuProps
 }: ContextualToolbarProps) {
   // Default expanded saat dibuka melalui klik kanan / double tap
   const [isExpanded, setIsExpanded] = useState(true);
-  const toolbarWidth = isExpanded ? (canvasMode === "graph" ? 176 : 272) : 36;
+  const toolbarWidth = isExpanded ? (canvasMode === "graph" ? 210 : 304) : 36;
   
   // Clamping koordinat toolbar agar tidak terpotong tepi layar
   const clampedX = typeof window !== "undefined"
@@ -118,6 +109,14 @@ export function ContextualToolbar({
         <div className="flex items-center gap-1 animate-in fade-in slide-in-from-left-2 duration-150">
           <div className="h-4 w-px bg-border/60 mx-0.5" />
 
+          {/* Style & Format Node Popover (TopicShape, Color, YAML P1-P7/Progress/Task, Boundary/Summary) */}
+          <GraphNodeContextStylePopover
+            {...styleMenuProps}
+            canvasMode={canvasMode}
+            onAddBoundary={onAddBoundary ? () => onAddBoundary() : undefined}
+            onAddSummary={onAddSummary ? () => onAddSummary() : undefined}
+          />
+
           {/* Structure Override Dropdown (HANYA tampil di Mindmap View, tanpa multi/mix layout di Graph View) */}
           {canvasMode === "mindmap" && (
             <DropdownMenu>
@@ -138,19 +137,19 @@ export function ContextualToolbar({
                 {MINDMAP_STRUCTURES.map((s) => (
                   <DropdownMenuItem
                     key={s.mode}
-                    onClick={() => onSetStructure(s.mode)}
+                    onClick={() => styleMenuProps.onSetStructure(s.mode)}
                     className={`cursor-pointer ${
-                      currentOverride === s.mode ? "font-semibold text-primary" : ""
+                      styleMenuProps.currentOverride === s.mode ? "font-semibold text-primary" : ""
                     }`}
                   >
                     {s.label}
                   </DropdownMenuItem>
                 ))}
-                {currentOverride && (
+                {styleMenuProps.currentOverride && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => onSetStructure(null)}
+                      onClick={() => styleMenuProps.onSetStructure(null)}
                       className="text-muted-foreground cursor-pointer"
                     >
                       Reset to Default
@@ -188,57 +187,6 @@ export function ContextualToolbar({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Boundary & Summary quick actions (Mindmap Mode) */}
-          {canvasMode === "mindmap" && onAddBoundary && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-foreground"
-              onClick={onAddBoundary}
-              title="Wrap Subtree in Boundary"
-              aria-label="Wrap Subtree in Boundary"
-            >
-              <SquareDashed className="h-3.5 w-3.5" />
-            </Button>
-          )}
-
-          {canvasMode === "mindmap" && onAddSummary && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-foreground"
-              onClick={onAddSummary}
-              title="Create Summary Brace"
-              aria-label="Create Summary Brace"
-            >
-              <Sigma className="h-3.5 w-3.5" />
-            </Button>
-          )}
-
-          {isTask && onToggleTask && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-primary"
-              onClick={onToggleTask}
-              title="Toggle Task Checkbox"
-              aria-label="Toggle Task Checkbox"
-            >
-              <CheckSquare className="h-3.5 w-3.5" />
-            </Button>
-          )}
-
-                   {/* Zoom to Selection */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 rounded-full p-0 hover:bg-accent/50 text-muted-foreground hover:text-foreground"
-            onClick={onZoomToSelection}
-            title="Zoom to Selection"
-          >
-            <Focus className="h-3.5 w-3.5" />
-          </Button>
 
           {/* Focus Subtree */}
           <Button

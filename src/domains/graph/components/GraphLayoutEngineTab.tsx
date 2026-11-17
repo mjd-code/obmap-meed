@@ -17,6 +17,7 @@ import {
 } from "@/global/ui/select";
 import { useGraphEngineStore } from "@/domains/graph/shared/stores/useGraphEngineStore";
 import { useGraphInteractionStore } from "@/domains/graph/shared/stores/useGraphInteractionStore";
+import { useGraphStore } from "@/domains/graph/shared/stores/useGraphStore";
 import type {
   LayoutMode,
   MindmapOrientation,
@@ -185,7 +186,12 @@ export function LayoutEngineTab() {
         </div>
         <Switch
           checked={engine.showLabels}
-          onCheckedChange={(v) => engine.patch({ showLabels: v })}
+          onCheckedChange={(v) => {
+            engine.patch({ showLabels: v });
+            useGraphStore
+              .getState()
+              .updateNodeConfig({ showLabels: v, ...(v ? {} : { labelBox: false }) });
+          }}
         />
       </div>
     </div>

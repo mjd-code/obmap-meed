@@ -94,7 +94,7 @@ export function GlobalTemplatesPanel({
             description="Koleksi preset tersimpan yang dapat diterapkan instan"
           />
 
-          <div className="max-h-[220px] space-y-1.5 overflow-y-auto pr-1">
+          <div className="max-h-[220px] space-y-1.5 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
             {ctrl.templateCount === 0 ? (
               <div className="rounded-lg border border-dashed border-border/60 p-4 text-center text-xs text-muted-foreground">
                 Belum ada template tersimpan. Masukkan nama dan simpan di kartu sebelah kiri.
@@ -227,7 +227,7 @@ export function GlobalTemplatesPanel({
               <span className="vk-text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Top Connected Hubs
               </span>
-              <div className="space-y-1 max-h-[85px] overflow-y-auto pr-0.5">
+              <div className="space-y-1 max-h-[85px] overflow-y-auto pr-0.5 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
                 {ctrl.stats.topHubs.slice(0, 3).map((hub, index) => (
                   <div
                     key={hub.nodeId}

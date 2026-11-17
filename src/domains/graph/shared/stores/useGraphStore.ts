@@ -21,6 +21,8 @@ import {
 
 export type { HierarchyColorConfig };
 
+export type UnboxedLabelPosition = 'auto' | 'beside' | 'below';
+
 // ============= TYPE DEFINITIONS =============
 
 export interface NodeConfig {
@@ -56,6 +58,8 @@ export interface NodeConfig {
   labelColor: string;
   labelFontStyle: 'normal' | 'bold' | 'italic' | 'bold-italic';
   labelBox: boolean;
+  /** Text placement when `labelBox` is off ('With Text' mode). Default 'auto' puts text below in Knowledge Graph and beside in Mindmap. */
+  labelPosition?: UnboxedLabelPosition;
   labelBackground: boolean;
   labelBackgroundColor: string;
 }
@@ -169,6 +173,7 @@ export const defaultNodeConfig: NodeConfig = {
   labelColor: 'hsl(0, 0%, 100%)',
   labelFontStyle: 'normal',
   labelBox: true,
+  labelPosition: 'auto',
   labelBackground: true,
   labelBackgroundColor: 'hsl(0, 0%, 0%)',
 };

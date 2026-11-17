@@ -511,6 +511,8 @@ export interface PaintSignatureInput {
   skeletonPreset?: string;
   canvasBackground: string;
   labelBackground: string;
+  labelBox?: boolean;
+  showLabels?: boolean;
   autoColorBy: string;
   hierarchy: GraphConfigState['hierarchy'];
   branchLineStyle?: string;
@@ -527,6 +529,8 @@ export function buildPaintSignature(input: PaintSignatureInput): string {
     input.skeletonPreset ?? '',
     input.canvasBackground,
     input.labelBackground,
+    input.labelBox ?? true,
+    input.showLabels ?? true,
     input.autoColorBy,
     input.hierarchy,
     input.branchLineStyle ?? '',

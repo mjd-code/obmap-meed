@@ -5,7 +5,6 @@ import {
   Maximize2,
   RotateCcw,
   Settings,
-  SlidersHorizontal,
   Sparkles,
   UnfoldVertical,
 } from 'lucide-react';
@@ -93,10 +92,6 @@ export function GraphFloatingDockPopoverContent({ cluster, ctrl }: GraphFloating
             <span className="vk-text-2xs font-mono text-muted-foreground">{ctrl.showMindmapRelationships ? 'On' : 'Off'}</span>
           </Button>
         </div>
-        <Button type="button" variant={ctrl.isInspectorOpen ? 'secondary' : 'outline'} size="sm" aria-label="Smart Inspector" aria-pressed={ctrl.isInspectorOpen} onClick={ctrl.actions.toggleInspector} className="w-full h-8 justify-between text-xs">
-          <span className="flex items-center gap-2"><SlidersHorizontal className="h-3.5 w-3.5 text-primary" />Smart Inspector (AST & Style)</span>
-          <span className="vk-text-2xs font-mono text-muted-foreground">{ctrl.isInspectorOpen ? 'Terbuka' : 'Tutup'}</span>
-        </Button>
       </div>
     );
   }

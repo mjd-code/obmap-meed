@@ -99,6 +99,19 @@ const Admin = lazy(() =>
   }),
 );
 
+const ThreePillarPrototypePage = lazy(() =>
+  import("@/prototype/three-pillar/ThreePillarPrototypePage").catch((err) => {
+    console.error("Failed to load ThreePillarPrototypePage:", err);
+    return {
+      default: () => (
+        <div className="p-8 text-destructive">
+          Failed to load Prototype: {err.message}
+        </div>
+      ),
+    };
+  }),
+);
+
 const BrandMetaSync = () => {
   const brand = useBrandConfig();
   useEffect(() => {
@@ -127,6 +140,7 @@ const App = () => (
                 <Route path="/install" element={<Install />} />
                 <Route path="/explore" element={<PublicReader mode="explore" />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/prototype" element={<ThreePillarPrototypePage />} />
 
                 {/* Protected routes */}
                 <Route

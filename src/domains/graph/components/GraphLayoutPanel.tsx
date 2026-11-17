@@ -77,14 +77,14 @@ export function LayoutPanel({
     <div className={cn("grid gap-3 items-start w-full", compact ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3")}>
       {/* ================= BENTO 1: MODE & SOLVER ALGORITHM ================= */}
       <div className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-3 shadow-xs">
-        <SectionHeaderWithReset
+        {/* <SectionHeaderWithReset
           title="Mode & Algoritma"
           icon={Layers}
           description="Pilih perspektif tampilan dan solver visual"
-        />
+        /> */}
 
         {/* View Mode Switcher */}
-        <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-muted/40 p-1">
+        {/* <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-muted/40 p-1">
           <Button
             type="button"
             variant="ghost"
@@ -111,7 +111,7 @@ export function LayoutPanel({
             <GitBranch className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="truncate">Mindmap View</span>
           </Button>
-        </div>
+        </div> */}
 
         {/* Layout Algorithms Grid */}
         <div className="grid grid-cols-2 gap-1.5">

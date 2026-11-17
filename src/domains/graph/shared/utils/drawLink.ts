@@ -53,6 +53,9 @@ export interface DrawLinkState {
   metricOf: (node: RenderNode) => NodeMetric;
   isAttachedToDragged?: boolean;
   boxed?: boolean;
+  /** Visual radius of unboxed source/target node dots/icons when `boxed` is false. */
+  sourceDotRadius?: number;
+  targetDotRadius?: number;
 }
 
 interface Point {
@@ -74,6 +77,17 @@ interface LinkGeometry {
 const isHorizontalMode = (mode: LayoutMode) =>
   mode === 'mindmap' || mode === 'brace-map' || mode === 'fishbone';
 
+function anchorOnDotCircle(center: Point, towards: Point, radius: number): Point {
+  const dx = towards.x - center.x;
+  const dy = towards.y - center.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 1e-3 || radius <= 0) return { x: center.x, y: center.y };
+  return {
+    x: center.x + (dx / dist) * radius,
+    y: center.y + (dy / dist) * radius,
+  };
+}
+
 function resolveCardPort(
   center: Point,
   towards: Point,
@@ -81,14 +95,33 @@ function resolveCardPort(
   mode: LayoutMode,
   topicShape: TopicShape | undefined,
   boxed: boolean,
-  role: 'source' | 'target',
+  _role: 'source' | 'target',
+  dotRadius = 7,
 ): Point {
   const halfW = metric.width / 2;
   const halfH = metric.height / 2;
   const dirX = towards.x >= center.x ? 1 : -1;
   const dirY = towards.y >= center.y ? 1 : -1;
 
-  if (boxed && topicShape === 'underline') {
+  if (!boxed) {
+    if (mode === 'org-chart') {
+      return { x: center.x, y: center.y + dirY * dotRadius };
+    }
+    if (mode === 'brace-map' || mode === 'fishbone') {
+      return { x: center.x + dirX * dotRadius, y: center.y };
+    }
+    if (mode === 'mindmap') {
+      const dx = Math.abs(towards.x - center.x);
+      const dy = Math.abs(towards.y - center.y);
+      if (dy > dx * 1.5) {
+        return anchorOnDotCircle(center, towards, dotRadius);
+      }
+      return { x: center.x + dirX * dotRadius, y: center.y };
+    }
+    return anchorOnDotCircle(center, towards, dotRadius);
+  }
+
+  if (topicShape === 'underline') {
     if (isHorizontalMode(mode)) {
       return { x: center.x + dirX * halfW, y: center.y + halfH };
     }
@@ -100,15 +133,8 @@ function resolveCardPort(
     return { x: center.x, y: center.y + dirY * halfH };
   }
 
-  if (mode === 'brace-map') {
+  if (mode === 'brace-map' || mode === 'mindmap') {
     return { x: center.x + dirX * halfW, y: center.y };
-  }
-
-  if (mode === 'mindmap') {
-    if (boxed) {
-      return { x: center.x + dirX * halfW, y: center.y };
-    }
-    return anchorOnCard(center, metric, towards);
   }
 
   return anchorOnCard(center, metric, towards);
@@ -123,6 +149,8 @@ function createTimelineGeometry(
   target: RenderNode,
   metricOf: (node: RenderNode) => NodeMetric,
   boxed = false,
+  sRadius = 7,
+  tRadius = 7,
 ): LinkGeometry {
   const sx = source.x ?? 0;
   const sy = source.y ?? 0;
@@ -133,7 +161,7 @@ function createTimelineGeometry(
   const tMetric = metricOf(target);
 
   const dirX = tx >= sx ? 1 : -1;
-  const targetEdgeX = boxed ? tx - dirX * (tMetric.width / 2) : tx;
+  const targetEdgeX = boxed ? tx - dirX * (tMetric.width / 2) : tx - dirX * tRadius;
   const targetY = ty;
 
   const sLane = source.layoutLane;
@@ -145,10 +173,10 @@ function createTimelineGeometry(
       Math.abs(tx - sx) >= (sMetric.width + tMetric.width) / 2 + 20);
 
   if (isFromBaseline) {
-    const a: Point = { x: sx + dirX * (boxed ? sMetric.width / 2 : sMetric.width), y: sy };
+    const a: Point = { x: sx + dirX * (boxed ? sMetric.width / 2 : sRadius), y: sy };
     const b: Point = {
       x: tx,
-      y: ty < sy ? ty + (boxed ? tMetric.height / 2 : 6) : ty - (boxed ? tMetric.height / 2 : 6),
+      y: ty < sy ? ty + (boxed ? tMetric.height / 2 : tRadius) : ty - (boxed ? tMetric.height / 2 : tRadius),
     };
     return createElbowGeometry([a, { x: tx, y: a.y }, b], 8);
   }
@@ -161,13 +189,13 @@ function createTimelineGeometry(
   if (isFromMilestone) {
     const a: Point = {
       x: sx,
-      y: ty < sy ? sy - (boxed ? sMetric.height / 2 : 6) : sy + (boxed ? sMetric.height / 2 : 6),
+      y: ty < sy ? sy - (boxed ? sMetric.height / 2 : sRadius) : sy + (boxed ? sMetric.height / 2 : sRadius),
     };
     const b: Point = { x: targetEdgeX, y: targetY };
     return createElbowGeometry([a, { x: sx, y: b.y }, b], 6);
   }
 
-  const sourcePortX = boxed ? sx + dirX * (sMetric.width / 2) : dirX > 0 ? sx + sMetric.width + 4 : sx - 4;
+  const sourcePortX = boxed ? sx + dirX * (sMetric.width / 2) : sx + dirX * sRadius;
   const sourceY = sy;
 
   const dx = targetEdgeX - sourcePortX;
@@ -364,6 +392,8 @@ export function drawLink(
   ctx.strokeStyle = resolvedStroke;
 
   const boxed = state.boxed ?? true;
+  const sRadius = state.sourceDotRadius ?? 7;
+  const tRadius = state.targetDotRadius ?? 7;
   const sourceMode = state.sourceMode ?? state.mode;
   const targetMode = state.targetMode ?? state.mode;
   const effectiveMode = state.targetMode ?? state.mode;
@@ -377,7 +407,7 @@ export function drawLink(
     geometry = createCubicGeometry(r.p0, r.c1, r.c2, r.p3);
   } else if (sourceMode === 'timeline') {
     // Timeline parent owns baseline & trunk-gutter exit even when child adopts another layout mode
-    geometry = createTimelineGeometry(source, target, state.metricOf, boxed);
+    geometry = createTimelineGeometry(source, target, state.metricOf, boxed, sRadius, tRadius);
   } else if (sourceMode !== targetMode) {
     // Dynamic Cross-Structure Boundary Anchor Routing
     const start = resolveCardPort(
@@ -388,6 +418,7 @@ export function drawLink(
       state.sourceTopicShape ?? source.topicShape,
       boxed,
       'source',
+      sRadius,
     );
     const end = resolveCardPort(
       { x: tx, y: ty },
@@ -397,12 +428,15 @@ export function drawLink(
       state.targetTopicShape ?? target.topicShape,
       boxed,
       'target',
+      tRadius,
     );
     geometry = createCrossStructureGeometry(start, end, sourceMode, targetMode);
   } else if (effectiveMode === 'org-chart') {
     const top = sy <= ty;
-    const a = { x: sx, y: sy + (top ? 1 : -1) * (sMetric.height / 2) };
-    const b = { x: tx, y: ty - (top ? 1 : -1) * (tMetric.height / 2) };
+    const sYOffset = boxed ? sMetric.height / 2 : sRadius;
+    const tYOffset = boxed ? tMetric.height / 2 : tRadius;
+    const a = { x: sx, y: sy + (top ? 1 : -1) * sYOffset };
+    const b = { x: tx, y: ty - (top ? 1 : -1) * tYOffset };
     const gapY = b.y - a.y;
     const busY = top && gapY > 96 ? b.y - 14 : (a.y + b.y) / 2;
     const radius = state.branchLineStyle === 'orthogonal' ? 0 : 6;
@@ -416,6 +450,7 @@ export function drawLink(
       state.sourceTopicShape ?? source.topicShape,
       boxed,
       'source',
+      sRadius,
     );
     const end = resolveCardPort(
       { x: tx, y: ty },
@@ -425,6 +460,7 @@ export function drawLink(
       state.targetTopicShape ?? target.topicShape,
       boxed,
       'target',
+      tRadius,
     );
     if (state.branchLineStyle === 'brace-bracket') {
       geometry = createBraceBracketGeometry(start, end);
@@ -444,6 +480,7 @@ export function drawLink(
       state.sourceTopicShape ?? source.topicShape,
       boxed,
       'source',
+      sRadius,
     );
     const end = resolveCardPort(
       { x: tx, y: ty },
@@ -453,6 +490,7 @@ export function drawLink(
       state.targetTopicShape ?? target.topicShape,
       boxed,
       'target',
+      tRadius,
     );
 
     if (state.branchLineStyle === 'straight') {
@@ -469,8 +507,12 @@ export function drawLink(
       geometry = createMindmapBezierGeometry(start, end, state.curvature, state.curveRotation);
     }
   } else {
-    const start = anchorOnCard({ x: sx, y: sy }, sMetric, { x: tx, y: ty });
-    const end = anchorOnCard({ x: tx, y: ty }, tMetric, { x: sx, y: sy });
+    const start = boxed
+      ? anchorOnCard({ x: sx, y: sy }, sMetric, { x: tx, y: ty })
+      : anchorOnDotCircle({ x: sx, y: sy }, { x: tx, y: ty }, sRadius);
+    const end = boxed
+      ? anchorOnCard({ x: tx, y: ty }, tMetric, { x: sx, y: sy })
+      : anchorOnDotCircle({ x: tx, y: ty }, { x: sx, y: sy }, tRadius);
     geometry = createStraightGeometry(start, end);
   }
 

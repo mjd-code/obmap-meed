@@ -8,7 +8,12 @@ import {
   cardLayout,
   measureRichNodeMetrics,
   topicShapePadding,
+  wrapText,
 } from '@/domains/graph/shared/utils/textLayout';
+import {
+  measureUnboxedText,
+  resolveUnboxedLabelPosition,
+} from '@/domains/graph/shared/utils/unboxedNodeLayout';
 import {
   drawFooterTagPills,
   drawLeftSlotAttachments,
@@ -16,6 +21,7 @@ import {
   resolveEffectiveTopicShape,
 } from '@/domains/graph/shared/utils/drawAttachments';
 import { drawLink, drawTaperedBezierTrunk } from '@/domains/graph/shared/utils/drawLink';
+import { drawNode, paintNodePointerArea } from '@/domains/graph/shared/utils/drawNode';
 import {
   defaultGraphConfig,
   defaultNodeConfig,
@@ -467,5 +473,289 @@ describe('XMIND-STEP-02 — Rich Flexbox Node Box Model, TopicShapes & Connector
 
     const overlaps = findAABBOverlaps(geometry.targets, metrics, undefined, 2);
     expect(overlaps.length).toBe(0);
+  });
+
+  it('enforces clean Only Node, With Text, and With Label + Text rendering without ghost label-box shadow', () => {
+    const theme = buildTheme(defaultGraphConfig);
+    const folderNode: RenderNode = {
+      id: 'folder-1',
+      name: 'Apik Node',
+      content: '',
+      type: 'folder',
+      parentId: null,
+      depth: 0,
+      tags: ['demo'],
+      childCount: 2,
+      wikilinkCount: 0,
+      x: 100,
+      y: 100,
+    };
+
+    // 1. Only Node (even if legacy preset kept labelBox: true while showLabels: false)
+    const onlyNodeCanvas = createMockCanvasContext();
+    drawNode(onlyNodeCanvas.ctx, folderNode, {
+      theme,
+      zoom: 1,
+      selected: true,
+      hovered: true,
+      dimmed: false,
+      collapsed: false,
+      isRoot: true,
+      showLabels: false,
+      labelThreshold: 0.7,
+      preserveDetail: false,
+      config: { ...defaultNodeConfig, showLabels: false, labelBox: true },
+    });
+    expect(onlyNodeCanvas.recorded.calls.some((c) => c.method === 'roundRect')).toBe(false);
+    expect(onlyNodeCanvas.recorded.texts).toEqual([]);
+    expect(onlyNodeCanvas.ctx.shadowBlur).toBe(0);
+    // Folder collapse toggle remains active
+    expect(folderNode.toggle).not.toBeNull();
+
+    // 2. With Text (node + text + collapse toggle, no label box)
+    const withTextCanvas = createMockCanvasContext();
+    drawNode(withTextCanvas.ctx, folderNode, {
+      theme,
+      zoom: 1,
+      selected: false,
+      hovered: false,
+      dimmed: false,
+      collapsed: false,
+      isRoot: true,
+      showLabels: true,
+      labelThreshold: 0.7,
+      preserveDetail: false,
+      config: { ...defaultNodeConfig, showLabels: true, labelBox: false },
+    });
+    expect(withTextCanvas.recorded.calls.some((c) => c.method === 'roundRect')).toBe(false);
+    expect(withTextCanvas.recorded.texts).toContain('Apik Node');
+
+    // 3. With Label + Text (node + box + text)
+    const withBoxCanvas = createMockCanvasContext();
+    drawNode(withBoxCanvas.ctx, folderNode, {
+      theme,
+      zoom: 1,
+      selected: false,
+      hovered: false,
+      dimmed: false,
+      collapsed: false,
+      isRoot: true,
+      showLabels: true,
+      labelThreshold: 0.7,
+      preserveDetail: false,
+      config: { ...defaultNodeConfig, showLabels: true, labelBox: true },
+    });
+    expect(withBoxCanvas.recorded.calls.some((c) => c.method === 'roundRect')).toBe(true);
+    expect(withBoxCanvas.recorded.texts).toContain('Apik Node');
+  });
+
+  it('keeps With Text word wrapping intact (no mid-word chop), anchors links cleanly to dot radius, places auto labels below in Graph / beside in Mindmap, and restricts hit-area to dot', () => {
+    const theme = buildTheme(defaultGraphConfig);
+
+    // 1. No mid-word character chop + 2-line wrap limit at ~200px
+    const slugLines = wrapText('kepano-obsidian-main', '500 12px sans-serif', 200, 2, false);
+    expect(slugLines).toEqual(['kepano-obsidian-main']);
+    const superLongLines = wrapText(
+      'superlongunspacedfilenamethatexceedstwohundredpixelswidthlimit',
+      '500 12px sans-serif',
+      200,
+      2,
+      false,
+    );
+    expect(superLongLines).toHaveLength(1);
+    expect(superLongLines[0].endsWith('…')).toBe(true);
+
+    const multiWord = measureUnboxedText('68 Bits of Unsolicited Advice', { fontSize: 12 });
+    expect(multiWord.lines.length).toBeLessThanOrEqual(2);
+    expect(multiWord.lines.join(' ')).toBe('68 Bits of Unsolicited Advice');
+
+    // 2. Auto placement switches cleanly between Knowledge Graph ('below') and Mindmap ('beside')
+    expect(resolveUnboxedLabelPosition('auto', 'free-force', 'graph')).toBe('below');
+    expect(resolveUnboxedLabelPosition('auto', 'mindmap', 'mindmap')).toBe('beside');
+    expect(resolveUnboxedLabelPosition('beside', 'free-force', 'graph')).toBe('beside');
+    expect(resolveUnboxedLabelPosition('below', 'mindmap', 'mindmap')).toBe('below');
+
+    // 3. Draw With Text in Knowledge Graph -> text centered BELOW dot, toggle right of dot, hit-area dot-only
+    const graphNode: RenderNode = {
+      id: 'g-node',
+      name: 'kepano-obsidian-main',
+      type: 'folder',
+      parentId: null,
+      depth: 0,
+      tags: [],
+      content: '',
+      childCount: 2,
+      x: 200,
+      y: 200,
+    };
+    const graphCanvas = createMockCanvasContext();
+    drawNode(graphCanvas.ctx, graphNode, {
+      theme,
+      zoom: 1,
+      selected: false,
+      hovered: false,
+      dimmed: false,
+      collapsed: false,
+      isRoot: true,
+      showLabels: true,
+      labelThreshold: 0.7,
+      preserveDetail: false,
+      layoutMode: 'free-force',
+      canvasMode: 'graph',
+      config: { ...defaultNodeConfig, showLabels: true, labelBox: false, labelPosition: 'auto', relSize: 6 },
+    });
+    const graphTextCall = graphCanvas.recorded.calls.find((c) => c.method === 'fillText');
+    expect(graphTextCall?.args[1]).toBe(200); // centered horizontally on dot.x
+    expect(Number(graphTextCall?.args[2])).toBeGreaterThan(206); // below dot.y + radius
+    expect(graphNode.toggle!.x).toBeGreaterThan(206); // right shoulder of dot
+    expect(graphNode.toggle!.y).toBe(200);
+
+    const pointerCanvas = createMockCanvasContext();
+    paintNodePointerArea(
+      pointerCanvas.ctx,
+      graphNode,
+      '#123456',
+      true,
+      { ...defaultNodeConfig, showLabels: true, labelBox: false, labelPosition: 'auto', relSize: 6 },
+      1,
+      false,
+    );
+    expect(pointerCanvas.recorded.calls.some((c) => c.method === 'fillRect')).toBe(false);
+    expect(pointerCanvas.recorded.calls.some((c) => c.method === 'arc')).toBe(true);
+
+    // 4. Draw Mindmap Left Hub + Left Leaf -> leaf beside left, hub lifted above horizontal link, toggle bottom-right
+    const leftHub: RenderNode = {
+      id: 'hub-1',
+      name: 'Clippings',
+      type: 'folder',
+      parentId: 'root',
+      depth: 1,
+      tags: [],
+      content: '',
+      childCount: 3,
+      layoutSide: -1,
+      x: 100,
+      y: 200,
+    };
+    const leftLeaf: RenderNode = {
+      id: 'leaf-1',
+      name: 'New File 117',
+      type: 'file',
+      parentId: 'hub-1',
+      depth: 2,
+      tags: [],
+      content: '',
+      childCount: 0,
+      layoutSide: -1,
+      x: -100,
+      y: 200,
+    };
+    const hubCanvas = createMockCanvasContext();
+    drawNode(hubCanvas.ctx, leftHub, {
+      theme,
+      zoom: 1,
+      selected: false,
+      hovered: false,
+      dimmed: false,
+      collapsed: false,
+      isRoot: false,
+      showLabels: true,
+      labelThreshold: 0.7,
+      preserveDetail: false,
+      layoutMode: 'mindmap',
+      canvasMode: 'mindmap',
+      config: { ...defaultNodeConfig, showLabels: true, labelBox: false, labelPosition: 'auto', relSize: 6 },
+    });
+    const hubTextCall = hubCanvas.recorded.calls.find((c) => c.method === 'fillText');
+    expect(Number(hubTextCall?.args[1])).toBeLessThan(100); // outer left side
+    expect(Number(hubTextCall?.args[2])).toBeLessThan(200); // cleanly lifted above horizontal link axis
+    expect(leftHub.toggle!.x).toBeGreaterThan(100);
+    expect(leftHub.toggle!.y).toBeGreaterThan(200); // bottom-right dot shoulder, clear of text & branch line
+
+    const leafCanvas = createMockCanvasContext();
+    drawNode(leafCanvas.ctx, leftLeaf, {
+      theme,
+      zoom: 1,
+      selected: false,
+      hovered: false,
+      dimmed: false,
+      collapsed: false,
+      isRoot: false,
+      showLabels: true,
+      labelThreshold: 0.7,
+      preserveDetail: false,
+      layoutMode: 'mindmap',
+      canvasMode: 'mindmap',
+      config: { ...defaultNodeConfig, showLabels: true, labelBox: false, labelPosition: 'auto', relSize: 6 },
+    });
+    const leafTextCall = leafCanvas.recorded.calls.find((c) => c.method === 'fillText');
+    expect(Number(leafTextCall?.args[1])).toBeLessThan(-100); // extends leftward away from incoming link
+    expect(Number(leafTextCall?.args[2])).toBe(200);
+
+    // 5. Link anchoring in With Text connects to dot perimeter (NOT huge metric.width / 2 = 80px!)
+    const metricOfHuge = (): NodeMetric => ({ width: 180, height: 48 });
+    const mindmapLinkCanvas = createMockCanvasContext();
+    drawLink(mindmapLinkCanvas.ctx, leftHub, leftLeaf, {
+      mode: 'mindmap',
+      boxed: false,
+      taperedTrunk: false,
+      sourceDotRadius: 7,
+      targetDotRadius: 7,
+      theme,
+      color: '#38bdf8',
+      width: 2,
+      opacity: 1,
+      dash: [],
+      dimmed: false,
+      showArrow: false,
+      arrowLength: 0,
+      arrowRelPos: 1,
+      curvature: 0.2,
+      curveRotation: 0,
+      particles: 0,
+      particleWidth: 2,
+      particleColor: '#38bdf8',
+      particleProgress: 0,
+      zoom: 1,
+      preserveDetail: false,
+      metricOf: metricOfHuge,
+    });
+    const moveCall = mindmapLinkCanvas.recorded.calls.find((c) => c.method === 'moveTo');
+    const curveCall = mindmapLinkCanvas.recorded.calls.find((c) => c.method === 'bezierCurveTo');
+    // Source dot perimeter on left side of x=100 is 100 - 7 = 93 (NOT 100 - 90 = 10!)
+    expect(moveCall?.args[0]).toBeCloseTo(93, 1);
+    // Target dot perimeter on right side of x=-100 is -100 + 7 = -93 (NOT -100 + 90 = -10!)
+    expect(curveCall?.args[4]).toBeCloseTo(-93, 1);
+
+    // 6. Free-force Knowledge Graph link also connects to radial dot perimeter despite large metric
+    const nA: RenderNode = { ...leftHub, x: 0, y: 0 };
+    const nB: RenderNode = { ...leftLeaf, x: 100, y: 0 };
+    const graphLinkCanvas = createMockCanvasContext();
+    drawLink(graphLinkCanvas.ctx, nA, nB, {
+      mode: 'free-force',
+      boxed: false,
+      sourceDotRadius: 8,
+      targetDotRadius: 8,
+      theme,
+      color: '#a855f7',
+      width: 2,
+      opacity: 1,
+      dash: [],
+      dimmed: false,
+      showArrow: false,
+      arrowLength: 0,
+      arrowRelPos: 1,
+      curvature: 0,
+      curveRotation: 0,
+      particles: 0,
+      particleWidth: 2,
+      particleColor: '#a855f7',
+      particleProgress: 0,
+      zoom: 1,
+      preserveDetail: false,
+      metricOf: metricOfHuge,
+    });
+    expect(graphLinkCanvas.recorded.calls.find((c) => c.method === 'moveTo')?.args).toEqual([8, 0]);
+    expect(graphLinkCanvas.recorded.calls.find((c) => c.method === 'lineTo')?.args).toEqual([92, 0]);
   });
 });
