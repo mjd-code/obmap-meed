@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import {
   INITIAL_KANBAN_TASKS,
   PROTOTYPE_ARTIFACTS,
   PROTOTYPE_EDITOR_FILES,
   PROTOTYPE_LMS_NODES,
-  PROTOTYPE_VAULTS,
 } from "./mockData";
 import type {
   ArtifactFormat,
@@ -14,13 +14,12 @@ import type {
   GraphSolverKind,
   LmsNodeStatus,
   PillarId,
-  PresentationLens,
   ProfileSubTab,
   PrototypeArtifactCard,
   PrototypeKanbanTask,
-  PublishVisibility,
   SimulatedRole,
 } from "./types";
+import { usePublishManagerState } from "./usePublishManagerState";
 
 const OWNER_ONLY_TABS: ReadonlySet<ProfileSubTab> = new Set([
   "shared",
@@ -60,15 +59,10 @@ export function useThreePillarPrototypeController() {
   const [editorMode, setEditorMode] = useState<"live" | "sandbox">("live");
   const [sandboxTitle, setSandboxTitle] = useState("sintesis-graf-pengetahuan.md");
   const [sandboxMarkdown, setSandboxMarkdown] = useState(PROTOTYPE_EDITOR_FILES[0].content);
+  const [sandboxActiveTab, setSandboxActiveTab] = useState<"editor" | "publish">("editor");
   const [graphSolver, setGraphSolver] = useState<GraphSolverKind>("mindmap");
-  const [isPublishDrawerOpen, setIsPublishDrawerOpen] = useState(false);
-  const [publishScope, setPublishScope] = useState<"vault" | "note">("vault");
-  const [publishLens, setPublishLens] = useState<PresentationLens>("atlas");
-  const [publishVisibility, setPublishVisibility] = useState<PublishVisibility>("public_listed");
-  const [publishCaption, setPublishCaption] = useState(
-    "Peta sintesis kognisi berbasis graf deterministik & plaintext Markdown (CC BY-SA 4.0)."
-  );
 
+  const publishManager = usePublishManagerState(role);
   const effectiveVisitorView = role === "visitor" || isPreviewAsVisitor;
 
   useEffect(() => {
@@ -149,25 +143,35 @@ export function useThreePillarPrototypeController() {
   const handleRemixInEditor = useCallback((artifact: PrototypeArtifactCard) => {
     setSandboxTitle(`${artifact.vaultSlug}/${artifact.id}.md`);
     setSandboxMarkdown(artifact.markdownPreview);
+    setSandboxActiveTab("editor");
     setGraphSolver(artifact.svgKind === "argument-map" ? "argument-map" : artifact.svgKind === "fishbone" ? "fishbone" : "mindmap");
     setEditorMode("sandbox");
     setQuickPeekArtifact(null);
     setActivePillar("editor");
-    toast.success(`"${artifact.title}" siap diedit di Sandbox (CC BY-SA 4.0).`);
+    toast.success(`"${artifact.title}" dimuat di Sandbox (CC BY-SA 4.0).`);
   }, []);
 
-  const handlePublishSubmit = useCallback(
-    (vaultTitle?: string, vaultSlug?: string) => {
-      if (role === "stage2_pending") {
-        toast.warning("Akun Stage 2 menunggu persetujuan Admin untuk publikasi Cloud.");
-        return;
-      }
-      const fallback = PROTOTYPE_VAULTS[0];
-      setIsPublishDrawerOpen(false);
-      toast.success(`Diterbitkan: /@dr.aras.wicaksono/${vaultSlug || fallback.slug} (${vaultTitle || fallback.title})`);
-    },
-    [role]
-  );
+  const openPublishStudioTab = useCallback(() => {
+    setActivePillar("editor");
+    if (role === "visitor" || editorMode === "sandbox") {
+      setSandboxActiveTab("publish");
+      return;
+    }
+    useWorkspaceStore.getState().openView({
+      type: "empty",
+      nodeId: "__publish_studio__",
+      title: "Publish Studio",
+    });
+  }, [editorMode, role]);
+
+  const openSettingsWorkspaceTab = useCallback(() => {
+    setActivePillar("editor");
+    useWorkspaceStore.getState().openView({
+      type: "settings",
+      title: "Settings",
+      settingsSection: "vaults",
+    });
+  }, []);
 
   return {
     activePillar, setActivePillar, role, handleRoleChange, isPreviewAsVisitor, setIsPreviewAsVisitor, effectiveVisitorView,
@@ -176,8 +180,7 @@ export function useThreePillarPrototypeController() {
     quickPeekArtifact, setQuickPeekArtifact, profileSubTab, setProfileSubTab, selectedVaultHighlight, setSelectedVaultHighlight,
     lmsStatuses, selectedLmsNodeId, setSelectedLmsNodeId, completeLmsNodeQuiz, derivedViewMode, setDerivedViewMode,
     kanbanTasks, cycleKanbanTaskStatus, editorMode, setEditorMode, sandboxTitle, sandboxMarkdown, setSandboxMarkdown,
-    graphSolver, setGraphSolver, isPublishDrawerOpen, setIsPublishDrawerOpen, publishScope, setPublishScope,
-    publishLens, setPublishLens, publishVisibility, setPublishVisibility, publishCaption, setPublishCaption,
-    handleRemixInEditor, handlePublishSubmit,
+    sandboxActiveTab, setSandboxActiveTab, graphSolver, setGraphSolver,
+    publishManager, handleRemixInEditor, openPublishStudioTab, openSettingsWorkspaceTab,
   };
 }

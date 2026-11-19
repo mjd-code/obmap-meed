@@ -67,7 +67,7 @@ export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-6">
+    <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-6 overflow-x-hidden">
       {/* Symmetrical 3-Zone Control Row */}
       <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] items-center gap-3">
         <div className="inline-flex rounded-full border border-border bg-surface p-1 justify-self-start">
@@ -104,7 +104,7 @@ export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
           />
         </div>
 
-        <div className="flex items-center gap-2 justify-self-end">
+        <div className="flex items-center gap-2 justify-self-start">
           <Select value={selectedTopic} onValueChange={onChangeTopic}>
             <SelectTrigger className="h-8 w-44 rounded-full vk-text-xs bg-surface">
               <SelectValue />

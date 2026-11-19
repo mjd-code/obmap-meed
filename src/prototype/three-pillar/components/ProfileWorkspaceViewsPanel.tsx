@@ -37,12 +37,9 @@ export const ProfileWorkspaceViewsPanel: React.FC<ProfileWorkspaceViewsPanelProp
   onOpenEditor,
 }) => {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <span className="vk-text-xs text-muted-foreground">
-          Derived Views langsung dari YAML frontmatter (tanpa format proprietary)
-        </span>
-        <div className="inline-flex items-center gap-1 rounded-full border border-border bg-surface p-1 self-start sm:self-auto">
+    <div className="space-y-4 min-w-0 max-w-full overflow-x-hidden">
+      <div className="flex items-center justify-start sm:justify-end">
+        <div className="grid grid-cols-5 sm:inline-flex w-full sm:w-auto max-w-full rounded-xl sm:rounded-full border border-border bg-surface p-1 gap-0.5">
           {VIEW_MODES.map((item) => {
             const Icon = item.icon;
             return (
@@ -51,12 +48,12 @@ export const ProfileWorkspaceViewsPanel: React.FC<ProfileWorkspaceViewsPanelProp
                 type="button"
                 onClick={() => onChangeMode(item.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1 rounded-full vk-text-xs font-medium transition-colors",
+                  "flex flex-col sm:flex-row items-center justify-center gap-1 py-1.5 sm:py-1 px-1 sm:px-3 rounded-lg sm:rounded-full vk-text-2xs sm:vk-text-xs font-medium transition-colors min-w-0 truncate",
                   mode === item.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{item.label}</span>
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate max-w-full">{item.label}</span>
               </button>
             );
           })}

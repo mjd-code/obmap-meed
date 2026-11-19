@@ -5,7 +5,6 @@ import { ExplorePillarView } from "./components/ExplorePillarView";
 import { ExploreQuickPeekDrawer } from "./components/ExploreQuickPeekDrawer";
 import { ProfilePillarView } from "./components/ProfilePillarView";
 import { EditorPillarView } from "./components/EditorPillarView";
-import { EditorPublishStudioDrawer } from "./components/EditorPublishStudioDrawer";
 
 export default function ThreePillarPrototypePage() {
   const ctrl = useThreePillarPrototypeController();
@@ -21,13 +20,32 @@ export default function ThreePillarPrototypePage() {
     ctrl.setActivePillar("editor");
   };
 
+  const publishProps = {
+    role: ctrl.role,
+    vaults: ctrl.publishManager.vaults,
+    notes: ctrl.publishManager.notes,
+    selectedVaultId: ctrl.publishManager.selectedVaultId,
+    selectedVault: ctrl.publishManager.selectedVault,
+    onSelectVault: ctrl.publishManager.setSelectedVaultId,
+    onToggleVaultPublish: ctrl.publishManager.toggleVaultPublish,
+    onBulkVaultPublish: ctrl.publishManager.bulkSetVaultPublish,
+    onUpdateVaultConfig: ctrl.publishManager.updateVaultConfig,
+    onToggleNotePublish: ctrl.publishManager.toggleNotePublish,
+    onBulkNotePublish: ctrl.publishManager.bulkSetNotePublish,
+    onToggleNotePrivate: ctrl.publishManager.toggleNotePrivateLock,
+  };
+
   return (
     <PrototypeNavigationShell
       activePillar={ctrl.activePillar}
       onSelectPillar={ctrl.setActivePillar}
       role={ctrl.role}
       onChangeRole={ctrl.handleRoleChange}
+      editorMode={ctrl.editorMode}
+      onChangeEditorMode={ctrl.setEditorMode}
       onFocusSearch={handleFocusSearch}
+      onOpenPublishTab={ctrl.openPublishStudioTab}
+      onOpenSettingsTab={ctrl.openSettingsWorkspaceTab}
     >
       {ctrl.activePillar === "explore" && (
         <ExplorePillarView
@@ -77,13 +95,15 @@ export default function ThreePillarPrototypePage() {
         <EditorPillarView
           role={ctrl.role}
           editorMode={ctrl.editorMode}
-          onChangeEditorMode={ctrl.setEditorMode}
           sandboxTitle={ctrl.sandboxTitle}
           sandboxMarkdown={ctrl.sandboxMarkdown}
           onChangeSandboxMarkdown={ctrl.setSandboxMarkdown}
+          sandboxActiveTab={ctrl.sandboxActiveTab}
+          onChangeSandboxActiveTab={ctrl.setSandboxActiveTab}
           graphSolver={ctrl.graphSolver}
           onChangeGraphSolver={ctrl.setGraphSolver}
-          onOpenPublishStudio={() => ctrl.setIsPublishDrawerOpen(true)}
+          publishProps={publishProps}
+          onOpenPublishTab={ctrl.openPublishStudioTab}
         />
       )}
 
@@ -97,23 +117,6 @@ export default function ThreePillarPrototypePage() {
             : false
         }
         onToggleFollow={ctrl.toggleFollowAuthor}
-      />
-
-      <EditorPublishStudioDrawer
-        open={ctrl.isPublishDrawerOpen}
-        onClose={() => ctrl.setIsPublishDrawerOpen(false)}
-        role={ctrl.role}
-        editorMode={ctrl.editorMode}
-        sandboxTitle={ctrl.sandboxTitle}
-        scope={ctrl.publishScope}
-        onChangeScope={ctrl.setPublishScope}
-        lens={ctrl.publishLens}
-        onChangeLens={ctrl.setPublishLens}
-        visibility={ctrl.publishVisibility}
-        onChangeVisibility={ctrl.setPublishVisibility}
-        caption={ctrl.publishCaption}
-        onChangeCaption={ctrl.setPublishCaption}
-        onSubmitPublish={ctrl.handlePublishSubmit}
       />
     </PrototypeNavigationShell>
   );

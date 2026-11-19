@@ -38,9 +38,9 @@ export const ProfileIdentityHeader: React.FC<ProfileIdentityHeaderProps> = ({
         </div>
       )}
 
-      <section className="rounded-2xl border border-border/80 bg-card p-5 space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
+      <section className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 space-y-4 min-w-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
+          <div className="flex items-center gap-3.5 min-w-0">
             <Avatar className="h-14 w-14 border border-primary/40 shrink-0">
               <AvatarFallback className="bg-primary/15 text-primary font-bold vk-text-base">
                 {scholar.initials}
@@ -53,12 +53,12 @@ export const ProfileIdentityHeader: React.FC<ProfileIdentityHeaderProps> = ({
                   <CheckCircle2 className="h-3 w-3" /> Verified
                 </Badge>
               </div>
-              <p className="vk-text-xs font-mono text-primary">{scholar.handle} · ITB</p>
+              <p className="vk-text-xs font-mono text-primary truncate">{scholar.handle} · ITB</p>
               <p className="vk-text-xs text-muted-foreground line-clamp-1">{scholar.bio}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap">
             {role !== "visitor" && (
               <Button
                 variant={isPreviewAsVisitor ? "default" : "outline"}

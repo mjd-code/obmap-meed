@@ -1,27 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { cn } from "@/global/utils";
-import { Button } from "@/global/ui/button";
 import { useAuth } from "@/domains/auth/shared/hooks/useAuth";
 import { devQuickLogin, isDevAuthEnabled } from "@/domains/auth/shared/api/devAuth";
 import { useConfigSync } from "@/domains/settings/shared/hooks/useConfigSync";
 import { useVaultLifecycle } from "@/domains/workspace/shared/hooks/useVaultLifecycle";
-import { Ribbon } from "@/domains/workspace/components/WorkspaceRibbon";
-import { WorkspaceRightSidebar } from "@/domains/workspace/components/WorkspaceRightSidebar";
 import { StatusBar } from "@/domains/workspace/components/WorkspaceStatusBar";
-import { WorkspaceTree } from "@/domains/workspace/components/WorkspaceTree";
-import { WorkspaceGroup } from "@/domains/workspace/components/WorkspaceGroup";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
-import { useUIStore } from "@/global/stores";
 import { useIsMobile } from "@/global/hooks/useMobile";
+import { PrototypeWorkspaceCanvas } from "./PrototypeWorkspaceCanvas";
+import type { PublishTabBindings } from "./EditorPublishStudioTab";
+import { PrototypeWorkspaceDrawers } from "./PrototypeWorkspaceDrawers";
 
 interface EditorLiveWorkbenchProps {
-  onSwitchToSandbox: () => void;
+  publishProps: PublishTabBindings;
+  onOpenPublishTab: () => void;
 }
 
 export const EditorLiveWorkbench: React.FC<EditorLiveWorkbenchProps> = ({
-  onSwitchToSandbox,
+  publishProps,
+  onOpenPublishTab,
 }) => {
   useVaultLifecycle();
   const { hydrated } = useConfigSync();
@@ -33,9 +30,6 @@ export const EditorLiveWorkbench: React.FC<EditorLiveWorkbenchProps> = ({
 
   const root = useWorkspaceStore((s) => s.root);
   const activeGroup = useWorkspaceStore((s) => s.getActiveGroup());
-  const activeTool = useUIStore((s) => s.activeTool);
-  const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen);
-  const isLeftOpen = activeTool === "files" || activeTool === "vcs";
 
   useEffect(() => {
     const isManualLogout = sessionStorage.getItem("dev_manual_logout") === "true";
@@ -53,7 +47,7 @@ export const EditorLiveWorkbench: React.FC<EditorLiveWorkbenchProps> = ({
       <div className="flex-1 min-h-0 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2 text-muted-foreground">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="vk-text-xs">Memuat Live Workbench...</span>
+          <span className="vk-text-xs">Memuat Workspace...</span>
         </div>
       </div>
     );
@@ -61,42 +55,25 @@ export const EditorLiveWorkbench: React.FC<EditorLiveWorkbenchProps> = ({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-background">
-      {!loading && !user && !isDevAuthEnabled && (
-        <div className="h-9 shrink-0 border-b border-border bg-surface px-4 flex items-center justify-between gap-2 vk-text-xs">
-          <span className="text-muted-foreground truncate">
-            Mode lokal aktif · Masuk untuk menyinkronkan Cloud Vault.
-          </span>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button variant="ghost" size="sm" className="h-6 vk-text-2xs" onClick={onSwitchToSandbox}>
-              Gunakan Sandbox
-            </Button>
-            <Button asChild size="sm" className="h-6 vk-text-2xs">
-              <Link to="/auth">Masuk</Link>
-            </Button>
-          </div>
-        </div>
-      )}
-
+      {/* StatusBar: Top on Mobile (< lg, Double Header), Bottom on Desktop (>= lg) */}
       <div className="order-1 lg:order-2 shrink-0">
         <StatusBar />
       </div>
 
+      {/* Center Canvas + Left Ribbon + Drawers with Isolated Stacking Context */}
       <div className="flex-1 min-h-0 flex order-2 lg:order-1 overflow-hidden relative">
-        <Ribbon />
-        <div
-          className={cn(
-            "flex-1 min-w-0 h-full min-h-0 transition-[margin] duration-200 ease-out",
-            "max-md:w-full max-md:flex-none max-md:shrink-0",
-            rightSidebarOpen && !isLeftOpen && "max-md:-ml-[min(250px,78vw)]"
-          )}
-        >
-          {isMobile ? (
-            activeGroup && <WorkspaceGroup group={activeGroup} isActive />
-          ) : (
-            <WorkspaceTree node={root} />
-          )}
-        </div>
-        <WorkspaceRightSidebar />
+        <PrototypeWorkspaceDrawers
+          onOpenPublishTab={onOpenPublishTab}
+          centerCanvas={
+            isMobile ? (
+              activeGroup && (
+                <PrototypeWorkspaceCanvas node={activeGroup} publishProps={publishProps} />
+              )
+            ) : (
+              <PrototypeWorkspaceCanvas node={root} publishProps={publishProps} />
+            )
+          }
+        />
       </div>
     </div>
   );

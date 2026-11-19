@@ -1,26 +1,24 @@
 import React from "react";
-import { Cloud, FolderOpen, Rocket, Settings2 } from "lucide-react";
+import { FileText, Rocket } from "lucide-react";
 import { cn } from "@/global/utils";
-import { Badge } from "@/global/ui/badge";
-import { Button } from "@/global/ui/button";
 import { MarkdownView } from "@/domains/editor/components/EditorMarkdownView";
-import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
-import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
-import { useNodeStore, useVaultStore } from "@/global/stores";
 import type { GraphSolverKind, SimulatedRole } from "../types";
 import { EditorLiveWorkbench } from "./EditorLiveWorkbench";
+import { EditorPublishStudioTab, type PublishTabBindings } from "./EditorPublishStudioTab";
 import { PrototypeSvgThumbnail } from "./PrototypeSvgThumbnails";
 
 interface EditorPillarViewProps {
   role: SimulatedRole;
   editorMode: "live" | "sandbox";
-  onChangeEditorMode: (mode: "live" | "sandbox") => void;
   sandboxTitle: string;
   sandboxMarkdown: string;
   onChangeSandboxMarkdown: (next: string) => void;
+  sandboxActiveTab: "editor" | "publish";
+  onChangeSandboxActiveTab: (tab: "editor" | "publish") => void;
   graphSolver: GraphSolverKind;
   onChangeGraphSolver: (solver: GraphSolverKind) => void;
-  onOpenPublishStudio: () => void;
+  publishProps: PublishTabBindings;
+  onOpenPublishTab: () => void;
 }
 
 const SOLVERS: { id: GraphSolverKind; label: string }[] = [
@@ -32,29 +30,24 @@ const SOLVERS: { id: GraphSolverKind; label: string }[] = [
 export const EditorPillarView: React.FC<EditorPillarViewProps> = ({
   role,
   editorMode,
-  onChangeEditorMode,
   sandboxTitle,
   sandboxMarkdown,
   onChangeSandboxMarkdown,
+  sandboxActiveTab,
+  onChangeSandboxActiveTab,
   graphSolver,
   onChangeGraphSolver,
-  onOpenPublishStudio,
+  publishProps,
+  onOpenPublishTab,
 }) => {
-  const currentVaultId = useVaultStore((s) => s.currentVaultId);
-  const nodes = useNodeStore((s) => s.nodes);
-  const openView = useWorkspaceStore((s) => s.openView);
-
-  const vault = currentVaultId ? getVaultManager().getVault(currentVaultId) : null;
-  const fileCount = nodes.filter((n) => n.type === "file").length;
-
-  const handleManageVaults = () => {
-    onChangeEditorMode("live");
-    openView({
-      type: "settings",
-      title: "Settings",
-      settingsSection: "vaults",
-    });
-  };
+  if (editorMode === "live" && role !== "visitor") {
+    return (
+      <EditorLiveWorkbench
+        publishProps={publishProps}
+        onOpenPublishTab={onOpenPublishTab}
+      />
+    );
+  }
 
   const svgKind =
     graphSolver === "argument-map"
@@ -65,82 +58,41 @@ export const EditorPillarView: React.FC<EditorPillarViewProps> = ({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-background">
-      {/* Slim Symmetrical Editor Strip */}
-      <div className="h-10 shrink-0 border-b border-border/80 bg-surface/80 px-3 md:px-4 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          {editorMode === "live" ? (
-            <>
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-elevated px-2.5 py-0.5 vk-text-xs min-w-0">
-                {vault?.location === "folder" ? (
-                  <FolderOpen className="h-3.5 w-3.5 text-warning shrink-0" />
-                ) : (
-                  <Cloud className="h-3.5 w-3.5 text-success shrink-0" />
-                )}
-                <span className="font-medium truncate max-w-[160px]">
-                  {vault?.name || "Belum ada Vault"}
-                </span>
-                {vault && (
-                  <span className="vk-text-2xs text-muted-foreground hidden sm:inline">
-                    · {fileCount} file
-                  </span>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 vk-text-2xs gap-1 hidden sm:inline-flex"
-                onClick={handleManageVaults}
-              >
-                <Settings2 className="h-3 w-3" />
-                <span>Kelola Vault</span>
-              </Button>
-            </>
-          ) : (
-            <div className="inline-flex items-center gap-2 min-w-0">
-              <Badge variant="info" className="vk-text-2xs">Sandbox · CM6</Badge>
-              <span className="vk-text-xs font-mono text-muted-foreground truncate max-w-[180px]">
-                {sandboxTitle}
-              </span>
-            </div>
+      <div className="h-10 shrink-0 border-b border-border bg-muted/30 px-2 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onChangeSandboxActiveTab("editor")}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 h-full vk-text-xs border-r border-border transition-colors",
+            sandboxActiveTab === "editor"
+              ? "bg-background text-foreground font-medium"
+              : "text-muted-foreground hover:text-foreground"
           )}
-        </div>
+        >
+          <FileText className="h-3.5 w-3.5" />
+          <span className="truncate max-w-[160px]">{sandboxTitle}</span>
+        </button>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {role !== "visitor" && (
-            <div className="inline-flex rounded-full border border-border bg-elevated p-0.5">
-              <button
-                type="button"
-                onClick={() => onChangeEditorMode("live")}
-                className={cn(
-                  "px-2.5 py-0.5 rounded-full vk-text-2xs font-medium transition-colors",
-                  editorMode === "live" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Live App
-              </button>
-              <button
-                type="button"
-                onClick={() => onChangeEditorMode("sandbox")}
-                className={cn(
-                  "px-2.5 py-0.5 rounded-full vk-text-2xs font-medium transition-colors",
-                  editorMode === "sandbox" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Sandbox
-              </button>
-            </div>
+        <button
+          type="button"
+          onClick={() => onChangeSandboxActiveTab("publish")}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 h-full vk-text-xs border-r border-border transition-colors",
+            sandboxActiveTab === "publish"
+              ? "bg-background text-foreground font-medium"
+              : "text-muted-foreground hover:text-foreground"
           )}
-
-          <Button size="sm" className="h-7 px-3 rounded-full vk-text-xs gap-1.5" onClick={onOpenPublishStudio}>
-            <Rocket className="h-3.5 w-3.5" />
-            <span>Publish</span>
-          </Button>
-        </div>
+        >
+          <Rocket className="h-3.5 w-3.5 text-primary" />
+          <span>Publish Studio</span>
+        </button>
       </div>
 
-      {/* Main Content: Live App Workbench OR Visitor CodeMirror 6 Sandbox */}
-      {editorMode === "live" && role !== "visitor" ? (
-        <EditorLiveWorkbench onSwitchToSandbox={() => onChangeEditorMode("sandbox")} />
+      {sandboxActiveTab === "publish" ? (
+        <EditorPublishStudioTab
+          {...publishProps}
+          onCloseTab={() => onChangeSandboxActiveTab("editor")}
+        />
       ) : (
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
           <div className="md:col-span-7 border-b md:border-b-0 md:border-r border-border overflow-y-auto p-4 md:p-6">
@@ -164,7 +116,9 @@ export const EditorPillarView: React.FC<EditorPillarViewProps> = ({
                     onClick={() => onChangeGraphSolver(s.id)}
                     className={cn(
                       "px-2.5 py-0.5 rounded-full vk-text-2xs transition-colors",
-                      graphSolver === s.id ? "bg-primary text-primary-foreground font-medium" : "text-muted-foreground"
+                      graphSolver === s.id
+                        ? "bg-primary text-primary-foreground font-medium"
+                        : "text-muted-foreground"
                     )}
                   >
                     {s.label}
@@ -172,7 +126,6 @@ export const EditorPillarView: React.FC<EditorPillarViewProps> = ({
                 ))}
               </div>
             </div>
-
             <PrototypeSvgThumbnail kind={svgKind} className="flex-1 min-h-[260px] rounded-xl" />
           </div>
         </div>

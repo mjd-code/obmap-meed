@@ -83,7 +83,7 @@ export const ProfilePillarView: React.FC<ProfilePillarViewProps> = ({
   );
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-5">
+    <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-5 overflow-x-hidden">
       <ProfileIdentityHeader
         role={role}
         effectiveVisitorView={effectiveVisitorView}
@@ -93,8 +93,8 @@ export const ProfilePillarView: React.FC<ProfilePillarViewProps> = ({
       />
 
       {/* Symmetrical Tab Row */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 pb-3">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 pb-3 min-w-0">
+        <div className="flex items-center gap-1 max-w-full overflow-x-auto no-scrollbar">
           {PUBLIC_TABS.map((t) => (
             <button
               key={t.id}
