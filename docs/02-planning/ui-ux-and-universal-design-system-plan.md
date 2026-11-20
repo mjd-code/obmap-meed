@@ -4,8 +4,8 @@ title: Master Plan Audit UI/UX, Standar Desain Frontend & Universal Dynamic Sett
 type: planning
 status: [PLANNED]
 owner: Principal Product Designer & Staff Frontend Architect
-version: 2.0.0
-last_reviewed: 2026-11-16
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-PLAN-000
@@ -136,7 +136,7 @@ Memperluas `useThemeStore.ts` (`STEP-01.5`) dan `configRegistry.ts` sehingga **t
 ```mermaid
 flowchart LR
     BOOT["bootstrap.ts (Synchronous Boot Paint)"] --> CASCADE
-    L6["6-Layer Cascade (ADR-0011): system -> org_policy -> vault -> user -> leaf -> session"] --> CASCADE["Resolved Appearance Config (useThemeStore / ConfigSection 'appearance')"]
+    L6["6-Layer Cascade (ADR-0011): system -> org_policy -> vault (.app/config.json) -> user -> node/leaf -> session"] --> CASCADE["Resolved Appearance Config (useThemeStore / ConfigSection 'appearance')"]
     CASCADE --> GUARD["WCAG AA Contrast Validator + Org-Lock Guard"]
     GUARD --> DOM["documentElement (:root.vk-themed-root CSS Vars + data-density + data-theme + data-motion)"]
     DOM --> TAILWIND["Tailwind Semantic Utilities & Radix/shadcn UI"]
@@ -176,7 +176,20 @@ Di `src/global/utils/color-utils.ts`, tambahkan fungsi murni `computeContrastRat
     2. **Center Settings Form (`flex-1`, `max-w-2xl`):** Kontrol terstruktur dengan badge *Inherited from Org / Vault* atau *Locked by Admin* (`ADR-0011`), sakelar *Preset Picker* visual (kartu mini berwarna, **bukan input teks HSL mentah**), dropdown font dengan pratinjau langsung, slider `UI Scale` & `Prose Size`, segmented control `Density` & `Border Radius`, serta editor *Scoped CSS Snippets* dengan indikator baris CSS yang ditolak sanitizer.
     3. **Right Sticky Live Preview Dock (`300px` pada `>= 1280px`, collapse ke banner atas pada layar lebih kecil):** Menampilkan 3 pratinjau hidup secara bersamaan saat slider digeser: *(a) Mini Workbench Card & Status Badge, (b) Mini Markdown & Code Block Snippet, (c) Mini SVG/Canvas Node-Link Graph + Skor Kontras WCAG AA*.
 
-### 3.5 Standar Desain Frontend Lintas Aplikasi (*The ObMap UI Constitution*)
+### 3.5 Arsitektur Controls & Settings (`3-Scope Contextual Escalation` & 3 Permukaan UI Proporsional)
+Agar kontrol mendalam tetap rapi dan pengguna tidak tersesat saat bekerja di editor maupun halaman profil publik, seluruh kontrol diatur lintas **3 Scope** dan didistribusikan secara proporsional di **3 Lokasi UI**:
+
+1. **App & Account Scope (Global):** Identitas publik (`/:username`, bio, ORCID, avatar), tema & tipografi global, *keybindings*, koneksi AI global (**Ollama / WebLLM / BYOK**), integrasi **Zotero**, bahasa, notifikasi, billing/kuota, & manajemen storage lokal.
+2. **Vault Scope (`.app/config.json` root — dilarang memecah ke file terpisah):** `primary_mode` (`Freeform` | `Atlas` | `Studio` | `Academy`), *default Helicopter View*, schema YAML & template, kebijakan *Publish & Access* vault, aturan `academy` tingkat vault, dan ekstensi `@app/sdk` aktif.
+3. **Node & Session Scope (YAML Frontmatter + `node_overrides` di `.app/config.json` + Ephemeral HUD):** *Override* lensa visual aktif per tab, properti YAML node, *Publish & Access* granular tingkat Folder-Node/File-Node, dan aturan `academy` tingkat sub-folder/node.
+
+| Lokasi UI | Scope yang Dikelola | Komponen & Perilaku Proporsional | Eskalasi Kontekstual |
+| :--- | :--- | :--- | :--- |
+| **Dedicated Settings Hub (`/settings` atau modal `Ctrl+,`)** | *App & Account*, *Vault Scope*, & *Presets/Extensions* | *Single Source of Truth* seluruh pengaturan mendalam yang sadar-konteks (*context-aware*) dalam **5 Tab Kanonik**: `Account & Profile`, `Appearance & App`, `AI & Integrations` (Ollama/BYOK/Zotero), `Active Vault (.app/config.json)`, & `Presets & Extensions`. | Terbuka langsung ke tab relevan halaman pemanggil. |
+| **Profile Page (`/:username`)** | *Ringan: Identitas Publik & Portofolio* | Hanya menampilkan kontrol ringan terkait **Identitas Publik & Kurasi Portofolio** (edit bio/profil cepat, pin karya *Atlas/Publication/Course/Template*, atur visibilitas publik). **Bebas dari pengaturan teknis editor.** | Tombol **"Full Account Settings →"** menuju `/settings`. |
+| **Editor Page (`/app`)** | *Node & Session Scope + 80% Aksi Harian* | **In-Place HUD & Quick Settings Slide-Over Drawer** (ganti *Helicopter View* `Graph`/`Diagram`/`Table`/`Cards`, ganti *Workspace Mode* sementara, buka **Drawer terpadu *"Share · Access · Versions"***, edit YAML & aturan node `academy`) tanpa meninggalkan kanvas. | Tombol **"All Settings (`Ctrl+,`)"** langsung membuka tab **`Active Vault (.app/config.json)`**. |
+
+### 3.6 Standar Desain Frontend Lintas Aplikasi (*The ObMap UI Constitution*)
 Aturan baku yang wajib diikuti di seluruh `src/domains/` dan `src/pages/`:
 
 1. **Standar Skala Tipografi (Melarang `text-[Npx]` baru):**
@@ -260,7 +273,7 @@ Sebelum eksekusi kode dimulai, mohon putuskan 6 poin arah pengembangan berikut:
 5. **Standarisasi Bahasa Antarmuka Default:**
    - Saat ini UI mencampur Inggris dan Indonesia bahkan dalam satu dropdown yang sama (`GraphNodePanelHeader.tsx`). Apakah standar utama sebelum kamus i18n penuh (`STEP-05.4`) dibuat **English-First** (konsisten untuk ekosistem global/developer) atau **Bahasa Indonesia-First**?
 6. **Lingkup Penyimpanan Pengaturan Appearance (`ADR-0011`):**
-   - *Opsi A (Direkomendasikan):* Disimpan sebagai preferensi **User-Global** (`Layer 4`) sebagai default di seluruh aplikasi, dengan opsi opsional **Override per-Vault** (`.vk/config.json` / fallback `.obmap/config.json`, `Layer 3`) dan tetap tunduk pada **Org Lock** (`Layer 2`).
+   - *Opsi A (Direkomendasikan):* Disimpan sebagai preferensi **User-Global** (`Layer 4`) sebagai default di seluruh aplikasi, dengan opsi opsional **Override per-Vault** (`.app/config.json`, fallback baca `.vk/config.json` & `.obmap/config.json`, `Layer 3`) dan tetap tunduk pada **Org Lock** (`Layer 2`).
    - *Opsi B:* Murni global per-user tanpa izin override per-vault.
 
 ---

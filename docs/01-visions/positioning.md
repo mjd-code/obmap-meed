@@ -1,75 +1,91 @@
 ---
 id: DOC-VIS-003
-title: Positioning Strategis & Matriks Kompetitif ObMap v2.0
+title: Positioning Strategis & Matriks Kompetitif (6-System Reference DNA) v2.0
 type: vision
 status: [IMPLEMENTED]
 owner: Chief Product Officer & Growth Lead
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-000
   - DOC-VIS-001
+  - DOC-VIS-002
   - DOC-VIS-004
   - DOC-PLAN-002
 source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ---
 
-# Positioning Strategis & Matriks Kompetitif ObMap v2.0
+# Positioning Strategis & Matriks Kompetitif (`6-System Reference DNA`)
 
 ## Ringkasan 3 Baris
-- Memosisikan ObMap v2.0 di kuadran unik yang menyatukan **Topologi Pengetahuan Visual + Kedaulatan Markdown** dengan **Kolaborasi Tim & Jejaring Sosial Cendekiawan (`/:username`)**.
-- Mengadopsi strategi monetisasi hibrida **XMind + Notion** yang dikelola secara dinamis oleh Admin di `/admin`, sambil menolak model berbayar Obsidian untuk publikasi dan sinkronisasi dasar.
-- Mendefinisikan pembeda rute kanonik root `/:username` & `/@:username` (*hard cutover* tanpa `/p/*`) serta prioritas pembayaran lokal **Xendit/Midtrans** terlebih dahulu sebelum **Stripe**.
+- Memosisikan produk di kuadran unik **Local-First Visual Knowledge OS & High-Signal Social Knowledge Network** berbasis fusi **6 Sistem Referensi** (**Obsidian**, **Nodus Research**, **XMind**, **Notion**, **Wikipedia**, dan **LinkedIn × ResearchGate × GitHub**).
+- Menjawab ketegangan *"Fleksibilitas Kosong vs Kesiapan Pakai"*: pengguna pemula langsung produktif dalam `< 90 detik` via **Core Presets (`Atlas`, `Studio`, `Academy`)** ala Nodus Research, sementara pengguna mahir memiliki kebebasan penuh ala Obsidian via **`Freeform`**, **`.app/config.json`**, **`@app/sdk`**, dan **BYO-AI / Ollama**.
+- Menegaskan batas produk menolak jalur *office-board-central* (Trello/Asana/ClickUp) agar seluruh *Derived Views* tetap ramping untuk riset, arsip, publikasi, dan pembelajaran.
 
 ---
 
-## 1. Peta Posisi Produk Ekosistem Pengetahuan
+## 1. Peta Posisi Produk Ekosistem Pengetahuan (6 Referensi)
 
 ```mermaid
 flowchart TD
-    subgraph PRIVATE ["Orientasi Ruang Privat & Tim"]
-        XM["XMind: Visual Deterministik Tinggi / Teks Terbatas"]
-        OBS["Obsidian: PKM Markdown Tinggi / Kolaborasi & Visual Terstruktur Terbatas"]
-        NOT["Notion: Kolaborasi & Views Tinggi / Vendor Lock-In Tanpa Graph"]
+    subgraph PRIVATE ["Kognisi Privat, Riset & Kesiapan Kerja"]
+        OBS["Obsidian: Plaintext .md & Freeform SDK"]
+        NOD["Nodus Research: Out-of-the-Box Presets, PDF/Cite & Local AI"]
+        XM["XMind: Deterministic Visual Mapping"]
+        NOT["Notion: Derived Views & Block Comments"]
     end
-    subgraph PUBLIC ["Orientasi Publik & Jejaring Cendekiawan"]
-        WIK["Wikipedia: Indeks Pengetahuan Terbuka / Tanpa PKM Privat"]
-        LRG["LinkedIn & ResearchGate: Jejaring & Sitasi / Bukan Workspace Pengetahuan"]
-        OBM["ObMap v2.0: PKM Local-First + Deterministic Solvers + Notion Views + /:username & Fork/MR"]
+    subgraph PUBLIC ["Jaringan Pengetahuan Terbuka & Identitas Cendekiawan"]
+        WIK["Wikipedia: Open Encyclopedia & Revisions"]
+        LRG["LinkedIn × RG × GitHub: Profile, Citations & Fork/MR"]
     end
-    XM --> OBM
-    OBS --> OBM
-    NOT --> OBM
-    WIK --> OBM
-    LRG --> OBM
+    SYS["Visual Knowledge OS v2.0 (Unopinionated Data · Opinionated Lenses)"]
+    OBS --> SYS
+    NOD --> SYS
+    XM --> SYS
+    NOT --> SYS
+    WIK --> SYS
+    LRG --> SYS
 ```
 
 ---
 
-## 2. Matriks Perbandingan Enam Kolom
+## 2. Matriks Perbandingan Tujuh Kolom
 
-| Dimensi Produk & Teknis | Obsidian | Notion | XMind | Wikipedia | LinkedIn / RG | **ObMap v2.0** |
-| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Kedaulatan File (`.md` Lokal)** | Tinggi | Tidak | Biner `.xmind` | Wiki markup | Tidak | **Tinggi (FS API + IndexedDB)** `[IMPLEMENTED]` |
-| **Kognisi Graf Deterministik** | Force 2D saja | Tidak ada | Deterministik | Tidak ada | Tidak ada | **Multi-Solver Deterministik + Force** `[IMPLEMENTED]` |
-| **Teamspace & Derived Views** | Add-on Sync | Sangat Kuat | Minimal | Diskusi wiki | Minimal | **VCS + RBAC + Views dari Frontmatter** `[PARTIAL]`/`[VISION]` |
-| **Identitas Sosial Kanonik** | Publish berbayar | Link acak | Ekspor statis | Halaman user | Profil profesional | **`/:username` Gratis + Verified Scholar** `[VISION]` |
-| **Sitasi & Kolaborasi Terbuka** | Eksternal | Komentar tim | Tidak ada | Referensi manual | Sitasi PDF pasif | **`[[@user/vault/note]]` + Fork & Merge Request (`CC BY-SA 4.0`)** `[VISION]` |
-| **Kurikulum Interaktif (LMS)** | Plugin | Manual | Tidak ada | Kategori statis | Kursus video pasif | **Native Skill Tree DAG & Mastery State** `[VISION]` |
+| Dimensi Produk & Teknis | Obsidian | Nodus Research | Notion | XMind | Wikipedia | LinkedIn / RG / GH | **Arsitektur v2.0** |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Kedaulatan File (`.md` + `.app/config.json`)** | Tinggi | Menengah | Blok tertutup | Biner `.xmind` | Wiki markup | Terbatas / Git CLI | **Tinggi (FS API + IndexedDB + Config Tunggal)** `[IMPLEMENTED]` |
+| **Zero-Friction Core Presets (`< 90s`)** | Tidak (rakit plugin) | Tinggi | Template manual | Template peta | Tidak ada | Tidak ada | **Tinggi (`Atlas` · `Studio` · `Academy` + `Freeform`)** `[PLANNED]` |
+| **4 Helicopter Views & Solver Deterministik** | Force 2D | Graph/Notes | Table/Board/Cal | Deterministik | Tidak ada | Tidak ada | **Graph + Diagram Deterministik + Table + Cards** `[PARTIAL]` |
+| **Native BYO-AI / Local AI & Sitasi PDF** | Plugin pihak ke-3 | AI lokal + PDF | AI berbayar | AI berbayar | Tidak ada | PDF statis | **Ollama/WebLLM + BYOK Local RAG + Zotero/PDF** `[VISION]` |
+| **Essential VCS + Granular `AS & WITH`** | Eksternal | Minimal | Vault/Page share | Tidak ada | Wiki rev | Fork/PR teknis | **Snapshot/Visual Diff/Fork/KMR di Vault & Node** `[PARTIAL]`/`[VISION]` |
+| **Presentation Lenses & Publik `/:username`** | Publish berbayar | Terbatas | Link acak | Ekspor file | Publik wiki | Profil terpisah | **Gratis `/:username`: `atlas`/`publication`/`course`/`template`** `[PARTIAL]` |
+| **Academy Competence Tree (LMS)** | Plugin | Fokus riset | Manual | Tidak ada | Kategori | Terpisah | **3-Layer Living Competence Tree + Student Sub-Nodes** `[VISION]` |
 
 ---
 
-## 3. Positioning Model Komersial & Ekosistem
+## 3. Penyelarasan Workspace Mode → Presentation Lens & Target Segmen
 
-1. **Gratis Sebagai Penggerak Jaringan (Network-Effect Engine):** Penyimpanan lokal tak terbatas, identitas publik `/:username`, lisensi terbuka `CC BY-SA 4.0`, tombol sitasi, dan *Fork* terbuka gratis guna memaksimalkan *K-Factor* komunitas cendekiawan.
-2. **Diferensiasi Berbayar ala XMind + Notion:** Fitur Pro berfokus pada produktivitas visual tingkat lanjut (semua solver analitik, *Pitch Mode*, ekspor PDF/SVG/OPML, tema premium, analitik sitasi, cloud quota lebih besar), sedangkan Team/Lab berfokus pada Teamspaces, *Admin-Locked Policies*, CRDT multi-kursor, dan manajemen kursi (*seat management*).
-3. **Konfigurasi Tarif & Kuota Dinamis + Payment Lokal First:** Seluruh parameter harga dan kuota dikelola di `/admin` (`plans`, `plan_entitlements`, `plan_quotas`), dengan gerbang pembayaran utama **Xendit / Midtrans** (QRIS, VA, e-Wallet IDR) disusul adapter **Stripe**.
+| Workspace Mode (Input/Kerja di `/app`) | Sifat Lensa | Presentation Lens (`/:username` & `/explore`) | Fokus Segmen & Keunggulan Pembeda |
+| :--- | :---: | :---: | :--- |
+| **`Freeform`** | *Unopinionated* | Bebas / *Node-Level* terpilih | Arsitek pengetahuan & pengguna Obsidian mahir dengan kontrol manual 100% + 4 Helicopter Views. |
+| **`Atlas`** | *Opinionated Core* | **`atlas`** | Peneliti, pelajar, & pemikir yang mengarsip, memetakan konsep/argumen, & mengelola sitasi/PDF ala Nodus × XMind. |
+| **`Studio`** | *Opinionated Core* | **`publication`** | Penulis, blogger, & pemikir publik; CMS editorial lengkap dengan **4 Helicopter Views** untuk kurasi topik & internal link. |
+| **`Academy`** | *Opinionated Core* | **`course`** | Pengurus sekolah/kampus, guru/dosen, & murid lewat **Living Pedagogical & Competence Tree** 3 lapis. |
+| **`Community Presets`** | *Incubator* | **`template`** | Berbagi paket konfigurasi **`.app/config.json`** di `/explore` yang dapat dipromosikan menjadi *Core Preset* resmi. |
+
+---
+
+## 4. Positioning Model Komersial & Batas Fokus
+1. **Gratis Sebagai Penggerak Jaringan:** Penyimpanan lokal tak terbatas, identitas root `/:username`, lisensi default `CC BY-SA 4.0`, sitasi lintas-vault, *Fork*, dan *Basic Helicopter Views* tersedia gratis untuk memaksimalkan *K-Factor*.
+2. **Diferensiasi Berbayar (XMind + Notion + Local-First Edge):** Paket Pro berfokus pada solver analitik lanjutan (`argument-map`, `citation-tree`), *Pitch Mode*, ekspor PDF/SVG/OPML, kuota cloud & tema premium; Team/Academic berfokus pada *Admin-Locked `.app/config.json` Policies*, Teamspaces, kolaborasi CRDT Yjs, kontrol Academy Lapisan 3 (*Controlled Execution Environment*), serta gateway **Xendit/Midtrans first → Stripe**.
+3. **Menolak Beban Manajemen Proyek Korporat:** Tidak memelihara fitur sprint board kompleks korporat agar seluruh produk tetap tajam, cepat, dan setia pada DNA **Visual Knowledge OS**.
 
 ---
 
 ## Terkait
 - [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
-- [Visi & Misi v2.0](vision-mission.md)
-- [Business Requirements Document (BRD)](../02-planning/brd.md)
-- [Lima Pilar Use-Case](use-case-pillars.md)
+- [Visi, Misi & Filosofi](vision-mission.md)
+- [Filosofi & 6 Prinsip Inti](product-philosophy.md)
+- [Lima Pilar Use-Case & Lensa](use-case-pillars.md)
+- [Business Requirements Document (`brd.md`)](../02-planning/brd.md)

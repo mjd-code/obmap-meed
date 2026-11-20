@@ -4,8 +4,8 @@ title: Business Requirements Document (BRD) ObMap v2.0
 type: planning
 status: [PLANNED]
 owner: Chief Product Officer & Growth Lead
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-000
@@ -55,7 +55,7 @@ ObMap menolak model Obsidian (menjual sinkronisasi dasar & publikasi publik seba
 | **Identitas Sosial `/:username` & Fork/Cite** | **Gratis Penuh** (`CC BY-SA 4.0`) | Penuh + Custom Domain + Analitik Trafik | Penuh + Branding Tim & `Public Unlisted` | Katalog Institusi + Kurasi *Verified Scholar* |
 | **Cloud Vaults & Media Privat** | Kuota dasar awal (diatur Admin) | Kuota Pro ditingkatkan (diatur Admin) | Kuota Tim / Shared Pool (diatur Admin) | Kuota Khusus + Dedicated SLA |
 | **Visualisasi, Tema & Ekspor** | 4 Solver inti, PNG / Markdown | Semua Solver (`argument-map`, `citation-tree`), Pitch Mode, PDF/SVG/OPML | Semua fitur Pro + Template & Tema Tim | Semua + White-label / Domain Kampus |
-| **Kolaborasi, VCS & Kebijakan** | Batas tamu & retensi VCS dasar (diatur Admin) | Retensi VCS diperpanjang + PR Review personal | Unlimited Anggota, *Org-Lock Policy*, Teamspaces | SAML/SSO, Allowlist Plugin `@vk/sdk`, Audit Logs |
+| **Kolaborasi, VCS & Kebijakan** | Batas tamu & retensi VCS dasar (diatur Admin) | Retensi VCS diperpanjang + KMR & Visual Diff | Unlimited Anggota, *Org-Lock* `.app/config.json`, Teamspaces | SAML/SSO, Academy Lapisan 3, Allowlist Plugin `@app/sdk`, Audit Logs |
 
 ---
 

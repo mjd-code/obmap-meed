@@ -1,11 +1,11 @@
 ---
 id: DOC-DEV-002
-title: Referensi 12 Extension Points Standar `@vk/sdk`
+title: Referensi 12 Extension Points Standar `@app/sdk`
 type: developer
 status: [PLANNED]
 owner: Principal Software Architect & Developer Ecosystem Lead
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-DEV-000
@@ -16,12 +16,12 @@ related:
 source_of_truth: src/domains/settings/shared/api/, src/domains/workspace/, src/domains/graph/
 ---
 
-# Referensi 12 Extension Points Standar (`@vk/sdk`)
+# Referensi 12 Extension Points Standar (`@app/sdk`)
 
 ## Ringkasan 3 Baris
-- Katalog teknis **12 titik perluasan resmi** (`Extension Points`) untuk Workspace, Dashboard `/vaults`, Konfigurasi, Editor CodeMirror 6, Kanvas Graf Canvas2D, serta Ekspor Data.
-- Memetakan setiap extension point terhadap registry sumber daya internal yang telah ada di kode (`WorkspaceViewRegistry.tsx`, `CommandRegistry.ts`, `configRegistry.ts`, `schemaRegistry.ts`, `pluginRegistry.ts`).
-- Menetapkan izin minimal (*minimum required permission*) agar prinsip *least privilege* terjaga.
+- Katalog teknis **12 titik perluasan resmi** (`Extension Points`) untuk Workspace, **4 Helicopter Views** (*Graph, Diagram, Table, Cards*), Dashboard `/vaults`, `.app/config.json`, Editor CodeMirror 6, & Ekspor Data.
+- Memetakan setiap extension point terhadap registry sumber daya internal kode (`WorkspaceViewRegistry.tsx`, `CommandRegistry.ts`, `configRegistry.ts`, `schemaRegistry.ts`, `pluginRegistry.ts`) dan menjaga penyimpanannya terpusat di **`.app/config.json`**.
+- Menetapkan izin minimal (*minimum required permission*) agar prinsip *least privilege* terjaga (termasuk dukungan kompatibilitas mundur alias `@vk/sdk`).
 
 ---
 

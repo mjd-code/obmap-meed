@@ -4,8 +4,8 @@ title: Roadmap Pengembangan Inkremental & Horizon Rilis ObMap v2.0
 type: planning
 status: [PLANNED]
 owner: Chief Product Officer & Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-PLAN-000
@@ -39,7 +39,7 @@ flowchart LR
     end
     subgraph S3 ["Stage 3: Public Commercial GA (H4 + H5)"]
         H4["EPIC-10..12 (STEP-04.1..04.3): Dynamic Quotas/Pricing Admin, Xendit/Midtrans -> Stripe, Teamspaces & CRDT"]
-        H5["EPIC-13..15 (STEP-05.1..05.4): LMS Skill Tree DAG, Argument/Citation Solvers, @vk/sdk, Audit GA"]
+        H5["EPIC-13..15 (STEP-05.1..05.4): Academy 3-Lapis Competence Tree, Solvers, BYO-AI & @app/sdk"]
         H4 --> H5
     end
     S1 --> S2 --> S3
@@ -52,10 +52,10 @@ flowchart LR
 | Stage Rilis | Horizon | Epik | Langkah Antrean | Fokus Utama & Exit Gate |
 | :--- | :---: | :--- | :--- | :--- |
 | **Stage 1 (`stage_1_partner`)** | **H1** | `EPIC-01`–`03` | `STEP-01.1`–`01.5` | Hapus `untypedSupabase.ts`, refaktor `public-reader` → `community`, *hard cutover* `/p/*` → `/:username`, `ReleaseStageGate`, `PolicyEngine`, 6-Layer Config + Theme sync. |
-| **Stage 2 (`stage_2_community_beta`)** | **H2** | `EPIC-04`–`06` | `STEP-02.1`–`02.3` | Domain ke-13 `dashboard` (`/vaults`, 5 derived views), Landing Live Sandbox (`< 65KB`), Hybrid Onboarding 5 tahap + approval per-user di `/admin`. |
-| **Stage 2 (`stage_2_community_beta`)** | **H3** | `EPIC-07`–`09` | `STEP-03.1`–`03.3` | Profil `/:username`, `/explore`, kurasi manual *Verified Scholar*, rujukan `[[@user/vault/note]]` (`CC BY-SA 4.0`), *Fork & Knowledge Merge Request*, anotasi paragraf. |
-| **Stage 3 (`stage_3_commercial_ga`)** | **H4** | `EPIC-10`–`12` | `STEP-04.1`–`04.3` | Paket/kuota dinamis di `/admin` (`plans`, `plan_quotas`), gateway **Xendit/Midtrans first** lalu Stripe, Teamspaces + Org-Lock, CRDT Yjs real-time. |
-| **Stage 3 (`stage_3_commercial_ga`)** | **H5** | `EPIC-13`–`15` | `STEP-05.1`–`05.4` | Interactive LMS Skill Tree DAG, solver `argument-map` & `citation-tree`, Pitch Mode & PDF/SVG/OPML, `@vk/sdk` ber-sandbox, audit GA & WCAG 2.2 AA. |
+| **Stage 2 (`stage_2_community_beta`)** | **H2** | `EPIC-04`–`06` | `STEP-02.1`–`02.3` | Domain ke-13 `dashboard` (`/vaults`: **4 Helicopter Views**, **Core Presets** `Atlas`/`Studio`/`Academy`/`Freeform`, `.app/config.json`), Landing Live Sandbox (`< 65KB`, 6 Referensi), Hybrid Onboarding 5 tahap. |
+| **Stage 2 (`stage_2_community_beta`)** | **H3** | `EPIC-07`–`09` | `STEP-03.1`–`03.3` | Profil `/:username`, `/explore` (+ `Community Presets`), kurasi *Verified Scholar*, rujukan `[[@user/vault/note]]` (`CC BY-SA 4.0`), *Essential VCS*, & **Unified `"Share · Access · Versions"` Drawer (Vault & Node `AS & WITH`)**. |
+| **Stage 3 (`stage_3_commercial_ga`)** | **H4** | `EPIC-10`–`12` | `STEP-04.1`–`04.3` | Paket/kuota dinamis di `/admin`, **Xendit/Midtrans first** lalu Stripe, Teamspaces + Org-Lock `.app/config.json`, **3-Scope Contextual Settings Escalation**, & CRDT Yjs real-time. |
+| **Stage 3 (`stage_3_commercial_ga`)** | **H5** | `EPIC-13`–`15` | `STEP-05.1`–`05.4` | **Academy 3-Layer Living Competence Tree** + *Living Student Sub-Nodes*, solver `argument-map`/`citation-tree`, Pitch Mode & PDF/SVG/OPML, **BYO-AI / Ollama RAG**, & **`@app/sdk` ber-sandbox**, audit GA & WCAG 2.2 AA. |
 
 ---
 

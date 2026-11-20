@@ -1,60 +1,71 @@
 ---
 id: DOC-META-002
-title: Glosarium Teknis & Produk ObMap v2.0
+title: Glosarium Kanonik & Kamus Istilah Teknis ObMap v2.0
 type: standard
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-000
   - DOC-META-005
-  - DOC-META-001
-  - DOC-META-003
+  - DOC-VIS-001
+  - DOC-VIS-002
+  - DOC-ARCH-004
 source_of_truth: src/domains/, docs/
 ---
 
-# Glosarium Teknis & Produk ObMap v2.0
+# Glosarium Kanonik & Kamus Istilah Teknis (`Canonical Vocabulary`)
 
 ## Ringkasan 3 Baris
-- Daftar istilah baku untuk entitas pengetahuan, graf Canvas2D, arsitektur 13 domain DDD, jejaring sosial cendekiawan, dan kontrol rilis di seluruh repositori ObMap.
-- Seluruh dokumen perencanaan, arsitektur, dan UI wajib memakai definisi konsisten guna menghindari ambiguitas lintas tim dan AI coding agent.
-- Istilah legacy `/p/*` dan `public-reader` berstatus transisi *hard cutover* menuju `/:username` dan domain `community`.
+- Kamus istilah baku tunggal untuk entitas pengetahuan, **Workspace Modes**, **4 Helicopter Views**, **Presentation Lenses**, **Single Central `.app/config.json`**, **Academy 3-Layer Competence Tree**, serta **Essential VCS & Granular Access/Publishing**.
+- Seluruh dokumen perencanaan, arsitektur, antarmuka UI, dan kontribusi AI coding agent wajib memakai definisi kanonik di sini agar tidak terjadi pergeseran istilah.
+- Rute `/p/*`, direktori `.vk/` / `.obmap/`, serta alias paket `@vk/sdk` hanya dicatat sebagai istilah legacy/fallback kompatibilitas historis.
 
 ---
 
-## 1. Entitas Pengetahuan, Editor & Graf Canvas2D
+## 1. Kamus Istilah Inti Pengetahuan, Lensa & Konfigurasi
 
-| Istilah | Definisi Kanonik |
+| Istilah Kanonik | Definisi Baku |
 | :--- | :--- |
-| **Vault** | Ruang kerja pengetahuan terisolasi berupa direktori berkas Markdown (`.md`) beserta metadata `.vk/` (fallback `.obmap/`) dan indeks relasi antar-catatan; dapat disimpan lokal (`FS Access API` / `IndexedDB`) atau cloud (`Supabase`). |
-| **Note** | Unit atomik berkas Markdown (`.md`) yang memisahkan **YAML Frontmatter terisolasi** (`EditorPropertiesPanel.tsx`) dari isi teks murni (`EditorMarkdownView.tsx`). |
-| **Node** | Representasi visual sebuah *Note* atau topik konseptual di kanvas graf 2D (`GraphCanvas.tsx`), lengkap dengan koordinat, derajat tautan, warna cabang, dan status progres. |
-| **Leaf** | Tab atau panel aktif di dalam `WorkspaceOrchestrator` yang masing-masing memiliki instance store terisolasi (*Per-Leaf Store*: `LeafGraphConfigStore`, `LeafGraphInteractionStore`). |
-| **Group** | Klaster simpul atau folder logis yang dikelompokkan dalam tampilan Workspace / Dashboard maupun visualisasi batas wilayah (*cluster boundary*) pada kanvas. |
-| **Branch** | Cabang hierarki terarah pada solver deterministik (`Mindmap`, `Org`, `Fishbone`) atau cabang riwayat versi terisolasi pada engine VCS in-browser (`src/domains/vcs/`). |
-| **Storage Strategy** | Abstraksi driver penyimpanan vault melalui antarmuka `IVaultStorageDriver.ts` yang mencakup `FileSystemService.ts`, `IndexedDbVaultDriver.ts`, `CloudVaultService.ts`, serta driver *in-memory sandbox* `[PLANNED]`. |
-| **Subtree Override** | Kustomisasi warna, bentuk, atau gaya visual pada satu sub-pohon tertentu di solver graf tanpa menimpa pengaturan tema global vault. |
-| **Co-Presence** | Indikator kehadiran kolaborator secara real-time (`VcsCoPresenceAvatars.tsx`) ketika beberapa pengguna membuka atau meninjau vault yang sama. |
-| **Derived View** | Tampilan manajemen data (*Grid, Tree, Kanban, Calendar/Timeline, Analytics*) pada domain `dashboard` yang diturunkan 100% dari berkas Markdown + YAML Frontmatter tanpa skema blok *proprietary*. |
+| **Vault** | Wadah arsip pengetahuan utama berisi direktori, berkas Markdown (`.md`), media terlampir, dan konfigurasi tunggal **`.app/config.json`**; dapat disimpan secara lokal (*File System Access API* / *IndexedDB*) maupun cloud (*Supabase*). |
+| **Node** | Unit atomik pengetahuan di dalam struktur berkas dan graf—terdiri atas **Folder-Node** (kontainer hierarkis / modul kurikulum / bab) dan **File-Node** (berkas `.md` + YAML Frontmatter terisolasi di `EditorPropertiesPanel.tsx`). |
+| **Workspace Mode (Preset)** | Lensa kerja *opinionated* (atau bebas) yang mengatur susunan panel awal, *default visual solver*, template YAML, dan toolbar kontekstual. Disimpan sebagai `primary_mode` di **`.app/config.json`** & tabel `vaults` (*Persistent Intent*), serta dapat di-*override* sementara per tab/sesi (*Active Workspace Lens*). Mencakup: **`Freeform`** (*Unopinionated*), **`Atlas`**, **`Studio`**, dan **`Academy`**, serta jalur inkubator **`Community Presets`**. |
+| **Helicopter View (4 Visual Lenses)** | Empat cara pandang *bird's-eye* yang **wajib tersedia di semua Workspace Modes**: **(1) Graph View** (*Network*: `[[backlinks]]`, tags, keywords, klaster properti); **(2) Diagram View** (*Deterministic Solvers*: `Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Competence/Skill Tree DAG`); **(3) Table View** (*Structured Matrix* properti YAML, status, sitasi, & metadata); dan **(4) Cards View** (*Spatial Gallery* berbasis folder, tag, status epistemik, atau grup properti). |
+| **Restructure & Reorganize** | Dua mode penataan ulang di Helicopter View: **`Virtual Grouping` (*Non-Destructive*)** yang mengelompokkan ulang node secara visual menurut properti/tag/backlink/keyword tanpa memindahkan file fisik; dan **`Structural Refactoring` (*Physical Sync*)** lewat *drag-and-drop* Diagram/Tree yang langsung memindahkan Folder-Node/File-Node `.md` atau memperbarui YAML & `[[wikilinks]]`. |
+| **Presentation Lens** | Format penyajian publik di `/:username` dan `/explore`: **`atlas`**, **`publication`**, atau **`course`** (memetakan 1-to-1 ke Core Modes `Atlas`, `Studio`, dan `Academy`), ditambah format distribusi **`template`** untuk berbagi preset `.app/config.json`. |
+| **Single Central Configuration (`.app/config.json`)** | Aturan arsitektur mutlak bahwa seluruh konfigurasi multi-level vault (`meta`, `mode`, `schema`, `publishing`, `access`, `academy`, `extensions`) disimpan terpusat di **satu berkas `.app/config.json`** (dilarang memecah menjadi `preset.json`, `lms-policy.json`, `setting.json`, dll.; path `.vk/` dan `.obmap/` hanya didukung sebagai fallback migrasi *zero-loss*). |
+| **Leaf** | Tab atau panel aktif di dalam `WorkspaceOrchestrator` yang mengisolasi *Active Workspace Lens*, viewport, dan interaksi lokal lewat *Per-Leaf Store* (`LeafGraphConfigStore`, `LeafGraphInteractionStore`). |
+| **Explicit Non-Goal** | Penegasan batas bahwa aplikasi **bukan** *office-board-central / enterprise project & task management* (seperti Trello, Asana, Monday.com, ClickUp, atau Notion enterprise board); seluruh *Derived Views* melayani pengetahuan, riset, editorial (`Studio`), dan pembelajaran (`Academy`). |
 
 ---
 
-## 2. Jejaring Sosial Pengetahuan, Kontrol Akses & Rilis (v2.0)
+## 2. Kamus Istilah Kolaborasi, Essential VCS, Publishing & Academy (LMS)
 
-| Istilah | Definisi Kanonik |
+| Istilah Kanonik | Definisi Baku |
 | :--- | :--- |
-| **Community Domain (`src/domains/community/`)** | Bounded domain hasil refaktor dari `src/domains/public-reader/` (`[PLANNED]` pada `STEP-01.2`) yang melayani rute root publik `/:username`, `/@:username`, `/explore`, dan pembaca dual-pane Graph + Markdown. |
-| **Scholar Profile (`/:username`)** | Halaman identitas intelektual kanonik di root domain (didukung alias `/@:username`) yang menampilkan bio, afiliasi, ORCID, Konstelasi Vault Publik, dan indeks dampak sitasi. |
-| **Hard Cutover & `RESERVED_SLUGS`** | Penghentian langsung rute legacy `/p/*` tanpa redirect, disertai daftar kata tercadang (`app`, `vaults`, `auth`, `admin`, `explore`, `install`, dll.) pada lapisan router & database agar slug sistem tidak bertabrakan dengan `username`. |
-| **ReleaseStageGate** | Gerbang kontrol rilis 3 tahap berbasis database (`platform_settings.release_stage`): `stage_1_partner` (Closed Pilot), `stage_2_community_beta` (Approval individual di `/admin`), dan `stage_3_commercial_ga` (Komersial terbuka). |
-| **PolicyEngine** | Evaluator otorisasi terpusat (`can(actor, action, resource, context)`) di frontend yang selaras simetris dengan fungsi Postgres RLS `can_access_resource(...)` serta empat status visibilitas (`Private`, `Shared`, `Public Unlisted`, `Public Listed`). |
-| **Dynamic Entitlements & Quotas** | Pengaturan paket langganan (`plans`), hak fitur (`plan_entitlements`), dan batas kuota (`plan_quotas`) yang disimpan di database dan dikonfigurasi dinamis oleh Admin di `/admin` tanpa hardcode harga atau kuota. |
-| **Verified Scholar** | Lencana verifikasi resmi bagi akademisi, pendidik, atau institusi yang diberikan melalui proses kurasi manual Admin pada `/admin`. |
-| **Cross-Vault Citation & Fork/MR** | Tautan federated `[[@username/vaultSlug/noteSlug]]` yang tercatat di indeks sitasi global, serta alur *Fork to My Vault* → *Knowledge Merge Request* dengan lisensi publik default **`CC BY-SA 4.0`**. |
-| **Epistemic Metadata** | Properti YAML standar (`epistemic_status`: `seedling` \| `budding` \| `evergreen` \| `peer_reviewed`, `confidence`, `doi`, `license`, `references`) untuk keandalan rujukan ilmiah. |
-| **Six-Layer Cascading Config & `@vk/sdk`** | Resolusi pengaturan 6 lapis (*System Defaults* → *Org Policy Locked* → *Vault `.vk/` [fallback `.obmap/`]* → *User Profile* → *Leaf* → *Session*) dan antarmuka ekstensi terisolasi (Web Worker / Iframe CSP) dengan manifest izin eksplisit. |
+| **Essential VCS** | Kapabilitas pengendali versi esensial bebas friksi Git CLI: **Snapshot** (*Version History & Rollback*), **Visual Diff** (komparasi visual teks Markdown, YAML Frontmatter, dan struktur node), **Fork**, serta **Knowledge Merge Request (`KMR`)**. |
+| **Give Access AS & WITH** | Model pemberian akses kolaborasi di **level Vault maupun spesifik Folder-Node / File-Node**. **`AS`** menentukan peran (`Viewer`, `Commenter/Reviewer`, `Contributor`, `Editor/Co-Author`, `Admin/Curator`, atau peran Academy `Student`, `Teacher/Mentor`, `Institution Admin`); **`WITH`** menentukan cakupan (Vault atau Node spesifik), izin CRUD, *time-window*, dan visibilitas undangan. |
+| **Publish AS & WITH** | Model penerbitan konten di **level Vault maupun spesifik Folder-Node / File-Node** (memungkinkan Vault berstatus `private` tetap menerbitkan Folder-Node/File-Node pilihan). **`AS`** menentukan *Presentation Lens* (`atlas`, `publication`, `course`, `template`); **`WITH`** menentukan jangkauan (`public_listed`, `public_unlisted`, `shared`, `private`), lisensi (default `CC BY-SA 4.0`), *Allow Citation*, dan *Allow Fork*. |
+| **"Share · Access · Versions" Drawer** | Permukaan antarmuka terpadu di `/app` yang menggabungkan tab *Publish*, *Collaborate*, dan *Versions & Diff/MR*, serta otomatis mengenali konteks apakah pengguna memilih seluruh Vault atau sebuah Node spesifik. |
+| **Living Pedagogical & Competence Tree** | Struktur visual deterministik mode **`Academy`** yang memetakan hirarki penuh **Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas** di atas Folder-Nodes dan File-Nodes dengan tata kelola **3 Lapisan Evolusi** di blok `academy` pada `.app/config.json`. |
+| **Living Student Sub-Nodes** | Dokumentasi proses dan hasil belajar murid yang hidup langsung sebagai **sub-nodes (`file-nodes` / `sub-folder-nodes`)** di bawah node kurikulum/instruksi terkait (melacak state `locked` → `available` → `in_progress` → `submitted` → `mastered`). |
+| **3-Scope Contextual Settings Escalation** | Penempatan kontrol terstruktur lintas 3 cakupan (**App & Account Scope**, **Vault Scope [`.app/config.json`]**, **Node & Session Scope**) yang tersebar proporsional pada **Dedicated Settings Hub (`/settings` / `Ctrl+,`)**, **Profile Page (`/:username`)**, dan **Editor Page (`/app` In-Place HUD & Quick Settings Drawer)**. |
+
+---
+
+## 3. Kamus Istilah Sosial, AI, Keamanan & Ekstensibilitas
+
+| Istilah Kanonik | Definisi Baku |
+| :--- | :--- |
+| **Community Domain (`src/domains/community/`)** | Bounded domain yang melayani indeks kurasi `/explore`, profil root kanonik `/:username` dan `/@:username`, serta reader *Dual-Pane* untuk *Presentation Lenses* (`atlas`, `publication`, `course`, `template`). |
+| **`RESERVED_SLUGS` & Hard Cutover** | Daftar slug sistem (`app`, `vaults`, `auth`, `admin`, `explore`, `install`, `settings`, dll.) yang dilindungi 3 lapis agar `/:username` tidak bertabrakan dengan rute aplikasi, setelah pematian total rute legacy `/p/*`. |
+| **ReleaseStageGate** | Gerbang kontrol rilis 3 tahap berbasis DB (`platform_settings.release_stage`): `stage_1_partner`, `stage_2_community_beta`, dan `stage_3_commercial_ga`. |
+| **PolicyEngine** | Evaluator otorisasi terpusat (`can(actor, action, resource, context)`) di frontend yang simetris dengan Postgres RLS `can_access_resource(...)` baik di level Vault maupun Node/Folder. |
+| **Cross-Vault Citation & Epistemic YAML** | Tautan terfederasi `[[@username/vaultSlug/noteSlug]]` yang disertai metadata epistemik (`epistemic_status`: `seedling` \| `budding` \| `evergreen` \| `peer_reviewed`, `confidence`, `doi`, `license: CC BY-SA 4.0`, `references`) serta ekspor sitasi instan. |
+| **Native BYO-AI & Local AI** | Strategi kecerdasan buatan yang terinspirasi Nodus Research berbasis kedaulatan lokal: *Local AI* (Ollama / WebLLM) serta *Bring Your Own Key (BYOK)* dengan indeks RAG lokal dan manajemen referensi PDF/Zotero tanpa mengirim paksa seluruh vault ke pihak ketiga. |
+| **Six-Layer Cascading Config & `@app/sdk`** | Resolusi pengaturan 6 lapis (*System Defaults* → *Org Policy Locked* → *Vault `.app/config.json`* [fallback `.vk/`/`.obmap/`] → *User Profile* → *Node/Leaf* → *Session*) dan antarmuka ekstensi terisolasi Web Worker / Iframe CSP berizin eksplisit (`@app/sdk`, berevolusi dari registry internal dan alias legacy `@vk/sdk`). |
 
 ---
 

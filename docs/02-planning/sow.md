@@ -4,8 +4,8 @@ title: Statement of Work (SoW) & Paket Pengiriman ObMap v2.0
 type: planning
 status: [PLANNED]
 owner: Principal Software Architect & Project Lead
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-005
@@ -33,10 +33,10 @@ Arsitektur 12 domain DDD, penghapusan *god components* (`OVER_300=0`), 4 solver 
 
 | Paket Kerja | Stage / Gelombang | Langkah Tercakup | Deliverable Utama & Gate Penerimaan |
 | :--- | :--- | :--- | :--- |
-| **`WP-0`: Documentation Overhaul (`G1`–`G7`)** | Pre-Code Gate | Docs Waves `G1`–`G7` | Penyelarasan penuh `docs/`, `AGENTS.md`, `llms.txt`, `ADR-0007`–`0012`, `docs/07-developers/`, dan `docs/_machine/*.json` tanpa broken link atau kontradiksi. |
+| **`WP-0`: Documentation Overhaul (`G1`–`G7` + Upgrade v2.1)** | Pre-Code Gate | Docs Waves `G1`–`G7` + Holistic Alignment | Penyelarasan penuh `docs/`, `AGENTS.md`, `llms.txt`, `ADR-0007`–`0013`, 6 Referensi DNA, 4 Helicopter Views, `.app/config.json`, `@app/sdk`, `docs/07-developers/`, dan `docs/_machine/*.json`. |
 | **`WP-1`: Stage 1 Pilot Readiness (`H1`)** | `stage_1_partner` | `STEP-01.1` – `STEP-01.5` | Clean type-safety (`TD-005`), domain `community` + *hard cutover* `/p/*` → `/:username`, `ReleaseStageGate`, approval individual `/admin`, `PolicyEngine` + `CC BY-SA 4.0`, & 6-Layer Config + Theme sync. |
-| **`WP-2`: Stage 2 Community Beta (`H2` + `H3`)** | `stage_2_community_beta` | `STEP-02.1` – `STEP-03.3` | Domain ke-13 `dashboard` (`/vaults` + 5 derived views), Landing Sandbox `< 65KB`, Hybrid Onboarding 5-tahap, Profil `/:username`, `/explore`, *Verified Scholar* manual Admin, `[[@user/vault/note]]`, & Fork/MR. |
-| **`WP-3`: Stage 3 Commercial GA (`H4` + `H5`)** | `stage_3_commercial_ga` | `STEP-04.1` – `STEP-05.4` | Skema tarif/kuota dinamis di `/admin`, webhook **Xendit/Midtrans first** + Stripe, Teamspaces + *Org-Lock*, CRDT Yjs, Interactive LMS DAG, solver `argument-map`/`citation-tree`, Pitch Mode, `@vk/sdk`, & audit WCAG/OWASP. |
+| **`WP-2`: Stage 2 Community Beta (`H2` + `H3`)** | `stage_2_community_beta` | `STEP-02.1` – `STEP-03.3` | Domain `dashboard` (`/vaults` + 4 Helicopter Views & Core Presets `Atlas`/`Studio`/`Academy`/`Freeform`), Landing Sandbox `< 65KB` (6 Referensi), Profil `/:username`, `/explore` (+ `Community Presets`), & Unified Drawer *"Share · Access · Versions"* (`AS & WITH` granular Vault/Node). |
+| **`WP-3`: Stage 3 Commercial GA (`H4` + `H5`)** | `stage_3_commercial_ga` | `STEP-04.1` – `STEP-05.4` | Skema tarif/kuota dinamis di `/admin`, **Xendit/Midtrans first** + Stripe, Teamspaces + Org-Lock `.app/config.json`, CRDT Yjs, **Academy 3-Layer Competence Tree**, solver `argument-map`/`citation-tree`, Pitch Mode, BYO-AI/Ollama RAG, & **`@app/sdk`**. |
 
 ---
 
@@ -44,7 +44,7 @@ Arsitektur 12 domain DDD, penghapusan *god components* (`OVER_300=0`), 4 solver 
 - Aplikasi desktop Electron / Tauri native terpisah *(PWA + File System Access API mencakup kebutuhan lintas-OS v2.0)*.
 - Penghapusan atau konversi vault `.md` menjadi format biner tertutup.
 - Mekanisme undangan referral *peer-to-peer* pada Stage 2 *(persetujuan akun dilakukan individual oleh Admin di `/admin`)*.
-- Redirect permanen dari rute usang `/p/*` *(dimatikan langsung melalui hard cutover sesuai keputusan terkunci)*.
+- Papan tugas korporat / *enterprise project management* ala Trello, Asana, Monday.com, ClickUp, maupun fragmentasi file konfigurasi terpisah (`preset.json`, `lms-policy.json`, `setting.json`) di luar `.app/config.json`.
 
 ---
 

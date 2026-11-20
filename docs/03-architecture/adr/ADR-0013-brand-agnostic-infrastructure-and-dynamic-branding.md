@@ -4,8 +4,8 @@ title: ADR-0013 — Infrastruktur Teknis Brand-Agnostic, Dynamic Brand Registry 
 type: adr
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-16
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-ARCH-ADR-0004
@@ -39,7 +39,7 @@ source_of_truth: src/global/config/brand.config.ts, src/global/utils/storageKeyM
 
 ### 2.1 Lapis 1 — Single Source of Truth `brand.config.ts` & Build-Time Injection
 1. Seluruh identitas merek dipusatkan di `src/global/config/brand.config.ts` yang mengekspor kontrak `BrandManifest`:
-   - `id`, `name`, `shortName`, `slug`, `tagline`, `description`, `domain`, `canonicalOrigin`, `sdkPackageName`, `vaultConfigDir` (kanonik `.vk`, legacy `.obmap`), `storagePrefix` (kanonik `vk`), `themeColor`, dan `assets` (`logoSvg`, `faviconIco`, `appleTouchIcon`, `ogImage`).
+   - `id`, `name`, `shortName`, `slug`, `tagline`, `description`, `domain`, `canonicalOrigin`, `sdkPackageName` (kanonik `@app/sdk`, adaptif ke brand), `vaultConfigDir` (standar arsitektural `.app` menuju `.app/config.json`, fallback pembacaan `.vk` & `.obmap`), `storagePrefix` (kanonik netral), `themeColor`, dan `assets` (`logoSvg`, `faviconIco`, `appleTouchIcon`, `ogImage`).
 2. Mendukung override build-time via variabel lingkungan `VITE_BRAND_*` (`VITE_BRAND_NAME`, `VITE_BRAND_SLUG`, `VITE_BRAND_DOMAIN`, `VITE_BRAND_TAGLINE`, `VITE_BRAND_THEME_COLOR`) untuk membangun varian lingkungan atau *white-label build* tanpa mengubah kode sumber.
 3. Plugin `viteBrandHtmlPlugin` di `vite.config.ts` menyuntikkan placeholder `index.html` (`<title>`, meta `description`, OpenGraph, Twitter Card, `apple-mobile-web-app-title`, `application-name`, `<link rel="canonical">`, dan `theme-color`) secara otomatis saat dev server dan production build.
 
@@ -57,8 +57,8 @@ Seluruh infrastruktur teknis **dilarang** memakai nama merek marketing dan wajib
 | **PostgreSQL & Buckets** | `vaults`, `notes`, `profiles`, `vault-media`, `avatars` | — *(sudah netral)* | Skema SQL & nama bucket **tidak pernah** memuat nama brand. |
 | **IndexedDB (`LocalConfigStore.ts`)** | `VkConfigDB` | `ObmapConfigDB` | `storageKeyMigrator.ts` menyalin entri dari `ObmapConfigDB` ke `VkConfigDB` saat inisialisasi pertama bila `VkConfigDB` kosong. |
 | **`localStorage` Keys** | `vk-device-id`, `vk-config:`, `vk-vault-schema`, `vk.activeVaultId` | `obmap-device-id`, `obmap-config:`, `obmap-vault-schema`, `obmap.activeVaultId` | Baca dari kunci kanonik; jika belum ada, baca kunci legacy lalu tulis ke kunci kanonik tanpa menghapus data user. |
-| **Vault Sidecar (`VaultConfigFile.ts`, `mindmapLayoutManifest.ts`)** | `.vk/config.json`, `.vk/mindmap-layout.json` | `.obmap/config.json`, `.obmap/mindmap-layout.json` | Membaca `.vk/*` lebih dulu, fallback otomatis ke `.obmap/*`; ekspor unduhan manual memakai `${brand.slug}-config-${date}.json`. |
-| **Scoped CSS, Tokens & Preset (`useThemeStore.ts`, `theme.ts`, `cascadingStyleResolver.ts`)** | `.vk-themed-root`, `vk-custom-css-snippet`, `--vk-*`, `'vk-midnight'` | `.obmap-themed-root`, `obmap-custom-css-snippet`, `--ob-*`, `'obmap-midnight'` | Elemen root memasang **kedua kelas** (`.vk-themed-root` & `.obmap-themed-root`) serta memproyeksikan **kedua token** (`--vk-*` & `--ob-*`); `theme.ts` membaca `--vk-*` lebih dulu lalu fallback `--ob-*`; preset `'vk-midnight'` / `'obmap-midnight'` dirender dinamis sebagai `${brand.name} Midnight`. |
+| **Vault Sidecar (`VaultConfigFile.ts`, `mindmapLayoutManifest.ts`)** | **`.app/config.json`** (single central config) | `.vk/config.json`, `.vk/mindmap-layout.json`, `.obmap/*` | Membaca `.app/config.json` lebih dulu, fallback otomatis *zero-loss* ke `.vk/*` & `.obmap/*`; ekspor unduhan manual memakai `${brand.slug}-config-${date}.json`. |
+| **Scoped CSS, Tokens & Preset (`useThemeStore.ts`, `theme.ts`, `cascadingStyleResolver.ts`)** | `.app-themed-root` / `.vk-themed-root`, `--app-*` / `--vk-*`, `'vk-midnight'` | `.obmap-themed-root`, `obmap-custom-css-snippet`, `--ob-*`, `'obmap-midnight'` | Elemen root memasang kelas dan memproyeksikan token kompatibel (`--app-*` ↔ `--vk-*` ↔ `--ob-*`); `theme.ts` membaca token kanonik lebih dulu lalu fallback legacy; preset midnight dirender dinamis sebagai `${brand.name} Midnight`. |
 
 ### 2.4 Lapis 4 — Engine Auto-Rebranding CLI (`scripts/rebrand.ts`)
 Menyediakan skrip resmi `bun run rebrand -- --name "<BrandName>" --slug "<slug>" --domain "<domain>" [--dry-run]`:

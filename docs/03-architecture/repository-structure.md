@@ -4,8 +4,8 @@ title: Struktur Repositori & Tata Letak Berkas ObMap v2.0
 type: architecture
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-ARCH-001
@@ -33,13 +33,13 @@ obmap-meed/
 ├── docs/                            # Basis dokumentasi v2.0 (README.md Portal & SUMMARY.md)
 │   ├── 00-meta/                     # Master Blueprint, Quo Vadis v2.0, Konvensi, Glosarium, Arsip v1.0
 │   ├── changelogs/                  # Sistem changelog bulanan sharded & hemat-token (Rule 11)
-│   ├── 01-visions/                  # Visi, Filosofi, Positioning (5 Referensi), 5 Pilar Use-Case
+│   ├── 01-visions/                  # Visi, Filosofi, Positioning (6 Referensi), 5 Pilar Use-Case & Lensa
 │   ├── 02-planning/                 # Playbook Antrean Step-by-Step (README.md), PRD, BRD, SRS, SoW, Roadmap
-│   ├── 03-architecture/             # Tinjauan Arsitektur, 13 Domain, Storage, Graph, & adr/ADR-0001..0012
+│   ├── 03-architecture/             # Tinjauan Arsitektur, 13 Domain, .app/config.json, Graph, & adr/ADR-0001..0013
 │   ├── 04-features/                 # Katalog Fitur Master
 │   ├── 05-engineering/              # Standar Koding, Testing Strategy, Repo Rules, Tech Debt, Doc Drift Log
-│   ├── 06-lms/                      # Spesifikasi LMS Skill Tree DAG
-│   ├── 07-developers/               # Portal SDK (@vk/sdk), Extension Points, Theme Guide, Sandbox
+│   ├── 06-lms/                      # Spesifikasi Academy Living Competence Tree (3 Lapis)
+│   ├── 07-developers/               # Portal SDK (@app/sdk), Extension Points, Theme Guide, Sandbox
 │   └── _machine/                    # Metadata JSON + changelog.jsonl (append-only machine stream)
 ├── src/
 │   ├── App.tsx                      # Router utama + guard stage/auth

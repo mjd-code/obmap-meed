@@ -4,8 +4,8 @@ title: ObMap Quo Vadis v2.0 — Technical Retrospective, System Readiness Audit,
 type: planning
 status: [PLANNED]
 owner: Principal Software Architect & Lead Product Manager
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-000
@@ -34,7 +34,8 @@ source_of_truth: src/domains/, src/App.tsx, docs/
 - **Fondasi Kolaborasi V4 & Config Registry:** Skema migrasi `20261031000000_v4_collaboration_and_publishing.sql`, UI merge VCS (`VcsCreateMergeRequestModal.tsx`, `VcsInteractiveMergeModal.tsx`), share dialog (`CollabDocumentSharePopover.tsx`), klaim handle (`SettingsClaimUsernameModal.tsx`), serta registry internal (`configRegistry.ts`, `pluginRegistry.ts`, `schemaRegistry.ts`) sudah tersedia di codebase.
 
 ### 1.2 Architectural Gaps Requiring v2.0 Evolution
-- **Ekspansi Cakupan Sistem Referensi:** `00-1-quovadis.md` hanya memodelkan Obsidian, XMind, dan Learn-Anything/Wikipedia. v2.0 menambahkan kapabilitas kolaborasi **Notion** (teamspaces, komentar terstruktur, view derivatif frontmatter) dan jejaring reputasi **LinkedIn × ResearchGate × GitHub**.
+- **Ekspansi Cakupan 6 Sistem Referensi & Batas Tegas Produk:** `00-1-quovadis.md` hanya memodelkan Obsidian, XMind, dan Learn-Anything/Wikipedia. v2.0 mengintegrasikan **Nodus Research** (*Core Presets*, *Native BYO-AI / Local AI* Ollama/WebLLM RAG lokal, manajemen sitasi/PDF), **Notion** (*Derived Views* & komentar blok), dan **LinkedIn × ResearchGate × GitHub** (*Essential VCS* & `/:username`), sekaligus menegaskan penolakan atas kompleksitas papan tugas korporat ala Trello/Asana/ClickUp.
+- **Konstitusi Lensa, 4 Helicopter Views & Single `.app/config.json`:** Menyeragamkan 4 **Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy` + inkubator `Community Presets`), **4 Helicopter Views** (*Graph*, *Diagram*, *Table*, *Cards*), **Essential VCS & Granular Vault/Node `AS & WITH`**, **3-Layer Academy Living Competence Tree**, **3-Scope Contextual Settings Escalation**, sentralisasi tunggal **`.app/config.json`**, serta **`@app/sdk`**.
 - **Eliminasi Sub-Path `/p/` Menuju Root `/:username` (Hard Cutover):** Skema URL `/p/:username/:vaultSlug` di `src/App.tsx` tidak mengikuti standar web modern dan membatasi identitas cendekiawan; v2.0 mematikannya langsung (*hard cutover* tanpa redirect transisi), menggantikannya dengan `/:username` dan `/@:username` beserta `RESERVED_SLUGS`, dan merefaktor `src/domains/public-reader/` menjadi `src/domains/community/`.
 - **Ketiadaan Release Stage Gate untuk Continuous Shipping:** Kode saat ini belum memiliki kontrol trafik bertahap untuk mendukung shipping paralel selama pengembangan: **Stage 1** (*Closed Partner Pilot*), **Stage 2** (*Approval-Gated Community Beta*), dan **Stage 3** (*Commercial GA* dengan Free/Paid entitlements).
 - **Observabilitas Changelog untuk AI Agents:** Riwayat perubahan masih tersimpan dalam satu file naratif (`docs/00-meta/changelog.md`) yang boros token bagi LLM dan belum memiliki direktif wajib di seluruh entrypoint agen.
@@ -64,8 +65,8 @@ source_of_truth: src/domains/, src/App.tsx, docs/
 | 15 | **Dashboard Domain (`/vaults`)** | — | **3.0** | `[PARTIAL]` | `VaultCard.tsx`, `VaultModeSelector.tsx` | Belum terdaftar di `src/App.tsx`; belum ada `DashboardOrchestrator` & views derivatif | Tinggi |
 | 16 | **5-Stage Hybrid Onboarding** | — | **2.0** | `[PLANNED]` | `AdminFirstTimeSetupWizard.tsx` (admin only) | Belum ada onboarding end-user, personalization quiz, atau progressive coach marks | Tinggi |
 | 17 | **Landing Page & Embedded Sandbox** | — | **4.5** | `[PARTIAL]` | `src/pages/Landing.tsx` (301 baris statis) | Redirect ke `/app` (seharusnya `/vaults`), belum ada sandbox `< 65KB` & stage-aware CTA | Tinggi |
-| 18 | **6-Layer Config & Theme Engine** | — | **6.5** | `[PARTIAL]` | `configRegistry.ts`, `schemaRegistry.ts`, `VaultConfigFile.ts`, `LocalConfigStore.ts`, `useThemeStore.ts` | Perlu resolusi 6-lapis dengan Org-Lock, sinkronisasi DOM+Canvas2D, & CSS snippets | Tinggi |
-| 19 | **Public Extension SDK (`@vk/sdk`)** | — | **2.5** | `[PARTIAL]` | `src/domains/settings/shared/api/pluginRegistry.ts` | Masih registry internal tanpa sandbox Worker/iframe, permission manifest, atau `docs/07-developers/` | Sedang |
+| 18 | **Single Config `.app/config.json` & 6-Layer Engine** | — | **6.5** | `[PARTIAL]` | `configRegistry.ts`, `schemaRegistry.ts`, `VaultConfigFile.ts`, `LocalConfigStore.ts`, `useThemeStore.ts` | Perlu resolusi 6-lapis dengan Org-Lock, sentralisasi ke `.app/config.json` (fallback `.vk/`/`.obmap/`), 3-Scope Escalation, & CSS snippets | Tinggi |
+| 19 | **Public Extension SDK (`@app/sdk`)** | — | **2.5** | `[PARTIAL]` | `src/domains/settings/shared/api/pluginRegistry.ts` | Masih registry internal tanpa sandbox Worker/iframe, permission manifest, atau integrasi blok `extensions` `.app/config.json` | Sedang |
 | 20 | **Type Safety (`TD-005`), A11y, i18n & Ops** | — | **5.5** | `[PARTIAL]` | `untypedSupabase.ts`, `AdminOrchestrator.tsx`, `audit_logs` | `TD-005` masih aktif; perlu automated RLS test suite, kamus i18n, & audit WCAG 2.2 AA | Kritis |
 
 ### 2.2 Documentation & Code Drift Register (`DRFT-006` s/d `DRFT-016`)
@@ -93,14 +94,14 @@ Pengembangan berkesinambungan dijalankan paralel dengan **3 Tahap Rilis Terkontr
 ```mermaid
 flowchart LR
     S1["Stage 1: Closed Partner Pilot (H1) — Invite-Only & Core /:username"] --> S2["Stage 2: Approval-Gated Community Beta (H2 + H3) — Waitlist Approval & Public Shared Vaults"]
-    S2 --> S3["Stage 3: Public Commercial GA (H4 + H5) — Free vs Paid Entitlements & @vk/sdk"]
+    S2 --> S3["Stage 3: Public Commercial GA (H4 + H5) — Free vs Paid Entitlements & @app/sdk"]
 ```
 
 | Tahap Rilis | Scope Horizon | Kontrol Akses & Trafik | Fitur yang Aktif di Produksi | Kriteria Lolos ke Tahap Berikutnya |
 | :--- | :--- | :--- | :--- | :--- |
 | **Stage 1: Closed Partner & Institutional Pilot** | **H1** (`EPIC-01`–`03`) | `release_stage = 'stage_1_partner'`. Pendaftaran publik ditutup; akses khusus rekanan & lembaga melalui `partner_invitations` dan approval manual Admin. | Workspace `/app`, Local + Cloud Vaults, RBAC Policy Engine, Visibility SM, Rute `/:username/:vaultSlug` untuk vault yang dibagikan mitra, Multi-Layer Config dasar. | 0 error RLS lintas-tenant, `TD-005` bersih, `npx vitest run` 100% hijau, validasi stabilitas bersama >= 5 mitra/lembaga pilot. |
-| **Stage 2: Approval-Gated Community Beta** | **H2 + H3** (`EPIC-04`–`09`) | `release_stage = 'stage_2_community_beta'`. User dapat mendaftar & memilih `username`, namun berstatus `pending_approval` sampai disetujui **secara individual per-user oleh Admin di `/admin`**. Publik hanya mengakses profil & vault berstatus `shared`/`public` milik akun `approved`. | Semua Stage 1 + Dashboard `/vaults`, Landing Sandbox, Hybrid Onboarding, Profil `/:username`, `/explore`, Cross-Vault Citations (`CC BY-SA 4.0`), Fork & Knowledge Merge Request. | Rasio error `< 0.5%`, LCP `/:username` `< 2.0s`, alur approval & kurasi manual Admin berjalan lancar di beban komunitas awal. |
-| **Stage 3: Public Commercial GA** | **H4 + H5** (`EPIC-10`–`15`) | `release_stage = 'stage_3_commercial_ga'`. Registrasi terbuka otomatis (`approved`) dengan penegakan kuota & harga dinamis dari `/admin` di database & Edge Functions. | Semua Stage 2 + Billing (**Xendit/Midtrans** terlebih dahulu, lalu Stripe), Teamspaces & CRDT Yjs, Interactive LMS Skill Tree, Solver `argument-map`/`citation-tree`, `@vk/sdk`. | Uji E2E webhook pembayaran & *Non-Destructive Downgrade* 100% lulus; audit keamanan OWASP ASVS L2 & SLO `99.9%`. |
+| **Stage 2: Approval-Gated Community Beta** | **H2 + H3** (`EPIC-04`–`09`) | `release_stage = 'stage_2_community_beta'`. User dapat mendaftar & memilih `username`, namun berstatus `pending_approval` sampai disetujui **secara individual per-user oleh Admin di `/admin`**. Publik hanya mengakses profil & vault berstatus `shared`/`public` milik akun `approved`. | Semua Stage 1 + Dashboard `/vaults` (`Atlas`/`Studio`/`Academy` presets & 4 Helicopter Views), Landing Sandbox, Hybrid Onboarding, Profil `/:username`, `/explore` (+ `Community Presets`), Cross-Vault Citations (`CC BY-SA 4.0`), *Essential VCS (Fork & KMR)*, & Granular Node/Vault `AS & WITH`. | Rasio error `< 0.5%`, LCP `/:username` `< 2.0s`, alur approval & kurasi manual Admin berjalan lancar di beban komunitas awal. |
+| **Stage 3: Public Commercial GA** | **H4 + H5** (`EPIC-10`–`15`) | `release_stage = 'stage_3_commercial_ga'`. Registrasi terbuka otomatis (`approved`) dengan penegakan kuota & harga dinamis dari `/admin` di database & Edge Functions. | Semua Stage 2 + Billing (**Xendit/Midtrans** terlebih dahulu, lalu Stripe), Teamspaces & CRDT Yjs, Academy 3-Layer Living Competence Tree, Solver `argument-map`/`citation-tree`, Native BYO-AI / Ollama RAG, `@app/sdk`. | Uji E2E webhook pembayaran & *Non-Destructive Downgrade* 100% lulus; audit keamanan OWASP ASVS L2 & SLO `99.9%`. |
 
 ---
 
@@ -113,7 +114,7 @@ flowchart LR
 
 ### Horizon 2 — Stage 2 Readiness: Dashboard Domain (`/vaults`), Hybrid Onboarding & Landing Sandbox
 - **`EPIC-04` Dedicated `dashboard` Domain (`src/domains/dashboard/`):** (`FR-DASH-001`–`005`, `FEAT-DASH-001`) — Bangun `DashboardOrchestrator.tsx`, `DashboardWidgetRegistry.ts`, 5 view derivatif Markdown/Frontmatter (Grid, Knowledge Tree, Kanban, Calendar/Timeline, Analytics), dan template gallery; ubah redirect pasca-login di `Landing.tsx` dari `/app` ke `/vaults`. Acceptance: komponen view `<= 300` baris.
-- **`EPIC-05` Conversion Landing Page & In-Memory Sandbox (`< 65KB`):** (`FR-GROWTH-001`, `FEAT-GROWTH-001`) — Rombak `Landing.tsx` dengan narasi 5 referensi, sandbox in-memory lazy-loaded (outline → Mindmap/Fishbone/Timeline), dan CTA adaptif per `release_stage`. Metrik: LCP `< 2.0s`, TTFV `< 90s`.
+- **`EPIC-05` Conversion Landing Page & In-Memory Sandbox (`< 65KB`):** (`FR-GROWTH-001`, `FEAT-GROWTH-001`) — Rombak `Landing.tsx` dengan narasi 6 Sistem Referensi, sandbox in-memory lazy-loaded (outline → Mindmap/Fishbone/Timeline), dan CTA adaptif per `release_stage`. Metrik: LCP `< 2.0s`, TTFV `< 90s`.
 - **`EPIC-06` Five-Stage Hybrid Onboarding Pipeline:** (`FR-GROWTH-002`, `FEAT-GROWTH-002`) — Rangkai *Benefits Splash* → *Sandbox Transfer* → *Approval/Waitlist Handling* → *Personalization Survey* → *Guided Tour (<=5 langkah)* + *Progressive Coach Marks*.
 
 ### Horizon 3 — Stage 2 Completion: Social Knowledge Network (`/:username`, `/explore`, Sitasi & Fork/MR)
@@ -126,10 +127,10 @@ flowchart LR
 - **`EPIC-11` Admin Commercial Console, Quota Configurator & Org Teamspaces:** (`FR-ADM-010`, `FR-COLLAB-010`, `FEAT-COLLAB-005`) — UI `/admin` di `src/domains/admin/` untuk mengatur harga & kuota per paket secara dinamis, persetujuan individual akun Stage 2, kurasi *Verified Scholar*, kupon/beasiswa, dan Teamspaces dengan *Admin-Locked Policies*.
 - **`EPIC-12` Real-Time Multiplayer CRDT (Yjs) & Co-Presence:** (`FR-COLLAB-003`, `FEAT-COLLAB-003`) — Kolaborasi multi-kursor real-time untuk Team/Lab tanpa mengorbankan mode offline-first.
 
-### Horizon 5 — Advanced Cognition, LMS Skill Tree & Sandboxed `@vk/sdk`
-- **`EPIC-13` Interactive Graph LMS & Skill Tree DAG:** (`FR-LMS-001`–`004`, `FEAT-LMS-001`) — Evaluator `prerequisites` frontmatter, status simpul (*Locked / Available / Mastered*), animasi pulsa progres, dan kuis terintegrasi.
+### Horizon 5 — Advanced Cognition, Academy 3-Layer Competence Tree & Sandboxed `@app/sdk`
+- **`EPIC-13` Living Pedagogical & Competence Tree (`Academy` 3 Lapis):** (`FR-LMS-001`–`004`, `FEAT-LMS-001`) — Hirarki **Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas**, *Living Student Sub-Nodes* (`locked → available → in_progress → submitted → mastered`), serta *Pedagogical Rules & Execution Environment* terpusat di `.app/config.json`.
 - **`EPIC-14` Analytical Graph Solvers & Presentation Export:** (`FR-GRAPH-010`–`012`, `FEAT-GRAPH-008`) — Solver deterministik `argument-map` & `citation-tree`, Pitch Mode, serta ekspor PDF/SVG/OPML.
-- **`EPIC-15` Public Extension SDK (`@vk/sdk`), Security Sandbox & Dev Portal:** (`FR-EXT-001`–`003`, `FEAT-EXT-001`) — Evolusi `pluginRegistry.ts` ke SDK ber-manifest izin (`Web Worker / Iframe CSP`), *Scoped CSS Snippets*, allowlist Enterprise, dan dokumentasi `docs/07-developers/`.
+- **`EPIC-15` Public Extension SDK (`@app/sdk`), BYO-AI Bridge & Security Sandbox:** (`FR-EXT-001`–`003`, `FEAT-EXT-001`) — Evolusi `pluginRegistry.ts` ke `@app/sdk` ber-manifest izin (`Web Worker / Iframe CSP`), *Scoped CSS Snippets*, allowlist Enterprise, integrasi `.app/config.json` `extensions`, serta dukungan BYO-AI / Ollama RAG.
 
 ### Immediate Execution Priority
 Seluruh langkah Horizon 1 (`STEP-01.1`–`STEP-01.5` / `EPIC-01`–`EPIC-03`) telah berstatus `[IMPLEMENTED]`. AI coding agent dan developer melanjutkan implementasi secara gradual mengikuti antrean di [**Playbook Perencanaan (`docs/02-planning/README.md`)**](../02-planning/README.md) dimulai dari **`STEP-02.1` (`EPIC-04`: Dedicated `dashboard` Domain `/vaults` dengan 5 Derived Views)** hingga **`STEP-05.4`**.
@@ -149,7 +150,7 @@ docs/
 │   ├── _template.md             # Template entri standar CHG-YYYYMMDD-NNN
 │   ├── archive-wave-1-to-3.md   # Arsip historis Wave 1–3
 │   └── YYYY-MM.md               # Log bulanan terstruktur (mis. 2026-11.md)
-├── 01-visions/                  # Visi, filosofi, positioning (5 referensi), use-case pillars
+├── 01-visions/                  # Visi, filosofi, positioning (6-System Reference DNA), use-case pillars
 ├── 02-planning/                 # Playbook step-by-step (README.md), PRD, BRD, SRS, SoW, Personas, Roadmap, Traceability
 ├── 03-architecture/             # System overview, 13 domain map (termasuk community & dashboard), storage, graf & ADR-0001..0012
 ├── 04-features/                 # Master feature catalog (sinkron source_of_truth Wave 3+)
@@ -170,9 +171,9 @@ Setiap AI agent atau developer yang memodifikasi kode, migrasi SQL, konfigurasi,
 | Wave | Berkas Target | Ruang Lingkup Pembaruan |
 | :---: | :--- | :--- |
 | **G1** | `AGENTS.md`, `README.md`, `llms.txt`, `docs/README.md`, `docs/SUMMARY.md`, `docs/changelogs/*` | Terapkan Rule 11 (Mandatory Changelog Protocol), rute `/:username`, 13 domain (`community` + `dashboard`), dan portal navigasi |
-| **G2** | `docs/00-meta/{glossary,changelog}.md`, `docs/01-visions/*` | Sinkronisasi istilah v2.0, perbaiki link `01-visions/` vs `01-vision/`, perbarui positioning 5 referensi |
+| **G2** | `docs/00-meta/{glossary,changelog}.md`, `docs/01-visions/*` | Sinkronisasi istilah v2.0, perbaiki link `01-visions/` vs `01-vision/`, perbarui positioning 6 Sistem Referensi (+ Nodus Research) |
 | **G3** | `docs/02-planning/{README,prd,brd,srs,sow,personas,roadmap,traceability-matrix}.md` | Buat playbook step-by-step `README.md` (`STEP-01.1`..`05.4`), 3-Stage Gate, dynamic quota/pricing, Xendit/Midtrans, `PER-07`–`09` |
-| **G4** | `docs/03-architecture/*` + `ADR-0007` s/d `ADR-0012` | Perbaiki nama file ADR di index, tambah ADR: `community` & `/:username` (`0007`), `dashboard` (`0008`), RBAC & Dynamic Quota/Xendit (`0009`), Visibility & `CC BY-SA 4.0` (`0010`), 6-Layer Config & Theme (`0011`), `@vk/sdk` (`0012`) |
+| **G4** | `docs/03-architecture/*` + `ADR-0007` s/d `ADR-0013` | Perbaiki nama file ADR di index, tambah ADR: `community` & `/:username` (`0007`), `dashboard` (`0008`), RBAC & Dynamic Quota/Xendit (`0009`), Visibility & `CC BY-SA 4.0` (`0010`), 6-Layer Config & Theme (`0011`), `@app/sdk` (`0012`), Dynamic Branding (`0013`), plus `.app/config.json` & Granular Access/Publish |
 | **G5** | `docs/04-features/feature-catalog.md`, `docs/05-engineering/*`, `docs/06-lms/lms-vision.md` | Perbaiki path legacy Wave 3 di `feature-catalog.md` & `testing-strategy.md`, log `DRFT-006`–`016`, selaraskan LMS `/:username` |
 | **G6** | `docs/07-developers/*` (Baru) | Quickstart SDK, referensi 12 Extension Points, Theme Authoring, dan aturan sandbox keamanan |
 | **G7** | `docs/_machine/{docs-index,domains,features,requirements,repo-map}.json` | Sinkronisasi penuh metadata JSON mesin terhadap repositori |

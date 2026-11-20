@@ -4,8 +4,8 @@ title: Matriks Keterlacakan End-to-End (Traceability Matrix) ObMap v2.0
 type: planning
 status: [PLANNED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-PLAN-000
@@ -31,7 +31,7 @@ source_of_truth: docs/02-planning/README.md, docs/02-planning/srs.md
 flowchart LR
     VIS["01-visions (5 Pilar & KPIs)"] --> REQ["prd.md / brd.md / srs.md (FR & NFR)"]
     REQ --> QUEUE["02-planning/README.md (STEP-01.1..05.4)"]
-    REQ --> ADR["03-architecture/adr/ (ADR-0001..0012)"]
+    REQ --> ADR["03-architecture/adr/ (ADR-0001..0013)"]
     QUEUE --> CODE["13 Domains di src/domains/ + supabase/migrations/"]
     ADR --> CODE
     CODE --> GATE["Verification Gate (Vitest / RLS / Playwright / Build)"]
@@ -55,9 +55,9 @@ flowchart LR
 | Pilar 5 (Fork, Merge Request & Anotasi) | `FR-COMM-006` | `EPIC-09` / `STEP-03.3` | `ADR-0005`, `ADR-0010` | `vcs` (`vcsDiffEngine.ts`), `community`, SQL `vault_forks` | Uji E2E Fork → Edit → MR → Merge lintas user |
 | Monetisasi Berkelanjutan (Stage 3 GA) | `FR-BILL-001`–`003`, `FR-ADM-010`, `NFR-008` | `EPIC-10`–`11` / `STEP-04.1`–`04.2` | `ADR-0009` | `admin` (harga & kuota dinamis DB), Supabase Edge Functions (**Xendit/Midtrans first** → Stripe), `org_teamspaces` | Uji webhook idempoten, kuota dinamis & *Non-Destructive Downgrade* |
 | Kolaborasi Sinkron Real-Time | `FR-COLLAB-003` | `EPIC-12` / `STEP-04.3` | `ADR-0004`, `ADR-0005` | `collaboration`, `sync`, `vcs` | Uji rekonsiliasi offline → online CRDT Yjs |
-| Pilar 4 (Interactive Graph LMS) | `FR-LMS-001` | `EPIC-13` / `STEP-05.1` | `ADR-0003` | `graph`, `metadata`, `community`, `docs/06-lms/` | Uji deteksi siklus DAG & state mastery |
+| Pilar 4 (Academy 3-Layer Competence Tree) | `FR-LMS-001` | `EPIC-13` / `STEP-05.1` | `ADR-0003` | `graph`, `metadata`, `community`, `docs/06-lms/`, `.app/config.json` (`academy`) | Uji deteksi siklus DAG, *Living Student Sub-Nodes* & aturan node 3 lapis |
 | Pilar 3 (Solver Lanjut & Pitch/Export) | `FR-GRAPH-010`, `FR-GRAPH-011`, `NFR-001` | `EPIC-14` / `STEP-05.2` | `ADR-0003` | `graph/shared/utils/layoutCategory.ts`, modul ekspor | Determinisme `argument-map`/`citation-tree` & `60 FPS` |
-| Ekosistem Pengembang Eksternal | `FR-EXT-001` | `EPIC-15` / `STEP-05.3` | `ADR-0012` | `settings/shared/api/pluginRegistry.ts`, `docs/07-developers/` | Uji sandbox permission manifest & `rehype-sanitize` |
+| Ekosistem `@app/sdk` & BYO-AI / Ollama | `FR-EXT-001`, `FR-META-001` | `EPIC-15` / `STEP-05.3` | `ADR-0012` | `settings/shared/api/pluginRegistry.ts`, `.app/config.json` (`extensions`), `docs/07-developers/` | Uji sandbox permission manifest, `rehype-sanitize`, & Local AI RAG |
 | Hardening GA (A11y, i18n, Security) | `NFR-003`, `NFR-004`, `NFR-007`, `NFR-008` | `STEP-05.4` | Seluruh ADR | Seluruh 13 domain | Vitest + Playwright E2E + RLS Audit + WCAG 2.2 AA |
 
 ---

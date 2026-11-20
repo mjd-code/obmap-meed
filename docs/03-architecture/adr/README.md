@@ -4,8 +4,8 @@ title: Indeks Architecture Decision Records (ADR-0001 s/d ADR-0013)
 type: architecture
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-16
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-META-000
@@ -38,7 +38,7 @@ source_of_truth: docs/03-architecture/adr/
 | **`ADR-0009`** | ReleaseStageGate, Two-Layer RBAC PolicyEngine & Dynamic Admin Billing (**Xendit/Midtrans First**) | Accepted (`[PLANNED]`) | `STEP-01.3`–`01.4`, `04.1`–`04.2` | [ADR-0009-release-stage-gate-rbac-and-dynamic-billing.md](ADR-0009-release-stage-gate-rbac-and-dynamic-billing.md) |
 | **`ADR-0010`** | Vault Visibility State Machine, `CC BY-SA 4.0` Licensing & Cross-Vault Citations | Accepted (`[PLANNED]`) | `STEP-01.4`, `03.2`–`03.3` | [ADR-0010-visibility-state-machine-licensing-and-citations.md](ADR-0010-visibility-state-machine-licensing-and-citations.md) |
 | **`ADR-0011`** | Six-Layer Cascading Configuration & Unified DOM/Canvas2D Theme Engine | Accepted (`[PLANNED]`) | `STEP-01.5` | [ADR-0011-six-layer-cascading-config-and-unified-theme-engine.md](ADR-0011-six-layer-cascading-config-and-unified-theme-engine.md) |
-| **`ADR-0012`** | Sandboxed `@vk/sdk` (aliased to `brand.sdkPackageName`), Permission Manifest & Standardized Extension Points | Accepted (`[PLANNED]`) | `STEP-05.3` | [ADR-0012-sandboxed-plugin-sdk-and-extension-points.md](ADR-0012-sandboxed-plugin-sdk-and-extension-points.md) |
+| **`ADR-0012`** | Sandboxed `@app/sdk` (aliased to `brand.sdkPackageName`), Permission Manifest & Standardized Extension Points | Accepted (`[PLANNED]`) | `STEP-05.3` | [ADR-0012-sandboxed-plugin-sdk-and-extension-points.md](ADR-0012-sandboxed-plugin-sdk-and-extension-points.md) |
 | **`ADR-0013`** | Brand-Agnostic Technical Infrastructure, Dynamic Brand Registry & Safe Auto-Rebranding Engine | Accepted (`[IMPLEMENTED]`) | `BRAND-STEP-01`, `UI-STEP-01`, `STEP-04.2` | [ADR-0013-brand-agnostic-infrastructure-and-dynamic-branding.md](ADR-0013-brand-agnostic-infrastructure-and-dynamic-branding.md) |
 
 ---

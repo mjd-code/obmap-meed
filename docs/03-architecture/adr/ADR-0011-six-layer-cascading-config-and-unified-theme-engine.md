@@ -4,8 +4,8 @@ title: ADR-0011 — Konfigurasi Bertingkat 6-Lapis & Unified DOM/Canvas2D Theme 
 type: adr
 status: [PLANNED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-ARCH-ADR-0006
@@ -34,14 +34,14 @@ source_of_truth: src/domains/settings/, src/domains/graph/shared/utils/theme.ts
 1. **Resolusi Konfigurasi 6-Lapis (Prioritas Menaik kecuali Org-Lock):**
    1. `System Defaults` (`configRegistry.ts` & `schemaRegistry.ts`)
    2. `Org / Institution Policy` (`lockedByOrgAdmin` — bila dikunci Admin tim, lapisan di bawah **tidak boleh** menimpanya dan UI menampilkan lencana *Locked by Admin*)
-   3. `Vault Config` (`.vk/config.json` dengan fallback `.obmap/config.json` via `VaultConfigFile.ts` agar portabel lintas perangkat seperti Obsidian)
-   4. `User Profile Config` (`LocalConfigStore.ts` untuk preferensi lokal / `CloudConfigStore.ts` tersinkron)
-   5. `Workspace / Leaf Store` (`LeafGraphConfigStore` per tab sesuai `ADR-0006`)
-   6. `Session / URL Query Override` (sementara di runtime)
+   3. `Vault Scope` (**`.app/config.json`** tunggal via `VaultConfigFile.ts` — dilarang memecah ke file terpisah seperti `preset.json` / `lms-policy.json`; mendukung fallback baca `.vk/config.json` dan `.obmap/config.json`)
+   4. `User / App & Account Config` (`LocalConfigStore.ts` untuk preferensi lokal / `CloudConfigStore.ts` tersinkron)
+   5. `Node / Leaf Override` (`node_overrides` di `.app/config.json`, YAML Frontmatter, & `LeafGraphConfigStore` per tab sesuai `ADR-0006`)
+   6. `Session / Ephemeral HUD / URL Query Override` (sementara di runtime)
 2. **Unified Design Token Bridge (DOM ↔ Canvas2D):**
-   - `useThemeStore.ts` mengekspor kamus token semantik *brand-agnostic* (`--vk-*`, dengan mirror `--ob-*` per `ADR-0013`: background, surface, accent, edge-default, node-evergreen, text-primary, font-display, radius).
+   - `useThemeStore.ts` mengekspor kamus token semantik *brand-agnostic* (`--app-*` dengan kompatibilitas `--vk-*` dan `--ob-*` per `ADR-0013`: background, surface, accent, edge-default, node-evergreen, text-primary, font-display, radius).
    - Bridge menulis CSS Variables ke `:root` sekaligus menghitung objek warna kanvas di `src/domains/graph/shared/utils/theme.ts` & `atmosphereConfig.ts`, lalu memanggil `graphRef.current?.refresh?.()` bila kanvas berada pada mode deterministik statis (`cooldownTicks === 0`).
-3. **Scoped CSS Snippets:** Pengguna dapat mengunggah snippet CSS kustom untuk `.vk/` (fallback `.obmap/`) lokal dan tema profil publik `/:username` yang disaring ketat agar hanya memengaruhi selektor bertopik `.vk-themed-root` (alias `.obmap-themed-root`) tanpa mengeksekusi script atau `url()` eksternal tak tepercaya (`rehype-sanitize` / CSS parser whitelist).
+3. **Scoped CSS Snippets:** Pengguna dapat mengunggah snippet CSS kustom untuk `.app/` (fallback `.vk/` / `.obmap/`) lokal dan tema profil publik `/:username` yang disaring ketat agar hanya memengaruhi selektor bertopik `.app-themed-root` / `.vk-themed-root` (alias `.obmap-themed-root`) tanpa mengeksekusi script atau `url()` eksternal tak tepercaya (`rehype-sanitize` / CSS parser whitelist).
 
 ---
 

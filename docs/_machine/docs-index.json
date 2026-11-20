@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "last_updated": "2026-11-16",
+  "version": "2.1.0",
+  "last_updated": "2026-11-20",
   "root_portal": "docs/README.md",
   "execution_playbook": "docs/02-planning/README.md",
   "changelog_stream": "docs/_machine/changelog.jsonl",
@@ -8,7 +8,7 @@
     {
       "id": "DOC-PORTAL-000",
       "path": "docs/README.md",
-      "title": "Portal Dokumentasi Teknis & Produk ObMap",
+      "title": "Portal Dokumentasi Teknis & Produk",
       "category": "index",
       "status": "IMPLEMENTED"
     },
@@ -50,7 +50,7 @@
     {
       "id": "DOC-META-002",
       "path": "docs/00-meta/glossary.md",
-      "title": "Glosarium Teknis & Produk ObMap v2.0",
+      "title": "Glosarium Kanonik & Kamus Istilah Teknis ObMap v2.0",
       "category": "meta",
       "status": "IMPLEMENTED"
     },
@@ -99,28 +99,28 @@
     {
       "id": "DOC-VIS-001",
       "path": "docs/01-visions/vision-mission.md",
-      "title": "Visi, Misi & Sasaran Strategis ObMap v2.0",
+      "title": "Visi, Misi, Filosofi & Sasaran Strategis v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-002",
       "path": "docs/01-visions/product-philosophy.md",
-      "title": "Filosofi Produk & Prinsip Rekayasa ObMap v2.0",
+      "title": "Filosofi Produk & Enam Prinsip Inti Arsitektur v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-003",
       "path": "docs/01-visions/positioning.md",
-      "title": "Positioning Strategis & Matriks Kompetitif ObMap v2.0",
+      "title": "Positioning Strategis & Matriks Kompetitif (6-System Reference DNA) v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-VIS-004",
       "path": "docs/01-visions/use-case-pillars.md",
-      "title": "Lima Pilar Use-Case ObMap v2.0",
+      "title": "Lima Pilar Use-Case, Workspace Modes & Inkubator Presets v2.0",
       "category": "vision",
       "status": "IMPLEMENTED"
     },
@@ -134,7 +134,7 @@
     {
       "id": "DOC-PLAN-001",
       "path": "docs/02-planning/prd.md",
-      "title": "Product Requirements Document (PRD) ObMap v2.0",
+      "title": "Product Requirements Document (PRD) v2.0",
       "category": "planning",
       "status": "PLANNED"
     },
@@ -197,7 +197,7 @@
     {
       "id": "DOC-ARCH-001",
       "path": "docs/03-architecture/system-overview.md",
-      "title": "Tinjauan Arsitektur Sistem ObMap v2.0 (System Overview)",
+      "title": "Tinjauan Arsitektur Sistem v2.0 (System Overview & 3-Scope Controls)",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
@@ -218,28 +218,28 @@
     {
       "id": "DOC-ARCH-004",
       "path": "docs/03-architecture/data-and-storage.md",
-      "title": "Arsitektur Data, Storage & Konfigurasi 6-Lapis ObMap v2.0",
+      "title": "Arsitektur Data, Storage & Single Central .app/config.json v2.0",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ARCH-005",
       "path": "docs/03-architecture/layout-engine.md",
-      "title": "Arsitektur Mesin Tata Letak & Kanvas Graf Canvas2D (Layout Engine)",
+      "title": "Arsitektur Helicopter Views, Mesin Tata Letak Deterministik & Kanvas Graf v2.0",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
     {
       "id": "DOC-ARCH-006",
       "path": "docs/03-architecture/collaboration-and-publishing.md",
-      "title": "Arsitektur Kolaborasi, Keamanan RBAC, Publikasi /:username & Sitasi v2.0",
+      "title": "Arsitektur Essential VCS, Kolaborasi Granular (AS & WITH) & Publikasi /:username v2.0",
       "category": "architecture",
       "status": "PARTIAL"
     },
     {
       "id": "DOC-ARCH-ADR-IDX",
       "path": "docs/03-architecture/adr/README.md",
-      "title": "Indeks Architecture Decision Records (ADR-0001 s/d ADR-0012)",
+      "title": "Indeks Architecture Decision Records (ADR-0001 s/d ADR-0013)",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
@@ -323,7 +323,7 @@
     {
       "id": "DOC-ARCH-ADR-0012",
       "path": "docs/03-architecture/adr/ADR-0012-sandboxed-plugin-sdk-and-extension-points.md",
-      "title": "ADR-0012 — Ekosistem Ekstensi @vk/sdk Ber-Sandbox & 12 Extension Points",
+      "title": "ADR-0012 — Ekosistem Ekstensi @app/sdk Ber-Sandbox, Permission Manifest & 12 Extension Points",
       "category": "adr",
       "status": "PLANNED"
     },
@@ -344,7 +344,7 @@
     {
       "id": "DOC-FEAT-001",
       "path": "docs/04-features/feature-catalog.md",
-      "title": "Master Feature Catalog ObMap v2.0",
+      "title": "Master Feature Catalog v2.0 (FEAT-*)",
       "category": "features",
       "status": "PARTIAL"
     },
@@ -393,28 +393,28 @@
     {
       "id": "DOC-LMS-001",
       "path": "docs/06-lms/lms-vision.md",
-      "title": "Visi & Spesifikasi Interactive Graph LMS ObMap v2.0",
+      "title": "Visi & Arsitektur Academy (LMS) — Living Pedagogical & Competence Tree (3 Lapisan Evolusi)",
       "category": "lms",
       "status": "VISION"
     },
     {
       "id": "DOC-DEV-000",
       "path": "docs/07-developers/README.md",
-      "title": "Portal Pengembang Ekstensi & Tema ObMap (@vk/sdk)",
+      "title": "Portal Pengembang Ekstensi, Presets & Tema (@app/sdk)",
       "category": "developer",
       "status": "PLANNED"
     },
     {
       "id": "DOC-DEV-001",
       "path": "docs/07-developers/plugin-sdk-quickstart.md",
-      "title": "Quickstart Membangun Plugin Pertama dengan @vk/sdk",
+      "title": "Quickstart Membangun Plugin Pertama dengan @app/sdk",
       "category": "developer",
       "status": "PLANNED"
     },
     {
       "id": "DOC-DEV-002",
       "path": "docs/07-developers/extension-points-reference.md",
-      "title": "Referensi 12 Extension Points Standar @vk/sdk",
+      "title": "Referensi 12 Extension Points Standar @app/sdk",
       "category": "developer",
       "status": "PLANNED"
     },
@@ -428,7 +428,7 @@
     {
       "id": "DOC-DEV-004",
       "path": "docs/07-developers/security-and-sandbox.md",
-      "title": "Model Keamanan Ekstensi, Izin & Sandbox @vk/sdk",
+      "title": "Model Keamanan Ekstensi, Izin & Sandbox @app/sdk",
       "category": "developer",
       "status": "PLANNED"
     }

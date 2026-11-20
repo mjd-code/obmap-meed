@@ -4,8 +4,8 @@ title: Panduan Pembuatan Tema & Scoped CSS Snippets ObMap v2.0
 type: developer
 status: [PLANNED]
 owner: Head of UX & Developer Ecosystem Lead
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-DEV-000
@@ -28,8 +28,8 @@ source_of_truth: src/domains/settings/shared/stores/useThemeStore.ts, src/domain
 
 ```mermaid
 flowchart LR
-    T["theme.json (Token Semantik --vk-*)"] --> STORE["useThemeStore.ts (Layer 1-6 Cascade)"]
-    STORE --> DOM["CSS Variables pada :root / .vk-themed-root"]
+    T["theme / .app/config.json (Token Semantik --app-* / --vk-*)"] --> STORE["useThemeStore.ts (Layer 1-6 Cascade)"]
+    STORE --> DOM["CSS Variables pada :root / .app-themed-root (.vk-themed-root)"]
     STORE --> CANVAS["graph/shared/utils/theme.ts & atmosphereConfig.ts"]
     CANVAS --> REFRESH["Trigger graphRef.current?.refresh?.() pada cooldownTicks === 0"]
 ```
@@ -45,9 +45,9 @@ Setiap tema ObMap minimal mendefinisikan kelompok token berikut pada berkas `the
 ---
 
 ## 2. Scoped CSS Snippets (Gaya Komunitas Ala Obsidian yang Aman)
-1. **Lingkup Workspace Privat (`.vk/snippets/*.css` | fallback `.obmap/snippets/*.css`):** Pengguna dapat menyesuaikan kerapatan sidebar, gaya callout Markdown, atau font pembaca.
+1. **Lingkup Workspace Privat (`.app/snippets/*.css` | fallback `.vk/snippets/*.css` & `.obmap/snippets/*.css`):** Pengguna dapat menyesuaikan kerapatan sidebar, gaya callout Markdown, atau font pembaca (dirujuk dari `.app/config.json`).
 2. **Lingkup Halaman Publik (`/:username` di `domains/community/`):**
-   - Seluruh selektor CSS otomatis di-*scope* ke kontainer akar `.vk-themed-root` (alias kompatibilitas `.obmap-themed-root` per `ADR-0013`).
+   - Seluruh selektor CSS otomatis di-*scope* ke kontainer akar `.app-themed-root` / `.vk-themed-root` (alias kompatibilitas `.obmap-themed-root` per `ADR-0013`).
    - Aturan CSS yang mengandung `javascript:`, `@import` ke domain eksternal tak tepercaya, atau properti berbahaya ditolak oleh parser sanitasi sebelum tayang publik.
 3. **Kepatuhan Aksesibilitas & Org-Lock:** Tema resmi direktori komunitas wajib memenuhi rasio kontras teks WCAG 2.2 AA (`>= 4.5:1`), serta tunduk pada penguncian kebijakan apabila admin organisasi menetapkan *Org-Locked Theme* (`ADR-0011`).
 

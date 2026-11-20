@@ -1,14 +1,15 @@
 ---
 id: DOC-VIS-004
-title: Lima Pilar Use-Case ObMap v2.0
+title: Lima Pilar Use-Case, Workspace Modes & Inkubator Presets v2.0
 type: vision
 status: [IMPLEMENTED]
 owner: Chief Product Officer
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-000
+  - DOC-META-002
   - DOC-VIS-001
   - DOC-VIS-003
   - DOC-PLAN-005
@@ -16,49 +17,49 @@ related:
 source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ---
 
-# Lima Pilar Use-Case ObMap v2.0
+# Lima Pilar Use-Case, Workspace Modes & Inkubator Presets v2.0
 
 ## Ringkasan 3 Baris
-- Memetakan lima pilar penggunaan utama ObMap v2.0 dari produktivitas riset personal, ruang kerja ideasi tim, portofolio cendekiawan `/:username`, ensiklopedia publik `/explore`, hingga kurikulum DAG interaktif.
-- Menghubungkan setiap pilar langsung ke domain target di `src/domains/` (termasuk domain `community` hasil refaktor `public-reader` serta domain baru `dashboard`) dan segmen persona `PER-01` s/d `PER-09`.
-- Menjadi acuan utama pembuatan template vault pada Dashboard `/vaults` dan alur *Personalization Survey* saat onboarding pengguna baru.
+- Memetakan lima pilar penggunaan utama lintas **6 Sistem Referensi** (**Obsidian**, **Nodus Research**, **XMind**, **Notion**, **Wikipedia**, **LinkedIn × ResearchGate × GitHub**) ke dalam **Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy`) dan **4 Helicopter Views**.
+- Menjelaskan alur **Presentation Lenses** (`atlas`, `publication`, `course`, `template`) pada `/explore` dan `/:username`, beserta jalur inkubator **`Community Presets → Core Presets`** berbasis `.app/config.json`.
+- Menjadi acuan perancangan preset Dashboard `/vaults`, pengalaman *Zero-Friction Start* pemula, dan ekstensi **`@app/sdk`**.
 
 ---
 
-## 1. Arsitektur Lima Pilar Use-Case
+## 1. Peta Pilar Use-Case ↔ Workspace Modes & Presentation Lenses
 
 ```mermaid
 flowchart TD
-    U["Pengguna & Cendekiawan (PER-01 s/d PER-09)"] --> P1["Pilar 1: Public Encyclopedia & Topic Constellations (/explore)"]
-    U --> P2["Pilar 2: Living Intellectual Portfolio (/:username & /@:username)"]
-    U --> P3["Pilar 3: Ideation, Engineering & PKM Workspace (/app & /vaults)"]
-    U --> P4["Pilar 4: Interactive Graph LMS & Skill Tree DAG (docs/06-lms)"]
-    U --> P5["Pilar 5: Collaborative Research, Citations & Fork/MR (community + vcs)"]
+    U["Pengguna 3 Level (Beginner · Intermediate · Advanced)"] --> P1["Pilar 1: Public Encyclopedia & Topic Constellations (/explore)"]
+    U --> P2["Pilar 2: Living Portfolio & Publish Studio (Mode: Studio -> Lens: publication)"]
+    U --> P3["Pilar 3: Research, Study & Ideation (Mode: Atlas / Freeform -> Lens: atlas)"]
+    U --> P4["Pilar 4: Living Pedagogical & Competence Tree (Mode: Academy -> Lens: course)"]
+    U --> P5["Pilar 5: Collaborative Research, Essential VCS & Community Presets (Lens: template)"]
 ```
 
 ---
 
-## 2. Spesifikasi Detail Per Pilar
+## 2. Spesifikasi Detail Lima Pilar & Keselarasan Mode
 
-| Pilar | Referensi Sistem | Persona Utama | Kapabilitas & Alur Inti | Domain Terkait |
+| Pilar Use-Case | Referensi Utama | Workspace Mode & Helicopter Views | Presentation Lens & Aksi Granular (`AS & WITH`) | Domain Terkait |
 | :--- | :--- | :--- | :--- | :--- |
-| **1. Public Encyclopedia & Topic Constellations** | Wikipedia × Learn-Anything | `PER-05`, `PER-07`, `PER-09` | Menjelajahi indeks topik global di `/explore`, membaca catatan publik dual-pane (graf interaktif + Markdown terkurasi), memeriksa riwayat revisi VCS transparan. | `community` *(eks `public-reader`)*, `graph` |
-| **2. Living Intellectual Portfolio** | LinkedIn × ResearchGate | `PER-01`, `PER-07`, `PER-02` | Profil kanonik `/:username` dan `/@:username` menampilkan bio, afiliasi/ORCID, Konstelasi Vault Publik (`CC BY-SA 4.0` default), lencana kurasi manual *Verified Scholar*, dan *Impact Index*. | `community`, `settings`, `admin` |
-| **3. Ideation, Engineering & Team Workspace** | Obsidian × XMind × Notion | `PER-03`, `PER-04`, `PER-08` | Menulis `.md` *local-first*, menyusun *Mindmap / Fishbone / Timeline / Argument Map* deterministik, mengelola tugas lewat 5 view derivatif Dashboard `/vaults`, serta *Admin-Locked Config* tim. | `workspace`, `dashboard`, `editor`, `graph`, `vault`, `settings` |
-| **4. Interactive Graph LMS & Skill Tree DAG** | Roadmap.sh × Khan Academy Visual | `PER-02`, `PER-08`, `PER-05` | Merancang jalur belajar berbasis dependensi YAML `prerequisites`, memvisualkan node *Locked / Available / Mastered*, serta menerbitkan modul kursus publik bagi mahasiswa/pelajar. | `lms` *(via `graph` + `community`)*, `metadata` |
-| **5. Collaborative Research & Peer Review Network** | GitHub × Academic Peer Review | `PER-01`, `PER-08`, `PER-09` | Rujukan silang federated `[[@user/vault/note]]`, ekspor sitasi APA/MLA/IEEE/BibTeX, *Fork to My Vault*, komentar paragraf terikat hash, dan *Knowledge Merge Request* antar-cendekiawan. | `vcs`, `collaboration`, `community`, `metadata` |
+| **1. Public Encyclopedia & Topic Constellations** | Wikipedia × Learn-Anything | Membaca publik lewat *Dual-Pane* (*Graph* + Markdown) | Konsumsi `/explore`, riwayat Snapshot/Diff terbuka, & penemuan topik kurasi. | `community`, `graph` |
+| **2. Publishing CMS & Intellectual Portfolio (`Studio`)** | LinkedIn × Notion × XMind | **Mode `Studio`** dengan **wajib 4 Helicopter Views** (*Cards* galeri karya, *Table* SEO/status, *Graph* *internal link clusters*, *Diagram* struktur bab) | Terbit ke `/:username` *as **`publication`** baik seluruh Vault maupun spesifik Folder-Node/File-Node (`Publish AS & WITH`). | `community`, `editor`, `dashboard`, `settings` |
+| **3. Archive, Ideation, Research & Study (`Atlas` / `Freeform`)** | Obsidian × Nodus Research × XMind | **Mode `Atlas`** (*core preset* riset & belajar) + **`Freeform`** (*full manual control*); *Restructure & Reorganize* (*Virtual Grouping* & *Structural Refactoring*) + BYO-AI / Ollama RAG & Zotero/PDF | Terbit *as **`atlas`** dengan sitasi lintas-vault `[[@user/vault/note]]` & ekspor APA/MLA/IEEE/BibTeX. | `workspace`, `editor`, `graph`, `metadata`, `vault` |
+| **4. Interactive Academy & Competence Tree (`Academy`)** | Nodus × Roadmap.sh × Visual LMS | **Mode `Academy`**: *Diagram View* (`Competence/Skill Tree DAG`) menampilkan **Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas** + *Living Student Sub-Nodes* (`locked → mastered`) | Terbit *as **`course`** dengan aturan 3 Lapisan Evolusi tersimpan di blok `academy` `.app/config.json`. | `graph`, `community`, `metadata`, `settings` |
+| **5. Collaborative Peer Review, Essential VCS & Community Presets** | GitHub × ResearchGate × Obsidian SDK | **Drawer *"Share · Access · Versions"*** (Snapshot, Visual Diff, Fork, KMR, Give Access `AS & WITH` per Vault/Node) | Terbit paket `.app/config.json` *as **`template`** di `/explore` (**`Community Presets → Core Presets`**) & integrasi `@app/sdk`. | `vcs`, `collaboration`, `community`, `admin`, `settings` |
 
 ---
 
-## 3. Kesesuaian dengan 3-Stage Progressive Rollout
-- **Stage 1 (`stage_1_partner`):** Berfokus pada **Pilar 3** dan fondasi privat **Pilar 4 & 5** bersama institusi/rekan pilot.
-- **Stage 2 (`stage_2_community_beta`):** Membuka **Pilar 1, 2, dan 5** untuk publik (*read-only* `approved` vaults & profil `/:username`), dengan penerimaan akun baru dikontrol manual oleh Admin di `/admin`.
-- **Stage 3 (`stage_3_commercial_ga`):** Membuka seluruh pilar beserta kuota/tarif dinamis, Teamspaces enterprise, pembayaran **Xendit/Midtrans** & Stripe, serta `@vk/sdk`.
+## 3. Siklus Penggunaan Lintas Tahap & Peta Konfigurasi
+- **Siklus Utama Pengguna:** *Archive Everything* (Markdown `.md` + YAML + media/PDF) → *View from Above* (4 **Helicopter Views**) → *Restructure & Reorganize* (*Virtual Grouping* atau *Structural Refactoring*) → *Discover & Share Meaning* (*Visual Diff/KMR* & **Publish/Access `AS & WITH`**).
+- **Stage Alignment:** Stage 1 memvalidasi `/app`, `Atlas`/`Freeform`, 4 Helicopter Views, & `.app/config.json`; Stage 2 membuka `/vaults`, `/explore`, `/:username`, *Core Presets* (`Atlas`, `Studio`, `Academy`), *Essential VCS*, dan **`Community Presets`** (`template`); Stage 3 mengaktifkan Academy Lapisan 3, BYO-AI/Ollama RAG penuh, *Teamspaces*, CRDT Yjs, dan **`@app/sdk`**.
 
 ---
 
 ## Terkait
 - [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
-- [Katalog Persona (PER-01 s/d PER-09)](../02-planning/personas.md)
-- [Visi & Spesifikasi LMS](../06-lms/lms-vision.md)
+- [Glosarium Kanonik](../00-meta/glossary.md)
+- [Katalog Persona (`PER-01`–`PER-09`)](../02-planning/personas.md)
+- [Visi & Spesifikasi Academy 3-Lapis (`lms-vision.md`)](../06-lms/lms-vision.md)
 - [Peta 13 Domain Sistem](../03-architecture/domain-map.md)

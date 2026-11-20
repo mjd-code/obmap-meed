@@ -4,8 +4,8 @@ title: System Requirements Specification (SRS) ObMap v2.0
 type: planning
 status: [PLANNED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-META-000
@@ -32,11 +32,11 @@ source_of_truth: src/domains/, supabase/migrations/
 | **`FR-SYS-001`** | `global` | Hapus `src/global/api/untypedSupabase.ts` (`TD-005`) dan regenerasi tipe TypeScript ketat dari `supabase/migrations/20261031000000_v4_collaboration_and_publishing.sql` + migrasi baru. | `[PLANNED]` | `STEP-01.1` |
 | **`FR-EDITOR-001`** | `editor` | Isolasi editor Markdown CM6 (`EditorMarkdownView.tsx`) dari editor YAML Frontmatter terstruktur (`EditorPropertiesPanel.tsx`). | `[IMPLEMENTED]` | Baseline |
 | **`FR-GRAPH-001`** | `graph` | Menjalankan simulasi D3 hanya pada `Free-Force`; menjaga `Mindmap`, `Org`, `Timeline`, dan `Fishbone` deterministik (`layoutCategory.ts`) dengan isolasi store per-tab (`LeafGraphConfigStore`). | `[IMPLEMENTED]` | Baseline |
-| **`FR-GRAPH-010`** | `graph` | Tambah solver deterministik `argument-map` dan `citation-tree` pada `layoutCategory.ts`. | `[PLANNED]` | `STEP-05.2` |
+| **`FR-GRAPH-010`** | `graph` | Tambah solver deterministik `argument-map`, `citation-tree`, dan `competence-dag` pada `layoutCategory.ts` (sebagai bagian dari *Diagram View* di **4 Helicopter Views**). | `[PLANNED]` | `STEP-05.1`–`05.2` |
 | **`FR-GRAPH-011`** | `graph` | *Pitch Mode* presentasi terurut dari cabang kanvas & adaptor ekspor PDF, SVG, serta OPML. | `[PLANNED]` | `STEP-05.2` |
-| **`FR-META-001`** | `metadata` | Indeks `[[wikilinks]]`, tags, dan frontmatter via Aho-Corasick Web Worker (`mentions.worker.ts`) dalam `< 100ms` tanpa memblokir UI thread. | `[IMPLEMENTED]` | Baseline |
-| **`FR-VAULT-001`** | `vault` | Abstraksi penyimpanan lewat `IVaultStorageDriver.ts` (`FileSystemService.ts`, `IndexedDbVaultDriver.ts`, `CloudVaultService.ts`) dan `ImportExportService.ts`. | `[IMPLEMENTED]` | Baseline |
-| **`FR-VAULT-010`** | `vault`, `collaboration` | State Machine 4 visibilitas (`Private`, `Shared`, `Public Unlisted`, `Public Listed`), override YAML `visibility: private`, lisensi default `CC BY-SA 4.0`, dan Unified Share Modal (`share_links`). | `[PARTIAL]` | `STEP-01.4` |
+| **`FR-META-001`** | `metadata` | Indeks `[[wikilinks]]`, tags, dan frontmatter via Aho-Corasick Web Worker (`mentions.worker.ts`) dalam `< 100ms` + pengindeksan lokal RAG untuk BYO-AI & sitasi PDF. | `[IMPLEMENTED]` | Baseline + `STEP-05.3` |
+| **`FR-VAULT-001`** | `vault` | Abstraksi penyimpanan lewat `IVaultStorageDriver.ts` (`FileSystemService.ts`, `IndexedDbVaultDriver.ts`, `CloudVaultService.ts`), `ImportExportService.ts`, dan berkas sentral tunggal **`.app/config.json`** (dilarang memecah ke file lain). | `[IMPLEMENTED]` | Baseline |
+| **`FR-VAULT-010`** | `vault`, `collaboration`, `vcs` | State Machine 4 visibilitas, override YAML `visibility: private`, **`Publish / Give Access AS & WITH` di Vault & Node/Folder Level**, *Essential VCS* (*Snapshot, Visual Diff, Fork, KMR*), & **Drawer terpadu *"Share · Access · Versions"*** (`CC BY-SA 4.0`). | `[PARTIAL]` | `STEP-01.4`, `03.3` |
 
 ---
 
@@ -49,13 +49,13 @@ source_of_truth: src/domains/, supabase/migrations/
 | **`FR-STAGE-003`** | `auth`, `admin` | Stage 2 menempatkan akun baru ke `account_status = 'pending_approval'`; hanya Admin yang menyetujui **secara individual per-user di `/admin`**. | `[VISION]` | `STEP-01.3` |
 | **`FR-AUTH-010`** | `auth` | Refaktor `useVaultPermission.ts` menjadi `PolicyEngine` (`can(actor, action, resource, context)`) simetris dengan Postgres RLS `can_access_resource()`, termasuk `audit_logs`. | `[PARTIAL]` | `STEP-01.4` |
 | **`FR-COMM-001`** | `community`, `settings` | Refaktor `src/domains/public-reader/` → `src/domains/community/` (`CommunityOrchestrator.tsx`); matikan `/p/*` (*hard cutover*); daftarkan `/:username/*` & `/@:username/*` dengan `RESERVED_SLUGS` di router, `ProfileService.ts`, dan DB. | `[PLANNED]` | `STEP-01.2` |
-| **`FR-COMM-002`** | `community` | Halaman Profil Cendekiawan `/:username` menampilkan bio, afiliasi/ORCID, Konstelasi Vault Publik (`CC BY-SA 4.0`), dan Statistik Dampak Sitasi. | `[VISION]` | `STEP-03.1` |
-| **`FR-COMM-003`** | `community` | Direktori `/explore` untuk penemuan topik kurasi, grafik tren, dan *Follow Scholar / Topic* (`scholar_follows`). | `[VISION]` | `STEP-03.1` |
-| **`FR-COMM-004`** | `community`, `admin` | Lencana *Verified Scholar / Educator / Institution* dikurasi secara manual oleh Admin melalui `/admin`. | `[VISION]` | `STEP-03.1` |
-| **`FR-COMM-005`** | `community`, `metadata`, `editor` | Parser `[[@username/vaultSlug/noteSlug]]` di `mentions.worker.ts`, properti YAML `epistemic_status`/`doi`/`license`/`references`, tabel `cross_vault_citations`, & tombol *Cite* (APA/MLA/IEEE/BibTeX). | `[VISION]` | `STEP-03.2` |
-| **`FR-COMM-006`** | `community`, `vcs` | *Fork to My Vault*, pengajuan *Knowledge Merge Request* lintas pengguna memakai `vcsDiffEngine.ts`, serta anotasi paragraf terikat hash (`note_annotations`). | `[PARTIAL]` | `STEP-03.3` |
-| **`FR-DASH-001`** | `dashboard` | Bangun `src/domains/dashboard/` (`DashboardOrchestrator.tsx`, `DashboardWidgetRegistry.ts`) untuk `/vaults`; alihkan redirect login di `Landing.tsx` dari `/app` ke `/vaults`. | `[VISION]` | `STEP-02.1` |
-| **`FR-DASH-002`** | `dashboard` | Lima mode *Derived Views* dari Markdown + YAML frontmatter: *Grid/List*, *Knowledge Tree*, *Kanban*, *Calendar/Timeline*, dan *Analytics* + Template Gallery & Community Feed. | `[VISION]` | `STEP-02.1` |
+| **`FR-COMM-002`** | `community` | Halaman Profil Cendekiawan `/:username` menampilkan bio, afiliasi/ORCID, Portofolio *Presentation Lenses* (`atlas`, `publication`, `course`, `template`), kontrol kurasi ringan + tombol **"Full Account Settings →"** bebas dari kontrol teknis editor. | `[VISION]` | `STEP-03.1` |
+| **`FR-COMM-003`** | `community` | Direktori `/explore` untuk penemuan topik kurasi, grafik tren, **`Community Presets` (`template`)**, & *Follow Scholar / Topic* (`scholar_follows`). | `[VISION]` | `STEP-03.1` |
+| **`FR-COMM-004`** | `community`, `admin` | Lencana *Verified Scholar / Educator / Institution* & adopsi **`Community Presets → Core Presets`** dikurasi secara manual oleh Admin melalui `/admin`. | `[VISION]` | `STEP-03.1` |
+| **`FR-COMM-005`** | `community`, `metadata`, `editor` | Parser `[[@username/vaultSlug/noteSlug]]` di `mentions.worker.ts`, properti YAML `epistemic_status`/`doi`/`license`/`references` (PDF/Zotero), tabel `cross_vault_citations`, & tombol *Cite* (`Allow Citation`: APA/MLA/IEEE/BibTeX). | `[VISION]` | `STEP-03.2` |
+| **`FR-COMM-006`** | `community`, `vcs` | *Fork to My Vault* (`Allow Fork`), pengajuan *Knowledge Merge Request* (riset & tugas Academy) memakai `vcsDiffEngine.ts` + *Visual Diff*, serta anotasi paragraf terikat hash (`note_annotations`). | `[PARTIAL]` | `STEP-03.3` |
+| **`FR-DASH-001`** | `dashboard` | Bangun `src/domains/dashboard/` untuk `/vaults`; pilih **Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy`) yang menyimpan `primary_mode` di `.app/config.json`; alihkan redirect login di `Landing.tsx` ke `/vaults`. | `[VISION]` | `STEP-02.1` |
+| **`FR-DASH-002`** | `dashboard` | Sediakan **4 Mandatory Helicopter Views** (*Graph, Diagram, Table, Cards*) + *Derived Knowledge Views* (menolak enterprise task board) & mode *Restructure & Reorganize* (*Virtual Grouping* & *Structural Refactoring*). | `[VISION]` | `STEP-02.1` |
 
 ---
 
@@ -63,18 +63,18 @@ source_of_truth: src/domains/, supabase/migrations/
 
 | Req ID | Domain | Spesifikasi Teknis Terukur | Status | Step |
 | :--- | :--- | :--- | :---: | :--- |
-| **`FR-GROWTH-001`** | `pages`, `vault` | Landing Page `/` dengan narasi 5 referensi, lazy-loaded *In-Memory Sandbox* `< 65KB` gzipped, showcase `/:username`, dan CTA adaptif `release_stage`. | `[PARTIAL]` | `STEP-02.2` |
-| **`FR-GROWTH-002`** | `auth`, `workspace` | Onboarding Hibrida 5-Tahap: Splash + Skip → Migrasi catatan Sandbox → Approval/Waitlist State → Survey → Guided Tour `<= 5` langkah + Coach Marks. | `[PLANNED]` | `STEP-02.3` |
+| **`FR-GROWTH-001`** | `pages`, `vault` | Landing Page `/` dengan narasi **6 Sistem Referensi** & motto, lazy-loaded *In-Memory Sandbox* `< 65KB` gzipped + *Core Presets* `< 90s`, showcase `/:username`, dan CTA adaptif `release_stage`. | `[PARTIAL]` | `STEP-02.2` |
+| **`FR-GROWTH-002`** | `auth`, `workspace` | Onboarding Hibrida 5-Tahap: Splash + Skip → Migrasi catatan Sandbox → Approval/Waitlist State → Survey (+ pilih `Atlas`/`Studio`/`Academy`/`Freeform`) → Guided Tour `<= 5` langkah. | `[PLANNED]` | `STEP-02.3` |
 | **`FR-BILL-001`** | `admin`, `supabase` | Skema DB dinamis `plans`, `plan_entitlements`, `plan_quotas`, `subscriptions`, `usage_quotas`, `billing_invoices` — nol konstanta harga/kuota hardcode di klien. | `[VISION]` | `STEP-04.1` |
 | **`FR-BILL-002`** | `supabase` | Integrasi webhook pembayaran memprioritaskan **Xendit / Midtrans terlebih dahulu** (QRIS, VA, e-Wallet, IDR), diikuti adapter Stripe. | `[VISION]` | `STEP-04.1` |
 | **`FR-BILL-003`** | `global`, `vault` | Hook `useEntitlement()`, komponen `<FeatureGate>`, penegakan kuota RLS & Edge Functions, serta *Non-Destructive Downgrade* (Grace 7 hari → `downgraded_readonly`). | `[VISION]` | `STEP-04.1` |
-| **`FR-ADM-010`** | `admin` | Konsol `/admin` lengkap: Approval per-user Stage 2, edit harga & kuota dinamis paket, kurasi *Verified Scholar*, kupon/beasiswa, & override akun. | `[VISION]` | `STEP-04.2` |
+| **`FR-ADM-010`** | `admin` | Konsol `/admin` lengkap: Approval per-user Stage 2, edit harga & kuota dinamis paket, kurasi *Verified Scholar* & *Community Presets*, kupon/beasiswa, & override akun. | `[VISION]` | `STEP-04.2` |
 | **`FR-COLLAB-003`** | `collaboration`, `sync` | Sinkronisasi CRDT (Yjs) multi-kursor real-time untuk Team/Lab tanpa memutus mode offline `IndexedDB` / `FS Access API`. | `[VISION]` | `STEP-04.3` |
-| **`FR-COLLAB-010`** | `collaboration`, `admin` | Teamspaces organisasi dengan *Admin-Locked Config* dan manajemen seat (`org_teamspaces`, `org_seats`). | `[VISION]` | `STEP-04.2` |
-| **`FR-SET-001`** | `settings` | Resolusi 6-Layer Cascading Config (*System → Org Locked → Vault `.vk/` [fallback `.obmap/`] → User → Leaf → Session*) melalui `configRegistry.ts`, `LocalConfigStore.ts`, `CloudConfigStore.ts`. | `[PARTIAL]` | `STEP-01.5` |
-| **`FR-SET-002`** | `settings`, `graph` | Unified Theme Engine menghubungkan `useThemeStore.ts` (CSS Variables DOM) dengan `graph/shared/utils/theme.ts` & `atmosphereConfig.ts` secara reaktif (`refresh()`). | `[PARTIAL]` | `STEP-01.5` |
-| **`FR-LMS-001`** | `graph`, `community` | Evaluator DAG `prerequisites` YAML pada kanvas (deteksi siklus), state simpul (*Locked / Available / Mastered*), progres pelajar, & kuis integratif. | `[VISION]` | `STEP-05.1` |
-| **`FR-EXT-001`** | `settings` | SDK `@vk/sdk` (aliased ke `brand.sdkPackageName`) ber-sandbox Web Worker / Iframe CSP, manifest izin eksplisit, *Scoped CSS Snippets* (`rehype-sanitize`), dan 12 Extension Points standar. | `[PARTIAL]` | `STEP-05.3` |
+| **`FR-COLLAB-010`** | `collaboration`, `admin` | Teamspaces organisasi dengan *Admin-Locked `.app/config.json` Policies* dan manajemen seat (`org_teamspaces`, `org_seats`). | `[VISION]` | `STEP-04.2` |
+| **`FR-SET-001`** | `settings` | Sentralisasi **Single `.app/config.json`** (7 blok: `meta`, `mode`, `schema`, `publishing`, `access`, `academy`, `extensions`; fallback `.vk/`/`.obmap/`) & **3-Scope Contextual Settings Escalation** (`/settings` 5 tab, `/:username`, `/app` HUD). | `[PARTIAL]` | `STEP-01.5`, `UI-STEP-02` |
+| **`FR-SET-002`** | `settings`, `graph` | Unified Theme Engine menghubungkan `useThemeStore.ts` (CSS Variables DOM `--app-*`/`--vk-*`) dengan `graph/shared/utils/theme.ts` & `atmosphereConfig.ts` secara reaktif (`refresh()`). | `[PARTIAL]` | `STEP-01.5`, `UI-STEP-01` |
+| **`FR-LMS-001`** | `graph`, `community`, `settings` | **Academy 3-Layer Living Competence Tree**: hirarki *Falsafah → Kurikulum → Silabus → RPS → Tugas*, **Living Student Sub-Nodes** (`locked` → `available` → `in_progress` → `submitted` → `mastered`), aturan Lapisan 2 per node (`format`, `max_files`, `size`, `YAML`, `CRUD`, `time-window`) di `.app/config.json`, & Lapisan 3 (*Focus Screen* + device policy). | `[VISION]` | `STEP-05.1` |
+| **`FR-EXT-001`** | `settings` | SDK **`@app/sdk`** (ber-sandbox Web Worker / Iframe CSP, kompatibel `@vk/sdk`), manifest izin eksplisit, *Scoped CSS Snippets*, 12 Extension Points, serta konektor **BYO-AI / Local AI** (Ollama, WebLLM, BYOK Local RAG) & Zotero. | `[PARTIAL]` | `STEP-05.3` |
 
 ---
 

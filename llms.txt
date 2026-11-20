@@ -1,13 +1,14 @@
-# ObMap System Documentation Index (for LLMs & Coding Agents)
+# System Documentation Index (for LLMs & Coding Agents)
 
-> Visual Knowledge Operating System & High-Signal Social Knowledge Network combining Obsidian (local-first `.md` + `@obmap/sdk`), XMind (deterministic Canvas2D solvers), Notion (RBAC + derived views), Wikipedia (`/explore` open index), and LinkedIn × ResearchGate × GitHub (`/:username` profile, citations, Fork & Merge Request).
+> **Unopinionated Data, Opinionated Lenses, Visual by Default, Connected by Design.** Local-First Visual Knowledge OS & High-Signal Social Knowledge Network combining **6 Reference Systems**: **Obsidian** (`.md` + `.app/config.json` + `@app/sdk` + `Freeform`), **Nodus Research** (opinionated Core Presets, Native BYO-AI / Ollama RAG, PDF/citations), **XMind** (deterministic Canvas2D solvers & 4 Helicopter Views), **Notion** (knowledge-focused Derived Views & block comments — **Explicit Non-Goal: NOT an enterprise task/project board**), **Wikipedia** (`/explore` open index & dual-pane reader), and **LinkedIn × ResearchGate × GitHub** (`/:username`, `[[@user/vault/note]]`, Essential VCS: Snapshot/Visual Diff/Fork/KMR).
 
 ## Essential Constitution & Entrypoints
-- [Repository Rules & Guidelines (AGENTS.md)](AGENTS.md): Stack, 13 target domains (`community` replacing `public-reader` + `dashboard`), 11 Mandatory Architectural Rules (Rule 11 = Changelog Sync).
+- [Repository Rules & Guidelines (AGENTS.md)](AGENTS.md): Stack, 13 target domains (`community` + `dashboard`), 11 Mandatory Architectural Rules (Rule 11 = Changelog Sync).
 - [Documentation Portal](docs/README.md): Role-based reading paths and full directory map.
 - [Navigation Summary](docs/SUMMARY.md): Compact topic tree across all folders.
-- [Master Blueprint v2.0](docs/00-meta/00-0-master-blueprint.md): Authoritative product, UX, routing, RBAC, dynamic monetization (`Xendit/Midtrans` first), and extensibility architecture.
-- [Quo Vadis v2.0](docs/00-meta/00-2-quovadis.md): 20-dimension readiness audit, 3-Stage Progressive Shipping Gate, `EPIC-01`–`15`, and §6 Locked Architectural Decisions.
+- [Master Blueprint v2.0](docs/00-meta/00-0-master-blueprint.md): Authoritative product constitution (6 Reference DNA, 4 Helicopter Views [`Graph`, `Diagram`, `Table`, `Cards`], Workspace Modes [`Freeform`, `Atlas`, `Studio`, `Academy` + `Community Presets`], Single `.app/config.json`, 3-Scope Settings Escalation, Essential VCS & Granular Vault/Node `AS & WITH`, `@app/sdk`).
+- [Canonical Glossary](docs/00-meta/glossary.md): Authoritative definitions for Vault, Folder/File-Node, Workspace Mode, Helicopter Views, Restructure & Reorganize, Presentation Lenses (`atlas`, `publication`, `course`, `template`), and Academy 3-Layer Competence Tree.
+- [Quo Vadis v2.0](docs/00-meta/00-2-quovadis.md): 20-dimension readiness audit, 3-Stage Progressive Shipping Gate, `EPIC-01`–`15`, and Locked Architectural Decisions.
 - [Step-by-Step Execution Playbook](docs/02-planning/README.md): Ordered agent execution queue (`STEP-01.1` through `STEP-05.4`) with prerequisites and verification gates.
 
 ## Modular Changelog System (Read Last 15 Lines First)
@@ -17,22 +18,22 @@
 - [Archive Wave 1-3](docs/changelogs/archive-wave-1-to-3.md): Historical Wave 1–3 summary.
 
 ## Vision & Planning (`docs/01-visions/`, `docs/02-planning/`)
-- [Vision & Mission v2.0](docs/01-visions/vision-mission.md) · [Product Philosophy](docs/01-visions/product-philosophy.md) · [Strategic Positioning](docs/01-visions/positioning.md) · [5 Use-Case Pillars](docs/01-visions/use-case-pillars.md)
-- [PRD](docs/02-planning/prd.md) · [BRD (Dynamic Quotas & Xendit/Midtrans)](docs/02-planning/brd.md) · [SRS (`FR-*`, `NFR-*`)](docs/02-planning/srs.md) · [SoW](docs/02-planning/sow.md) · [Personas (`PER-01`–`09`)](docs/02-planning/personas.md) · [Roadmap](docs/02-planning/roadmap.md) · [Traceability Matrix](docs/02-planning/traceability-matrix.md)
+- [Vision, Mission & Core Philosophy](docs/01-visions/vision-mission.md) · [6 Core Principles & Non-Goals](docs/01-visions/product-philosophy.md) · [6-DNA Positioning](docs/01-visions/positioning.md) · [5 Pillars, Modes & Presets](docs/01-visions/use-case-pillars.md)
+- [PRD](docs/02-planning/prd.md) · [BRD](docs/02-planning/brd.md) · [SRS (`FR-*`, `NFR-*`)](docs/02-planning/srs.md) · [SoW](docs/02-planning/sow.md) · [Personas (`PER-01`–`09`)](docs/02-planning/personas.md) · [Roadmap](docs/02-planning/roadmap.md) · [Traceability Matrix](docs/02-planning/traceability-matrix.md) · [UI/UX & 3-Scope Controls Plan](docs/02-planning/ui-ux-and-universal-design-system-plan.md) · [XMind Visual Engine Plan](docs/02-planning/xmind-obsidian-visual-engine-plan.md)
 
 ## Architecture & ADRs (`docs/03-architecture/`)
-- [System Overview](docs/03-architecture/system-overview.md) · [13-Domain Map](docs/03-architecture/domain-map.md) · [Repository Structure](docs/03-architecture/repository-structure.md) · [Data & 6-Layer Config](docs/03-architecture/data-and-storage.md) · [Layout Engine](docs/03-architecture/layout-engine.md) · [Collaboration & `/:username`](docs/03-architecture/collaboration-and-publishing.md)
-- [ADR Index (`ADR-0001`–`0012`)](docs/03-architecture/adr/README.md): `community` & `/:username` hard cutover (`ADR-0007`), `dashboard` (`ADR-0008`), `ReleaseStageGate` & dynamic billing (`ADR-0009`), visibility & `CC BY-SA 4.0` (`ADR-0010`), 6-layer config & theme (`ADR-0011`), `@obmap/sdk` (`ADR-0012`).
+- [System Overview & 3-Scope Controls](docs/03-architecture/system-overview.md) · [13-Domain Map](docs/03-architecture/domain-map.md) · [Repository Structure](docs/03-architecture/repository-structure.md) · [Data & Single `.app/config.json`](docs/03-architecture/data-and-storage.md) · [Helicopter Views & Layout Engine](docs/03-architecture/layout-engine.md) · [Essential VCS & Granular `AS & WITH`](docs/03-architecture/collaboration-and-publishing.md)
+- [ADR Index (`ADR-0001`–`0013`)](docs/03-architecture/adr/README.md): `community` (`ADR-0007`), `dashboard` (`ADR-0008`), `ReleaseStageGate` (`ADR-0009`), visibility & `CC BY-SA 4.0` (`ADR-0010`), 6-layer config (`ADR-0011`), `@app/sdk` (`ADR-0012`), brand-agnostic storage & dynamic branding (`ADR-0013`).
 
-## Engineering, Features, LMS & Developer SDK (`04`–`07`)
-- [Feature Catalog](docs/04-features/feature-catalog.md) · [LMS Skill Tree Vision](docs/06-lms/lms-vision.md)
+## Engineering, Features, Academy & Developer SDK (`04`–`07`)
+- [Feature Catalog](docs/04-features/feature-catalog.md) · [Academy 3-Layer Competence Tree Vision](docs/06-lms/lms-vision.md)
 - [Coding Standards](docs/05-engineering/coding-standards.md) · [Testing Strategy](docs/05-engineering/testing-strategy.md) · [Repository Rules](docs/05-engineering/repository-rules.md) · [Tech Debt Register](docs/05-engineering/tech-debt-register.md) · [Doc Drift Log](docs/05-engineering/doc-drift-log.md)
-- [Developer SDK Portal (`@obmap/sdk`)](docs/07-developers/README.md): [SDK Quickstart](docs/07-developers/plugin-sdk-quickstart.md) · [12 Extension Points](docs/07-developers/extension-points-reference.md) · [Theme Guide](docs/07-developers/theme-authoring-guide.md) · [Sandbox Security](docs/07-developers/security-and-sandbox.md)
+- [Developer SDK Portal (`@app/sdk`)](docs/07-developers/README.md): [SDK Quickstart](docs/07-developers/plugin-sdk-quickstart.md) · [12 Extension Points](docs/07-developers/extension-points-reference.md) · [Theme Guide](docs/07-developers/theme-authoring-guide.md) · [Sandbox Security](docs/07-developers/security-and-sandbox.md)
 
 ## Machine-Readable Metadata (`docs/_machine/`)
 - `docs/_machine/docs-index.json` · `docs/_machine/domains.json` · `docs/_machine/features.json` · `docs/_machine/requirements.json` · `docs/_machine/repo-map.json`
 
 # AGENT OPERATING DIRECTIVE
 1. Read `AGENTS.md`, `tail -n 15 docs/_machine/changelog.jsonl`, and `docs/02-planning/README.md` before coding to pick the next `[NEXT]`/`[PLANNED]` step (`STEP-01.1`..`05.4`).
-2. Enforce all 8 locked decisions (`community` refactor, `/p/*` hard cutover without redirect, Stage 2 individual `/admin` user approval, dynamic DB quotas/pricing in `/admin`, Xendit/Midtrans first, manual Verified Scholar curation, default `CC BY-SA 4.0`, Headless Controller `<= 300` lines).
-3. Before ending ANY task touching code, SQL, config, or architecture docs, update `docs/02-planning/README.md` status (if applicable) and perform all 3 atomic changelog updates required by `AGENTS.md` Rule 11 (`docs/_machine/changelog.jsonl`, `docs/changelogs/YYYY-MM.md`, `docs/changelogs/README.md`).
+2. Enforce single central `.app/config.json` (no fragmented `preset.json`/`lms-policy.json`/`setting.json`; `.vk/` & `.obmap/` legacy fallback only), 4 Helicopter Views across modes, Vault+Node granular `AS & WITH`, Xendit/Midtrans first, `CC BY-SA 4.0`, Headless Controller (`<= 300` lines), and explicit non-goal against enterprise project boards.
+3. Before ending ANY task touching code, SQL, config, or architecture docs, perform all 3 atomic changelog updates required by `AGENTS.md` Rule 11 (`docs/_machine/changelog.jsonl`, `docs/changelogs/YYYY-MM.md`, `docs/changelogs/README.md`).

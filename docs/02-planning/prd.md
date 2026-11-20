@@ -1,14 +1,15 @@
 ---
 id: DOC-PLAN-001
-title: Product Requirements Document (PRD) ObMap v2.0
+title: Product Requirements Document (PRD) v2.0
 type: planning
 status: [PLANNED]
 owner: Chief Product Officer & Lead Product Manager
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-000
+  - DOC-META-002
   - DOC-PLAN-000
   - DOC-PLAN-002
   - DOC-PLAN-003
@@ -16,59 +17,56 @@ related:
 source_of_truth: docs/00-meta/00-0-master-blueprint.md, docs/00-meta/00-2-quovadis.md
 ---
 
-# Product Requirements Document (PRD) ObMap v2.0
+# Product Requirements Document (PRD) v2.0
 
 ## Ringkasan 3 Baris
-- Mendefinisikan kebutuhan produk end-to-end ObMap v2.0 sebagai **Visual Knowledge OS** dan **Social Knowledge Network** yang menyatukan kapabilitas Obsidian, XMind, Notion, Wikipedia, dan LinkedIn × ResearchGate × GitHub.
-- Mengunci seluruh keputusan produk mutakhir: domain `community` (`/:username` *hard cutover* tanpa `/p/*`), domain `dashboard` (`/vaults`), persetujuan Stage 2 per-user di `/admin`, kurasi manual *Verified Scholar*, lisensi default `CC BY-SA 4.0`, dan harga/kuota dinamis via `/admin` dengan **Xendit/Midtrans** pertama.
-- Menghubungkan skenario pengguna (`PER-01`–`PER-09`) langsung ke kriteria keberhasilan terukur, mitigasi risiko, dan antrean implementasi `STEP-01.1`–`STEP-05.4`.
+- Mendefinisikan kebutuhan produk end-to-end berbasis **6 Sistem Referensi Inti** (**Obsidian**, **Nodus Research**, **XMind**, **Notion**, **Wikipedia**, **LinkedIn × ResearchGate × GitHub**) di atas filosofi *"Unopinionated Data, Opinionated Lenses, Visual by Default, Connected by Design"*.
+- Mengunci batas produk tegas (**Non-Goal:** bukan *office-board-central* ala Trello/Asana/Monday/ClickUp), sentralisasi konfigurasi tunggal **`.app/config.json`**, **4 Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy` + `Community Presets`), **4 Helicopter Views**, **Academy 3 Lapis**, serta **Unified Essential VCS & Granular `AS & WITH`** via **"Share · Access · Versions" Drawer**.
+- Menghubungkan 3 segmen pengguna (*Beginner*, *Intermediate*, *Advanced*) & persona (`PER-01`–`PER-09`) langsung ke kriteria keberhasilan dan antrean `STEP-01.1`–`STEP-05.4`.
 
 ---
 
-## 1. Masalah Inti Pengguna & Ruang Lingkup Produk
-Pengguna pengetahuan saat ini terpaksa memecah alur kerjanya di 4–5 alat terpisah: menulis catatan Markdown privat (Obsidian), memetakan ide secara visual deterministik (XMind), berkolaborasi tim dan melihat Kanban/Kalender (Notion), membangun portofolio publik/sitasi (LinkedIn/ResearchGate), dan merancang kurikulum visual (Roadmap/LMS). ObMap v2.0 mengintegrasikan kelima alur tersebut dengan prinsip *local-first* tanpa *vendor lock-in*.
+## 1. Masalah Inti Pengguna, Non-Goal & Ruang Lingkup Produk
+Pengguna pengetahuan selama ini dipaksa memecah arsip, riset PDF, pemetaan visual, editorial, kurasi portofolio, dan pengajaran di alat terpisah—atau terjebak memilih antara kanvas kosong yang intimidatif (*Obsidian* tanpa plugin) dan aplikasi kaku ber-lock-in (*Notion*). Arsitektur v2.0 menyelesaikan keduanya lewat data `.md` + `.app/config.json` yang tetap bebas, dibungkus oleh *Opinionated Core Presets* siap pakai dalam `< 90 detik`.
+
+- **Batas Tegas Produk (*Explicit Non-Goal*):** Aplikasi ini **BUKAN** *office-board-central / enterprise project management* (Trello, Asana, ClickUp, Notion enterprise board). Seluruh *Derived Views* (*Table*, *Cards*, *Kanban/Calendar* ringan) melayani **pengarsipan, pengetahuan, riset, editorial (`Studio`), dan progres belajar (`Academy`)**.
 
 ### Ruang Lingkup In-Scope v2.0
-- **Core Workspace (`/app`):** Editor Markdown CM6 + YAML terisolasi, Canvas2D multi-solver deterministik + Free-Force, Aho-Corasick Web Worker, VCS lokal/cloud, 6-Layer Cascading Config + Unified Theme Engine.
-- **Dashboard Hub (`/vaults` — `domains/dashboard/`):** Manajemen multi-vault + 5 mode tampilan derivatif frontmatter (Grid, Tree, Kanban, Calendar/Timeline, Analytics) + Community Feed & Template Gallery.
-- **Community & Scholarly Network (`/:username`, `/@:username`, `/explore` — `domains/community/`):** Profil intelektual, konstelasi vault publik (`CC BY-SA 4.0`), *Cite this Note*, sitasi lintas-vault `[[@user/vault/note]]`, *Fork & Merge Request*, anotasi paragraf, dan lencana kurasi manual *Verified Scholar*.
-- **Growth, Gate & Admin (`/` Landing Sandbox, Onboarding 5-Tahap, `/admin`):** *ReleaseStageGate* 3 tahap, antrean approval individual Stage 2, manajemen harga/kuota paket dinamis, dan gerbang pembayaran Xendit/Midtrans → Stripe.
-- **Extensibility (`@vk/sdk`):** Sandbox plugin Worker/Iframe CSP + *Scoped CSS Snippets* + Enterprise Allowlist.
+- **Core Workbench (`/app`) & Controls 3-Scope:** Editor CM6 + YAML terisolasi, **4 Mandatory Helicopter Views** (*Graph View*, *Diagram View* [6 solver], *Table View*, *Cards View*), *Virtual Grouping* & *Structural Refactoring*, **In-Place HUD & Quick Settings Slide-Over Drawer**, serta **"Share · Access · Versions" Drawer** (3 tab, deteksi Vault vs Node/Folder).
+- **Dashboard Hub (`/vaults` — `domains/dashboard/`):** Manajemen multi-vault, *Knowledge Derived Views*, inkubator **`Community Presets` (`template`)**, serta pemilihan **Workspace Mode** (`Freeform`, `Atlas`, `Studio`, `Academy`).
+- **Academy 3-Layer Competence Tree:** Hirarki **Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas**, *Living Student Sub-Nodes* (`locked → available → in_progress → submitted → mastered`), aturan Lapisan 2 per node di `.app/config.json`, & *Focus Screen* Lapisan 3.
+- **Community & Scholarly Network (`/:username`, `/@:username`, `/explore`):** Presentation Lenses (**`atlas`**, **`publication`**, **`course`**, **`template`**), *Granular Node-Level & Vault-Level Publishing*, `[[@user/vault/note]]`, *Essential VCS* (*Snapshot, Visual Diff, Fork, KMR*), Profile light controls + *"Full Account Settings →"*.
+- **Settings Hub (`/settings` / `Ctrl+,`), AI & `@app/sdk`:** 5 tab context-aware (*Account & Profile*, *Appearance & App*, *AI & Integrations* [Ollama/WebLLM/BYOK Local RAG + Zotero/PDF], *Active Vault `.app/config.json`*, *Presets & Extensions* `@app/sdk`).
 
 ---
 
-## 2. Alur Produk Lintas Tahap (End-to-End User Journeys)
+## 2. Alur Produk Lintas Tahap (`Stage 1–3`)
 
 ```mermaid
 flowchart LR
     V["Pengunjung Landing / Sandbox (<65KB)"] --> R["Registrasi + Klaim /:username"]
     R --> G{"ReleaseStageGate"}
-    G -->|"Stage 1: Partner Pilot"| P1["Token partner_invitations -> /vaults & /app"]
-    G -->|"Stage 2: Community Beta"| P2["account_status = pending_approval -> Antrean /admin"]
-    P2 -->|"Admin Approve Individu"| P1
-    G -->|"Stage 3: Commercial GA"| P3["Auto-Approved + Free/Paid Quota Dinamis"]
-    P1 --> W["Onboarding 5-Tahap -> Workspace /app & Publish /:username"]
+    G -->|"Stage 1: Partner Pilot"| P1["partner_invitations -> /vaults (Pilih Core Preset) & /app"]
+    G -->|"Stage 2: Community Beta"| P2["pending_approval -> Antrean Individual /admin"]
+    P2 -->|"Admin Approve"| P1
+    G -->|"Stage 3: Commercial GA"| P3["Auto-Approved + Quota DB Dinamis"]
+    P1 --> W["Archive -> Helicopter View -> Restructure -> Drawer Share·Access·Versions"]
     P3 --> W
 ```
 
-1. **Alur Akuisisi & Sandbox (`STEP-02.2`–`02.3`):** Pengunjung langsung mencoba editor outline-ke-Mindmap di `/` tanpa login; saat mendaftar, karya di memori otomatis dipindahkan menjadi vault pertamanya begitu melewati `ReleaseStageGate`.
-2. **Alur Publikasi & Kolaborasi Sosial (`STEP-01.2`, `01.4`, `03.1`–`03.3`):** Pemilik memilih state visibilitas (`Private`, `Shared`, `Public Unlisted`, `Public Listed`). Catatan ber-frontmatter `visibility: private` dikecualikan dari bundle publik. Vault publik memakai `CC BY-SA 4.0` sebagai default, menampilkan tombol *Cite* dan *Fork to My Vault*, serta terbuka untuk *Knowledge Merge Request* lintas pengguna via VCS.
-3. **Alur Komersial & Admin (`STEP-04.1`–`04.2`):** Admin menetapkan nominal harga, fitur, dan batas kuota tiap tier di `/admin` (`plans`, `plan_entitlements`, `plan_quotas`), mengaktifkan checkout IDR melalui Xendit/Midtrans (QRIS/VA/e-Wallet) sebelum Stripe, dan menjaga data pengguna tetap dapat dibaca/ekspor bila terjadi *downgrade* (*Non-Destructive Downgrade*).
-
 ---
 
-## 3. Matriks Kebutuhan Fungsional per Domain Utama
+## 3. Matriks Kebutuhan Produk per Domain Utama
 
 | Kelompok Fitur | Spesifikasi Ringkas | Status | Target Step |
 | :--- | :--- | :---: | :--- |
-| **Workspace & Graph Deterministik** | CM6 + isolated YAML, 4+2 solver deterministik, *Per-Leaf Store*, *Subtree Override*, Pitch Mode & ekspor PDF/SVG/OPML | `[IMPLEMENTED]` / `[PLANNED]` | Baseline + `STEP-05.2` |
-| **Dashboard (`/vaults`)** | 5 views derivatif Markdown/Frontmatter, Community Feed, Template Gallery, redirect login ke `/vaults` | `[VISION]` | `STEP-02.1` |
-| **Community (`/:username` & `/explore`)** | Refaktor `public-reader` → `community`, *hard cutover* `/p/*`, `RESERVED_SLUGS`, profil `/:username`, `/explore`, *Verified Scholar* manual Admin | `[PARTIAL]` / `[VISION]` | `STEP-01.2`, `03.1` |
-| **Citations, Fork/MR & Annotations** | Wikilink `[[@user/vault/note]]`, *Cite Exporter*, `CC BY-SA 4.0`, *Fork to My Vault*, MR lintas user, anotasi hash paragraf | `[PARTIAL]` / `[VISION]` | `STEP-03.2`–`03.3` |
-| **Stage Gate & RBAC PolicyEngine** | `ReleaseStageGate` (Stage 1–3), approval per-user Stage 2 di `/admin`, `PolicyEngine` simetris Postgres RLS, 4 state visibilitas | `[PARTIAL]` / `[VISION]` | `STEP-01.3`–`01.4` |
-| **Dynamic Billing & Teamspaces** | Konfigurasi tarif/kuota dinamis di `/admin`, **Xendit/Midtrans** first → Stripe, Teamspaces + *Org-Lock*, CRDT Yjs | `[VISION]` | `STEP-04.1`–`04.3` |
-| **6-Layer Config, Theme & `@vk/sdk`** | 6-lapis resolusi config, CSS Variables ↔ Canvas2D tokens, *Scoped CSS Snippets*, `@vk/sdk` 12 Extension Points | `[PARTIAL]` / `[VISION]` | `STEP-01.5`, `05.3` |
-| **Interactive Graph LMS** | DAG `prerequisites`, state node *Locked/Available/Mastered*, kuis & progres pelajar | `[VISION]` | `STEP-05.1` |
+| **4 Helicopter Views & Solver Deterministik** | *Graph, Diagram* (Mindmap, Org+Matrix, Timeline, Fishbone, `argument-map`, `competence-dag`), *Table*, *Cards*; *Virtual Grouping* & *Structural Refactoring* | `[IMPLEMENTED]` / `[PLANNED]` | Baseline + `STEP-02.1`, `05.2` |
+| **Workspace Modes & Dashboard (`/vaults`)** | `Freeform`, `Atlas`, `Studio` (+ 4 Helicopter Views wajib), `Academy`, + `Community Presets` (`template`) | `[VISION]` | `STEP-02.1` |
+| **Community (`/:username` & `/explore`)** | *Hard cutover* `/p/*`, Presentation Lenses (`atlas`/`publication`/`course`/`template`), Profile light UI, & kurasi *Verified Scholar* Admin | `[PARTIAL]` / `[VISION]` | `STEP-01.2`, `03.1` |
+| **Essential VCS & Granular `AS & WITH`** | Drawer **"Share · Access · Versions"** (*Publish*, *Collaborate*, *Versions & Diff/MR*) sadar konteks **Vault & Node Level** + `CC BY-SA 4.0` + *Block Comments* | `[PARTIAL]` / `[VISION]` | `STEP-01.4`, `03.3` |
+| **Academy 3-Layer Competence Tree** | *Falsafah → Kurikulum → Silabus → RPS → Tugas*, *Living Student Sub-Nodes*, rules per node di blok `academy` `.app/config.json`, & Focus Screen | `[VISION]` | `STEP-05.1` |
+| **Single `.app/config.json` & 3-Scope Controls** | 7 blok config sentral (anti-fragmentasi), *3-Scope Escalation* (`/settings`, `/:username`, `/app`), `@app/sdk`, & Native BYO-AI / Ollama RAG + PDF | `[IMPLEMENTED]` / `[VISION]` | `STEP-01.5`, `UI-STEP-01..02`, `STEP-05.3` |
+| **Dynamic Billing & Teamspaces** | Konfigurasi tarif/kuota dinamis di `/admin`, **Xendit/Midtrans first → Stripe**, *Non-Destructive Downgrade*, & CRDT Yjs | `[VISION]` | `STEP-04.1`–`04.3` |
 
 ---
 
@@ -76,18 +74,18 @@ flowchart LR
 
 | ID Risiko | Deskripsi Risiko | Tingkat | Strategi Mitigasi Terstruktur |
 | :--- | :--- | :---: | :--- |
-| **`RISK-01`** | Kebocoran catatan privat saat vault diubah menjadi `Shared` atau `Public` | Kritis | Pengecualian ketat `visibility: private` di query Supabase RLS & generator bundle; bucket `vault-media` hanya lewat `createSignedUrl`; uji RLS otomatis (`STEP-01.4`, `05.4`). |
-| **`RISK-02`** | Lonjakan trafik pendaftaran merusak stabilitas infrastruktur di tahap awal | Tinggi | Terapkan `ReleaseStageGate` Stage 1 invite-only & Stage 2 `pending_approval` dengan persetujuan individual Admin di `/admin` (`STEP-01.3`). |
-| **`RISK-03`** | Pelanggaran hak akses dan konflik skema saat menambah domain `dashboard` & `community` | Tinggi | Tegakkan aturan DDD & Headless Controller (`<= 300` baris); hapuskan `/p/*` via *hard cutover* bersih (`STEP-01.2`). |
-| **`RISK-04`** | Tabrakan root URL `/:username` dengan rute aplikasi (`/app`, `/vaults`, `/explore`, `/admin`) | Kritis | Validasi tiga lapis `RESERVED_SLUGS` pada urutan route `src/App.tsx`, `ProfileService.ts`, dan constraint PostgreSQL `CHECK` (`STEP-01.2`). |
-| **`RISK-05`** | Kerusakan data atau ketidakpuasan saat masa berlangganan berakhir (*downgrade*) | Tinggi | Terapkan *Grace Period* 7 hari dan *Non-Destructive Downgrade* (`downgraded_readonly` — tetap bisa baca & ekspor ke lokal/ZIP). |
-| **`RISK-06`** | Serangan XSS atau pencurian token oleh plugin komunitas atau CSS kustom | Kritis | Isolasi `@vk/sdk` dalam Web Worker / Iframe CSP, *Permission Manifest* eksplisit, sanitasi `rehype-sanitize` pada HTML/CSS publik (`STEP-05.3`). |
+| **`RISK-01`** | Kebocoran node privat pada granular node-level publishing / collab | Kritis | Evaluasi simetris `PolicyEngine` ↔ Postgres RLS atas `visibility: private` & `publishing/access.node_overrides`; bucket `vault-media` hanya lewat `createSignedUrl`. |
+| **`RISK-02`** | Lonjakan trafik atau beban support di tahap awal | Tinggi | `ReleaseStageGate` Stage 1 & Stage 2 `pending_approval` individual + *Core Presets* `< 90 detik` mengurangi *drop-off*. |
+| **`RISK-03`** | Ruang lingkup produk melebar menjadi klon papan tugas korporat | Tinggi | Ditegakkan melalui *Explicit Non-Goal* pada Master Blueprint & PRD: Views hanya untuk pengetahuan, riset, editorial, & pembelajaran. |
+| **`RISK-04`** | Tabrakan root `/:username` atau fragmentasi berkas konfigurasi | Kritis | Guard 3-lapis `RESERVED_SLUGS` + larangan memecah `.app/config.json` menjadi `preset.json`/`lms-policy.json`/`setting.json`. |
+| **`RISK-05`** | Ketidakpuasan pengguna saat downgrade atau berpindah alat | Tinggi | *Local-First Forever Free*, berkas `.md` murni, & *Non-Destructive Downgrade* (`downgraded_readonly`). |
+| **`RISK-06`** | Risiko XSS atau kebocoran key AI/token oleh plugin | Kritis | Isolasi **`@app/sdk`** di Web Worker / Iframe CSP, *Permission Manifest*, `rehype-sanitize`, & pemrosesan Local AI (Ollama/BYOK). |
 
 ---
 
 ## Terkait
 - [Master Blueprint v2.0](../00-meta/00-0-master-blueprint.md)
 - [Playbook Eksekusi Step-by-Step (`README.md`)](README.md)
-- [Business Requirements Document (`brd.md`)](brd.md)
 - [System Requirements Specification (`srs.md`)](srs.md)
-- [Katalog Persona (`personas.md`)](personas.md)
+- [Visi & Arsitektur Academy 3-Lapis](../06-lms/lms-vision.md)
+- [Kolaborasi Granular & Essential VCS](../03-architecture/collaboration-and-publishing.md)

@@ -1,11 +1,11 @@
 ---
 id: DOC-DEV-004
-title: Model Keamanan Ekstensi, Izin & Sandbox `@vk/sdk`
+title: Model Keamanan Ekstensi, Izin & Sandbox `@app/sdk`
 type: developer
 status: [PLANNED]
 owner: Principal Software Architect & Security Lead
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-DEV-000
@@ -19,7 +19,7 @@ source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/global/a
 # Model Keamanan Ekstensi, Izin & Sandbox (`Security & Sandbox`)
 
 ## Ringkasan 3 Baris
-- Mendefinisikan batas keamanan *Zero-Trust* untuk seluruh plugin pihak ketiga `@vk/sdk` guna melindungi kredensial auth Supabase, berkas lokal `FileSystemService.ts`, dan sesi kolaborasi tim.
+- Mendefinisikan batas keamanan *Zero-Trust* untuk seluruh plugin pihak ketiga **`@app/sdk`** guna melindungi kredensial auth Supabase, kunci API BYO-AI / Ollama lokal, berkas lokal `FileSystemService.ts`, dan sesi kolaborasi tim.
 - Menjelaskan pemisahan eksekusi melalui **Web Worker terisolasi** (komputasi) serta **Iframe ber-CSP ketat** (`sandbox="allow-scripts"`) untuk panel UI, tanpa akses langsung ke DOM induk.
 - Menetapkan skema **Permission Manifest** granular dan mekanisme **Enterprise Allowlist** di konsol `/admin`.
 
@@ -62,7 +62,7 @@ flowchart LR
 ---
 
 ## Terkait
-- [ADR-0012: Sandboxed `@vk/sdk` & Extension Points](../03-architecture/adr/ADR-0012-sandboxed-plugin-sdk-and-extension-points.md)
+- [ADR-0012: Sandboxed `@app/sdk` & Extension Points](../03-architecture/adr/ADR-0012-sandboxed-plugin-sdk-and-extension-points.md)
 - [SDK Quickstart Guide (`plugin-sdk-quickstart.md`)](plugin-sdk-quickstart.md)
 - [Referensi 12 Extension Points (`extension-points-reference.md`)](extension-points-reference.md)
 - [Strategi Pengujian (`../05-engineering/testing-strategy.md`)](../05-engineering/testing-strategy.md)

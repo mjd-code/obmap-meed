@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "last_updated": "2026-11-14",
+  "version": "2.1.0",
+  "last_updated": "2026-11-20",
   "features": [
     {
       "id": "FEAT-EDITOR-001",
@@ -140,7 +140,7 @@
     },
     {
       "id": "FEAT-COLLAB-004",
-      "name": "PolicyEngine RBAC, 4-State Visibility, Private Note Exclude & Default CC BY-SA 4.0",
+      "name": "Unified Share·Access·Versions Drawer, Granular Vault/Node AS & WITH, Essential VCS & Default CC BY-SA 4.0",
       "domain": "collaboration",
       "status": "IMPLEMENTED",
       "release_stage": "stage_1_partner",
@@ -155,7 +155,7 @@
     },
     {
       "id": "FEAT-COMM-001",
-      "name": "Community Reader (public-reader -> community) & Hard Cutover /:username Routing",
+      "name": "Community Reader, Presentation Lenses (atlas/publication/course/template) & Hard Cutover /:username Routing",
       "domain": "community",
       "status": "IMPLEMENTED",
       "release_stage": "stage_1_partner",
@@ -171,14 +171,16 @@
     },
     {
       "id": "FEAT-SET-001",
-      "name": "6-Layer Cascading Config & Unified DOM/Canvas2D Theme Tokens",
+      "name": "Single Central .app/config.json, 3-Scope Settings Escalation (/settings, /:username, /app) & Unified Theme Tokens",
       "domain": "settings",
       "status": "IMPLEMENTED",
       "release_stage": "stage_1_partner",
       "step_id": "STEP-01.5",
       "source_of_truth": [
         "src/domains/settings/shared/api/ConfigService.ts",
+        "src/domains/settings/shared/api/VaultConfigFile.ts",
         "src/domains/settings/components/SettingsConfigurationSection.tsx",
+        "src/domains/settings/components/SettingsHub.tsx",
         "src/domains/settings/shared/stores/useThemeStore.ts",
         "src/domains/graph/shared/utils/theme.ts",
         "src/domains/graph/shared/hooks/useGraphCanvasController.ts"
@@ -186,7 +188,7 @@
     },
     {
       "id": "FEAT-DASH-001",
-      "name": "Dashboard Domain (/vaults) with 5 Derived Views & Community Feed",
+      "name": "Dashboard (/vaults) with Core Presets (Atlas/Studio/Academy/Freeform) & 4 Helicopter/Derived Knowledge Views",
       "domain": "dashboard",
       "status": "VISION",
       "release_stage": "stage_2_community_beta",
@@ -290,7 +292,7 @@
     },
     {
       "id": "FEAT-LMS-001",
-      "name": "Interactive Graph LMS, Prerequisite DAG & Skill Tree Progress",
+      "name": "Academy Living Pedagogical & Competence Tree (3 Layers + Living Student Sub-Nodes in .app/config.json)",
       "domain": "graph",
       "status": "VISION",
       "release_stage": "stage_3_commercial_ga",
@@ -301,7 +303,7 @@
     },
     {
       "id": "FEAT-EXT-001",
-      "name": "Sandboxed @vk/sdk, Permission Manifest, Scoped CSS & 12 Extension Points",
+      "name": "Sandboxed @app/sdk, Native BYO-AI / Ollama RAG & Zotero/PDF, Scoped CSS & 12 Extension Points",
       "domain": "settings",
       "status": "PARTIAL",
       "release_stage": "stage_3_commercial_ga",

@@ -4,8 +4,8 @@ title: Standar Penulisan Kode & Tata Kelola Arsitektur ObMap v2.0
 type: engineering
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-16
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-ARCH-ADR-0001
@@ -41,7 +41,7 @@ source_of_truth: AGENTS.md, src/domains/
 6. **Infrastruktur *Brand-Agnostic* & Brand Manifest Terpusat (`ADR-0013`):**
    - **Dilarang *hardcode* nama merek** pada teks UI JSX, `<title>`/`index.html`, email template, nama tabel/bucket backend, kunci `IndexedDB`/`localStorage`, maupun kelas CSS.
    - Seluruh identitas merek tampilan (*name*, *tagline*, *domain*, *logo*, *SDK package*) wajib dibaca dari `BRAND` / `useBrandConfig()` (`src/global/config/brand.config.ts`) dengan dukungan override runtime dari `platform_settings` / `Org Policy`.
-   - Seluruh kunci persistensi lokal dan scoping CSS wajib memakai prefix domain netral (`vk-*`, `VkConfigDB`, `.vk-themed-root`, `.vk/`) melalui `storageKeyMigrator.ts` agar kompatibel mundur dengan `.obmap/` dan `obmap-*`.
+   - Seluruh kunci persistensi lokal, scoping CSS, dan konfigurasi tunggal vault memakai namespace domain netral (`app-*` / `.app/config.json` dengan fallback zero-loss dari transisi `vk-*` / `.vk/` serta legacy `obmap-*` / `.obmap/`) melalui `storageKeyMigrator.ts`. Dilarang memecah `.app/config.json` menjadi file terpisah (`preset.json`, `lms-policy.json`, `setting.json`).
 
 ---
 

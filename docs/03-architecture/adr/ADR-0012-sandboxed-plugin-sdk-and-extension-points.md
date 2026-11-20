@@ -1,11 +1,11 @@
 ---
 id: DOC-ARCH-ADR-0012
-title: ADR-0012 — Ekosistem Ekstensi `@vk/sdk` Ber-Sandbox, Permission Manifest & 12 Extension Points
+title: ADR-0012 — Ekosistem Ekstensi `@app/sdk` Ber-Sandbox, Permission Manifest & 12 Extension Points
 type: adr
 status: [PLANNED]
 owner: Principal Software Architect
-version: 2.0.0
-last_reviewed: 2026-11-14
+version: 2.1.0
+last_reviewed: 2026-11-20
 audience: engineering
 related:
   - DOC-ARCH-ADR-0001
@@ -15,11 +15,11 @@ related:
 source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/workspace/
 ---
 
-# ADR-0012: `@vk/sdk` Ber-Sandbox & 12 Extension Points Terstandar
+# ADR-0012: `@app/sdk` Ber-Sandbox & 12 Extension Points Terstandar
 
 ## Ringkasan 3 Baris
-- Berevolusi dari `src/domains/settings/shared/api/pluginRegistry.ts` menjadi SDK publik terversi **`@vk/sdk`** yang memungkinkan komunitas memperluas ObMap tanpa mengubah kode sumber inti.
-- Menerapkan model keamanan **Zero-Trust Sandbox** berbasis Web Worker / Iframe CSP ketat, *Permission Manifest* eksplisit (`vault:read`, `vault:write`, `network`, `ui:only`), serta *Enterprise Allowlist* per organisasi.
+- Berevolusi dari `src/domains/settings/shared/api/pluginRegistry.ts` menjadi SDK publik terversi **`@app/sdk`** (sebelumnya `@vk/sdk`) yang memungkinkan komunitas memperluas Workspace, 4 Helicopter Views, dan AI/PDF hooks tanpa mengubah kode sumber inti.
+- Menerapkan model keamanan **Zero-Trust Sandbox** berbasis Web Worker / Iframe CSP ketat, *Permission Manifest* eksplisit (`vault:read`, `vault:write`, `network`, `ui:only`), sentralisasi state ekstensi pada blok `extensions` di **`.app/config.json`**, serta *Enterprise Allowlist* per organisasi.
 - Menstandardisasi **12 Extension Points** dan menyediakan portal dokumentasi developer resmi di `docs/07-developers/`.
 
 ---
@@ -36,7 +36,7 @@ source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/
    - Ekstensi komunitas **dilarang** mengakses langsung `window`, `localStorage`, kunci Supabase Auth, atau DOM di luar mount container yang dialokasikan.
 2. **Deklarasi `manifest.json` & Permission Manifest:**
    - Setiap ekstensi mendeklarasikan cakupan izin granular (`ui:only`, `vault:read`, `vault:write`, `graph:read`, `metadata:read`, `network:<allowlisted-domain>`). Pengguna maupun Org Admin menyetujui izin sebelum aktivasi; Team/Enterprise hanya menjalankan plugin pada **Allowlist Organisasi**.
-3. **Dua Belas Extension Points Resmi `@vk/sdk`:**
+3. **Dua Belas Extension Points Resmi `@app/sdk`:**
    - *Workspace & Nav:* `WorkspaceViewRegistry`, `DashboardWidgetRegistry`, `CommandRegistry`, `Ribbon / StatusBar`.
    - *Config & Schema:* `ConfigSectionRegistry`, `FrontmatterSchemaProvider`.
    - *Editor & Reader:* `CodeMirror6Extension`, `MarkdownPostProcessor`, `SlashCommandProvider`.
@@ -50,6 +50,6 @@ source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/
 ---
 
 ## Terkait
-- [Portal Developer `@vk/sdk` (`../../07-developers/README.md`)](../../07-developers/README.md)
+- [Portal Developer `@app/sdk` (`../../07-developers/README.md`)](../../07-developers/README.md)
 - [Model Keamanan Sandbox (`../../07-developers/security-and-sandbox.md`)](../../07-developers/security-and-sandbox.md)
 - [Referensi 12 Extension Points (`../../07-developers/extension-points-reference.md`)](../../07-developers/extension-points-reference.md)

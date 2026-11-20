@@ -5,7 +5,7 @@ type: standard
 status: [IMPLEMENTED]
 owner: Principal Software Architect
 version: 2.0.0
-last_reviewed: 2026-11-16
+last_reviewed: 2026-11-20
 audience: both
 related:
   - DOC-META-000
@@ -39,6 +39,7 @@ source_of_truth: docs/_machine/changelog.jsonl
 
 | ID Perubahan | Tanggal | Scope / Domain | Ringkasan Perubahan | Status Verifikasi | Log Detail |
 | :--- | :---: | :--- | :--- | :--- | :--- |
+| `CHG-20261120-001` | 2026-11-20 | `docs`, `meta`, `planning`, `architecture`, `features`, `engineering`, `lms`, `developers` | Holistic upgrade `docs/` & `llms.txt` (`v2.1.0`): integrasi **Nodus Research** (6-System DNA), Explicit Non-Goal (*anti project-board bloat*), Filosofi/Motto/6 Prinsip Inti/3 Level Pengguna, Workspace Modes & 4 Helicopter Views (*Graph, Diagram, Table, Cards*), Restructure Virtual vs Structural, Single Central `.app/config.json` (7 blok) & `@app/sdk`, Academy 3-Layer Tree, Vault+Node `AS & WITH` + `"Share · Access · Versions"` Drawer, 3-Scope Settings Escalation, & BYO-AI/Local AI roadmap | JSON/JSONL valid ; path `docs-index` valid ; `git grep` & `git status` bersih (`src/` & arsip utuh) | [2026-11.md](2026-11.md) |
 | `CHG-20261117-003` | 2026-11-17 | `graph` | Fix mode *With Text*: link menempel ke radius lingkaran dot di semua layout (`drawLink`, `unboxedNodeLayout`), posisi teks `auto` (*bawah dot* di Knowledge Graph, *samping luar dot* anti-tabrak cabang di Mindmap) + kustom `GraphLabelPositionControl`, indikator collapse bahu dot, wrap maks 2 baris (~200px) tanpa potong huruf, & hit-area khusus dot | `tsc` + 172 Vitest + `vite build` + `eslint` (0 err) + `OVER_300=0` | [2026-11.md](2026-11.md) |
 | `CHG-20261117-002` | 2026-11-17 | `graph` | Fix penuh *Only Node* / *With Text* / *With Label + Text* (sinkron `useGraphEngineStore.showLabels`, `buildPaintSignature`, & *reactive redraw* `nodeCanvasObjectMode` `ForceGraph2D`), hapus mode `Note AST` & ikon/panel `Smart Inspector`, serta pindahkan kustomisasi `Style & Format` per-node ke popover terintegrasi di `ContextualToolbar` | `tsc` + 171 Vitest + `vite build` + `eslint` (0 new) + `OVER_300=0` | [2026-11.md](2026-11.md) |
 | `CHG-20261117-001` | 2026-11-17 | `graph`, `settings`, `workspace`, `editor`, `community`, `global` | Thin modern scrollbar global/panel, fix *Only Node* vs *With Text* vs *With Label + Text* (hilangkan bayangan kotak di `"apik2"`), tombol khusus `Smart Inspector` di dock atas, hapus double sidebar Settings, *push/slide-out* Left Explorer & Right Settings sidebar + kontrol mobile tab bar, dan solusi scroll keyboard mobile/tablet (`useVisualViewport` + `100dvh` + `pb-[45vh]`) | `tsc` + 171 Vitest + `vite build` + `eslint` + `OVER_300=0` | [2026-11.md](2026-11.md) |
@@ -48,7 +49,6 @@ source_of_truth: docs/_machine/changelog.jsonl
 | `CHG-20261116-008` | 2026-11-16 | `admin`, `auth`, `collaboration`, `graph`, `metadata`, `settings`, `sync`, `vault`, `vcs`, `workspace`, `global` | Perbaikan typecheck lintas domain: selaraskan kontrak orchestrator, props, model graph, profil/role, dan status autosave | `oj typecheck -b --noEmit` passed | [2026-11.md](2026-11.md) |
 | `CHG-20261116-007` | 2026-11-16 | `graph`, `editor`, `global`, `planning` | Eksekusi `XMIND-STEP-05` & `XMIND-STEP-06` (`DOC-PLAN-009`): Konsolidasi UX 3-Lapis (`GraphQuickCanvasBar` + `GraphContextualInspector` + Engine Tuning), ekstraksi YAML `structure_class` & `frontmatterMindmapSync`, sidecar `.vk/mindmap-layout.json` (fallback `.obmap/`), & In-Note Outline AST Bridge *lossless* | `tsc` + 163 Vitest + `vite build` + `eslint` + `OVER_300=0` | [2026-11.md](2026-11.md) |
 | `CHG-20261116-006` | 2026-11-16 | `editor`, `graph`, `settings`, `community`, `pages`, `global`, `planning` | Eksekusi `UI-STEP-04`, `UI-STEP-05`, & `UI-STEP-06` (`DOC-PLAN-008`, menjaga `UI-STEP-03` pending): `EditorFormatToolbar` + sinkron `--vk-prose-*` Reading/CM6, tab `Forces` graf, fix `Landing`/`NotFound`/`PublicReaderQuickPreferences`, varian `Badge`/`Button` + `color-mix` Tailwind alpha `--vk-*`, & sapu bersih `text-[9..11px]`/palet mentah (`99` berkas + preloader) + `motion-reduce` | `tsc` + 159 Vitest + `vite build` + `ZERO_MICRO_PX` + `OVER_300=0` | [2026-11.md](2026-11.md) |
-| `CHG-20261116-005` | 2026-11-16 | `settings`, `planning` | Eksekusi `UI-STEP-02` (`DOC-PLAN-008`): `SettingsHub` 2-kolom mandiri + search, daftar `appearance` & `graph-engine`, headless `useSettingsAppearanceController.ts`, `SettingsAppearanceSection.tsx` + Sticky `SettingsAppearancePreviewCard.tsx` (WCAG + Org-Lock), & token semantik *Locked by Admin* | `tsc` + 154 Vitest + `vite build` + `OVER_300=0` | [2026-11.md](2026-11.md) |
 
 ---
 
