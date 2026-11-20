@@ -4,7 +4,7 @@ title: Visi & Arsitektur Academy (LMS) — Living Pedagogical & Competence Tree 
 type: strategy
 status: [VISION]
 owner: Chief Product Officer & Curriculum Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -21,7 +21,7 @@ source_of_truth: docs/00-meta/00-0-master-blueprint.md, docs/06-lms/lms-vision.m
 
 ## Ringkasan 3 Baris
 - Memformalkan mode **`Academy`** (*Core Mode* yang terhubung 1-to-1 ke *Presentation Lens* **`course`**) sebagai **Living Pedagogical & Competence Tree**: sistem pembelajaran berbasis berkas `.md` + YAML + blok tunggal `academy` di **`.app/config.json`** (*bukan* file terpisah `lms-policy.json`).
-- Memvisualisasikan hirarki pedagogis utuh **Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas** di atas *Folder-Nodes* & *File-Nodes* deterministik (*Helicopter View*: Diagram DAG / Org Chart) lengkap dengan **Living Student Sub-Nodes**.
+- Memvisualisasikan hirarki pedagogis utuh **Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas** di atas *Folder-Nodes* & *File-Nodes* deterministik (**`Deep Explorer`**: Diagram DAG / Org Chart) lengkap dengan **Living Student Sub-Nodes**.
 - Menjabarkan **3 Lapisan Evolusi Implementasi** (*Structural & Living Portfolio Tree* → *Pedagogical Rules & Constraints* → *Controlled Execution Environment*) yang terintegrasi langsung dengan **Essential VCS** (*Visual Diff*, *Knowledge Merge Request*) dan kontrol peran **Give Access `AS & WITH`**.
 
 ---
@@ -38,7 +38,7 @@ flowchart TD
     T --> ST2["Living Student Sub-Node: refleksi-murid-b/ (in_progress -> mastered)"]
 ```
 
-- **Gambaran Menyeluruh (*Bird's-Eye Helicopter View*):** Pengurus institusi (`Institution Admin`), guru/dosen (`Teacher/Mentor`), dan murid/mahasiswa (`Student`) membaca peta kurikulum yang sama dalam **4 Helicopter Views** (*Diagram View* `Competence/Skill Tree DAG` & hierarki, *Graph View*, *Table View* progres & nilai YAML, serta *Cards View* modul belajar).
+- **Gambaran Menyeluruh (`Deep Explorer` Multi-Dimensi):** Pengurus institusi (`Institution Admin`), guru/dosen (`Teacher/Mentor`), dan murid/mahasiswa (`Student`) membaca peta kurikulum yang sama lewat **4 lensa visual `Deep Explorer`** (*Diagram View* `Competence/Skill Tree DAG` & hierarki, *Graph View*, *Table View* progres & nilai YAML, serta *Cards View* modul belajar). Aturan pedagogis & kompetensinya dapat langsung dikonfigurasi lewat **`Settings Hub > Workspace > Deep Explorer`** maupun dibuka sebagai **Tab Workspace** di Editor.
 - **Living Student Sub-Nodes:** Proses dan hasil belajar murid tidak terpisah di sistem database asing atau LMS silo terputus, melainkan terdokumentasi langsung sebagai **sub-nodes (`file-nodes` atau `sub-folder-nodes`)** di bawah node kurikulum/instruksi terkait—menggunakan alur *Essential VCS* (*Snapshot*, *Visual Diff*, *Knowledge Merge Request*) untuk pengumpulan & umpan balik.
 
 ### Mesin Status Progres Pembelajaran (`5-State Progression`)

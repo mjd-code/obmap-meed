@@ -4,7 +4,7 @@ title: ADR-0011 — Konfigurasi Bertingkat 6-Lapis & Unified DOM/Canvas2D Theme 
 type: adr
 status: [PLANNED]
 owner: Principal Software Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -38,6 +38,7 @@ source_of_truth: src/domains/settings/, src/domains/graph/shared/utils/theme.ts
    4. `User / App & Account Config` (`LocalConfigStore.ts` untuk preferensi lokal / `CloudConfigStore.ts` tersinkron)
    5. `Node / Leaf Override` (`node_overrides` di `.app/config.json`, YAML Frontmatter, & `LeafGraphConfigStore` per tab sesuai `ADR-0006`)
    6. `Session / Ephemeral HUD / URL Query Override` (sementara di runtime)
+   - Seluruh lapisan di atas diekspos & dapat disunting secara transparan di UI melalui **Single Adaptive `<SettingsHub />`** (*Dual Navigator*: *Interactive Breadcrumb Navigator* + *Synchronized Right Sidebar*; 3 kategori `Account` → `Workspace` → `Vault`), termasuk melalui **`Workspace > Central .app/config.json Raw Inspector & Dynamic Editor`** ber-validasi real-time.
 2. **Unified Design Token Bridge (DOM ↔ Canvas2D):**
    - `useThemeStore.ts` mengekspor kamus token semantik *brand-agnostic* (`--app-*` dengan kompatibilitas `--vk-*` dan `--ob-*` per `ADR-0013`: background, surface, accent, edge-default, node-evergreen, text-primary, font-display, radius).
    - Bridge menulis CSS Variables ke `:root` sekaligus menghitung objek warna kanvas di `src/domains/graph/shared/utils/theme.ts` & `atmosphereConfig.ts`, lalu memanggil `graphRef.current?.refresh?.()` bila kanvas berada pada mode deterministik statis (`cooldownTicks === 0`).

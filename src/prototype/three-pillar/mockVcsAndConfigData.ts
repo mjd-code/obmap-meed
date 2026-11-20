@@ -1,6 +1,10 @@
+import {
+  DEFAULT_APPEARANCE_CONFIG,
+  DEFAULT_VISUAL_ENGINE_CONFIG,
+} from "./mockSettingsDefaults";
 import type {
-  AppCentralConfigJson,
-  HelicopterViewKind,
+  AppCentralConfigJsonV2,
+  DeepExplorerViewKind,
   PresentationLens,
   PresetOrigin,
   PrototypeAcademyTreeNode,
@@ -16,34 +20,53 @@ export function buildAppConfigJson(params: {
   vaultId: string;
   name: string;
   primaryMode: WorkspaceModeId;
-  defaultHelicopterView: HelicopterViewKind;
+  defaultDeepExplorerView: DeepExplorerViewKind;
   presetOrigin?: PresetOrigin;
+  activePresetId?: string;
   lens: PresentationLens;
   visibility?: PublishVisibility;
   defaultTemplate?: string;
-}): AppCentralConfigJson {
+}): AppCentralConfigJsonV2 {
+  const isAcademy = params.primaryMode === "academy";
   return {
-    $schema: "https://sidra.app/schemas/config.v1.json",
     meta: {
+      schema_version: 2,
       vault_id: params.vaultId,
       name: params.name,
       version: "2.1.0",
       config_path: ".app/config.json",
       sdk: "@app/sdk",
+      default_license: "CC BY-SA 4.0",
     },
     mode: {
       primary_mode: params.primaryMode,
-      default_helicopter_view: params.defaultHelicopterView,
+      active_preset_id: params.activePresetId ?? `core-${params.primaryMode}`,
       preset_origin: params.presetOrigin ?? "core_preset",
-      roadmap_note: "scholar_mode_v2_2_planned",
+      roadmap_note: "scholar_mode_v2_2_preview",
+    },
+    deep_explorer: {
+      default_view: params.defaultDeepExplorerView,
+      reorganize_by: isAcademy ? "hierarchy" : "backlinks",
+      restructure_mode: "virtual_grouping",
+      default_depth: 3,
+      branch_filter: "all",
+      show_orphans: params.primaryMode === "freeform",
+    },
+    appearance: structuredClone(DEFAULT_APPEARANCE_CONFIG),
+    visual_engine: {
+      ...structuredClone(DEFAULT_VISUAL_ENGINE_CONFIG),
+      deterministic_solvers: {
+        ...DEFAULT_VISUAL_ENGINE_CONFIG.deterministic_solvers,
+        default_solver: isAcademy ? "skill-tree" : params.primaryMode === "studio" ? "timeline" : "mindmap",
+      },
     },
     schema: {
-      default_template: params.defaultTemplate ?? (params.primaryMode === "academy" ? "modul-silabus" : "atomic-note"),
-      required_yaml:
-        params.primaryMode === "academy"
-          ? ["lms_role", "prerequisites", "estimated_minutes", "visibility"]
-          : ["epistemic_status", "structure_class", "license", "visibility"],
+      default_template: params.defaultTemplate ?? (isAcademy ? "modul-silabus" : "atomic-note"),
+      required_yaml: isAcademy
+        ? ["lms_role", "prerequisites", "estimated_minutes", "visibility"]
+        : ["epistemic_status", "structure_class", "license", "visibility"],
       epistemic_stages: ["seedling", "budding", "evergreen", "published", "mastered"],
+      strict_frontmatter_validation: true,
     },
     publishing: {
       default_lens: params.lens,
@@ -51,17 +74,21 @@ export function buildAppConfigJson(params: {
       license: "CC BY-SA 4.0",
       allow_citation: true,
       allow_fork: true,
+      node_overrides: {},
     },
     access: {
       default_scope: "vault",
       owner_handle: "@dr.aras.wicaksono",
       role_matrix: ["viewer", "commenter", "contributor", "editor", "admin", "student", "teacher"],
+      auto_backup_schedule: "daily",
     },
     academy: {
+      enabled: isAcademy,
       hierarchy: ["falsafah", "kurikulum", "silabus", "rps", "instruksi"],
       max_files_per_submission: 3,
       time_window: "08:00–22:00 WIB · Minggu 1–14",
-      zen_focus_mode: params.primaryMode === "academy",
+      zen_focus_mode: isAcademy,
+      require_prerequisite_quiz: true,
     },
     extensions: {
       sdk_package: "@app/sdk",
@@ -77,7 +104,7 @@ export const PROTOTYPE_SNAPSHOTS: PrototypeSnapshot[] = [
     label: "v2.1.0-release-audit",
     timestamp: "Hari ini · 09:40",
     author: "@dr.aras.wicaksono",
-    summary: "Konsolidasi YAML metadata dan skema .app/config.json terpusat",
+    summary: "Konsolidasi YAML metadata dan skema .app/config.json v2 terpusat",
     changedNodesCount: 6,
   },
   {

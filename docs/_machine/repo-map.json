@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "last_updated": "2026-11-14",
+  "version": "2.2.0",
+  "last_updated": "2026-11-20",
   "repository": "obmap-meed",
   "entrypoints": {
     "router": "src/App.tsx",
@@ -12,7 +12,7 @@
     "execution_playbook": "docs/02-planning/README.md"
   },
   "routes": {
-    "active_in_app_tsx": ["/", "/auth", "/install", "/explore", "/admin", "/app", "/vaults", "/:username/:vaultSlug/:noteSlug", "/:username/:vaultSlug", "/:username", "*"],
+    "active_in_app_tsx": ["/", "/auth", "/install", "/explore", "/prototype", "/admin", "/app", "/vaults", "/:username/:vaultSlug/:noteSlug", "/:username/:vaultSlug", "/:username", "*"],
     "deprecated_removed_hard_cutover": ["/p/:username/:vaultSlug/:noteSlug", "/p/:username/:vaultSlug", "/p/:vaultSlug"],
     "hard_cutover_step": "STEP-01.2"
   },
@@ -39,6 +39,12 @@
       "create_dashboard_domain": "STEP-02.1"
     },
     "global_shared": ["src/global/api", "src/global/components", "src/global/hooks", "src/global/stores", "src/global/types", "src/global/ui", "src/global/utils"],
+    "prototype_sandbox": {
+      "route": "/prototype",
+      "active": "src/prototype/three-pillar",
+      "snapshots": "src/prototype/snapshots/<stage-id>",
+      "isolation": "zero-backend in-memory deterministic mock state"
+    },
     "migrations": [
       "supabase/migrations/20251207180819_e7543200-4d7a-4415-b876-ec6ffb158cc0.sql",
       "supabase/migrations/20251207183100_cd9323ad-684f-498a-8ca7-853e472c6083.sql",

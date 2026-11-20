@@ -1,10 +1,10 @@
 ---
 id: DOC-ARCH-005
-title: Arsitektur Helicopter Views, Mesin Tata Letak Deterministik & Kanvas Graf v2.0
+title: Arsitektur Deep Explorer, Mesin Tata Letak Deterministik & Kanvas Graf v2.0
 type: architecture
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -16,18 +16,18 @@ related:
 source_of_truth: src/domains/graph/, docs/02-planning/xmind-obsidian-visual-engine-plan.md
 ---
 
-# Arsitektur Helicopter Views & Mesin Tata Letak Graf (`Layout Engine`)
+# Arsitektur `Deep Explorer` & Mesin Tata Letak Graf (`Layout Engine`)
 
 ## Ringkasan 3 Baris
-- Memosisikan mesin graf sebagai jantung dari **4 Mandatory Helicopter Views** (*Graph View*, *Diagram View*, *Table View*, *Cards View*) yang wajib tersedia di semua *Workspace Modes* (`Freeform`, `Atlas`, `Studio`, `Academy`).
-- Memisahkan simulasi jaringan non-hierarkis (`Graph View`: *Free-Force*) dari **6 Solver Deterministik (`Diagram View`)** berfitur komposisi multi-struktur zero-collision, serta mendukung **Restructure & Reorganize** (*Virtual Grouping* non-destruktif & *Structural Refactoring* sinkron ke berkas fisik).
+- Memosisikan mesin graf sebagai jantung dari **`Deep Explorer`**: sistem eksplorasi dan reorganisasi multi-dimensi terhadap *vaults, nodes, branches,* dan *files* memakai **4 lensa visual** (*Graph*, *Diagram*, *Table*, *Cards*) dan pengelompokan dinamis (*Hierarchy, Properties, Tags, Backlinks, Keywords*) yang wajib tersedia di semua *Workspace Modes*.
+- Memisahkan simulasi jaringan non-hierarkis (`Graph View`: *Free-Force*) dari **6 Solver Deterministik (`Diagram View`)** berfitur komposisi multi-struktur zero-collision, serta mendukung **Restructure & Reorganize** (*Virtual Grouping* non-destruktif & *Structural Refactoring* sinkron ke berkas fisik) baik di **`Settings Hub > Workspace > Deep Explorer`** maupun sebagai **Tab Workspace mandiri**.
 - Mempersistensikan seluruh konfigurasi visual, *subtree overrides*, *boundaries*, dan *summaries* secara terpusat di blok `mode.layout` dalam **`.app/config.json`** (dengan fallback baca *zero-loss* dari `.vk/`/`.obmap/`).
 
 ---
 
-## 1. Empat Mandatory Helicopter Views (Semua Workspace Modes)
+## 1. `Deep Explorer` — Empat Lensa Visual & Pengelompokan Dinamis
 
-| Helicopter View | Peran Kognitif | Mekanisme Teknis / Solver | Penggunaan per Core Mode |
+| Lensa Visual (`Deep Explorer`) | Peran Kognitif | Mekanisme Teknis / Solver | Penggunaan per Core Mode |
 | :--- | :--- | :--- | :--- |
 | **1. Graph View** *(Network)* | Keterhubungan organik lintas catatan (`[[backlinks]]`, `tags`, `keywords`, klaster properti) | `Free-Force` (simulasi D3 `cooldownTicks > 0`) & klaster relasi | **Atlas:** jaringan sitasi & topik; **Studio:** *internal linking & topic clusters*; **Academy:** relasi lintas modul; **Freeform:** kanvas graf penuh. |
 | **2. Diagram View** *(Deterministic Solvers)* | Pemetaan hierarkis, alur waktu, sebab-akibat, argumen, & pohon kompetensi | `layoutCategory.ts` + `compositeLayoutEngine.ts` (`cooldownTicks === 0`) | **Atlas:** Mindmap, Fishbone, Timeline, Argument Map; **Studio:** outline artikel/buku; **Academy:** *Competence/Skill Tree DAG* & hierarki kurikulum. |
@@ -52,13 +52,15 @@ source_of_truth: src/domains/graph/, docs/02-planning/xmind-obsidian-visual-engi
 
 ---
 
-## 3. Siklus *Restructure & Reorganize* di Helicopter View
+## 3. Siklus *Restructure & Reorganize* di `Deep Explorer`
 
 ```mermaid
 flowchart LR
-    HV["Helicopter View (Graph · Diagram · Table · Cards)"] --> VG["1. Virtual Grouping (Non-Destructive)"]
-    HV --> SR["2. Structural Refactoring (Physical Sync)"]
-    VG --> VGO["Klaster visual berdasar YAML/Tag/Backlink/Keyword (File fisik tetap di folder asal)"]
+    DE["Deep Explorer (Settings Hub > Workspace > Deep Explorer | Tab Workspace)"] --> LENS["4 Lensa: Graph · Diagram · Table · Cards"]
+    LENS --> GRP["Pengelompokan Dinamis: Hierarchy · Properties · Tags · Backlinks · Keywords"]
+    GRP --> VG["1. Virtual Grouping (Non-Destructive)"]
+    GRP --> SR["2. Structural Refactoring (Physical Sync)"]
+    VG --> VGO["Klaster visual berdasar Hierarchy/Properties/Tags/Backlinks/Keywords (File fisik tetap)"]
     SR --> SRO["Drag-and-drop Diagram/Tree -> pindahkan Folder/File-Node .md + update YAML & [[wikilinks]]"]
 ```
 

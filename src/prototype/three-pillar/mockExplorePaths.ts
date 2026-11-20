@@ -30,7 +30,7 @@ export const CURATED_LEARNING_PATHS: PrototypeLearningPath[] = [
   {
     id: "path-3",
     title: "Esai & Publikasi Panjang Deterministik",
-    subtitle: "Studio fokus penulisan dengan Helicopter Audit untuk reviewer.",
+    subtitle: "Studio fokus penulisan dengan Deep Explorer Audit untuk reviewer.",
     duration: "15 mnt",
     modulesCount: 4,
     lens: "publication",

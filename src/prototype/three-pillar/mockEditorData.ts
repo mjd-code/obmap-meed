@@ -93,7 +93,7 @@ export const PROTOTYPE_EDITOR_FILES: PrototypeEditorFile[] = [
       visibility: "private",
       sync_mode: "local_only",
     },
-    content: `# Jurnal Riset Lokal (Offline Forever Free)\n\nBerkas ini berada langsung di direktori komputer Anda. Seluruh Workspace Modes & 4 Helicopter Views tetap berjalan 100% lokal.`,
+    content: `# Jurnal Riset Lokal (Offline Forever Free)\n\nBerkas ini berada langsung di direktori komputer Anda. Seluruh Workspace Modes & 4 Deep Explorer Views tetap berjalan 100% lokal.`,
   },
   {
     id: "file-6",
@@ -112,6 +112,6 @@ export const PROTOTYPE_EDITOR_FILES: PrototypeEditorFile[] = [
       license: "CC BY-SA 4.0",
       visibility: "public",
     },
-    content: `# Kedaulatan Plaintext Markdown di Era Cloud\n\nMode **Studio** menjaga kenyamanan mengetik tanpa gangguan sekaligus menyediakan 4 Helicopter Views untuk audit argumen dan sitasi sebelum rilis publik.`,
+    content: `# Kedaulatan Plaintext Markdown di Era Cloud\n\nMode **Studio** menjaga kenyamanan mengetik tanpa gangguan sekaligus menyediakan 4 Deep Explorer Views untuk audit argumen dan sitasi sebelum rilis publik.`,
   },
 ];

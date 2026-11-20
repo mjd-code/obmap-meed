@@ -4,7 +4,7 @@ title: Strategi Pengujian Perangkat Lunak & Gerbang Verifikasi ObMap v2.0
 type: engineering
 status: [PARTIAL]
 owner: Principal Software Architect & QA Lead
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -58,6 +58,7 @@ flowchart TB
 | **Dynamic Plans & Billing** | Webhook **Xendit/Midtrans** idempoten; perubahan kuota di `/admin` langsung berlaku di RLS & `useEntitlement()`; downgrade bersifat *Non-Destructive*. | `STEP-04.1`–`04.2` |
 | **LMS DAG & Analytical Solvers** | Validasi penolakan siklus pada `prerequisites`; koordinat `argument-map` & `citation-tree` 100% deterministik; `60 FPS` @ `2.000` node. | `STEP-05.1`–`05.2` |
 | **SDK Sandbox & A11y GA** | `@app/sdk` memblokir panggilan jaringan/storage tanpa manifest izin; uji `.app/config.json` schema tunggal, WCAG 2.2 AA, & i18n `id-ID`/`en-US` lulus penuh. | `STEP-05.3`–`05.4` |
+| **Zero-Backend Prototype & Snapshot Isolation (Track 2)** | Audit impor statis memastikan 0 panggilan/ketergantungan backend (`supabaseClient`, Auth live, IndexedDB/FS driver) di `src/prototype/`; rute `/prototype` merender katalog `src/prototype/snapshots/<stage-id>/`; paritas UI 1:1 `<SettingsHub />` (*Dual Navigator* + 3 Kategori) & `Deep Explorer` tervalidasi saat migrasi Phase 2B (`UI-STEP-07`). | `UI-STEP-07`, Track 2 |
 
 ---
 

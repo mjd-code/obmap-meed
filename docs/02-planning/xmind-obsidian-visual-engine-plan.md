@@ -4,7 +4,7 @@ title: Master Plan XMind-Grade Visual Layout Engine, Rich Mindmap Customization 
 type: planning
 status: [PLANNED]
 owner: Principal Visual Graphics & Layout Algorithm Architect / Staff Frontend Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -38,7 +38,7 @@ Kekuatan masing-masing kategori alat pengetahuan saat ini terpisah:
 - **XMind** unggul luar biasa pada presisi tata letak hierarkis bebas-tumpuk (*Mindmap, Logic Chart, Brace Map, Org Chart, Tree Chart, Timeline, Fishbone*), komposisi multi-struktur di dalam satu peta, keterbacaan tipografi melalui pewarisan warna cabang otomatis (*Smart Color Theme*), serta pengayaan semantik per topik (*Markers, Stickers, Labels, Boundary, Summary, Relationship*). Namun, XMind **bukan** editor Markdown, tidak memiliki *sidebar file explorer* lokal, dan tidak membangun graf pengetahuan bi-direksional antar berkas (`[[wikilinks]]`).
 - **Obsidian** unggul sebagai *local-first Markdown + YAML knowledge vault* dengan editor teks cepat, *Backlinks*, dan *Knowledge Graph*. Namun, kanvas visualnya mengandalkan simulasi gaya fisika bebas (*free-force*) atau papan bebas manual (*Canvas*) yang tidak memiliki algoritma pemetaan terstruktur otomatis bebas-tabrakan layaknya XMind.
 
-**ObMap v2.0** menyatukan keduanya secara native sebagai **Diagram View** dan **Graph View** di dalam **4 Mandatory Helicopter Views**: setiap Folder-Node/File-Node `.md` **dan** garis besar struktur di dalam satu catatan (`# H1 / ## H2 / ### H3 / - [ ] Task`) dapat divisualisasikan dengan mesin tata letak deterministik kelas XMind (`cooldownTicks === 0`, `AGENTS.md` Rule 2) sekaligus bertransisi ke *Knowledge Graph*, *Table View*, dan *Cards View* dalam mode **`Atlas`**, **`Studio`**, **`Academy`**, atau **`Freeform`**.
+**ObMap v2.0** menyatukan keduanya secara native sebagai **Diagram View** dan **Graph View** di dalam **`Deep Explorer`** (4 lensa visual + pengelompokan dinamis *Hierarchy, Properties, Tags, Backlinks, Keywords* — dapat dibuka di `Settings Hub > Workspace > Deep Explorer` atau sebagai Tab Workspace mandiri): setiap Folder-Node/File-Node `.md` **dan** garis besar struktur di dalam satu catatan (`# H1 / ## H2 / ### H3 / - [ ] Task`) dapat divisualisasikan dengan mesin tata letak deterministik kelas XMind (`cooldownTicks === 0`, `AGENTS.md` Rule 2) sekaligus bertransisi ke *Knowledge Graph*, *Table View*, dan *Cards View* dalam mode **`Atlas`**, **`Studio`**, **`Academy`**, atau **`Freeform`**.
 
 ### 1.2 Baseline Audit Berkas Aktual & Akar Masalah Visual
 Inspeksi langsung pada codebase `src/domains/graph/`, `src/domains/editor/`, dan `src/domains/workspace/` menunjukkan bahwa ObMap sudah memiliki fondasi deterministik yang solid (*Dual Canvas* via `layoutCategory.ts`, referensi `measureBox` di `timeline.ts`, dan token `--vk-*` di `theme.ts`), namun memiliki **9 kesenjangan struktural** berikut:

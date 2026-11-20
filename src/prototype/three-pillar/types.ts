@@ -1,6 +1,7 @@
+import type { PrototypeSocialLink } from "./settingsTypes";
 import type {
   AppCentralConfigJson,
-  HelicopterViewKind,
+  DeepExplorerViewKind,
   PortfolioStudyStage,
   PresentationLens,
   PresetOrigin,
@@ -8,6 +9,12 @@ import type {
 } from "./vcsAndConfigTypes";
 
 export * from "./vcsAndConfigTypes";
+export * from "./settingsTypes";
+export type {
+  SettingsCategoryId,
+  SettingsSelection,
+  SettingsSubId,
+} from "./settingsCatalog";
 
 export type PillarId = "explore" | "profile" | "editor";
 
@@ -51,13 +58,6 @@ export type SvgPreviewKind =
   | "constellation"
   | "timeline";
 
-export type GraphSolverKind =
-  | "mindmap"
-  | "fishbone"
-  | "timeline"
-  | "argument-map"
-  | "skill-tree";
-
 export interface PrototypeScholarProfile {
   name: string;
   handle: string;
@@ -65,8 +65,11 @@ export interface PrototypeScholarProfile {
   title: string;
   affiliation: string;
   orcid: string;
+  email: string;
+  location: string;
   bio: string;
   verifiedScholar: boolean;
+  socialLinks: PrototypeSocialLink[];
   stats: {
     citations: number;
     publishedWorks: number;
@@ -127,11 +130,17 @@ export interface PrototypeVaultItem {
   description: string;
   lens: PresentationLens;
   primaryMode: WorkspaceModeId;
-  defaultHelicopterView: HelicopterViewKind;
+  defaultDeepExplorerView: DeepExplorerViewKind;
+  // @deprecated M1->M2/M3 compat shim
+  defaultHelicopterView?: DeepExplorerViewKind;
   presetOrigin: PresetOrigin;
   origin: StorageOrigin;
   notesCount: number;
   privateNotesCount: number;
+  storageSizeKb: number;
+  connectionsCount: number;
+  yamlHealthPct: number;
+  syncStatus: "synced" | "local_only" | "pending";
   updatedAt: string;
   collaboratorsCount?: number;
   topic: string;

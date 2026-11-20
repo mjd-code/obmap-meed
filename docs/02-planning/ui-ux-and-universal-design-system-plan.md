@@ -4,7 +4,7 @@ title: Master Plan Audit UI/UX, Standar Desain Frontend & Universal Dynamic Sett
 type: planning
 status: [PLANNED]
 owner: Principal Product Designer & Staff Frontend Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -90,6 +90,8 @@ Legenda dimensi: `Func` (Kejelasan & Kelengkapan Fungsi), `Resp` (Responsivitas 
 | **B-09** | `P2` | **Fragmentasi Kontrol Graph:** Pengaturan graf terpecah antara `GraphWorkspaceControls.tsx` (HUD melayang / toolbar horizontal), `GraphConfigPanel.tsx` (Sheet), dan `SettingsGraphEngineSection.tsx` dengan kontrol berulang dan kepadatan tinggi tanpa pemisahan Basic vs Advanced. | Beban kognitif tinggi saat pengguna baru hanya ingin mengganti tata letak atau memfilter node. |
 | **B-10** | `P2` | **Inkonsistensi Branding, Bahasa Campuran & Grid Kosong:** `index.html:8` masih bertuliskan `VaultGraph - Knowledge Network Manager`; `GraphNodePanelHeader.tsx:97-158` mencampur label Inggris (`Narrow`, `Full Width`, `Reading`) dan Indonesia (`Tampilan & Format`, `Simpan Perubahan`); `Landing.tsx:225` memakai `md:grid-cols-3` untuk 2 kartu `storageOptions`. | Menurunkan kesan profesionalisme dan konsistensi produk ObMap. |
 
+> **Catatan Evolusi (`v2.2.0`):** Temuan `B-02` pada awalnya diselesaikan di `UI-STEP-02` lewat *left nav rail*, lalu berkembang pada arsitektur target di **§3.4–§3.5** menjadi **Single Adaptive `<SettingsHub />` (*Dual Navigator*: Interactive Breadcrumb Navigator + Synchronized Right Sidebar)** tanpa *inline nav rail* maupun tombol tab-bar *Quick Share* / *Quick View Lens* (`UI-STEP-07` — Track 2).
+
 ---
 
 ## 2. Detailed UI/UX Audit & Enhancement Matrix
@@ -168,26 +170,36 @@ flowchart LR
 
 Di `src/global/utils/color-utils.ts`, tambahkan fungsi murni `computeContrastRatio(fgHsl, bgHsl)` untuk memvalidasi setiap warna kustom pengguna secara real-time di UI Settings (memberikan lencana peringatan `< 4.5:1` dan tombol *"Auto-adjust contrast"*).
 
-### 3.4 Struktur Config Section `"appearance"` & UX Live Preview di `SettingsHub.tsx`
-- **Registrasi State (`registerConfigSections.ts`):** Tambah seksi `"appearance"` (menyimpan `presetId`, `mode: 'system' | 'light' | 'dark'`, `colors` override opsional, `typography: { uiFont, proseFont, monoFont, uiScale, proseSize, lineHeight, letterSpacing, readableWidth }`, `layout: { density, radiusPreset, showStatusBar, ribbonPosition }`, `motion: { reducedMotion, glassEffects }`, `customCssSnippet`), sambil mempertahankan bridge kompatibilitas ke `"theme"` dan `"editor"` yang sudah ada di `STEP-01.5`.
-- **Desain Layout `SettingsHub.tsx` (Desktop & Mobile):**
-  - **Desktop (`>= 1024px`):** Layout 3-area yang terintegrasi rapi di dalam tab Settings:
-    1. **Left Category Rail (`220px`):** Pencarian instan pengaturan + daftar kategori (langsung sinkron dengan `WorkspaceSettingsNavList` agar tidak pernah terjebak walau sidebar tertutup).
-    2. **Center Settings Form (`flex-1`, `max-w-2xl`):** Kontrol terstruktur dengan badge *Inherited from Org / Vault* atau *Locked by Admin* (`ADR-0011`), sakelar *Preset Picker* visual (kartu mini berwarna, **bukan input teks HSL mentah**), dropdown font dengan pratinjau langsung, slider `UI Scale` & `Prose Size`, segmented control `Density` & `Border Radius`, serta editor *Scoped CSS Snippets* dengan indikator baris CSS yang ditolak sanitizer.
-    3. **Right Sticky Live Preview Dock (`300px` pada `>= 1280px`, collapse ke banner atas pada layar lebih kecil):** Menampilkan 3 pratinjau hidup secara bersamaan saat slider digeser: *(a) Mini Workbench Card & Status Badge, (b) Mini Markdown & Code Block Snippet, (c) Mini SVG/Canvas Node-Link Graph + Skor Kontras WCAG AA*.
+### 3.4 Single Adaptive `<SettingsHub />` & Dual Navigator Architecture
+*(Menggantikan desain multi-tab terdahulu, rail nav inline di `<SettingsHub />`, serta tombol Quick Share / Quick View Lens di tab bar Editor yang sempat dirumuskan pasca-temuan `B-02`):*
 
-### 3.5 Arsitektur Controls & Settings (`3-Scope Contextual Escalation` & 3 Permukaan UI Proporsional)
-Agar kontrol mendalam tetap rapi dan pengguna tidak tersesat saat bekerja di editor maupun halaman profil publik, seluruh kontrol diatur lintas **3 Scope** dan didistribusikan secara proporsional di **3 Lokasi UI**:
+1. **Single Adaptive `<SettingsHub />` Component & Eliminasi Clutter:**
+   - Satu komponen tunggal `<SettingsHub />` menggantikan seluruh halaman dan panel Settings lama: dirender sebagai **Workspace Tab** saat berada di dalam Editor `/app` (*Vault Scope*), dan sebagai **Complete Full Page** (`/settings`) saat diakses dari luar Editor seperti Explore atau Profile (*App Scope*).
+   - **Zero UI Clutter:** **Tidak ada** tombol *Quick Share* atau *Quick View Lens* di tab bar Editor (kolaborasi/publikasi di `/app` disatukan di *"Share · Access · Versions" Drawer*), dan **tidak ada *inline vertical/horizontal navigation rail* di dalam body `<SettingsHub />`**.
+   - **Halaman Profil (`/:username`):** Hanya menampilkan kontrol ringan kurasi publik + tombol eskalasi **"Full Account Settings →"** ke `<SettingsHub />`.
+2. **Dual Navigator Architecture (Desktop, Tablet, & Mobile):**
+   - **Navigator 1 — Interactive Breadcrumb Navigator (VS Code / Antigravity Style):** Terletak di bagian atas `<SettingsHub />`, menampilkan jalur hierarki aktif (`Settings Hub ▸ Kategori ▸ Sub-Setting ▸ Section Symbol`). Mengklik segmen mana pun membuka **Floating Dropdown Outline** tepat di bawah segmen tersebut yang memuat daftar kategori saudara, sub-setting saudara, atau daftar seksi/simbol di dalam halaman aktif untuk navigasi lompat cepat tanpa membuka sidebar.
+   - **Navigator 2 — Synchronized Right Sidebar:** Panel navigasi di Right Sidebar Editor (lengkap dengan pencarian cepat) yang tersinkron **1:1** dengan struktur kategori dan sub-setting `<SettingsHub />`.
+   - Di seksi **`Appearance & Accessibility`**, kontrol visual (*Preset Picker*, *Font Preview*, `UI Scale` & `Prose Size`, `Density` & `Border Radius`, *Scoped CSS Snippets* dengan indikator sanitizer, *Org-Lock* `ADR-0011`, serta *Live Preview* + skor WCAG AA `>= 4.5:1`) tetap dipertahankan secara penuh tanpa nav rail inline.
 
-1. **App & Account Scope (Global):** Identitas publik (`/:username`, bio, ORCID, avatar), tema & tipografi global, *keybindings*, koneksi AI global (**Ollama / WebLLM / BYOK**), integrasi **Zotero**, bahasa, notifikasi, billing/kuota, & manajemen storage lokal.
-2. **Vault Scope (`.app/config.json` root — dilarang memecah ke file terpisah):** `primary_mode` (`Freeform` | `Atlas` | `Studio` | `Academy`), *default Helicopter View*, schema YAML & template, kebijakan *Publish & Access* vault, aturan `academy` tingkat vault, dan ekstensi `@app/sdk` aktif.
-3. **Node & Session Scope (YAML Frontmatter + `node_overrides` di `.app/config.json` + Ephemeral HUD):** *Override* lensa visual aktif per tab, properti YAML node, *Publish & Access* granular tingkat Folder-Node/File-Node, dan aturan `academy` tingkat sub-folder/node.
+### 3.5 Struktur & Urutan 3 Kategori Utama `<SettingsHub />` (`Account` → `Workspace` → `Vault`)
+Seluruh sub-setting di dalam `<SettingsHub />` diorganisasikan ke dalam **3 Kategori Utama** berurutan dengan cakupan logis 3 lapis (*App & Account*, *Vault `.app/config.json`*, *Node & Session*):
 
-| Lokasi UI | Scope yang Dikelola | Komponen & Perilaku Proporsional | Eskalasi Kontekstual |
-| :--- | :--- | :--- | :--- |
-| **Dedicated Settings Hub (`/settings` atau modal `Ctrl+,`)** | *App & Account*, *Vault Scope*, & *Presets/Extensions* | *Single Source of Truth* seluruh pengaturan mendalam yang sadar-konteks (*context-aware*) dalam **5 Tab Kanonik**: `Account & Profile`, `Appearance & App`, `AI & Integrations` (Ollama/BYOK/Zotero), `Active Vault (.app/config.json)`, & `Presets & Extensions`. | Terbuka langsung ke tab relevan halaman pemanggil. |
-| **Profile Page (`/:username`)** | *Ringan: Identitas Publik & Portofolio* | Hanya menampilkan kontrol ringan terkait **Identitas Publik & Kurasi Portofolio** (edit bio/profil cepat, pin karya *Atlas/Publication/Course/Template*, atur visibilitas publik). **Bebas dari pengaturan teknis editor.** | Tombol **"Full Account Settings →"** menuju `/settings`. |
-| **Editor Page (`/app`)** | *Node & Session Scope + 80% Aksi Harian* | **In-Place HUD & Quick Settings Slide-Over Drawer** (ganti *Helicopter View* `Graph`/`Diagram`/`Table`/`Cards`, ganti *Workspace Mode* sementara, buka **Drawer terpadu *"Share · Access · Versions"***, edit YAML & aturan node `academy`) tanpa meninggalkan kanvas. | Tombol **"All Settings (`Ctrl+,`)"** langsung membuka tab **`Active Vault (.app/config.json)`**. |
+| Kategori | Urutan Sub-Setting | Tanggung Jawab, Fitur Wajib & Keterhubungan Data |
+| :--- | :--- | :--- |
+| **1. `Account`** | **`Profile Customization`** | Nama, `@username`, bio, informasi tambahan, & tautan media sosial (*App & Account Scope*). |
+| **1. `Account`** | **`Credentials & Security`** | Reset kredensial, reset email & password. |
+| **1. `Account`** | **`Session Activity`** | Daftar perangkat aktif, lokasi, waktu akses, dan pencabutan sesi (*revoke session*). |
+| **2. `Workspace`** | **`Workspace Preset (Dashboard Overview Settings Hub)`** | Peta ringkasan & tautan ke seluruh sub-setting terkait; katalog *Built-in Presets* (`Freeform`, `Atlas`, `Studio`, `Academy`), *User Custom Presets*, dan *Community Presets*; fitur tambah/ubah/hapus/set default preset; **wajib menyertakan Mini Instruction-Helps, Impact Preview (daftar perubahan sebelum ganti preset), & Validasi perubahan preset**. |
+| **2. `Workspace`** | **`Central .app/config.json Raw Inspector & Dynamic Editor`** | Menampilkan dan mengedit secara manual seluruh konfigurasi aplikasi & workspace dalam satu JSON mentah `.app/config.json` (7 blok: `meta`, `mode`, `schema`, `publishing`, `access`, `academy`, `extensions`; dilarang memecah file) yang terhubung secara dinamis ke seluruh UI pengaturan, dilengkapi **Real-Time Validation** dan **Help/Documentation Section**. |
+| **2. `Workspace`** | **`Deep Explorer`** | Konfigurasi lanjutan & ruang eksplorasi interaktif multi-dimensi terhadap *vaults, nodes, branches, files* memakai 4 lensa visual (*Graph, Diagram, Table, Cards*) & pengelompokan dinamis (*Hierarchy, Properties, Tags, Backlinks, Keywords* — *Virtual Grouping* maupun *Physical Sync*), termasuk **Properties & Schema**, **Academy Competence Tree & Pedagogical Policy** (`academy` block), dan tombol **"Buka sebagai Tab Workspace"**. |
+| **2. `Workspace`** | **`Appearance & Accessibility`** | Kustomisasi tampilan lintas aplikasi (*Profile & Explore page*) serta lintas *Workspace/Vault* (tipografi editor, pengetikan, asisten penulisan, bilah alat Markdown, *Features & System Sync preferences*, AI Ollama/BYOK, Zotero, tema `--vk-*`/`--app-*`, WCAG AA & Org-Lock). |
+| **2. `Workspace`** | **`Visual Engine`** | Pengaturan *Graph Mode* (`Free-Force` & klaster) dan *Mindmap / Deterministic Diagram Solvers* (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Competence DAG`). |
+| **3. `Vault`** | **`Vaults Dashboard`** | Overview, statistik, status sinkronisasi, dan insight seluruh vaults. |
+| **3. `Vault`** | **`Vaults Collaborating`** | Manajemen kolaborasi & hak akses (**`Give Access AS & WITH`** di level Vault & Node). |
+| **3. `Vault`** | **`VCS, Diff, Backup & History`** | Timeline snapshot, visual diff (Markdown, YAML, tree), Knowledge Merge Request (`KMR`), serta backup & riwayat vault. |
+| **3. `Vault`** | **`Vaults Publish`** | Manajemen publikasi (**`Publish AS & WITH`** di level Vault & Node -> Presentation Lenses `atlas`/`publication`/`course`/`template`). |
+| **3. `Vault`** | **`Import & Export Vault`** | Alat impor dan ekspor vault (`.md` + `.app/config.json`, ZIP, OPML/PDF/SVG). |
 
 ### 3.6 Standar Desain Frontend Lintas Aplikasi (*The ObMap UI Constitution*)
 Aturan baku yang wajib diikuti di seluruh `src/domains/` dan `src/pages/`:
@@ -218,14 +230,14 @@ Aturan baku yang wajib diikuti di seluruh `src/domains/` dan `src/pages/`:
 
 ---
 
-## 4. Prioritized Implementation Roadmap (`UI-STEP-01` s/d `UI-STEP-06`)
+## 4. Prioritized Implementation Roadmap (`UI-STEP-01` s/d `UI-STEP-07`)
 
-Peta jalan ini dirancang agar selaras dengan antrean `STEP-02.1` s/d `STEP-05.4` di [Playbook Eksekusi (`README.md`)](README.md), dengan seluruh komponen baru mematuhi pola **Headless Controller (`<= 300` baris)** (`AGENTS.md` Rule 7).
+Peta jalan ini dirancang agar selaras dengan antrean `STEP-02.1` s/d `STEP-05.4` dan **3 Jalur Development** di [Playbook Eksekusi (`README.md`)](README.md), dengan seluruh komponen baru mematuhi pola **Headless Controller (`<= 300` baris)** (`AGENTS.md` Rule 7).
 
 ```mermaid
 flowchart LR
     S15["STEP-01.5 [IMPLEMENTED]: 6-Layer Config & Theme Bridge"] --> UI1["UI-STEP-01 [IMPLEMENTED]: Token Taxonomy, Presets, Contrast & Boot Paint"]
-    UI1 --> UI2["UI-STEP-02 [IMPLEMENTED]: SettingsHub 2-Col + Appearance & Live Preview"]
+    UI1 --> UI2["UI-STEP-02 [IMPLEMENTED]: SettingsHub Baseline + Appearance & Live Preview"]
     UI2 --> UI3["UI-STEP-03 [NEXT / PENDING]: Mini-VSCode Shell, Command Palette Ctrl+K & Mobile Bar"]
     UI3 --> S21["STEP-02.1 [NEXT]: Domain dashboard (/vaults)"]
     UI2 --> UI4["UI-STEP-04 [IMPLEMENTED]: Editor Toolbar, Reader Sync & Graph Forces Tab"]
@@ -233,6 +245,7 @@ flowchart LR
     S21 --> S22["STEP-02.2..03.1: Landing Sandbox, Onboarding, Explore"]
     UI4 --> UI6["UI-STEP-06 [IMPLEMENTED]: Repo-Wide Token Sweep, Primitives & Reduced Motion"]
     UI5 --> UI6
+    UI6 --> UI7["UI-STEP-07 [PLANNED — Track 2]: Migrasi 1:1 Unified <SettingsHub /> Dual Navigator, Deep Explorer & Freeze Snapshot"]
 ```
 
 | Step ID | Prioritas | Ketergantungan | Target Berkas / Domain | Cakupan Kerja & Batasan Arsitektur (`AGENTS.md`) |
@@ -243,6 +256,7 @@ flowchart LR
 | **`UI-STEP-04`** `[IMPLEMENTED]` | `P1` | `UI-STEP-01`, `UI-STEP-02` | `src/domains/editor/components/{EditorMarkdownView,EditorFormatToolbar,EditorFoldableMarkdown}.tsx`, `src/domains/editor/shared/{hooks/useEditorMarkdownViewController.ts,stores/useEditorSettingsStore.ts,utils/cmSetup.ts,utils/cmTheme.ts}`, `src/domains/graph/components/{GraphConfigPanel,GraphFreeForceControls,GraphWorkspaceControls,GraphNodePanelHeader}.tsx`, `src/domains/settings/components/SettingsGraphEngineSection.tsx` | Hidupkan `EditorFormatToolbar.tsx` (`<= 160` baris) sesuai setting `useEditorSettingsStore.toolbar`; sinkronkan `EditorFoldableMarkdown`, `cmSetup.ts`, & `cmTheme.ts` ke `--vk-prose-*` / `--vk-font-*`; lengkapi `<TabsContent value="forces">` di `GraphConfigPanel.tsx` & `SettingsGraphEngineSection.tsx` memakai `FreeForceControls`; seragamkan label dropdown bahasa Indonesia di `GraphNodePanelHeader.tsx` & `GraphWorkspaceControls.tsx`. |
 | **`UI-STEP-05`** `[IMPLEMENTED]` | `P1` | `UI-STEP-02` (dan `STEP-02.1` untuk `/vaults` penuh) | `src/pages/{Landing,NotFound,PublicReader}.tsx`, `src/domains/community/components/{PublicReaderQuickPreferencesPopover,PublicReaderMarkdownReader}.tsx` | Perbaiki `md:grid-cols-2` & CTA `/explore` di `Landing.tsx` serta arahkan redirect terautentikasi ke `/vaults`; modernisasi `NotFound.tsx` (`<Link>` ke `/`, `/vaults`, `/explore`); pasang `PublicReaderQuickPreferencesPopover.tsx` + binding `--vk-prose-*` di `PublicReaderMarkdownReader.tsx` *(halaman `/vaults` penuh tetap mengikuti `STEP-02.1`)*. |
 | **`UI-STEP-06`** `[IMPLEMENTED]` | `P2` | `UI-STEP-04`, `UI-STEP-05` | `src/global/ui/{button,badge}.tsx`, `tailwind.config.ts`, `src/app/preloader/AppPreloaderScreen.tsx`, `src/domains/*/components/*.tsx`, `src/pages/*.tsx` | Tambah varian semantik `Badge` (`success`, `warning`, `danger`, `info`), `Button` `icon-sm`, & dukungan `<alpha-value>` `color-mix` di `tailwind.config.ts`; sapu bersih kelas `text-[9|10|11px]` → `vk-text-*` & warna palet mentah ke semantic tokens across `99` berkas + `AppPreloaderScreen.tsx`, serta tambah `motion-reduce` utilities. |
+| **`UI-STEP-07`** `[PLANNED]` | `P0` · Track 2 | `UI-STEP-02`, `UI-STEP-06` | `src/prototype/three-pillar/` → **1:1 ke** `src/domains/settings/`, `src/domains/workspace/`, `src/domains/graph/`, `src/prototype/snapshots/<stage-id>/` | **Track 2 Phase 2B–2C Migration:** Migrasikan secara identik **1:1** dari mockup zero-backend `/prototype` ke **Single Adaptive `<SettingsHub />`** (*Workspace Tab* vs *Full Page*, tanpa *Quick Share*/*Quick View Lens* tab-bar & tanpa *inline nav rail*), **Interactive Breadcrumb Navigator + Floating Dropdown Outline** + **Synchronized Right Sidebar**, urutan 3 Kategori (`Account` → `Workspace` [incl. *Workspace Preset* w/ Mini-Helps & Impact Preview, *Central `.app/config.json` Raw Inspector* w/ Real-Time Validation & Help, *Deep Explorer*, *Appearance & Accessibility*, *Visual Engine*] → `Vault` [5 sub-settings]); sambungkan backend live & bekukan mockup ke `src/prototype/snapshots/<stage-id>/`. |
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "last_updated": "2026-11-20",
   "features": [
     {
@@ -171,7 +171,7 @@
     },
     {
       "id": "FEAT-SET-001",
-      "name": "Single Central .app/config.json, 3-Scope Settings Escalation (/settings, /:username, /app) & Unified Theme Tokens",
+      "name": "Single Central .app/config.json, Single Adaptive <SettingsHub /> (Dual Navigator & 3 Categories Account/Workspace/Vault) & Unified Theme Tokens",
       "domain": "settings",
       "status": "IMPLEMENTED",
       "release_stage": "stage_1_partner",
@@ -188,7 +188,7 @@
     },
     {
       "id": "FEAT-DASH-001",
-      "name": "Dashboard (/vaults) with Core Presets (Atlas/Studio/Academy/Freeform) & 4 Helicopter/Derived Knowledge Views",
+      "name": "Dashboard (/vaults) with Core Presets (Atlas/Studio/Academy/Freeform) & Deep Explorer (4 Visual Lenses & Derived Knowledge Views)",
       "domain": "dashboard",
       "status": "VISION",
       "release_stage": "stage_2_community_beta",
@@ -197,6 +197,18 @@
         "src/pages/Landing.tsx",
         "src/domains/vault/components/VaultCard.tsx",
         "src/domains/vault/components/VaultModeSelector.tsx"
+      ]
+    },
+    {
+      "id": "FEAT-PROTO-001",
+      "name": "Track 2 Zero-Backend Prototype Sandbox (src/prototype/three-pillar/) & Versioned UI/UX Snapshot Catalog (/prototype -> src/prototype/snapshots/<stage-id>/)",
+      "domain": "workspace",
+      "status": "IMPLEMENTED",
+      "release_stage": "stage_1_partner",
+      "step_id": "UI-STEP-07",
+      "source_of_truth": [
+        "src/prototype/three-pillar/ThreePillarPrototypePage.tsx",
+        "src/App.tsx"
       ]
     },
     {

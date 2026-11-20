@@ -4,7 +4,7 @@ title: Master Feature Catalog v2.0 (`FEAT-*`)
 type: feature
 status: [PARTIAL]
 owner: Chief Product Officer & Principal Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -20,7 +20,7 @@ source_of_truth: src/domains/, supabase/migrations/
 
 ## Ringkasan 3 Baris
 - Katalog terpadu seluruh fitur aktif (`[IMPLEMENTED]`), parsial (`[PARTIAL]`), terencana (`[PLANNED]`), dan visi (`[VISION]`) lintas 13 domain di atas **6 Sistem Referensi** (*Obsidian, Nodus Research, XMind, Notion, Wikipedia, LinkedIn × ResearchGate × GitHub*).
-- Mencerminkan konstitusi arsitektur baru: **4 Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy` + `Community Presets`), **4 Helicopter Views** (*Graph, Diagram, Table, Cards*), **Single `.app/config.json`**, **Unified Essential VCS + Granular `AS & WITH` Drawer**, **Academy 3-Layer Competence Tree**, **3-Scope Settings**, dan **`@app/sdk`**.
+- Mencerminkan konstitusi arsitektur baru: **4 Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy` + `Community Presets`), **`Deep Explorer`** (*Graph, Diagram, Table, Cards* + pengelompokan dinamis), **Single `.app/config.json`**, **Unified Essential VCS + Granular `AS & WITH` Drawer**, **Academy 3-Layer Competence Tree**, **Unified Adaptive `<SettingsHub />` (*Dual Navigator* + 3 Kategori `Account → Workspace → Vault`)**, **3 Development Tracks** (+ `/prototype` Snapshots), dan **`@app/sdk`**.
 - Menegaskan batas fokus bahwa seluruh fitur *Derived Views* melayani pengetahuan, riset, editorial, dan pembelajaran (bukan papan tugas proyek korporat ala Trello/Asana/ClickUp).
 
 ---
@@ -33,16 +33,16 @@ source_of_truth: src/domains/, supabase/migrations/
 | **`FEAT-GRAPH-001`** | Multi-Solver Deterministik (*Diagram View*: Mindmap, Org + Compact Matrix, Timeline, Fishbone) & Free-Force (*Graph View*) | `graph` | `[IMPLEMENTED]` | `src/domains/graph/` (`layoutCategory.ts`, `compositeLayoutEngine.ts`, `treeLayouts.ts`, `mindmap.ts`, `fishbone.ts`, `timeline.ts`, `GraphCanvas.tsx`) |
 | **`FEAT-GRAPH-002`** | Headless Canvas Governance, Rigid Block Collision Isolation, Unified Floating Dock & Frame Invalidation | `graph` | `[IMPLEMENTED]` | `useGraphCanvasController.ts`, `GraphFloatingDock.tsx`, `collisionResolver.ts`, `ADR-0006` |
 | **`FEAT-GRAPH-008`** | Solver `argument-map`, `citation-tree`, & `competence-dag`; Pitch Mode; PDF/SVG/OPML Export | `graph` | `[PLANNED]` | Target `STEP-05.2` (`Stage 3`) |
-| **`FEAT-LENS-001`** | Workspace Modes (`Freeform`, `Atlas`, `Studio`, `Academy`) & **4 Helicopter Views** (*Graph, Diagram, Table, Cards*) + *Virtual Grouping* & *Structural Refactoring* | `workspace`, `dashboard`, `graph` | `[PLANNED]` | `.app/config.json` (`mode`), `DashboardOrchestrator.tsx`, `STEP-02.1` |
+| **`FEAT-LENS-001`** | Workspace Modes (`Freeform`, `Atlas`, `Studio`, `Academy`) & **`Deep Explorer`** (4 lensa visual *Graph, Diagram, Table, Cards* + pengelompokan dinamis *Hierarchy/Properties/Tags/Backlinks/Keywords* — *Virtual Grouping* & *Structural Refactoring*; runnable di `Settings Hub > Workspace > Deep Explorer` & Tab Workspace) | `workspace`, `dashboard`, `graph`, `settings` | `[PLANNED]` | `.app/config.json` (`mode`), `DashboardOrchestrator.tsx`, `STEP-02.1`, `UI-STEP-07` |
 | **`FEAT-META-001`** | Indexing Wikilinks, Backlinks & Metadata via Web Worker (`Aho-Corasick`) | `metadata` | `[IMPLEMENTED]` | `src/domains/metadata/` (`mentions.worker.ts`, `aho-corasick.ts`, `MetadataCache.ts`) |
-| **`FEAT-AI-001`** | Native **BYO-AI & Local AI** (Ollama / WebLLM / BYOK Local RAG) & Referensi/Sitasi/PDF (*Nodus DNA*) | `metadata`, `settings`, `editor` | `[VISION]` | Integrasi *Settings → AI & Integrations* & blok `extensions.ai` di `.app/config.json` (`STEP-05.3`) |
+| **`FEAT-AI-001`** | Native **BYO-AI & Local AI** (Ollama / WebLLM / BYOK Local RAG) & Referensi/Sitasi/PDF (*Nodus DNA*) | `metadata`, `settings`, `editor` | `[VISION]` | Integrasi *Settings Hub > Workspace > Appearance & Accessibility / Extensions* & `.app/config.json` (`STEP-05.3`) |
 | **`FEAT-VAULT-001`** | Multi-Strategy Storage (`FS Access API`, `IndexedDB`, `Cloud`, ZIP Export) & **Single `.app/config.json`** | `vault`, `settings` | `[IMPLEMENTED]` | `VaultManager.ts`, `VaultConfigFile.ts` (sentralisasi `.app/config.json` dengan fallback `.vk/`/`.obmap/`) |
-| **`FEAT-WORK-001`** | Multi-Pane Workspace Shell, Command Palette (`Ctrl/Cmd+K`), In-Place HUD & Vault Lifecycle | `workspace` | `[IMPLEMENTED]` | `WorkspaceOrchestrator.tsx`, `WorkspaceViewRegistry.tsx`, `CommandRegistry.ts`, `useVaultLifecycle.ts` |
+| **`FEAT-WORK-001`** | Multi-Pane Workspace Shell, Command Palette (`Ctrl/Cmd+K`), Tab Bar bersih (tanpa *Quick Share*/*Quick View Lens*) & Tab `Deep Explorer` | `workspace` | `[IMPLEMENTED]` / `[PLANNED]` | `WorkspaceOrchestrator.tsx`, `WorkspaceViewRegistry.tsx`, `CommandRegistry.ts`, `useVaultLifecycle.ts`, `UI-STEP-07` |
 | **`FEAT-VCS-001`** | *Essential VCS*: Snapshot, Visual Diff (MD/YAML/Node Structure), Branch, Fork, Co-Presence, & Knowledge Merge Request | `vcs` | `[IMPLEMENTED]` / `[PARTIAL]` | `vcsDiffEngine.ts`, `VcsInteractiveMergeModal.tsx`, `VcsCreateMergeRequestModal.tsx`, `VcsCoPresenceAvatars.tsx` |
 
 ---
 
-## 2. Fitur Kolaborasi Granular, Community, Academy 3-Lapis, Config 3-Scope & SDK
+## 2. Fitur Kolaborasi Granular, Community, Academy 3-Lapis, Unified `<SettingsHub />`, Track 2 Prototype & SDK
 
 | Feature ID | Nama Fitur | Domain | Status | Target Step & Kebijakan Terkunci |
 | :--- | :--- | :--- | :---: | :--- |
@@ -59,7 +59,8 @@ source_of_truth: src/domains/, supabase/migrations/
 | **`FEAT-GROWTH-001`** | Landing Page 6-DNA & In-Memory Live Sandbox (`< 65KB`) | `pages`, `vault` | `[PARTIAL]` | `STEP-02.2` — `src/pages/Landing.tsx` + *Zero-Friction Core Presets* `< 90s` |
 | **`FEAT-GROWTH-002`** | Five-Stage Hybrid Onboarding & Sandbox Migration | `auth`, `workspace` | `[PLANNED]` | `STEP-02.3` — Splash + Skip → Migrasi ke Core Preset |
 | **`FEAT-BILL-001`** | Dynamic Admin-Managed Plans/Quotas & **Xendit/Midtrans** First Checkout | `admin`, `supabase` | `[VISION]` | `STEP-04.1`–`04.2` — Tabel `plans`/`plan_quotas` di `/admin`, **Xendit/Midtrans** lalu Stripe |
-| **`FEAT-SET-001`** | **3-Scope Settings Escalation** (`/settings`, `/:username`, `/app` HUD), Single `.app/config.json`, 6-Layer Config & Unified Theme Tokens | `settings`, `graph` | `[IMPLEMENTED]` / `[PLANNED]` | `STEP-01.5` + `UI-STEP-01..02` (`SettingsHub.tsx`, `useThemeStore.ts`); 5 tab terstruktur Settings Hub |
+| **`FEAT-SET-001`** | **Single Adaptive `<SettingsHub />`** (*Workspace Tab* vs *Complete Full Page*, tanpa *inline nav rail* & tombol tab-bar *Quick Share*/*Quick View Lens*), **Dual Navigator** (*Interactive Breadcrumb Navigator* + Floating Dropdown Outline & *Synchronized Right Sidebar*), 3 Kategori **`Account → Workspace → Vault`** (*Workspace Preset* w/ Mini-Helps & Impact Preview, *`.app/config.json` Raw Inspector* w/ Real-Time Validation & Help, *Deep Explorer*, *Appearance*, *Visual Engine*, 5 Vault sub-settings) | `settings`, `graph`, `workspace` | `[IMPLEMENTED]` / `[PLANNED]` | `STEP-01.5`, `UI-STEP-01..02`, `UI-STEP-07` (`SettingsHub.tsx`, `useThemeStore.ts`) |
+| **`FEAT-PROTO-001`** | Track 2 **Zero-Backend Prototype Sandbox** (`src/prototype/three-pillar/`) & **Versioned UI/UX Snapshot Catalog** (`src/prototype/snapshots/<stage-id>/`) | `prototype`, `pages` | `[IMPLEMENTED]` | Rute `/prototype` (`ThreePillarPrototypePage.tsx`); *in-memory deterministic mock state* 100% terisolasi dari backend |
 | **`FEAT-LMS-001`** | **`Academy` Living Competence Tree (3 Lapisan Evolusi)**: *Falsafah → Tugas* DAG, **Living Student Sub-Nodes**, Rules per Node, & Exam Focus Screen | `graph`, `community`, `settings` | `[VISION]` | `STEP-05.1` — Disimpan terpusat di blok `academy` dalam `.app/config.json` + 5 state progres (`locked → mastered`) |
 | **`FEAT-EXT-001`** | Sandboxed **`@app/sdk`** (Worker/Iframe CSP), Permission Manifest, Scoped CSS & 12 Extension Points | `settings` | `[PARTIAL]` | `STEP-05.3` — Membaca blok `extensions` & `schema` pada `.app/config.json` (kompatibel `@vk/sdk`) |
 

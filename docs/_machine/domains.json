@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "last_updated": "2026-11-20",
   "architecture": "Domain-Driven Design (12 Current Isolated Domains -> 13 Target Domains v2.0)",
   "source_root": "src/domains/",
@@ -42,7 +42,7 @@
         "src/domains/graph/shared/utils/layoutCategory.ts",
         "src/domains/graph/shared/utils/theme.ts"
       ],
-      "responsibility": "Visual Knowledge Graph & Diagram Helicopter Views (Canvas2D deterministik bebas-tabrakan, Free-Force, Academy Competence DAG, Theme bridge)."
+      "responsibility": "Visual Knowledge Graph & Diagram Lenses dalam Deep Explorer (Canvas2D deterministik bebas-tabrakan, Free-Force, Academy Competence DAG, Theme bridge)."
     },
     {
       "name": "metadata",
@@ -135,7 +135,7 @@
         "src/domains/vault/components/VaultCard.tsx",
         "src/domains/vault/components/VaultModeSelector.tsx"
       ],
-      "responsibility": "Domain baru ke-13 pengelola /vaults dengan Core Presets (Atlas, Studio, Academy, Freeform), 4 Helicopter & Knowledge Derived Views (non-enterprise-board), & Community Feed."
+      "responsibility": "Domain baru ke-13 pengelola /vaults dengan Core Presets (Atlas, Studio, Academy, Freeform), Deep Explorer & Knowledge Derived Views (non-enterprise-board), & Community Feed."
     },
     {
       "name": "auth",
@@ -180,7 +180,7 @@
         "src/domains/settings/shared/api/VaultConfigFile.ts",
         "src/domains/settings/shared/stores/useThemeStore.ts"
       ],
-      "responsibility": "3-Scope Settings Escalation (/settings 5-tab), single .app/config.json (fallback .vk/.obmap), Unified Theme Engine, BYO-AI/Zotero config, & host @app/sdk sandbox."
+      "responsibility": "Single Adaptive <SettingsHub /> (Dual Navigator: Interactive Breadcrumb + Synchronized Right Sidebar; 3 Kategori Account -> Workspace -> Vault), single .app/config.json Raw Inspector & Dynamic Editor (fallback .vk/.obmap), Unified Theme Engine, BYO-AI/Zotero config, & host @app/sdk sandbox."
     }
   ]
 }

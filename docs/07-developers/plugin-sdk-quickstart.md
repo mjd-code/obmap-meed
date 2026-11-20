@@ -4,7 +4,7 @@ title: Quickstart Membangun Plugin Pertama dengan `@app/sdk`
 type: developer
 status: [PLANNED]
 owner: Developer Ecosystem Lead
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -21,7 +21,7 @@ source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/
 ## Ringkasan 3 Baris
 - Panduan langkah demi langkah membuat ekstensi atau konektor riset/AI pertama memakai **`@app/sdk`** tanpa menyentuh kode sumber inti `src/`.
 - Menjelaskan struktur paket (`manifest.json`, lifecycle `activate(ctx)`/`deactivate()`) serta penyimpanan terpusat konfigurasi plugin ke dalam blok **`extensions`** pada berkas tunggal **`.app/config.json`**.
-- Menetapkan standar pemuatan lokal di **`.app/plugins/`** (dengan kompatibilitas pembacaan legacy dari `.vk/plugins/` dan `.obmap/plugins/`) serta integrasi ke 4 *Helicopter Views* dan *Workspace Modes* (`Atlas`, `Studio`, `Academy`, `Freeform`).
+- Menetapkan standar pemuatan lokal di **`.app/plugins/`** (dengan kompatibilitas pembacaan legacy dari `.vk/plugins/` dan `.obmap/plugins/`) serta integrasi ke **`Deep Explorer`** (4 lensa visual) dan *Workspace Modes* (`Atlas`, `Studio`, `Academy`, `Freeform`).
 
 ---
 
@@ -56,7 +56,7 @@ my-app-citation-helper/
 Semua ekstensi pihak ketiga berinteraksi melalui objek `PluginContext` terisolasi (`ctx`) sesuai daftar `permissions` di `manifest.json`:
 
 1. **Daftarkan Perintah Command Palette (`CommandRegistry`):**
-   - Panggil `ctx.commands.register({ id, title, shortcut, run })` untuk muncul pada Command Palette Workspace `/app` dan menu cepat *Helicopter Views*.
+   - Panggil `ctx.commands.register({ id, title, shortcut, run })` untuk muncul pada Command Palette Workspace `/app` dan menu cepat **`Deep Explorer`**.
 2. **Daftarkan Section Pengaturan ke Blok `extensions` (`.app/config.json`):**
    - Panggil `ctx.settings.registerSection({ schema })` dengan definisi skema deklaratif (`configRegistry.ts` & `schemaRegistry.ts`). Sistem otomatis menyimpannya pada `extensions.plugin_configs.<plugin-id>` di dalam **`.app/config.json`** (dilarang membuat berkas `setting.json` / `preset.json` terpisah) serta tunduk pada **6-Layer Config & Org-Lock**.
 3. **Kaitkan Konteks Workspace Mode & AI:**

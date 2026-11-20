@@ -4,7 +4,7 @@ title: Arsitektur Data, Storage & Single Central `.app/config.json` v2.0
 type: architecture
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -20,7 +20,7 @@ source_of_truth: src/domains/vault/, src/domains/settings/, supabase/migrations/
 
 ## Ringkasan 3 Baris
 - Mendokumentasikan strategi penyimpanan multi-driver (`IVaultStorageDriver.ts`) yang menjamin data lokal (`FileSystemService.ts`, `IndexedDbVaultDriver.ts`) berdaulat di atas berkas `.md` + YAML murni dan 100% gratis selamanya.
-- Menetapkan aturan **Satu File Konfigurasi Sentral (`.app/config.json`)** yang mengkonsolidasikan seluruh preset mode, *Helicopter Views*, layout graf, schema YAML, publikasi/akses granular Vault & Node, aturan *Academy* 3-lapis, dan ekstensi `@app/sdk` tanpa fragmentasi berkas (`preset.json`, `lms-policy.json`, `setting.json` dilarang).
+- Menetapkan aturan **Satu File Konfigurasi Sentral (`.app/config.json`)** yang mengkonsolidasikan seluruh preset mode, **`Deep Explorer`**, layout graf, schema YAML, publikasi/akses granular Vault & Node, aturan *Academy* 3-lapis, dan ekstensi `@app/sdk` tanpa fragmentasi berkas (`preset.json`, `lms-policy.json`, `setting.json` dilarang).
 - Memetakan skema PostgreSQL V4+, proteksi bucket privat (`createSignedUrl`), 6-Layer Cascading Config, serta standar migrasi kompatibilitas mundur *zero-loss* dari path legacy `.vk/` dan `.obmap/`.
 
 ---
@@ -33,6 +33,7 @@ source_of_truth: src/domains/vault/, src/domains/settings/, supabase/migrations/
 | **IndexedDB Driver** | `IndexedDbVaultDriver.ts` | `[IMPLEMENTED]` — Cache offline PWA & penyimpanan lokal lintas-peramban. | Reaktif lokal tanpa ketergantungan jaringan. |
 | **Cloud Vault Driver** | `CloudVaultService.ts` | `[IMPLEMENTED]` — Sinkronisasi terotorisasi ke Supabase Postgres & Storage. | Diatur kuota dinamis DB pada Stage 3; media privat via `createSignedUrl`. |
 | **In-Memory Sandbox Driver** | `InMemoryVaultDriver.ts` `[PLANNED]` | `STEP-02.2` — Sandbox instan di Landing `/` (`< 65KB`). | Data sementara di RAM & langsung dimigrasikan saat akun lolos `ReleaseStageGate`. |
+| **Prototype Mock State (Track 2)** | `src/prototype/**/mock*.ts` `[IMPLEMENTED]` | `/prototype` — Eksperimen UI/UX & arsip `src/prototype/snapshots/<stage-id>/`. | 100% *zero-backend* (*in-memory deterministic mock state*); dilarang menyentuh Supabase, Auth, atau IndexedDB/FS API. |
 
 ---
 
@@ -55,6 +56,7 @@ source_of_truth: src/domains/vault/, src/domains/settings/, supabase/migrations/
 Seluruh konfigurasi tingkat vault dan override tingkat node/folder **wajib terpusat di dalam satu berkas kanonik: `.app/config.json`**.
 - **DILARANG** memecah konfigurasi menjadi berkas terpisah seperti `preset.json`, `lms-policy.json`, `setting.json`, `layout.json`, atau file konfigurasi sampingan lainnya.
 - Path `.vk/` dan `.obmap/` (seperti `.vk/config.json`, `.obmap/config.json`, `.vk/mindmap-layout.json`, `.obmap/mindmap-layout.json`) hanya dipertahankan sebagai **fallback pembacaan legacy** untuk kompatibilitas mundur *zero-loss*, dan disatukan ke `.app/config.json` saat disimpan.
+- `.app/config.json` dapat diinspeksi dan disunting secara langsung di UI melalui **`Settings Hub > Workspace > Central .app/config.json Raw Inspector & Dynamic Editor`** yang terhubung real-time ke seluruh kontrol `<SettingsHub />` (dilengkapi **Real-Time Validation** & **Help/Documentation Section**).
 
 ### 3.2 Skema Kanonik `.app/config.json` (7 Blok Top-Level)
 
@@ -69,7 +71,7 @@ Seluruh konfigurasi tingkat vault dan override tingkat node/folder **wajib terpu
   },
   "mode": {
     "primary_mode": "atlas",
-    "default_helicopter_view": "diagram",
+    "default_deep_explorer_view": "diagram",
     "layout": {
       "default_diagram_solver": "mindmap",
       "subtree_overrides": {},

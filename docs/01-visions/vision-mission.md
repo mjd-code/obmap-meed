@@ -4,7 +4,7 @@ title: Visi, Misi, Filosofi & Sasaran Strategis v2.0
 type: vision
 status: [IMPLEMENTED]
 owner: Chief Product Officer & Principal Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -42,7 +42,7 @@ source_of_truth: docs/00-meta/00-0-master-blueprint.md
 ## 2. Misi & Peta Pemberdayaan 3 Level Pengguna
 
 1. **Beginner (*Zero-Friction Start*):** Langsung produktif dalam **`< 90 detik`** lewat *Opinionated Core Presets* (**`Atlas`**, **`Studio`**, **`Academy`**) dan Landing Sandbox tanpa intimidasi kanvas kosong.
-2. **Intermediate (*Modular Discovery & Mastery*):** Menikmati eksplorasi **4 Helicopter Views** (*Graph View*, *Diagram View*, *Table View*, *Cards View*), *deterministic graph solvers* (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Competence DAG`), properti YAML, dan kustomisasi preset.
+2. **Intermediate (*Modular Discovery & Mastery*):** Menikmati eksplorasi **`Deep Explorer`** (4 lensa visual: *Graph View*, *Diagram View*, *Table View*, *Cards View* dengan pengelompokan dinamis), *deterministic graph solvers* (`Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, `Competence DAG`), properti YAML, dan kustomisasi preset.
 3. **Advanced (*Full Control, No Ceiling*):** Kendali penuh melalui **`Freeform` Mode**, konfigurasi tunggal **`.app/config.json`**, **Essential VCS** (*Snapshot, Visual Diff, Fork, Knowledge Merge Request*), **Vault-Level & Node-Level Granular Publishing/Access (`AS & WITH`)**, **BYO-AI / Ollama Local AI RAG**, dan **`@app/sdk`**.
 
 ---
@@ -68,7 +68,7 @@ flowchart LR
 | :--- | :--- | :--- |
 | **Time-to-First-Value (`TTFV`)** | `< 90 detik` | Waktu sejak membuka Sandbox Landing (`/`) atau *Core Preset* hingga graf/peta pertama terbentuk. |
 | **Activation Rate** | `>= 35%` `[ASSUMPTION]` | Konversi pengunjung Sandbox → akun `approved` → pembuatan vault pertama atau klaim `/:username`. |
-| **D7 / D30 Active Retention** | `>= 40% / >= 22%` `[ASSUMPTION]` | Pengguna aktif yang kembali menyunting catatan, menata Helicopter Views, meninjau `Academy`, atau berinteraksi di `community`. |
+| **D7 / D30 Active Retention** | `>= 40% / >= 22%` `[ASSUMPTION]` | Pengguna aktif yang kembali menyunting catatan, menata **`Deep Explorer`**, meninjau `Academy`, atau berinteraksi di `community`. |
 | **Scholarly Viral K-Factor** | `>= 0.35` `[ASSUMPTION]` | Registrasi baru melalui tautan kanonik `/:username`, kartu sitasi, *Community Presets* (`template`), dan *Fork*. |
 | **Core Canvas & Web Vitals** | `60 FPS` (`2.000` node) · LCP `< 2.0s` | Performa kanvas Canvas2D pada `/app` & `community`, serta LCP halaman publik `/:username`. |
 | **Free-to-Paid Conversion (Stage 3)** | `>= 4%` `[ASSUMPTION]` | Konversi pengguna aktif menuju paket Pro / Team / Academic melalui gateway **Xendit/Midtrans** & Stripe. |

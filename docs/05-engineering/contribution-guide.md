@@ -4,7 +4,7 @@ title: Panduan Kontribusi Pengembang & AI Agent ObMap v2.0
 type: engineering
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -32,11 +32,15 @@ source_of_truth: AGENTS.md, docs/02-planning/README.md
 
 ---
 
-## 2. Alur Eksekusi Perubahan Core Platform
-1. **Ambil Tugas Dari Antrean Resmi:** Buka [`docs/02-planning/README.md`](../02-planning/README.md), periksa langkah berstatus `[NEXT]` atau `[PLANNED]` berikutnya (`STEP-01.1` s/d `STEP-05.4`), dan baca dokumen PRD/SRS/ADR yang tertaut.
-2. **Terapkan Standar DDD & Headless Controller:** Ikuti aturan domain di [`domain-map.md`](../03-architecture/domain-map.md) dan [`coding-standards.md`](coding-standards.md).
-3. **Verifikasi Sebelum Commit:** Jalankan `npx tsc --noEmit`, `npx vitest run`, `npm run lint`, dan `npm run build`.
-4. **Sinkronisasi Dokumentasi & Changelog (Rule 11):** Setiap penyelesaian langkah wajib memperbarui status `STEP-XX.Y` di `docs/02-planning/README.md`, `docs/_machine/*.json` (bila arsitektur/fitur berubah), serta **3 berkas changelog wajib** (`docs/_machine/changelog.jsonl`, `docs/changelogs/YYYY-MM.md`, `docs/changelogs/README.md`).
+## 2. Alur Eksekusi Perubahan Core Platform (3 Jalur Development)
+Pilih salah satu dari **3 Jalur Resmi Development** sesuai sifat tugas:
+1. **Track 1 — Spec-Driven (`docs/ → main-app`):** Buka [`docs/02-planning/README.md`](../02-planning/README.md), ambil langkah `[NEXT]`/`[PLANNED]` (`STEP-01.1`–`05.4`), baca PRD/SRS/ADR terkait, lalu implementasikan di `src/domains/` mengikuti [`domain-map.md`](../03-architecture/domain-map.md) & [`coding-standards.md`](coding-standards.md).
+2. **Track 2 — Mockup-Incubated (`src/prototype → 1:1 main-app → Isolated Snapshot → docs/`):**
+   - *Phase 2A:* Rancang & uji iterasi UI/UX dinamis di `src/prototype/` dengan state in-memory deterministik **100% *zero-backend*** (0 impor Supabase/Auth/storage backend).
+   - *Phase 2B:* Migrasikan front-end **1:1 secara identik** ke `src/domains/` lalu sambungkan layanan backend nyata.
+   - *Phase 2C:* Bekukan mockup final ke `src/prototype/snapshots/<stage-id>/` agar tetap dapat diakses lewat pemilih snapshot di `/prototype`.
+3. **Track 3 — Direct Rapid Experiment (`main-app experiment → docs/ sync`):** Lakukan iterasi langsung di `src/domains/` saat diperlukan validasi teknis cepat, lalu sinkronkan perubahan desain/kontrak ke `docs/` begitu tervalidasi.
+4. **Verifikasi & Penutupan Atomik (Rule 11):** Jalankan `npx tsc --noEmit`, `npx vitest run`, `npm run lint`, dan `npm run build`; perbarui status langkah di `docs/02-planning/README.md`, `docs/_machine/*.json`, serta **3 berkas changelog wajib** (`docs/_machine/changelog.jsonl`, `docs/changelogs/YYYY-MM.md`, `docs/changelogs/README.md`).
 
 ---
 

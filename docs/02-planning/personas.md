@@ -4,7 +4,7 @@ title: Katalog Persona Pengguna & Matriks Skenario ObMap v2.0
 type: planning
 status: [IMPLEMENTED]
 owner: Chief Product Officer & UX Lead
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -30,8 +30,8 @@ source_of_truth: docs/00-meta/00-0-master-blueprint.md
 | :--- | :--- | :--- | :--- | :--- |
 | **`PER-01`** | **Peneliti Akademik** *(Doctoral / Independent Researcher)* | Pilar 3, 5 | Mensintesis literatur berformat `.md`, memakai *Argument Map* & *Citation Tree*, menyematkan metadata `epistemic_status`/`doi`, dan mengutip lintas vault (`[[@user/vault/note]]`). | `/app`, `/:username`, Cite Exporter |
 | **`PER-02`** | **Dosen / Guru / Pengurus `Academy`** *(Educator & Curriculum Admin)* | Pilar 4, 2 | Menyusun **Living Pedagogical & Competence Tree** (*Falsafah → Kurikulum → Silabus → RPS → Tugas*), mengatur aturan Lapisan 2–3 di `.app/config.json`, & meninjau *Living Student Sub-Nodes* (`KMR`). | `/app` (`Academy`), `/vaults`, `/:username/:vaultSlug` (`course`) |
-| **`PER-03`** | **Konsultan & Pemikir Visual** | Pilar 3 | Memetakan akar masalah dengan *Fishbone*, *Mindmap*, *Timeline*, & 4 *Helicopter Views* untuk presentasi *Pitch Mode* dan ekspor PDF/SVG. | `/`, `/app` (`Atlas`), `/vaults` |
-| **`PER-04`** | **Knowledge Architect & Editor Publikasi (`Studio`)** | Pilar 2, 3, 5 | Mengkurasi artikel/buku/ADR via **Mode `Studio`** + wajib 4 Helicopter Views (*Cards* galeri, *Table* SEO, *Graph* *internal link clusters*, *Diagram* outline), serta *Visual Diff/KMR* bersama tim. | `/vaults`, `/app` (`Studio`), Drawer *"Share · Access · Versions"* |
+| **`PER-03`** | **Konsultan & Pemikir Visual** | Pilar 3 | Memetakan akar masalah dengan *Fishbone*, *Mindmap*, *Timeline*, & **`Deep Explorer`** (4 lensa visual) untuk presentasi *Pitch Mode* dan ekspor PDF/SVG. | `/`, `/app` (`Atlas`), `/vaults` |
+| **`PER-04`** | **Knowledge Architect & Editor Publikasi (`Studio`)** | Pilar 2, 3, 5 | Mengkurasi artikel/buku/ADR via **Mode `Studio`** + **`Deep Explorer`** (*Cards* galeri, *Table* SEO, *Graph* *internal link clusters*, *Diagram* outline), serta *Visual Diff/KMR* bersama tim. | `/vaults`, `/app` (`Studio`), Drawer *"Share · Access · Versions"* |
 | **`PER-05`** | **Pembaca Publik & Murid (`Student`)** | Pilar 1, 4 | Menjelajahi `/explore`, mengikuti kursus *Presentation Lens `course`*, mencatat di *Living Student Sub-Nodes*, dan mem-*fork* catatan `CC BY-SA 4.0`. | `/explore`, `/:username/:vaultSlug`, `/app` |
 | **`PER-06`** | **System / Platform Admin** *(Superadmin)* | Infrastruktur & Tata Kelola | Mengontrol *ReleaseStageGate*, menyetujui pendaftar Stage 2 **individual**, atur **harga & kuota dinamis**, melakukan **kurasi *Verified Scholar* & promosi `Community Presets → Core Presets`**. | `/admin`, `audit_logs` |
 | **`PER-07`** | **Kreator Pengetahuan Publik** *(Scholar / Public Thinker)* | Pilar 2, 1 | Mengkurasi portofolio di `/:username` (*atlas / publication / course / template*), menerbitkan **Vault atau Folder/File-Node secara granular**, dan menumbuhkan *Impact Index*. | `/:username` (+ *"Full Account Settings →"*), `community` |

@@ -4,7 +4,7 @@ title: ObMap System Architecture & Product Master Blueprint (v2.0)
 type: architecture
 status: [PLANNED]
 owner: Principal Software Architect & Product Engineering Lead
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: both
 related:
@@ -24,8 +24,8 @@ source_of_truth: src/domains/, src/global/, src/App.tsx, supabase/migrations/
 
 ## Ringkasan 3 Baris
 - Spesifikasi induk arsitektur dan produk sebagai **Local-First Visual Knowledge OS & High-Signal Social Knowledge Network** berbasis fusi **6 Sistem Referensi Inti** (**Obsidian**, **Nodus Research**, **XMind**, **Notion**, **Wikipedia**, dan **LinkedIn × ResearchGate × GitHub**), dengan batas tegas menolak posisi sebagai papan manajemen proyek korporat (*office-board-central*).
-- Mengunci filosofi *"Unopinionated Data, Opinionated Lenses, Visual by Default, Connected by Design"*, standar rute publik `/:username` dan `/@:username` (*hard cutover* tanpa `/p/*`), 4 **Helicopter Views** wajib, klasifikasi **Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy` + inkubator `Community Presets`), **3-Stage Progressive Shipping Gate**, serta **Unified Essential VCS & Granular Vault/Node Publishing & Access (`AS & WITH`)**.
-- Mengkonsolidasikan seluruh konfigurasi multi-lapis secara tunggal ke dalam **`.app/config.json`** (dilarang memecah ke file konfigurasi terpisah), mengatur kontrol lewat **3-Scope Contextual Escalation**, serta menstandarkan ekosistem ekstensi pada **`@app/sdk`**.
+- Mengunci filosofi *"Unopinionated Data, Opinionated Lenses, Visual by Default, Connected by Design"*, standar rute publik `/:username` dan `/@:username` (*hard cutover* tanpa `/p/*`), **`Deep Explorer`** dengan 4 lensa visual wajib, klasifikasi **Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy` + inkubator `Community Presets`), **3-Stage Progressive Shipping Gate**, serta **Unified Essential VCS & Granular Vault/Node Publishing & Access (`AS & WITH`)**.
+- Mengkonsolidasikan seluruh konfigurasi multi-lapis secara tunggal ke dalam **`.app/config.json`** (dilarang memecah ke file konfigurasi terpisah), mengatur kontrol lewat **Single Adaptive `<SettingsHub />`** (*Dual Navigator*: *Interactive Breadcrumb* + *Synchronized Right Sidebar*; 3 kategori **`Account` → `Workspace` → `Vault`**), menstandarkan **`@app/sdk`**, serta menetapkan **3 Jalur Resmi Development** & siklus hidup arsip **`src/prototype/snapshots/<stage-id>/`**.
 
 ---
 
@@ -44,7 +44,7 @@ source_of_truth: src/domains/, src/global/, src/App.tsx, supabase/migrations/
 
 ### 1.2 Peta Misi 3 Level Pengguna & Telemetry KPIs
 1. **Beginner (*Zero-Friction Start*):** Langsung produktif dalam `< 90 detik` lewat *Opinionated Core Presets* (`Atlas`, `Studio`, `Academy`) tanpa intimidasi kanvas kosong.
-2. **Intermediate (*Modular Discovery & Mastery*):** Menikmati eksplorasi **4 Helicopter Views** (`Graph`, `Diagram`, `Table`, `Cards`), *deterministic graph solvers*, properti YAML, dan kustomisasi preset.
+2. **Intermediate (*Modular Discovery & Mastery*):** Menikmati eksplorasi **`Deep Explorer`** (4 lensa visual: `Graph`, `Diagram`, `Table`, `Cards`), *deterministic graph solvers*, properti YAML, dan kustomisasi preset.
 3. **Advanced (*Full Control, No Ceiling*):** Kendali penuh via **`Freeform` Mode**, konfigurasi sentral **`.app/config.json`**, *Essential VCS (Snapshot, Visual Diff, Fork, Knowledge Merge Request)*, *Vault-Level & Node-Level Granular Publishing*, Native BYO-AI / Ollama, dan **`@app/sdk`**.
 
 - **North Star Metric:** **Weekly Active Knowledge Connections (`WAKC`)** — jumlah node pengetahuan yang dibuat, dipetakan secara deterministik, disitasi lintas-vault, atau di-*fork* secara bermakna setiap minggu.
@@ -60,18 +60,18 @@ source_of_truth: src/domains/, src/global/, src/App.tsx, supabase/migrations/
 | Aspek Sistem | Baseline v1.0 (`00-1-quovadis.md`) | Target Architecture v2.0 (`00-0-master-blueprint.md`) |
 | :--- | :--- | :--- |
 | **Klasifikasi & DNA Produk** | Hybrid PKM & Visual LMS (3 referensi) | Visual Knowledge OS & Social Knowledge Network (**6 Referensi Inti** + Non-Goal non-enterprise-board) |
-| **Lensa & Konfigurasi** | Mode graf datar + config tersebar | **4 Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy`) + **4 Helicopter Views** + **Single `.app/config.json`** |
+| **Lensa & Konfigurasi** | Mode graf datar + config tersebar | **4 Workspace Modes** (`Freeform`, `Atlas`, `Studio`, `Academy`) + **`Deep Explorer`** + **Single `.app/config.json`** |
 | **Model Kolaborasi & VCS** | VCS lokal + RLS dasar (`[PARTIAL]`) | *Essential VCS* (*Snapshot, Visual Diff, Fork, KMR*), *Give Access / Publish `AS & WITH`* di **Vault & Node Level**, & Drawer terpadu *"Share · Access · Versions"* |
 | **LMS & Kompetensi** | Visi DAG dasar | **Living Pedagogical & Competence Tree** (`Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas`) 3 lapis dengan *Living Student Sub-Nodes* |
 | **Rute & Identitas Publik** | Sub-path legacy `/p/:username/:vaultSlug` | Root-level kanonik `/:username` dan `/@:username` (*hard cutover*, `/p/*` langsung dimatikan), Presentation Lens `atlas`/`publication`/`course`/`template`, plus `/explore` |
-| **Strategi Rilis & Domain** | Belum terdefinisi (*big-bang*); 12 domain | **3-Stage Progressive Shipping Gate**, **13 Bounded Domains** (`community` + `dashboard`), dan **3-Scope Contextual Settings Escalation** |
+| **Strategi Rilis & Domain** | Belum terdefinisi (*big-bang*); 12 domain | **3-Stage Progressive Shipping Gate**, **3 Development Tracks** (+ `/prototype` *Zero-Backend Snapshots*), **13 Bounded Domains** (`community` + `dashboard`), dan **Unified `<SettingsHub />` (Dual Navigator + 3 Kategori)** |
 | **Kustomisasi & SDK** | Registry internal (`configRegistry`, `pluginRegistry`) | Single `.app/config.json` dalam hierarki 6-Lapis, Unified Design Tokens, & **`@app/sdk`** |
 
 ### 1.4 Six Core Principles & Six Engineering Invariants
 **Enam Prinsip Inti Produk:**
 1. **Plaintext Sovereignty & Local-First Forever Free:** `.md` + YAML adalah *Single Source of Truth*.
 2. **Separation of Data & Lens:** Workspace Mode hanya mengubah proyeksi, layout, dan aksi kontekstual, tidak pernah mengunci data.
-3. **Polymorphic Visual Navigation by Default:** Siklus utama: *Archive Everything → View from Above [Helicopter View] → Restructure & Reorganize → Discover Meaning*.
+3. **Polymorphic Visual Navigation by Default:** Siklus utama: *Archive Everything → View & Explore from Above [`Deep Explorer`] → Restructure & Reorganize → Discover Meaning*.
 4. **Essential VCS, Zero Git CLI Friction:** Kekuatan *Snapshot*, *Visual Diff*, *Fork*, dan *Knowledge Merge Request* dengan UX manusiawi tanpa CLI.
 5. **Granular Vault-Level & Node-Level Sovereignty:** Hak akses, kolaborasi, kebijakan Academy, dan publikasi berlaku penuh baik di level Vault maupun spesifik Folder-Node / File-Node.
 6. **Single Central Configuration (`.app/config.json`):** Dilarang memecah konfigurasi ke banyak file seperti `preset.json`, `lms-policy.json`, atau `setting.json`.
@@ -98,7 +98,7 @@ flowchart TD
     R4["4. Notion: Derived Knowledge Views & Block Comments"] --> CORE
     R5["5. Wikipedia: Open Index, Revisions & Dual-Pane Reader"] --> CORE
     R6["6. LinkedIn × ResearchGate × GitHub: /:username & Essential VCS"] --> CORE
-    CORE --> M1["4 Helicopter Views: Graph · Diagram · Table · Cards"]
+    CORE --> M1["Deep Explorer: Graph · Diagram · Table · Cards"]
     CORE --> M2["Workspace Modes: Freeform · Atlas · Studio · Academy"]
     CORE --> M3["Public Lenses: atlas · publication · course · template"]
 ```
@@ -118,24 +118,24 @@ flowchart TD
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Data Sovereignty (`.md` + `.app/config.json`)** | Tinggi | Menengah | Rendah | Biner | Publik | Rendah | **Tinggi (FS API + IndexedDB + Config Tunggal)** `[IMPLEMENTED]` |
 | **Out-of-the-Box Readiness vs Control** | Tinggi kontrol, butuh rakit plugin | Siap pakai riset | Template manual | Visual cepat | Read/Wiki | Profil saja | **Presets `Atlas`/`Studio`/`Academy` + `Freeform`** `[PLANNED]` |
-| **4 Helicopter Views & Deterministik** | Force 2D | Graph/Notes | Table/Board/Cal | Deterministik | Tidak ada | Tidak ada | **Graph + Diagram Deterministik + Table + Cards** `[PARTIAL]` |
+| **`Deep Explorer` (4 Lensa Visual)** | Force 2D | Graph/Notes | Table/Board/Cal | Deterministik | Tidak ada | Tidak ada | **Graph + Diagram Deterministik + Table + Cards + Pengelompokan Dinamis** `[PARTIAL]` |
 | **Native BYO-AI / Local AI & Sitasi PDF** | Plugin | Native AI + PDF | AI berbayar | AI berbayar | Tidak ada | PDF statis | **Ollama/WebLLM + BYOK Local RAG + Zotero/PDF** `[VISION]` |
 | **Essential VCS, Granular Access & Publish** | Eksternal | Terbatas | Share Vault/Page | Ekspor | Wiki Rev | Profil + PDF | **Snapshot/Diff/Fork/KMR & Vault/Node `AS & WITH`** `[PARTIAL]`/`[VISION]` |
 | **Pedagogical & Competence Tree (LMS)** | Plugin | Modul riset | Manual | Tidak ada | Kategori | Kursus video | **3-Layer Living Competence Tree + Student Sub-Nodes** `[VISION]` |
 
 ---
 
-## 3. Canonical Vocabulary, Workspace Modes, 4 Helicopter Views & Progressive Shipping
+## 3. Canonical Vocabulary, Workspace Modes, `Deep Explorer` & Progressive Shipping
 
 ### 3.1 Workspace Modes (1 Unopinionated + 3 Core Modes + Community Presets)
-1. **`Freeform` (*Unopinionated Mode*):** Kanvas bebas ala Obsidian dengan kendali manual penuh + akses ke seluruh **4 Helicopter Views**.
+1. **`Freeform` (*Unopinionated Mode*):** Kanvas bebas ala Obsidian dengan kendali manual penuh + akses ke seluruh 4 lensa visual **`Deep Explorer`**.
 2. **`Atlas` (*Core Mode — Mapping, Organizing, Studying & Researching*):**
    - Fokus pada pengarsipan, pemetaan konsep, *brainstorming*, studi, dan riset literatur/argumen.
-   - Menggunakan 4 Helicopter Views (*Graph*, *Diagram* [`mindmap`, `fishbone`, `timeline`, `argument-map`], *Table* matriks literatur, *Cards*).
+   - Menggunakan **`Deep Explorer`** (*Graph*, *Diagram* [`mindmap`, `fishbone`, `timeline`, `argument-map`], *Table* matriks literatur, *Cards*).
    - Terhubung **1-to-1** dengan Presentation Lens **`atlas`**.
 3. **`Studio` (*Core Mode — CMS for Writing, Blogging & Portfolio*):**
    - Fokus pada penulisan artikel, esai, buku, dokumentasi, dan kurasi portofolio publikasi (*Publish Studio*: slug, SEO/YAML, visibilitas, status editorial).
-   - **Wajib dilengkapi 4 Helicopter Views** bagi penulis/editor (*Cards* galeri karya, *Table* status publikasi/SEO, *Graph* *internal linking & topic clusters*, *Diagram* struktur bab/outline).
+   - **Wajib dilengkapi `Deep Explorer`** bagi penulis/editor (*Cards* galeri karya, *Table* status publikasi/SEO, *Graph* *internal linking & topic clusters*, *Diagram* struktur bab/outline).
    - Terhubung **1-to-1** dengan Presentation Lens **`publication`**.
 4. **`Academy` (*Core Mode — LMS for Courses, School & University*):**
    - Fokus pada kurikulum terstruktur (**Falsafah → Kurikulum → Silabus → RPS → Instruksi/Tugas**), pembelajaran bertahap via *Living Student Sub-Nodes*, dan pelacakan kompetensi 3 lapis.
@@ -144,16 +144,17 @@ flowchart TD
 
 > **Persistence Mode:** `primary_mode` disimpan sebagai niat persisten di `.app/config.json` & tabel `vaults`, dan dapat di-*override* secara sementara (*ephemeral* *Active Workspace Lens*) per tab/sesi tanpa mengubah struktur data vault.
 
-### 3.2 Four Mandatory Helicopter Views & Restructure Modes
-Keempat pandangan *bird's-eye* berikut **wajib tersedia di semua Workspace Modes**:
+### 3.2 `Deep Explorer` (4 Lensa Visual, Pengelompokan Dinamis & Dual Surface)
+**`Deep Explorer`** adalah sistem eksplorasi dan reorganisasi multi-dimensi terhadap *vaults, nodes, branches,* dan *files* menggunakan **4 lensa visual** serta **pengelompokan dinamis** (*Hierarchy, Properties, Tags, Backlinks, Keywords* — baik *Virtual Grouping* maupun *Physical Sync*), yang **wajib tersedia di semua Workspace Modes**:
 1. **Graph View** *(Network)*: Keterhubungan organik via `[[backlinks]]`, `tags`, `keywords`, dan klaster properti.
 2. **Diagram View** *(Deterministic Solvers)*: `Mindmap`, `Org`, `Timeline`, `Fishbone`, `Argument Map`, dan `Competence/Skill Tree DAG`.
 3. **Table View** *(Structured Matrix)*: Tampilan & pengeditan massal properti YAML, status, sitasi, dan metadata.
 4. **Cards View** *(Spatial Gallery)*: Grid visual berdasarkan Folder-Node, tag, status epistemik, atau grup properti.
 
-Dua mode **Restructure & Reorganize** di Helicopter View:
-- **Virtual Grouping (*Non-Destructive*):** Mengelompokkan ulang node secara visual berdasarkan properti/tag/backlink/keyword tanpa memindahkan file fisik.
+Dua mode **Restructure & Reorganize** di `Deep Explorer` + dua permukaan eksekusi:
+- **Virtual Grouping (*Non-Destructive*):** Mengelompokkan ulang node secara visual berdasarkan *Hierarchy, Properties, Tags, Backlinks,* atau *Keywords* tanpa memindahkan file fisik.
 - **Structural Refactoring (*Physical Sync*):** *Drag-and-drop* di Diagram/Tree yang langsung memindahkan struktur Folder-Node/File-Node `.md` atau memperbarui YAML & `[[wikilinks]]`.
+- **Dual Execution Surface:** `Deep Explorer` dapat dikustomisasi dan dijalankan langsung di dalam **`Settings Hub > Workspace > Deep Explorer`** maupun dibuka sebagai **Tab Workspace mandiri** di Editor.
 
 ### 3.3 Three-Stage Progressive Shipping Gate (`ReleaseStageGate`) & Root Namespace Routing
 ```mermaid
@@ -170,7 +171,7 @@ stateDiagram-v2
 
 | Stage Rilis | Flag Konfigurasi | Mekanisme Autentikasi & Traffic Control | Akses Publik & Target Verifikasi |
 | :--- | :--- | :--- | :--- |
-| **Stage 1: Closed Partner & Institutional Pilot** | `stage_1_partner` | Akses melalui `partner_invitations` atau provisi Admin di `/admin`. | Validasi Workspace Modes, Helicopter Views, Essential VCS, & storage lokal/cloud. |
+| **Stage 1: Closed Partner & Institutional Pilot** | `stage_1_partner` | Akses melalui `partner_invitations` atau provisi Admin di `/admin`. | Validasi Workspace Modes, `Deep Explorer`, Essential VCS, & storage lokal/cloud. |
 | **Stage 2: Approval-Gated Community Beta** | `stage_2_community_beta` | Registrasi publik + klaim `username` (`pending_approval`); persetujuan **individual per-user di `/admin`**. | Direktori `/explore`, `/:username`, sitasi lintas-vault, & *Fork/Knowledge Merge Request*. |
 | **Stage 3: Public Commercial GA** | `stage_3_commercial_ga` | Registrasi aktif langsung dengan kuota dinamis DB (`plans`, `plan_quotas`) via **Xendit/Midtrans → Stripe**. | Semua fitur + Teamspaces, CRDT Yjs, Academy Lapisan 3, & `@app/sdk`. |
 
@@ -178,13 +179,14 @@ stateDiagram-v2
 | :--- | :--- | :--- | :--- |
 | `/` | `src/pages/Landing.tsx` | Publik (Stage 1–3) | Landing page dengan *Embedded In-Memory Sandbox* dan CTA adaptif stage |
 | `/explore` | `CommunityOrchestrator` `[VISION]` | Stage 2–3 | Direktori kurasi topik, *Trending Knowledge Graphs*, *Featured Scholars*, & **`Community Presets` (`template`)** |
+| `/prototype` | `ThreePillarPrototypePage` (`src/prototype/`) `[IMPLEMENTED]` | Dev / Stage 1–3 | Katalog pemilih **Dynamic Zero-Backend Mockup** & arsip historis **`src/prototype/snapshots/<stage-id>/`** (Track 2, terisolasi 100% dari backend) |
 | `/vaults` | `DashboardOrchestrator` `[PLANNED]` | Auth + `approved` | Hub Vault & *Derived Knowledge Views* + umpan komunitas |
-| `/app` | `WorkspaceOrchestrator.tsx` `[IMPLEMENTED]` | Auth + `approved` | Editor multi-pane CM6 + 4 Helicopter Views + Unified *"Share · Access · Versions"* Drawer |
-| `/settings` | `SettingsHub` (`Ctrl+,`) `[IMPLEMENTED]` | Auth | Pengaturan mendalam sadar-konteks (*Account*, *Appearance*, *AI*, *Active Vault*, *Presets/Extensions*) |
+| `/app` | `WorkspaceOrchestrator.tsx` `[IMPLEMENTED]` | Auth + `approved` | Editor multi-pane CM6 + Tab **`Deep Explorer`** + Unified *"Share · Access · Versions"* Drawer + Right Sidebar |
+| `/settings` | `SettingsHub` (`<SettingsHub />`, `Ctrl+,`) `[IMPLEMENTED]` / `[PLANNED]` | Auth | **Single Adaptive `<SettingsHub />`** (*Dual Navigator*: Breadcrumb + Right Sidebar; 3 kategori `Account → Workspace → Vault`): **Complete Full Page** di luar Editor, **Workspace Tab** di dalam Editor |
 | `/:username` & `/@:username` | `CommunityOrchestrator` | Publik (`approved` + publik) | Profil Intelektual: bio, ORCID, Portofolio (*Atlas / Publication / Course / Template*), tombol ringan kurasi + *"Full Account Settings →"* |
 | `/:username/:vaultSlug/...` & `/@:username/...` | `CommunityOrchestrator` `[IMPLEMENTED]`/`[PARTIAL]` | Publik / Shared | Reader Vault maupun **Node/Folder spesifik yang diterbitkan secara granular** |
 
-- **Namespace Collision Prevention (`RESERVED_SLUGS`):** Seluruh rute sistem (`app`, `vaults`, `auth`, `admin`, `explore`, `install`, `settings`, `api`, `assets`, `p`, `pricing`, `docs`, `help`, `legal`, `about`, `login`, `signup`) dijaga 3 lapis agar tidak pernah bertabrakan dengan `/:username`.
+- **Namespace Collision Prevention (`RESERVED_SLUGS`):** Seluruh rute sistem (`app`, `vaults`, `auth`, `admin`, `explore`, `prototype`, `install`, `settings`, `api`, `assets`, `p`, `pricing`, `docs`, `help`, `legal`, `about`, `login`, `signup`) dijaga 3 lapis agar tidak pernah bertabrakan dengan `/:username`.
 
 ### 3.4 Unified Essential VCS, Collaboration (`Give Access AS & WITH`) & Publishing (`Publish AS & WITH`)
 Ketiga kemampuan disatukan pada **level Vault maupun spesifik Folder-Node / File-Node** dan diakses melalui satu panel kontekstual cerdas di `/app`: **"Share · Access · Versions" Drawer/Sheet** (3 tab: *Publish*, *Collaborate*, *Versions & Diff/MR*):
@@ -208,7 +210,7 @@ Ketiga kemampuan disatukan pada **level Vault maupun spesifik Folder-Node / File
 
 ---
 
-## 4. Engineering Quality Gates (Developer Standard) & Interaction Matrix (User Standard)
+## 4. Engineering Quality Gates, Three Development Tracks & Interaction Matrix
 
 ### 4.1 Developer Standard (Enterprise Engineering Excellence)
 ```mermaid
@@ -219,17 +221,27 @@ flowchart LR
         SHELL["workspace · dashboard (Baru) · settings · auth · admin"]
         NET["collaboration · community (Eks public-reader)"]
     end
-    CFG["Single .app/config.json + 3-Scope Settings + PolicyEngine + ReleaseStageGate"]
+    PROTO["/prototype: src/prototype/ (Zero-Backend Mockups -> snapshots/<stage-id>/)"]
+    CFG["Single .app/config.json + Unified <SettingsHub /> + PolicyEngine + ReleaseStageGate"]
     BACKEND["Supabase (Auth, Postgres RLS, Edge Functions, Private Storage)"]
     LOCAL["Local Drivers (FS API + IndexedDB + Memory) + BYO-AI (Ollama/WebLLM/BYOK)"]
     SPA --> DOMAINS --> CFG
+    SPA -.-> PROTO
     CFG --> BACKEND
     CFG --> LOCAL
 ```
 
-- **Mandatory PR DoD:** (1) Headless Controller (`<= 300` baris, `OVER_300=0`), (2) `npx tsc --noEmit` & `npx vitest run` 100% lulus, (3) Pembaruan atomik 3 lapis changelog (`AGENTS.md` Rule 11).
+- **Mandatory PR DoD:** (1) Headless Controller (`<= 300` baris, `OVER_300=0`), (2) `npx tsc --noEmit` & `npx vitest run` 100% lulus, (3) Track-2 zero-backend & snapshot parity (jika lewat jalur mockup), (4) Pembaruan atomik 3 lapis changelog (`AGENTS.md` Rule 11).
 
-### 4.2 Persona & Stage Access Matrix
+### 4.2 Tiga Jalur Resmi Development (*Three Development Tracks*) & Prototype Snapshot Lifecycle
+1. **Track 1 — Spec-Driven Track (`docs/ → main-app`):** Implementasi fitur langsung dari spesifikasi `docs/` yang sudah matang ke `src/domains/` (`main-app`).
+2. **Track 2 — Mockup-Incubated Track (`src/prototype → 1:1 main-app → Isolated Snapshot → docs/`):**
+   - **Phase 2A (*Dynamic Zero-Backend Mockup*):** Eksperimen UI/UX interaktif di `src/prototype/` (aktif saat ini: `src/prototype/three-pillar/`). Wajib **100% terisolasi dari backend (*zero-backend*)**, menggunakan *in-memory deterministic mock state* (dilarang memanggil runtime Supabase, Auth live, atau storage backend) agar selalu cepat, portabel, dan deterministik di semua browser.
+   - **Phase 2B (*1:1 Identical Front-End Migration & Backend Integration*):** Setelah mockup final disetujui, komponen front-end dimigrasikan **1:1 secara identik** ke `src/domains/` (`main-app`) dan diintegrasikan penuh dengan layanan backend (Supabase, RLS, IndexedDB, File System Access API, Web Workers).
+   - **Phase 2C (*Archived UI/UX Snapshot*):** Mockup yang telah diimplementasikan dibekukan ke direktori berversi `src/prototype/snapshots/<stage-id>/` dan dapat diakses melalui katalog pemilih snapshot di rute `/prototype` sebagai arsip sejarah UI/UX yang abadi dan portabel.
+3. **Track 3 — Direct Rapid Experiment Track (`main-app experiment → docs/ sync`):** Eksperimen dan iterasi langsung di `main-app` (`src/domains/`), yang setelah tervalidasi wajib disinkronkan kembali ke `docs/` + Rule 11.
+
+### 4.3 Persona & Stage Access Matrix
 - **Katalog Persona (`PER-01`–`PER-09`):** Peneliti Akademik (`Atlas`), Dosen/Instruktur (`Academy`), Konsultan (`Atlas`/`Freeform`), Product/Knowledge Lead (`Atlas`/`Studio`), Pembaca Publik (`/explore`), Platform Admin (`/admin`), Penulis/Kreator Publik (`Studio` → `/:username`), Admin Kampus (`Academy` institusi), Peer Reviewer (`Essential VCS` / `KMR`).
 
 ---
@@ -241,22 +253,40 @@ flowchart LR
 
 ---
 
-## 6. Single Central `.app/config.json`, 3-Scope Settings Architecture & `@app/sdk`
+## 6. Single Central `.app/config.json`, Unified `<SettingsHub />` & `@app/sdk`
 
 ### 6.1 Satu File Konfigurasi Sentral (`.app/config.json`)
 - Seluruh konfigurasi tingkat vault dan per-node **wajib terpusat dalam satu berkas: `.app/config.json`** (`VaultConfigFile.ts` menyediakan migrasi baca *zero-loss* dari path legacy `.vk/` dan `.obmap/`).
 - **Larangan Fragmentasi File:** Dilarang membuat berkas terpisah seperti `preset.json`, `lms-policy.json`, `setting.json`, atau file konfigurasi sampingan lainnya.
-- **Tujuh Blok Top-Level Wajib `.app/config.json`:** `meta`, `mode` (`primary_mode`, `default_helicopter_view`, `layout`), `schema` (YAML templates & required properties), `publishing` (vault & `node_overrides`), `access` (collaborators, permissions, `node_overrides`), `academy` (3-layer pedagogical rules & constraints per node/folder), dan `extensions`.
+- **Tujuh Blok Top-Level Wajib `.app/config.json`:** `meta`, `mode` (`primary_mode`, `default_deep_explorer_view`, `layout`), `schema` (YAML templates & required properties), `publishing` (vault & `node_overrides`), `access` (collaborators, permissions, `node_overrides`), `academy` (3-layer pedagogical rules & constraints per node/folder), dan `extensions`.
 
-### 6.2 Arsitektur Controls & Settings (3-Scope Contextual Escalation)
-1. **Tiga Scope Pengaturan:**
-   - **App & Account Scope (Global):** Identitas `/:username` (bio, ORCID, avatar), tema & tipografi global, *keybindings*, koneksi AI global (**Ollama / WebLLM / BYOK**), integrasi **Zotero**, bahasa, notifikasi, billing/kuota, manajemen storage lokal.
-   - **Vault Scope (`.app/config.json` root):** `primary_mode`, *default Helicopter View*, schema YAML & template, kebijakan *Publish & Access* vault, aturan `academy` tingkat vault, dan ekstensi aktif.
-   - **Node & Session Scope (YAML Frontmatter + `node_overrides` di `.app/config.json` + Ephemeral HUD):** *Override* lensa visual aktif per tab, properti YAML node, *Publish & Access* tingkat node, dan aturan `academy` tingkat sub-folder/node.
-2. **Penempatan UI Proporsional di 3 Lokasi:**
-   - **Dedicated Settings Hub (`/settings` atau modal penuh `Ctrl+,`):** *Single Source of Truth* pengaturan mendalam yang sadar-konteks (5 tab: *Account & Profile*, *Appearance & App*, *AI & Integrations*, *Active Vault (`.app/config.json`)*, *Presets & Extensions*).
-   - **Profile Page (`/:username`):** Hanya kontrol ringan terkait **Identitas Publik & Kurasi Portofolio** (edit bio cepat, pin karya, atur visibilitas publik) + tombol eskalasi **"Full Account Settings →"**.
-   - **Editor Page (`/app`):** **In-Place HUD & Quick Settings Slide-Over Drawer** untuk 80% aksi harian tanpa meninggalkan kanvas (ganti *Helicopter View*, ganti *Workspace Mode* sementara, buka **"Share · Access · Versions" Drawer**, edit YAML/aturan node) + eskalasi **"All Settings (`Ctrl+,`)"** langsung ke tab *Active Vault*.
+### 6.2 Arsitektur Unified `<SettingsHub />` (Dual Navigator & 3 Kategori Utama)
+Seluruh pengendalian konfigurasi lintas **3 Scope Logis** (*App & Account*, *Vault `.app/config.json`*, *Node & Session*) disatukan ke dalam **Single Adaptive `<SettingsHub />` Component** yang menggantikan seluruh antarmuka Settings multi-tab terpecah sebelumnya:
+
+1. **Adaptivitas Permukaan & Eliminasi Clutter:**
+   - Dirender sebagai **Workspace Tab** saat berada di dalam Editor (*Vault Scope*) dan sebagai **Complete Full Page** (`/settings` atau modal penuh) saat di luar Editor (Explore / Profile — *App Scope*).
+   - **Tanpa Clutter UI:** Tidak ada tombol *Quick Share* atau *Quick View Lens* di tab bar Editor, dan **tidak ada *inline vertical/horizontal nav rail* di dalam body `<SettingsHub />`**.
+   - Halaman Profil `/:username` hanya menampilkan kontrol ringan kurasi publik + *"Full Account Settings →"*, sedangkan kolaborasi/publikasi kanvas di `/app` dilayani lewat **Drawer *"Share · Access · Versions"***.
+2. **Dual Navigator Architecture (Desktop, Tablet, & Mobile):**
+   - **Navigator 1 — Interactive Breadcrumb Navigator (VS Code / Antigravity Style):** Berada di bagian atas `<SettingsHub />`, menampilkan jalur hierarki aktif (`Settings Hub ▸ Kategori ▸ Sub-Setting ▸ Section Symbol`). Mengklik segmen mana pun membuka **Floating Dropdown Outline** tepat di bawah segmen tersebut yang memuat daftar kategori saudara, sub-setting saudara, atau daftar seksi/simbol di dalam halaman aktif untuk lompat cepat tanpa membuka sidebar.
+   - **Navigator 2 — Synchronized Right Sidebar:** Panel navigasi di Right Sidebar Editor (dengan fitur pencarian) yang tersinkron **1:1** dengan struktur kategori dan sub-setting `<SettingsHub />`.
+3. **Urutan & Struktur 3 Kategori Utama (`Account` → `Workspace` → `Vault`):**
+   1. **`Account`:**
+      - *`Profile Customization`*: Nama, `@username`, bio, informasi tambahan & tautan media sosial.
+      - *`Credentials & Security`*: Reset kredensial, reset email & password.
+      - *`Session Activity`*: Daftar perangkat aktif, lokasi, waktu akses, dan pencabutan sesi.
+   2. **`Workspace`** *(mencakup seluruh pengaturan workspace, editor, schema, sync preferences, AI Ollama/BYOK, Zotero, dan ekstensi `@app/sdk`)*:
+      - *`Workspace Preset (Dashboard Overview Settings Hub)`*: Peta ringkasan & tautan ke seluruh sub-setting terkait; katalog *Built-in Presets* (`Freeform`, `Atlas`, `Studio`, `Academy`), *User Custom Presets*, dan *Community Presets*; fitur tambah/ubah/hapus/set default preset; wajib menyertakan **Mini Instruction-Helps**, **Impact Preview (daftar perubahan sebelum ganti preset)**, dan **Validasi perubahan preset**.
+      - *`Central .app/config.json Raw Inspector & Dynamic Editor`*: Menampilkan dan mengedit secara manual seluruh konfigurasi aplikasi & workspace dalam satu JSON mentah `.app/config.json` yang terhubung secara dinamis ke seluruh UI pengaturan, dilengkapi **Real-Time Validation** dan **Help/Documentation Section**.
+      - *`Deep Explorer`*: Konfigurasi lanjutan & ruang eksplorasi interaktif untuk *vaults, nodes, branches, files* (4 lensa visual *Graph, Diagram, Table, Cards*, pengelompokan dinamis *Hierarchy/Properties/Tags/Backlinks/Keywords*, termasuk *Properties & Schema*, *Academy Competence Tree & Pedagogical Policy*, dan tombol buka sebagai **Tab Workspace**).
+      - *`Appearance & Accessibility`*: Kustomisasi tampilan lintas aplikasi (*Profile & Explore page*) serta lintas *Workspace/Vault* (tipografi editor, pengetikan, asisten penulisan, bilah alat Markdown, *Features & System Sync preferences*).
+      - *`Visual Engine`*: Pengaturan *Graph Mode* dan *Mindmap / Deterministic Diagram Solvers*.
+   3. **`Vault`:**
+      - *`Vaults Dashboard`*: Overview, statistik, status sinkronisasi, dan insight seluruh vaults.
+      - *`Vaults Collaborating`*: Manajemen kolaborasi & hak akses (`Give Access AS & WITH` di level Vault & Node).
+      - *`VCS, Diff, Backup & History`*: Timeline snapshot, visual diff, Knowledge Merge Request, serta backup & riwayat vault.
+      - *`Vaults Publish`*: Manajemen publikasi (`Publish AS & WITH` di level Vault & Node).
+      - *`Import & Export Vault`*: Alat impor dan ekspor vault.
 
 ### 6.3 Unified Theme Tokens & Sandboxed `@app/sdk`
 - **Unified Design Tokens & Dynamic Brand Registry (`ADR-0013`):** Mendukung token `--app-*` (dengan kompatibilitas `--vk-*` dan `--ob-*` lintas DOM Tailwind ↔ Canvas2D) dan `BrandManifest` dinamis (`src/global/config/brand.config.ts`).

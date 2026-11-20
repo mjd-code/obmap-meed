@@ -4,7 +4,7 @@ title: ADR-0012 — Ekosistem Ekstensi `@app/sdk` Ber-Sandbox, Permission Manife
 type: adr
 status: [PLANNED]
 owner: Principal Software Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -18,7 +18,7 @@ source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/
 # ADR-0012: `@app/sdk` Ber-Sandbox & 12 Extension Points Terstandar
 
 ## Ringkasan 3 Baris
-- Berevolusi dari `src/domains/settings/shared/api/pluginRegistry.ts` menjadi SDK publik terversi **`@app/sdk`** (sebelumnya `@vk/sdk`) yang memungkinkan komunitas memperluas Workspace, 4 Helicopter Views, dan AI/PDF hooks tanpa mengubah kode sumber inti.
+- Berevolusi dari `src/domains/settings/shared/api/pluginRegistry.ts` menjadi SDK publik terversi **`@app/sdk`** (sebelumnya `@vk/sdk`) yang memungkinkan komunitas memperluas Workspace, **`Deep Explorer`** (4 lensa visual), dan AI/PDF hooks tanpa mengubah kode sumber inti.
 - Menerapkan model keamanan **Zero-Trust Sandbox** berbasis Web Worker / Iframe CSP ketat, *Permission Manifest* eksplisit (`vault:read`, `vault:write`, `network`, `ui:only`), sentralisasi state ekstensi pada blok `extensions` di **`.app/config.json`**, serta *Enterprise Allowlist* per organisasi.
 - Menstandardisasi **12 Extension Points** dan menyediakan portal dokumentasi developer resmi di `docs/07-developers/`.
 

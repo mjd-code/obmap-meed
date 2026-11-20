@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "last_updated": "2026-11-20",
   "root_portal": "docs/README.md",
   "execution_playbook": "docs/02-planning/README.md",
@@ -197,7 +197,7 @@
     {
       "id": "DOC-ARCH-001",
       "path": "docs/03-architecture/system-overview.md",
-      "title": "Tinjauan Arsitektur Sistem v2.0 (System Overview & 3-Scope Controls)",
+      "title": "Tinjauan Arsitektur Sistem v2.0 (System Overview & Unified Settings Hub)",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },
@@ -225,7 +225,7 @@
     {
       "id": "DOC-ARCH-005",
       "path": "docs/03-architecture/layout-engine.md",
-      "title": "Arsitektur Helicopter Views, Mesin Tata Letak Deterministik & Kanvas Graf v2.0",
+      "title": "Arsitektur Deep Explorer, Mesin Tata Letak Deterministik & Kanvas Graf v2.0",
       "category": "architecture",
       "status": "IMPLEMENTED"
     },

@@ -4,11 +4,24 @@ export {
   PROTOTYPE_ARTIFACTS,
 } from "./mockExploreData";
 export {
-  INITIAL_PORTFOLIO_STUDY_ITEMS,
   PROTOTYPE_NOTIFICATIONS,
   PROTOTYPE_SCHOLAR_PROFILE,
   PROTOTYPE_VAULTS,
 } from "./mockProfileData";
+export { INITIAL_PORTFOLIO_STUDY_ITEMS } from "./mockPortfolioData";
+export {
+  INITIAL_ACTIVE_SESSIONS,
+  INITIAL_PERSONAL_ACCESS_TOKENS,
+  INITIAL_SOCIAL_LINKS,
+} from "./mockAccountSecurityData";
+export {
+  DEFAULT_APPEARANCE_CONFIG,
+  DEFAULT_VISUAL_ENGINE_CONFIG,
+  INITIAL_APPEARANCE_STATE,
+  INITIAL_BACKUP_SCHEDULE,
+  INITIAL_IMPORT_EXPORT_HISTORY,
+  INITIAL_VISUAL_ENGINE_STATE,
+} from "./mockSettingsDefaults";
 export { PROTOTYPE_EDITOR_FILES } from "./mockEditorData";
 export {
   buildAppConfigJson,

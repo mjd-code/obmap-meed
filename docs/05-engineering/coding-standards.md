@@ -4,7 +4,7 @@ title: Standar Penulisan Kode & Tata Kelola Arsitektur ObMap v2.0
 type: engineering
 status: [IMPLEMENTED]
 owner: Principal Software Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -42,6 +42,17 @@ source_of_truth: AGENTS.md, src/domains/
    - **Dilarang *hardcode* nama merek** pada teks UI JSX, `<title>`/`index.html`, email template, nama tabel/bucket backend, kunci `IndexedDB`/`localStorage`, maupun kelas CSS.
    - Seluruh identitas merek tampilan (*name*, *tagline*, *domain*, *logo*, *SDK package*) wajib dibaca dari `BRAND` / `useBrandConfig()` (`src/global/config/brand.config.ts`) dengan dukungan override runtime dari `platform_settings` / `Org Policy`.
    - Seluruh kunci persistensi lokal, scoping CSS, dan konfigurasi tunggal vault memakai namespace domain netral (`app-*` / `.app/config.json` dengan fallback zero-loss dari transisi `vk-*` / `.vk/` serta legacy `obmap-*` / `.obmap/`) melalui `storageKeyMigrator.ts`. Dilarang memecah `.app/config.json` menjadi file terpisah (`preset.json`, `lms-policy.json`, `setting.json`).
+
+---
+
+### 1.1 Tiga Jalur Development & Aturan Isolasi Zero-Backend `src/prototype/`
+1. **Tiga Jalur Resmi Development (*Three Development Tracks*):**
+   - **Track 1 — Spec-Driven (`docs/ → main-app`):** Implementasi fitur langsung dari spesifikasi matang di `docs/` ke `src/domains/`.
+   - **Track 2 — Mockup-Incubated (`src/prototype → 1:1 main-app → Isolated Snapshot → docs/`):**
+     - *Phase 2A (Dynamic Zero-Backend Mockup):* Eksperimen UI/UX interaktif di `src/prototype/` (rute `/prototype`). Berkas di `src/prototype/` **WAJIB 100% *zero-backend***: hanya menggunakan *in-memory deterministic mock state* dan **dilarang** mengimpor klien Supabase, Auth live, IndexedDB/File System storage drivers, atau endpoint jaringan backend agar tetap portabel dan deterministik di semua browser.
+     - *Phase 2B (1:1 Identical Front-End Migration & Backend Integration):* Setelah mockup disetujui, komponen front-end disalin **1:1 secara identik** ke `src/domains/` (`main-app`) dan baru dihubungkan ke layanan backend nyata (Supabase, RLS, IndexedDB, FS Access API, Web Workers).
+     - *Phase 2C (Archived UI/UX Snapshot):* Mockup yang selesai dimigrasikan dibekukan ke direktori berversi `src/prototype/snapshots/<stage-id>/` sebagai arsip sejarah UI/UX imutabel yang dapat dipilih kapan saja lewat katalog pemilih snapshot di `/prototype`.
+   - **Track 3 — Direct Rapid Experiment (`main-app experiment → docs/ sync`):** Iterasi cepat langsung di `main-app` (`src/domains/`); begitu tervalidasi, perubahan arsitektur/fitur **wajib** disinkronkan kembali ke `docs/` + Rule 11.
 
 ---
 

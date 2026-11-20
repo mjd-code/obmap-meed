@@ -4,7 +4,7 @@ title: Portal Pengembang Ekstensi, Presets & Tema (`@app/sdk`)
 type: developer
 status: [PLANNED]
 owner: Principal Software Architect & Developer Ecosystem Lead
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -21,7 +21,7 @@ source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/
 # Portal Pengembang Ekstensi, Presets & Tema (`@app/sdk`)
 
 ## Ringkasan 3 Baris
-- Rujukan resmi pengembang pihak ketiga dan pembuat **Community Presets** untuk memperluas Workspace (`/app`), Dashboard (`/vaults`), **4 Helicopter Views** (*Graph, Diagram, Table, Cards*), Editor CodeMirror 6, AI/PDF workflows, dan tema publik `/:username` tanpa memodifikasi kode sumber inti.
+- Rujukan resmi pengembang pihak ketiga dan pembuat **Community Presets** untuk memperluas Workspace (`/app`), Dashboard (`/vaults`), **`Deep Explorer`** (*Graph, Diagram, Table, Cards*), Editor CodeMirror 6, AI/PDF workflows, dan tema publik `/:username` tanpa memodifikasi kode sumber inti.
 - Mengadopsi standar kejelasan ekosistem pengembang bergaya Obsidian × Nodus dengan keamanan **Web Worker + Iframe CSP Sandbox**, *Permission Manifest*, dan sentralisasi konfigurasi pada blok **`extensions`** & **`schema`** di **`.app/config.json`**.
 - Mendokumentasikan evolusi kontrak dari registry internal (`pluginRegistry.ts`, `configRegistry.ts`, `schemaRegistry.ts`) menuju rilis penuh **`@app/sdk`** (sebelumnya direferensikan sebagai `@vk/sdk`) pada `STEP-05.3`.
 
@@ -33,7 +33,7 @@ source_of_truth: src/domains/settings/shared/api/pluginRegistry.ts, src/domains/
 flowchart LR
     DEV["Plugin / Theme / Community Preset (.app/config.json)"] --> SANDBOX["Zero-Trust Runtime (Web Worker + CSP Iframe)"]
     SANDBOX -->|"Permission-Checked RPC"| HOOKS["12 Extension Points (@app/sdk)"]
-    HOOKS --> WORK["Workspace Modes (Atlas/Studio/Academy/Freeform) & 4 Helicopter Views"]
+    HOOKS --> WORK["Workspace Modes (Atlas/Studio/Academy/Freeform) & Deep Explorer"]
     HOOKS --> ED["CodeMirror 6, YAML Schema & BYO-AI / Ollama RAG"]
     HOOKS --> GR["Canvas2D Solvers & Unified Theme Tokens (--app-* / --vk-*)"]
     HOOKS --> EXP["Export Adapters & Presentation Lenses (/:username)"]
@@ -50,7 +50,7 @@ flowchart LR
 | Urutan | Dokumen | Fokus Bahasan |
 | :---: | :--- | :--- |
 | **1** | [**SDK Quickstart Guide**](plugin-sdk-quickstart.md) (`DOC-DEV-001`) | Struktur paket `my-app-citation-helper`, `manifest.json`, integrasi blok `extensions` `.app/config.json`, & `.app/plugins/` (fallback `.vk/`/`.obmap/`). |
-| **2** | [**12 Extension Points Reference**](extension-points-reference.md) (`DOC-DEV-002`) | Spesifikasi teknis seluruh 12 titik kait (*Workspace, 4 Helicopter Views, Dashboard, Config, CM6, Graph, Export*) dan izinnya. |
+| **2** | [**12 Extension Points Reference**](extension-points-reference.md) (`DOC-DEV-002`) | Spesifikasi teknis seluruh 12 titik kait (*Workspace, Deep Explorer, Dashboard, Config, CM6, Graph, Export*) dan izinnya. |
 | **3** | [**Unified Theme & Scoped CSS Guide**](theme-authoring-guide.md) (`DOC-DEV-003`) | Token desain DOM ↔ Canvas2D (`--app-*` / `--vk-*`), pemicu `refresh()`, dan aturan *Scoped CSS Snippets*. |
 | **4** | [**Security, Permissions & Sandbox Model**](security-and-sandbox.md) (`DOC-DEV-004`) | Arsitektur isolasi Worker/Iframe CSP, manifest izin (termasuk `ai:local`/Ollama & `network`), & *Enterprise Allowlist*. |
 

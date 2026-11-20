@@ -4,7 +4,7 @@ title: ADR-0008 — Penambahan Domain `dashboard` (`/vaults`) & Derived Frontmat
 type: adr
 status: [PLANNED]
 owner: Principal Software Architect
-version: 2.1.0
+version: 2.2.0
 last_reviewed: 2026-11-20
 audience: engineering
 related:
@@ -25,7 +25,7 @@ source_of_truth: src/App.tsx, src/pages/Landing.tsx, src/domains/vault/
 
 ## 1. Status & Konteks Masalah
 - **Status:** Accepted (Dikunci 2026-11-14 — Implementasi di `STEP-02.1`).
-- **Konteks:** Saat ini pengguna yang sudah login di `src/pages/Landing.tsx` langsung diarahkan ke `/app` (kanvas editor), sedangkan `AGENTS.md` mencatat `/vaults` sebagai rute Dashboard utama dan `VaultCard.tsx`/`VaultModeSelector.tsx` berada tercampur bersama logika driver penyimpanan di `src/domains/vault/`. Selain itu, aplikasi membutuhkan pengalaman **Helicopter Views & Derived Knowledge Views** yang diturunkan murni dari `.md` + YAML + `.app/config.json`—difokuskan untuk arsip pengetahuan, riset, editorial (`Studio`), dan progres pembelajaran (`Academy`), bukan *office-board-central* korporat ala Trello/Asana/ClickUp.
+- **Konteks:** Saat ini pengguna yang sudah login di `src/pages/Landing.tsx` langsung diarahkan ke `/app` (kanvas editor), sedangkan `AGENTS.md` mencatat `/vaults` sebagai rute Dashboard utama dan `VaultCard.tsx`/`VaultModeSelector.tsx` berada tercampur bersama logika driver penyimpanan di `src/domains/vault/`. Selain itu, aplikasi membutuhkan pengalaman **`Deep Explorer` & *Derived Knowledge Views*** (*Graph, Diagram, Table, Cards* + pengelompokan dinamis *Hierarchy/Properties/Tags/Backlinks/Keywords*) yang diturunkan murni dari `.md` + YAML + `.app/config.json`—difokuskan untuk arsip pengetahuan, riset, editorial (`Studio`), dan progres pembelajaran (`Academy`), bukan *office-board-central* korporat ala Trello/Asana/ClickUp.
 
 ---
 
