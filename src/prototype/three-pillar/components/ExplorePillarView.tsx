@@ -7,7 +7,7 @@ import { Input } from "@/global/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/global/ui/select";
 import { CURATED_LEARNING_PATHS, EXPLORE_TOPICS, PROTOTYPE_ARTIFACTS } from "../mockData";
 import type {
-  ArtifactFormat,
+  ExploreLensFilter,
   ExploreSubTab,
   PrototypeArtifactCard,
   PrototypeLearningPath,
@@ -20,8 +20,8 @@ interface ExplorePillarViewProps {
   searchQuery: string;
   onChangeSearch: (q: string) => void;
   searchInputRef: React.RefObject<HTMLInputElement>;
-  selectedFormat: ArtifactFormat;
-  onChangeFormat: (fmt: ArtifactFormat) => void;
+  selectedLensFilter: ExploreLensFilter;
+  onChangeLensFilter: (lens: ExploreLensFilter) => void;
   selectedTopic: string;
   onChangeTopic: (topic: string) => void;
   artifacts: PrototypeArtifactCard[];
@@ -33,13 +33,12 @@ interface ExplorePillarViewProps {
   onJumpToProfile: () => void;
 }
 
-const FORMAT_CHIPS: { id: ArtifactFormat; label: string }[] = [
+const LENS_CHIPS: { id: ExploreLensFilter; label: string }[] = [
   { id: "all", label: "Semua" },
-  { id: "mindmap", label: "Mindmap" },
-  { id: "course", label: "Course LMS" },
-  { id: "argument-map", label: "Argument Map" },
-  { id: "article", label: "Article" },
-  { id: "template", label: "Template" },
+  { id: "atlas", label: "Atlas" },
+  { id: "publication", label: "Publication / Studio" },
+  { id: "course", label: "Course / Academy" },
+  { id: "template", label: "Templates & Community Presets" },
 ];
 
 export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
@@ -48,8 +47,8 @@ export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
   searchQuery,
   onChangeSearch,
   searchInputRef,
-  selectedFormat,
-  onChangeFormat,
+  selectedLensFilter,
+  onChangeLensFilter,
   selectedTopic,
   onChangeTopic,
   artifacts,
@@ -99,7 +98,7 @@ export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
             ref={searchInputRef}
             value={searchQuery}
             onChange={(e) => onChangeSearch(e.target.value)}
-            placeholder="Cari @scholar, topik, atau konsep..."
+            placeholder="Cari @scholar, preset .app/config.json, atau konsep..."
             className="pl-9 h-9 rounded-full bg-surface border-border vk-text-xs"
           />
         </div>
@@ -124,16 +123,16 @@ export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
         </div>
       </div>
 
-      {/* Centered Single-Row Format Chips */}
+      {/* Presentation Lens / Workspace Mode Filter Chips */}
       <div className="flex items-center justify-start md:justify-center gap-1.5 overflow-x-auto no-scrollbar">
-        {FORMAT_CHIPS.map((chip) => (
+        {LENS_CHIPS.map((chip) => (
           <button
             key={chip.id}
             type="button"
-            onClick={() => onChangeFormat(chip.id)}
+            onClick={() => onChangeLensFilter(chip.id)}
             className={cn(
               "px-3.5 py-1 rounded-full vk-text-xs font-medium border transition-colors whitespace-nowrap",
-              selectedFormat === chip.id
+              selectedLensFilter === chip.id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-surface/70 text-muted-foreground border-border/80 hover:text-foreground"
             )}
@@ -143,7 +142,7 @@ export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
         ))}
       </div>
 
-      {/* Compact Curated Learning Paths Strip */}
+      {/* Compact Curated Learning Paths & Starter Atlases */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {CURATED_LEARNING_PATHS.map((path) => (
           <button
@@ -170,13 +169,13 @@ export const ExplorePillarView: React.FC<ExplorePillarViewProps> = ({
       {/* Main Symmetrical Bento Grid */}
       {artifacts.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-surface/40 p-10 text-center space-y-2">
-          <p className="vk-text-sm font-medium">Tidak ada karya yang cocok.</p>
+          <p className="vk-text-sm font-medium">Tidak ada karya atau preset yang cocok.</p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               onChangeSearch("");
-              onChangeFormat("all");
+              onChangeLensFilter("all");
               onChangeTopic("Semua Topik");
               onChangeSubTab("discover");
             }}

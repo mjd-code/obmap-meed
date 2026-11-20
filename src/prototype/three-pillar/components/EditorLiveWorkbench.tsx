@@ -7,24 +7,34 @@ import { useVaultLifecycle } from "@/domains/workspace/shared/hooks/useVaultLife
 import { StatusBar } from "@/domains/workspace/components/WorkspaceStatusBar";
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import { useIsMobile } from "@/global/hooks/useMobile";
-import { PrototypeWorkspaceCanvas } from "./PrototypeWorkspaceCanvas";
-import type { PublishTabBindings } from "./EditorPublishStudioTab";
+import type { HelicopterExplorerBindings } from "./EditorHelicopterPanel";
+import type { SubFunctionBindings } from "./EditorQuickSubFunctionPopovers";
+import { PrototypeWorkspaceCanvas, type WorkspaceCanvasSettingsProps } from "./PrototypeWorkspaceCanvas";
 import { PrototypeWorkspaceDrawers } from "./PrototypeWorkspaceDrawers";
 
 interface EditorLiveWorkbenchProps {
-  publishProps: PublishTabBindings;
-  onOpenPublishTab: () => void;
+  leftSidebarPinned: boolean;
+  rightSidebarPinned: boolean;
+  onToggleLeftPin: () => void;
+  onToggleRightPin: () => void;
+  settingsHubProps: WorkspaceCanvasSettingsProps;
+  helicopterProps: HelicopterExplorerBindings;
+  subFunctions: SubFunctionBindings;
 }
 
 export const EditorLiveWorkbench: React.FC<EditorLiveWorkbenchProps> = ({
-  publishProps,
-  onOpenPublishTab,
+  leftSidebarPinned,
+  rightSidebarPinned,
+  onToggleLeftPin,
+  onToggleRightPin,
+  settingsHubProps,
+  helicopterProps,
+  subFunctions,
 }) => {
   useVaultLifecycle();
   const { hydrated } = useConfigSync();
   const { user, loading } = useAuth();
   const isMobile = useIsMobile();
-
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
   const [attemptedAutoLogin, setAttemptedAutoLogin] = useState(false);
 
@@ -55,22 +65,35 @@ export const EditorLiveWorkbench: React.FC<EditorLiveWorkbenchProps> = ({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-background">
-      {/* StatusBar: Top on Mobile (< lg, Double Header), Bottom on Desktop (>= lg) */}
+      {/* Pure Base Layout: Workspace Drawers + Canvas + StatusBar */}
       <div className="order-1 lg:order-2 shrink-0">
         <StatusBar />
       </div>
 
-      {/* Center Canvas + Left Ribbon + Drawers with Isolated Stacking Context */}
       <div className="flex-1 min-h-0 flex order-2 lg:order-1 overflow-hidden relative">
         <PrototypeWorkspaceDrawers
-          onOpenPublishTab={onOpenPublishTab}
+          leftSidebarPinned={leftSidebarPinned}
+          rightSidebarPinned={rightSidebarPinned}
+          onToggleLeftPin={onToggleLeftPin}
+          onToggleRightPin={onToggleRightPin}
+          subFunctions={subFunctions}
           centerCanvas={
             isMobile ? (
               activeGroup && (
-                <PrototypeWorkspaceCanvas node={activeGroup} publishProps={publishProps} />
+                <PrototypeWorkspaceCanvas
+                  node={activeGroup}
+                  settingsHubProps={settingsHubProps}
+                  helicopterProps={helicopterProps}
+                  subFunctions={subFunctions}
+                />
               )
             ) : (
-              <PrototypeWorkspaceCanvas node={root} publishProps={publishProps} />
+              <PrototypeWorkspaceCanvas
+                node={root}
+                settingsHubProps={settingsHubProps}
+                helicopterProps={helicopterProps}
+                subFunctions={subFunctions}
+              />
             )
           }
         />

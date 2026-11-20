@@ -1,3 +1,14 @@
+import type {
+  AppCentralConfigJson,
+  HelicopterViewKind,
+  PortfolioStudyStage,
+  PresentationLens,
+  PresetOrigin,
+  WorkspaceModeId,
+} from "./vcsAndConfigTypes";
+
+export * from "./vcsAndConfigTypes";
+
 export type PillarId = "explore" | "profile" | "editor";
 
 export type SimulatedRole = "owner" | "visitor" | "stage2_pending";
@@ -12,7 +23,7 @@ export type ArtifactFormat =
   | "article"
   | "template";
 
-export type PresentationLens = "atlas" | "publication" | "course";
+export type ExploreLensFilter = "all" | PresentationLens;
 
 export type StorageOrigin =
   | "public_listed"
@@ -21,8 +32,6 @@ export type StorageOrigin =
   | "cloud_private"
   | "local_folder"
   | "indexed_db";
-
-export type DerivedViewMode = "grid" | "tree" | "kanban" | "calendar" | "analytics";
 
 export type ProfileSubTab =
   | "works"
@@ -34,22 +43,20 @@ export type ProfileSubTab =
   | "private_local"
   | "workspace_views";
 
-export type LmsNodeStatus = "locked" | "available" | "mastered";
-
 export type SvgPreviewKind =
   | "mindmap"
   | "argument-map"
   | "skill-tree"
   | "fishbone"
-  | "constellation";
+  | "constellation"
+  | "timeline";
 
-export type EditorRibbonTool = "files" | "vcs" | "graph" | "mindmap" | "settings";
-
-export type EditorSplitMode = "split" | "editor" | "graph";
-
-export type GraphSolverKind = "mindmap" | "argument-map" | "fishbone" | "timeline";
-
-export type PublishVisibility = "public_listed" | "public_unlisted" | "shared" | "private";
+export type GraphSolverKind =
+  | "mindmap"
+  | "fishbone"
+  | "timeline"
+  | "argument-map"
+  | "skill-tree";
 
 export interface PrototypeScholarProfile {
   name: string;
@@ -75,6 +82,7 @@ export interface PrototypeLearningPath {
   duration: string;
   modulesCount: number;
   lens: PresentationLens;
+  presetOrigin: PresetOrigin;
   badge: string;
   svgKind: SvgPreviewKind;
   authorHandle: string;
@@ -90,6 +98,8 @@ export interface PrototypeArtifactCard {
   verifiedScholar: boolean;
   format: Exclude<ArtifactFormat, "all">;
   lens: PresentationLens;
+  workspaceMode: WorkspaceModeId;
+  presetOrigin: PresetOrigin;
   topic: string;
   visibility: StorageOrigin;
   vaultSlug: string;
@@ -107,6 +117,7 @@ export interface PrototypeArtifactCard {
   slideSummaries: string[];
   markdownPreview: string;
   yamlFrontmatter: Record<string, string>;
+  appConfigPreview: AppCentralConfigJson;
 }
 
 export interface PrototypeVaultItem {
@@ -115,6 +126,9 @@ export interface PrototypeVaultItem {
   title: string;
   description: string;
   lens: PresentationLens;
+  primaryMode: WorkspaceModeId;
+  defaultHelicopterView: HelicopterViewKind;
+  presetOrigin: PresetOrigin;
   origin: StorageOrigin;
   notesCount: number;
   privateNotesCount: number;
@@ -122,28 +136,19 @@ export interface PrototypeVaultItem {
   collaboratorsCount?: number;
   topic: string;
   svgKind: SvgPreviewKind;
+  appConfig: AppCentralConfigJson;
 }
 
-export interface PrototypeLmsNode {
-  id: string;
-  title: string;
-  role: "concept" | "module" | "assessment";
-  duration: string;
-  prerequisites: string[];
-  initialStatus: LmsNodeStatus;
-  summary: string;
-  quizQuestion: string;
-  quizOptions: string[];
-  correctOptionIndex: number;
-}
-
-export interface PrototypeKanbanTask {
+export interface PrototypePortfolioStudyItem {
   id: string;
   title: string;
   noteSlug: string;
-  status: "backlog" | "in_progress" | "peer_review" | "published";
-  due: string;
-  epistemicStatus: string;
+  workspaceMode: WorkspaceModeId;
+  stage: PortfolioStudyStage;
+  tags: string[];
+  backlinksCount: number;
+  keyword: string;
+  updatedAt: string;
   vaultTitle: string;
 }
 
@@ -154,9 +159,12 @@ export interface PrototypeEditorFile {
   vaultId: string;
   status: "evergreen" | "budding" | "seedling";
   visibility: "public" | "private";
+  svgKind: SvgPreviewKind;
+  tags: string[];
+  keyword: string;
+  backlinks: string[];
   yaml: Record<string, string>;
   content: string;
-  svgKind: SvgPreviewKind;
 }
 
 export interface PrototypeNotificationItem {

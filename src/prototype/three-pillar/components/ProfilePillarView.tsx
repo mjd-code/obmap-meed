@@ -4,44 +4,52 @@ import { cn } from "@/global/utils";
 import { Badge } from "@/global/ui/badge";
 import { PROTOTYPE_ARTIFACTS, PROTOTYPE_SCHOLAR_PROFILE, PROTOTYPE_VAULTS } from "../mockData";
 import type {
-  DerivedViewMode,
+  HelicopterViewKind,
   LmsNodeStatus,
   ProfileSubTab,
+  PrototypeAcademyTreeNode,
   PrototypeArtifactCard,
-  PrototypeKanbanTask,
+  PrototypePortfolioStudyItem,
   SimulatedRole,
 } from "../types";
-import { PrototypeSvgThumbnail } from "./PrototypeSvgThumbnails";
 import { ProfileIdentityHeader } from "./ProfileIdentityHeader";
 import { ProfileLmsSkillTreePanel } from "./ProfileLmsSkillTreePanel";
 import { ProfileVaultCollectionsPanel } from "./ProfileVaultCollectionsPanel";
 import { ProfileWorkspaceViewsPanel } from "./ProfileWorkspaceViewsPanel";
+import { PrototypeSvgThumbnail } from "./PrototypeSvgThumbnails";
 
 interface ProfilePillarViewProps {
   role: SimulatedRole;
   effectiveVisitorView: boolean;
   isPreviewAsVisitor: boolean;
+  scholarBio: string;
+  onSaveBio: (nextBio: string) => void;
+  pinnedVaultIds: string[];
+  onTogglePinVault: (vaultId: string) => void;
   onTogglePreviewAsVisitor: () => void;
   subTab: ProfileSubTab;
   onChangeSubTab: (tab: ProfileSubTab) => void;
   selectedVaultHighlight: string | null;
   onSelectVaultHighlight: (slug: string | null) => void;
+  academyNodes: PrototypeAcademyTreeNode[];
   lmsStatuses: Record<string, LmsNodeStatus>;
   selectedLmsNodeId: string;
   onSelectLmsNode: (id: string) => void;
   onSubmitLmsQuiz: (nodeId: string, idx: number) => void;
-  derivedViewMode: DerivedViewMode;
-  onChangeDerivedViewMode: (m: DerivedViewMode) => void;
-  kanbanTasks: PrototypeKanbanTask[];
-  onCycleKanbanTask: (id: string) => void;
+  onAddStudentSubNode: (parentNodeId: string, title: string) => void;
+  profileHelicopterView: HelicopterViewKind;
+  onChangeProfileHelicopterView: (v: HelicopterViewKind) => void;
+  portfolioItems: PrototypePortfolioStudyItem[];
+  onCyclePortfolioStage: (id: string) => void;
   onOpenArtifactPeek: (card: PrototypeArtifactCard) => void;
   onOpenEditor: () => void;
+  onOpenAccountSettings: () => void;
 }
 
 const PUBLIC_TABS: { id: ProfileSubTab; label: string }[] = [
   { id: "works", label: "Karya" },
   { id: "vaults", label: "Vaults" },
-  { id: "courses", label: "Courses (LMS)" },
+  { id: "courses", label: "Academy Tree" },
   { id: "constellation", label: "Konstelasi" },
   { id: "about", label: "Sitasi" },
 ];
@@ -56,21 +64,28 @@ export const ProfilePillarView: React.FC<ProfilePillarViewProps> = ({
   role,
   effectiveVisitorView,
   isPreviewAsVisitor,
+  scholarBio,
+  onSaveBio,
+  pinnedVaultIds,
+  onTogglePinVault,
   onTogglePreviewAsVisitor,
   subTab,
   onChangeSubTab,
   selectedVaultHighlight,
   onSelectVaultHighlight,
+  academyNodes,
   lmsStatuses,
   selectedLmsNodeId,
   onSelectLmsNode,
   onSubmitLmsQuiz,
-  derivedViewMode,
-  onChangeDerivedViewMode,
-  kanbanTasks,
-  onCycleKanbanTask,
+  onAddStudentSubNode,
+  profileHelicopterView,
+  onChangeProfileHelicopterView,
+  portfolioItems,
+  onCyclePortfolioStage,
   onOpenArtifactPeek,
   onOpenEditor,
+  onOpenAccountSettings,
 }) => {
   const scholar = PROTOTYPE_SCHOLAR_PROFILE;
   const publicVaults = PROTOTYPE_VAULTS.filter((v) => v.origin === "public_listed");
@@ -88,8 +103,12 @@ export const ProfilePillarView: React.FC<ProfilePillarViewProps> = ({
         role={role}
         effectiveVisitorView={effectiveVisitorView}
         isPreviewAsVisitor={isPreviewAsVisitor}
+        scholarBio={scholarBio}
+        onSaveBio={onSaveBio}
+        pinnedCount={pinnedVaultIds.length}
         onTogglePreviewAsVisitor={onTogglePreviewAsVisitor}
         onOpenEditor={onOpenEditor}
+        onOpenAccountSettings={onOpenAccountSettings}
       />
 
       {/* Symmetrical Tab Row */}
@@ -168,8 +187,13 @@ export const ProfilePillarView: React.FC<ProfilePillarViewProps> = ({
               >
                 <PrototypeSvgThumbnail kind={card.svgKind} compact className="rounded-xl" />
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="outline" className="vk-text-2xs capitalize">{card.format}</Badge>
-                  <span className="vk-text-2xs text-muted-foreground">{card.updatedAt}</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Badge variant="outline" className="vk-text-2xs capitalize">Lens: {card.lens}</Badge>
+                    <Badge variant={card.presetOrigin === "community_preset" ? "info" : "secondary"} className="vk-text-2xs">
+                      {card.presetOrigin === "community_preset" ? "Community" : "Core"}
+                    </Badge>
+                  </div>
+                  <span className="vk-text-2xs text-muted-foreground shrink-0">{card.updatedAt}</span>
                 </div>
                 <div>
                   <h3 className="vk-text-sm font-semibold line-clamp-1">{card.title}</h3>
@@ -182,11 +206,19 @@ export const ProfilePillarView: React.FC<ProfilePillarViewProps> = ({
       )}
 
       {subTab === "vaults" && (
-        <ProfileVaultCollectionsPanel mode="public" vaults={publicVaults} effectiveVisitorView={effectiveVisitorView} onOpenEditor={onOpenEditor} />
+        <ProfileVaultCollectionsPanel mode="public" vaults={publicVaults} effectiveVisitorView={effectiveVisitorView} pinnedVaultIds={pinnedVaultIds} onTogglePinVault={onTogglePinVault} onOpenEditor={onOpenEditor} />
       )}
 
       {subTab === "courses" && (
-        <ProfileLmsSkillTreePanel lmsStatuses={lmsStatuses} selectedNodeId={selectedLmsNodeId} onSelectNode={onSelectLmsNode} onSubmitQuiz={onSubmitLmsQuiz} onOpenInEditor={onOpenEditor} />
+        <ProfileLmsSkillTreePanel
+          academyNodes={academyNodes}
+          lmsStatuses={lmsStatuses}
+          selectedNodeId={selectedLmsNodeId}
+          onSelectNode={onSelectLmsNode}
+          onSubmitQuiz={onSubmitLmsQuiz}
+          onAddStudentSubNode={onAddStudentSubNode}
+          onOpenInEditor={onOpenEditor}
+        />
       )}
 
       {subTab === "constellation" && (
@@ -216,15 +248,21 @@ export const ProfilePillarView: React.FC<ProfilePillarViewProps> = ({
       )}
 
       {subTab === "shared" && !effectiveVisitorView && (
-        <ProfileVaultCollectionsPanel mode="shared" vaults={sharedVaults} effectiveVisitorView={effectiveVisitorView} onOpenEditor={onOpenEditor} />
+        <ProfileVaultCollectionsPanel mode="shared" vaults={sharedVaults} effectiveVisitorView={effectiveVisitorView} pinnedVaultIds={pinnedVaultIds} onTogglePinVault={onTogglePinVault} onOpenEditor={onOpenEditor} />
       )}
 
       {subTab === "private_local" && !effectiveVisitorView && (
-        <ProfileVaultCollectionsPanel mode="private_local" vaults={privateLocalVaults} effectiveVisitorView={effectiveVisitorView} onOpenEditor={onOpenEditor} />
+        <ProfileVaultCollectionsPanel mode="private_local" vaults={privateLocalVaults} effectiveVisitorView={effectiveVisitorView} pinnedVaultIds={pinnedVaultIds} onTogglePinVault={onTogglePinVault} onOpenEditor={onOpenEditor} />
       )}
 
       {subTab === "workspace_views" && !effectiveVisitorView && (
-        <ProfileWorkspaceViewsPanel mode={derivedViewMode} onChangeMode={onChangeDerivedViewMode} tasks={kanbanTasks} onCycleTaskStatus={onCycleKanbanTask} onOpenEditor={onOpenEditor} />
+        <ProfileWorkspaceViewsPanel
+          viewKind={profileHelicopterView}
+          onChangeViewKind={onChangeProfileHelicopterView}
+          items={portfolioItems}
+          onCycleItemStage={onCyclePortfolioStage}
+          onOpenEditor={onOpenEditor}
+        />
       )}
     </div>
   );

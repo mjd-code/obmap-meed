@@ -116,6 +116,24 @@ export const PrototypeSvgThumbnail: React.FC<PrototypeSvgThumbnailProps> = ({
             <text x="174" y="109" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8" fontWeight="600">Hub Sitasi</text>
           </g>
         )}
+
+        {kind === "timeline" && (
+          <g strokeWidth="1.8" fill="none">
+            <line x1="28" y1="80" x2="292" y2="80" stroke="hsl(var(--primary) / 0.7)" />
+            <circle cx="64" cy="80" r="6" fill="hsl(var(--success))" />
+            <rect x="34" y="34" width="60" height="26" rx="6" fill="hsl(var(--card))" stroke="hsl(var(--success))" />
+            <text x="64" y="50" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8">Falsafah</text>
+            <circle cx="136" cy="80" r="6" fill="hsl(var(--info))" />
+            <rect x="106" y="100" width="60" height="26" rx="6" fill="hsl(var(--card))" stroke="hsl(var(--info))" />
+            <text x="136" y="116" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8">Kurikulum</text>
+            <circle cx="206" cy="80" r="6" fill="hsl(var(--primary))" />
+            <rect x="176" y="34" width="60" height="26" rx="6" fill="hsl(var(--card))" stroke="hsl(var(--primary))" />
+            <text x="206" y="50" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8">Silabus · RPS</text>
+            <circle cx="272" cy="80" r="6" fill="hsl(var(--warning))" />
+            <rect x="242" y="100" width="60" height="26" rx="6" fill="hsl(var(--card))" stroke="hsl(var(--warning))" />
+            <text x="272" y="116" textAnchor="middle" fill="hsl(var(--foreground))" fontSize="8">Evaluasi</text>
+          </g>
+        )}
       </svg>
     </div>
   );

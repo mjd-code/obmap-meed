@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckCircle2, Copy, GitFork, Link2, PenTool, ZoomIn, ZoomOut } from "lucide-react";
+import { CheckCircle2, Copy, FileCode2, GitFork, Link2, PenTool, ZoomIn, ZoomOut } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/global/ui/badge";
 import { Button } from "@/global/ui/button";
@@ -28,6 +28,7 @@ export const ExploreQuickPeekDrawer: React.FC<ExploreQuickPeekDrawerProps> = ({
 
   const wikilink = `[[${artifact.authorHandle}/${artifact.vaultSlug}/${artifact.id}]]`;
   const apaCitation = `${artifact.authorName} (2026). ${artifact.title}. ${artifact.vaultTitle}. ${artifact.license}.`;
+  const cfg = artifact.appConfigPreview;
 
   const copyText = (text: string, label: string) => {
     navigator.clipboard?.writeText(text);
@@ -38,8 +39,11 @@ export const ExploreQuickPeekDrawer: React.FC<ExploreQuickPeekDrawerProps> = ({
     <Sheet open={Boolean(artifact)} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto bg-background">
         <SheetHeader className="space-y-2 pb-4 border-b border-border">
-          <div className="flex items-center gap-1.5">
-            <Badge variant="info" className="vk-text-2xs capitalize">{artifact.format}</Badge>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="info" className="vk-text-2xs capitalize">Lens: {artifact.lens}</Badge>
+            <Badge variant={artifact.presetOrigin === "community_preset" ? "warning" : "outline"} className="vk-text-2xs">
+              {artifact.presetOrigin === "community_preset" ? "Community Preset" : "Core Preset"}
+            </Badge>
             <Badge variant="success" className="vk-text-2xs">{artifact.license}</Badge>
           </div>
           <SheetTitle className="vk-text-lg leading-snug">{artifact.title}</SheetTitle>
@@ -75,6 +79,33 @@ export const ExploreQuickPeekDrawer: React.FC<ExploreQuickPeekDrawerProps> = ({
             </div>
           </div>
 
+          {/* .app/config.json Preset & Lens Inspector */}
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="vk-text-xs font-semibold inline-flex items-center gap-1.5 text-primary">
+                <FileCode2 className="h-3.5 w-3.5" /> .app/config.json Preset
+              </span>
+              <Badge variant="outline" className="vk-text-2xs font-mono">{cfg.meta.sdk}</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 vk-text-2xs font-mono">
+              <div className="rounded-lg bg-background/80 border border-border px-2.5 py-1.5">
+                <span className="text-muted-foreground block">primary_mode</span>
+                <strong className="text-foreground capitalize">{cfg.mode.primary_mode}</strong>
+              </div>
+              <div className="rounded-lg bg-background/80 border border-border px-2.5 py-1.5">
+                <span className="text-muted-foreground block">helicopter</span>
+                <strong className="text-foreground capitalize">{cfg.mode.default_helicopter_view}</strong>
+              </div>
+              <div className="rounded-lg bg-background/80 border border-border px-2.5 py-1.5 col-span-2">
+                <span className="text-muted-foreground block">schema.default_template</span>
+                <strong className="text-foreground">{cfg.schema.default_template}</strong>
+              </div>
+            </div>
+            <p className="vk-text-2xs text-muted-foreground">
+              Menyalin berkas <code>.md</code> sekaligus cara kerja/presetnya langsung ke Vault Anda (&lt; 90 detik).
+            </p>
+          </div>
+
           <div className="space-y-2">
             <span className="vk-text-xs font-semibold">Ringkasan Kunci</span>
             <div className="space-y-1.5">
@@ -106,7 +137,7 @@ export const ExploreQuickPeekDrawer: React.FC<ExploreQuickPeekDrawerProps> = ({
 
           <Button className="w-full gap-2" onClick={() => onRemixInEditor(artifact)}>
             <PenTool className="h-4 w-4" />
-            Remix di Editor
+            Fork to My Vault (with .app/config.json)
           </Button>
         </div>
       </SheetContent>

@@ -15,6 +15,13 @@ interface ExploreArtifactCardProps {
   onOpenQuickPeek: (card: PrototypeArtifactCard) => void;
 }
 
+const LENS_BADGE: Record<PrototypeArtifactCard["lens"], string> = {
+  atlas: "Atlas",
+  publication: "Publication · Studio",
+  course: "Course · Academy",
+  template: "Template Preset",
+};
+
 export const ExploreArtifactCard: React.FC<ExploreArtifactCardProps> = ({
   card,
   isSparked,
@@ -37,14 +44,23 @@ export const ExploreArtifactCard: React.FC<ExploreArtifactCardProps> = ({
             <PrototypeSvgThumbnail kind={card.svgKind} className="h-40 rounded-xl" />
           )}
 
-          <Badge
-            variant={card.format === "course" ? "info" : "secondary"}
-            className="absolute top-5 left-5 vk-text-2xs capitalize backdrop-blur-sm"
-          >
-            {card.format === "course" && typeof card.lmsProgress === "number"
-              ? `Course · ${card.lmsProgress}%`
-              : card.format.replace("-", " ")}
-          </Badge>
+          <div className="absolute top-5 left-5 right-5 flex items-center justify-between gap-1.5">
+            <Badge
+              variant={card.lens === "course" ? "info" : card.lens === "template" ? "warning" : "secondary"}
+              className="vk-text-2xs backdrop-blur-sm"
+            >
+              {card.lens === "course" && typeof card.lmsProgress === "number"
+                ? `Course · ${card.lmsProgress}%`
+                : LENS_BADGE[card.lens]}
+            </Badge>
+
+            <Badge
+              variant={card.presetOrigin === "community_preset" ? "default" : "outline"}
+              className="vk-text-2xs backdrop-blur-sm bg-background/80"
+            >
+              {card.presetOrigin === "community_preset" ? "Community Preset" : "Core Preset"}
+            </Badge>
+          </div>
         </div>
 
         <div className="p-4 space-y-1">

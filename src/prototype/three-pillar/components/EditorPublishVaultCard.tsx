@@ -20,6 +20,8 @@ interface EditorPublishVaultCardProps {
   onUpdateLens: (id: string, lens: PresentationLens) => void;
 }
 
+const LENS_OPTIONS: PresentationLens[] = ["atlas", "publication", "course", "template"];
+
 export const EditorPublishVaultCard: React.FC<EditorPublishVaultCardProps> = ({
   vault,
   totalNotes,
@@ -37,12 +39,12 @@ export const EditorPublishVaultCard: React.FC<EditorPublishVaultCardProps> = ({
   return (
     <div
       className={cn(
-        "rounded-xl border p-3.5 space-y-2.5 transition-all",
+        "rounded-xl border p-3.5 space-y-2.5 transition-all min-w-0 overflow-hidden",
         isSelected ? "border-primary bg-primary/5" : "border-border bg-surface/60"
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-start gap-2 min-w-0">
+      <div className="flex items-start justify-between gap-2 min-w-0">
+        <div className="flex items-start gap-2 min-w-0 flex-1">
           <button
             type="button"
             onClick={() => onToggleCheck(vault.id)}
@@ -51,10 +53,11 @@ export const EditorPublishVaultCard: React.FC<EditorPublishVaultCardProps> = ({
           >
             {isChecked ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4" />}
           </button>
-          <button type="button" onClick={() => onSelect(vault.id)} className="text-left min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <button type="button" onClick={() => onSelect(vault.id)} className="text-left min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <span className="vk-text-sm font-semibold truncate">{vault.title}</span>
-              {vault.isRealLiveVault && <Badge variant="info" className="vk-text-2xs">Live</Badge>}
+              {vault.isRealLiveVault && <Badge variant="info" className="vk-text-2xs shrink-0">Live</Badge>}
+              <Badge variant="outline" className="vk-text-2xs capitalize shrink-0">{vault.primaryMode}</Badge>
             </div>
             <p className="vk-text-2xs text-muted-foreground font-mono truncate">
               /@dr.aras.wicaksono/{vault.slug}
@@ -64,27 +67,27 @@ export const EditorPublishVaultCard: React.FC<EditorPublishVaultCardProps> = ({
 
         <Badge variant={vault.isPublished ? "success" : "secondary"} className="vk-text-2xs shrink-0 gap-1">
           {vault.isPublished ? <Globe className="h-3 w-3" /> : isLocal ? <HardDrive className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-          {vault.isPublished ? "Published" : "Not Published"}
+          <span>{vault.isPublished ? "Published" : "Private"}</span>
         </Badge>
       </div>
 
-      <div className="space-y-1">
-        <div className="flex justify-between vk-text-2xs text-muted-foreground">
-          <span>{totalNotes > 0 ? `${publishedNotes}/${totalNotes} catatan tayang` : "Siap dipetakan"}</span>
-          <span>Lensa: {vault.lens.toUpperCase()}</span>
+      <div className="space-y-1 min-w-0">
+        <div className="flex justify-between gap-2 vk-text-2xs text-muted-foreground">
+          <span className="truncate">{totalNotes > 0 ? `${publishedNotes}/${totalNotes} catatan tayang` : "Siap dipetakan"}</span>
+          <span className="shrink-0">Lensa: {vault.lens.toUpperCase()}</span>
         </div>
         <Progress value={pct} className="h-1.5" />
       </div>
 
-      <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
-        <div className="inline-flex rounded-md border border-border bg-background p-0.5">
-          {(["atlas", "publication", "course"] as PresentationLens[]).map((lens) => (
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 min-w-0">
+        <div className="grid grid-cols-2 sm:inline-flex gap-1 rounded-md border border-border bg-background p-0.5 w-full sm:w-auto">
+          {LENS_OPTIONS.map((lens) => (
             <button
               key={lens}
               type="button"
               onClick={() => onUpdateLens(vault.id, lens)}
               className={cn(
-                "px-2 py-0.5 rounded vk-text-2xs capitalize",
+                "px-2 py-0.5 rounded vk-text-2xs capitalize text-center",
                 vault.lens === lens ? "bg-primary/15 text-primary font-medium" : "text-muted-foreground"
               )}
             >
@@ -93,7 +96,7 @@ export const EditorPublishVaultCard: React.FC<EditorPublishVaultCardProps> = ({
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-end gap-1.5 shrink-0">
           {vault.isPublished && (
             <Button
               type="button"

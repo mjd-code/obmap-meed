@@ -2,8 +2,29 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getVaultManager } from "@/domains/vault/shared/api/VaultManagerSingleton";
 import { useNodeStore, useVaultStore } from "@/global/stores";
-import { PROTOTYPE_EDITOR_FILES, PROTOTYPE_VAULTS } from "./mockData";
-import type { PresentationLens, PublishVisibility, SimulatedRole, StorageOrigin } from "./types";
+import {
+  buildAppConfigJson,
+  PROTOTYPE_ACCESS_GRANTS,
+  PROTOTYPE_EDITOR_FILES,
+  PROTOTYPE_MERGE_REQUESTS,
+  PROTOTYPE_SNAPSHOTS,
+  PROTOTYPE_VAULTS,
+} from "./mockData";
+import type {
+  AppCentralConfigJson,
+  CollaboratorRole,
+  HelicopterViewKind,
+  PresentationLens,
+  PrototypeAccessGrant,
+  PrototypeMergeRequest,
+  PrototypeSnapshot,
+  PublishVisibility,
+  ShareStudioSubTab,
+  SimulatedRole,
+  StorageOrigin,
+  TargetScopeMode,
+  WorkspaceModeId,
+} from "./types";
 
 export interface PublishVaultRecord {
   id: string;
@@ -11,9 +32,15 @@ export interface PublishVaultRecord {
   title: string;
   origin: StorageOrigin;
   lens: PresentationLens;
+  primaryMode: WorkspaceModeId;
+  defaultHelicopterView: HelicopterViewKind;
   visibility: PublishVisibility;
+  license: string;
+  allowCitation: boolean;
+  allowFork: boolean;
   isPublished: boolean;
   isRealLiveVault?: boolean;
+  appConfig: AppCentralConfigJson;
 }
 
 export interface PublishNoteRecord {
@@ -37,15 +64,14 @@ function buildInitialVaults(): PublishVaultRecord[] {
     title: v.title,
     origin: v.origin,
     lens: v.lens,
-    visibility:
-      v.origin === "public_listed"
-        ? "public_listed"
-        : v.origin === "public_unlisted"
-          ? "public_unlisted"
-          : v.origin === "shared"
-            ? "shared"
-            : "private",
+    primaryMode: v.primaryMode,
+    defaultHelicopterView: v.defaultHelicopterView,
+    visibility: v.appConfig.publishing.visibility,
+    license: v.appConfig.publishing.license,
+    allowCitation: v.appConfig.publishing.allow_citation,
+    allowFork: v.appConfig.publishing.allow_fork,
     isPublished: v.origin === "public_listed" || v.origin === "public_unlisted",
+    appConfig: v.appConfig,
   }));
 }
 
@@ -79,12 +105,27 @@ export function usePublishManagerState(role: SimulatedRole) {
   const [notes, setNotes] = useState<PublishNoteRecord[]>(buildInitialNotes);
   const [selectedVaultId, setSelectedVaultId] = useState<string>("v-atlas");
 
-  // Sync real active vault & notes from VaultManager/useNodeStore into manager state
+  // Unified "Share · Access · Versions" state
+  const [shareSubTab, setShareSubTab] = useState<ShareStudioSubTab>("publish");
+  const [targetScope, setTargetScope] = useState<TargetScopeMode>("vault");
+  const [selectedTargetNodeTitle, setSelectedTargetNodeTitle] = useState<string>("sintesis-graf-pengetahuan.md");
+  const [accessGrants, setAccessGrants] = useState<PrototypeAccessGrant[]>(PROTOTYPE_ACCESS_GRANTS);
+  const [snapshots, setSnapshots] = useState<PrototypeSnapshot[]>(PROTOTYPE_SNAPSHOTS);
+  const [mergeRequests, setMergeRequests] = useState<PrototypeMergeRequest[]>(PROTOTYPE_MERGE_REQUESTS);
+
   useEffect(() => {
     const liveVault = currentVaultId ? getVaultManager().getVault(currentVaultId) : null;
     if (!liveVault) return;
     setVaults((prev) => {
       if (prev.some((v) => v.id === liveVault.id)) return prev;
+      const appConfig = buildAppConfigJson({
+        vaultId: liveVault.id,
+        name: liveVault.name,
+        primaryMode: "atlas",
+        defaultHelicopterView: "graph",
+        lens: "atlas",
+        visibility: "private",
+      });
       return [
         {
           id: liveVault.id,
@@ -92,9 +133,15 @@ export function usePublishManagerState(role: SimulatedRole) {
           title: liveVault.name,
           origin: liveVault.location === "folder" ? "local_folder" : "cloud_private",
           lens: "atlas",
+          primaryMode: "atlas",
+          defaultHelicopterView: "graph",
           visibility: "private",
+          license: "CC BY-SA 4.0",
+          allowCitation: true,
+          allowFork: true,
           isPublished: false,
           isRealLiveVault: true,
+          appConfig,
         },
         ...prev,
       ];
@@ -111,14 +158,8 @@ export function usePublishManagerState(role: SimulatedRole) {
           const yamlPriv = /^---[\s\S]*?\bvisibility:\s*private\b[\s\S]*?---/m.test(n.content);
           if (existing) return { ...existing, title: n.name.replace(/\.md$/i, ""), isYamlPrivate: existing.isYamlPrivate || yamlPriv };
           return {
-            id: n.id,
-            vaultId: liveVault.id,
-            title: n.name.replace(/\.md$/i, ""),
-            folder: "Workspace",
-            slug: slugify(n.name.replace(/\.md$/i, "")),
-            epistemicStatus: "budding",
-            isPublished: !yamlPriv,
-            isYamlPrivate: yamlPriv,
+            id: n.id, vaultId: liveVault.id, title: n.name.replace(/\.md$/i, ""), folder: "Workspace",
+            slug: slugify(n.name.replace(/\.md$/i, "")), epistemicStatus: "budding", isPublished: !yamlPriv, isYamlPrivate: yamlPriv,
           };
         });
         return [...mapped, ...others];
@@ -140,39 +181,63 @@ export function usePublishManagerState(role: SimulatedRole) {
         if (v.id !== vaultId) return v;
         if (!v.isPublished && guardStage2()) return v;
         const nextPub = !v.isPublished;
-        toast.success(nextPub ? `Vault "${v.title}" diterbitkan (CC BY-SA 4.0)` : `Vault "${v.title}" di-unpublish ke Private`);
-        return { ...v, isPublished: nextPub, visibility: nextPub ? (v.visibility === "private" ? "public_listed" : v.visibility) : "private" };
+        const nextVis: PublishVisibility = nextPub ? (v.visibility === "private" ? "public_listed" : v.visibility) : "private";
+        toast.success(nextPub ? `Vault "${v.title}" diterbitkan (${v.license})` : `Vault "${v.title}" di-unpublish ke Private`);
+        return {
+          ...v,
+          isPublished: nextPub,
+          visibility: nextVis,
+          appConfig: { ...v.appConfig, publishing: { ...v.appConfig.publishing, visibility: nextVis } },
+        };
       })
     );
   }, [guardStage2]);
 
   const bulkSetVaultPublish = useCallback((vaultIds: string[], publish: boolean) => {
-    if (vaultIds.length === 0) return;
-    if (publish && guardStage2()) return;
+    if (vaultIds.length === 0 || (publish && guardStage2())) return;
     const setIds = new Set(vaultIds);
+    const nextVis: PublishVisibility = publish ? "public_listed" : "private";
     setVaults((prev) =>
       prev.map((v) =>
         setIds.has(v.id)
-          ? { ...v, isPublished: publish, visibility: publish ? "public_listed" : "private" }
+          ? { ...v, isPublished: publish, visibility: nextVis, appConfig: { ...v.appConfig, publishing: { ...v.appConfig.publishing, visibility: nextVis } } }
           : v
       )
     );
     toast.success(`${vaultIds.length} vault berhasil di-${publish ? "publish" : "unpublish"}`);
   }, [guardStage2]);
 
-  const updateVaultConfig = useCallback((vaultId: string, patch: Partial<Pick<PublishVaultRecord, "lens" | "visibility">>) => {
-    setVaults((prev) => prev.map((v) => (v.id === vaultId ? { ...v, ...patch, isPublished: patch.visibility ? patch.visibility === "public_listed" || patch.visibility === "public_unlisted" : v.isPublished } : v)));
-  }, []);
+  const updateVaultConfig = useCallback(
+    (
+      vaultId: string,
+      patch: Partial<Pick<PublishVaultRecord, "lens" | "visibility" | "allowCitation" | "allowFork" | "primaryMode" | "defaultHelicopterView">>
+    ) => {
+      setVaults((prev) =>
+        prev.map((v) => {
+          if (v.id !== vaultId) return v;
+          const next = { ...v, ...patch };
+          const isPublished = patch.visibility ? patch.visibility === "public_listed" || patch.visibility === "public_unlisted" : next.isPublished;
+          return {
+            ...next,
+            isPublished,
+            appConfig: {
+              ...next.appConfig,
+              mode: { ...next.appConfig.mode, primary_mode: next.primaryMode, default_helicopter_view: next.defaultHelicopterView },
+              publishing: { ...next.appConfig.publishing, default_lens: next.lens, visibility: next.visibility, allow_citation: next.allowCitation, allow_fork: next.allowFork },
+            },
+          };
+        })
+      );
+    },
+    []
+  );
 
   const toggleNotePublish = useCallback((noteId: string) => {
     setNotes((prev) =>
       prev.map((n) => {
         if (n.id !== noteId) return n;
         if (!n.isPublished && guardStage2()) return n;
-        if (!n.isPublished && n.isYamlPrivate) {
-          toast.warning(`"${n.title}" dikunci visibility: private. Buka kunci dulu untuk publish.`);
-          return n;
-        }
+        if (!n.isPublished && n.isYamlPrivate) { toast.warning(`"${n.title}" dikunci visibility: private.`); return n; }
         const nextPub = !n.isPublished;
         toast.success(nextPub ? `"${n.title}" dipublikasikan` : `"${n.title}" di-unpublish`);
         return { ...n, isPublished: nextPub };
@@ -181,54 +246,51 @@ export function usePublishManagerState(role: SimulatedRole) {
   }, [guardStage2]);
 
   const bulkSetNotePublish = useCallback((noteIds: string[], publish: boolean) => {
-    if (noteIds.length === 0) return;
-    if (publish && guardStage2()) return;
+    if (noteIds.length === 0 || (publish && guardStage2())) return;
     const setIds = new Set(noteIds);
-    let skippedPrivate = 0;
-    setNotes((prev) =>
-      prev.map((n) => {
-        if (!setIds.has(n.id)) return n;
-        if (publish && n.isYamlPrivate) {
-          skippedPrivate += 1;
-          return n;
-        }
-        return { ...n, isPublished: publish };
-      })
-    );
-    toast.success(
-      skippedPrivate > 0
-        ? `Bulk ${publish ? "Publish" : "Unpublish"} selesai (${skippedPrivate} catatan Private 🔒 tetap terlindungi)`
-        : `${noteIds.length} catatan berhasil di-${publish ? "publish" : "unpublish"}`
-    );
+    let skipped = 0;
+    setNotes((prev) => prev.map((n) => (!setIds.has(n.id) ? n : publish && n.isYamlPrivate ? ((skipped += 1), n) : { ...n, isPublished: publish })));
+    toast.success(skipped > 0 ? `Bulk selesai (${skipped} catatan Private 🔒 tetap terlindungi)` : `${noteIds.length} catatan di-${publish ? "publish" : "unpublish"}`);
   }, [guardStage2]);
 
   const toggleNotePrivateLock = useCallback((noteId: string) => {
-    setNotes((prev) =>
-      prev.map((n) => {
-        if (n.id !== noteId) return n;
-        const nextPriv = !n.isYamlPrivate;
-        toast.info(nextPriv ? `"${n.title}" dikunci (visibility: private)` : `Kunci private "${n.title}" dibuka`);
-        return { ...n, isYamlPrivate: nextPriv, isPublished: nextPriv ? false : n.isPublished };
-      })
-    );
+    setNotes((prev) => prev.map((n) => (n.id === noteId ? { ...n, isYamlPrivate: !n.isYamlPrivate, isPublished: !n.isYamlPrivate ? false : n.isPublished } : n)));
   }, []);
 
-  const selectedVault = useMemo(
-    () => vaults.find((v) => v.id === selectedVaultId) ?? vaults[0],
-    [selectedVaultId, vaults]
-  );
+  const addAccessGrant = useCallback((subjectHandle: string, grantRole: CollaboratorRole, scope: TargetScopeMode, crud: string[], timeWindow: string, targetName: string) => {
+    const clean = subjectHandle.startsWith("@") ? subjectHandle : `@${subjectHandle}`;
+    setAccessGrants((prev) => [{ id: `grant-${Date.now()}`, subjectName: clean.replace("@", ""), subjectHandle: clean, role: grantRole, scope, targetName, crudPermissions: crud, timeWindow }, ...prev]);
+    toast.success(`Give Access AS ${grantRole} (${scope}) ke ${clean} tersimpan di .app/config.json`);
+  }, []);
+
+  const removeAccessGrant = useCallback((id: string) => {
+    setAccessGrants((prev) => prev.filter((g) => g.id !== id));
+    toast.info("Akses kolaborator dicabut.");
+  }, []);
+
+  const createSnapshot = useCallback((label: string) => {
+    setSnapshots((prev) => [{ id: `snap-${Date.now()}`, label: label || `snapshot-${prev.length + 1}`, timestamp: "Baru saja", author: "@dr.aras.wicaksono", summary: "Checkpoint manual sebelum restrukturisasi", changedNodesCount: 4 }, ...prev]);
+    toast.success("Snapshot VCS baru berhasil dibuat.");
+  }, []);
+
+  const rollbackToSnapshot = useCallback((snap: PrototypeSnapshot) => {
+    toast.success(`Rollback deterministik ke "${snap.label}" (${snap.changedNodesCount} node dipulihkan).`);
+  }, []);
+
+  const mergeKmr = useCallback((kmrId: string) => {
+    setMergeRequests((prev) => prev.map((k) => (k.id === kmrId ? { ...k, status: "merged", updatedAt: "Baru saja" } : k)));
+    toast.success("Knowledge Merge Request berhasil digabungkan ke cabang utama!");
+  }, []);
+
+  const selectedVault = useMemo(() => vaults.find((v) => v.id === selectedVaultId) ?? vaults[0], [selectedVaultId, vaults]);
 
   return {
-    vaults,
-    notes,
-    selectedVaultId,
-    setSelectedVaultId,
-    selectedVault,
-    toggleVaultPublish,
-    bulkSetVaultPublish,
-    updateVaultConfig,
-    toggleNotePublish,
-    bulkSetNotePublish,
-    toggleNotePrivateLock,
+    vaults, notes, selectedVaultId, setSelectedVaultId, selectedVault,
+    shareSubTab, setShareSubTab, targetScope, setTargetScope, selectedTargetNodeTitle, setSelectedTargetNodeTitle,
+    accessGrants, addAccessGrant, removeAccessGrant,
+    snapshots, createSnapshot, rollbackToSnapshot,
+    mergeRequests, mergeKmr,
+    toggleVaultPublish, bulkSetVaultPublish, updateVaultConfig,
+    toggleNotePublish, bulkSetNotePublish, toggleNotePrivateLock,
   };
 }

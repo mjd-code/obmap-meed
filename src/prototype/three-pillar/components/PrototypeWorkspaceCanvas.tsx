@@ -8,19 +8,27 @@ import { TabContextMenu } from "@/domains/workspace/components/WorkspaceTabConte
 import { useWorkspaceStore } from "@/domains/workspace/shared/stores/useWorkspaceStore";
 import type { WorkspaceGroup as WorkspaceGroupType, WorkspaceNode } from "@/domains/workspace/shared/utils/workspace.types";
 import { useUIStore } from "@/global/stores";
-import { EditorPublishStudioTab, type PublishTabBindings } from "./EditorPublishStudioTab";
+import { EditorHelicopterPanel, type HelicopterExplorerBindings } from "./EditorHelicopterPanel";
+import { QuickLensViewPopover, QuickSharePopover, type SubFunctionBindings } from "./EditorQuickSubFunctionPopovers";
+import { PrototypeSettingsHub, type AdaptiveSettingsHubProps } from "./PrototypeSettingsHub";
 
 const DRAG_KEY = "application/x-workspace-leaf";
 type Edge = "left" | "right" | "top" | "bottom" | null;
 
+export type WorkspaceCanvasSettingsProps = Omit<AdaptiveSettingsHubProps, "mode" | "onBackOrClose">;
+
 function PrototypeGroupPane({
   group,
   isActive,
-  publishProps,
+  settingsHubProps,
+  helicopterProps,
+  subFunctions,
 }: {
   group: WorkspaceGroupType;
   isActive: boolean;
-  publishProps: PublishTabBindings;
+  settingsHubProps: WorkspaceCanvasSettingsProps;
+  helicopterProps: HelicopterExplorerBindings;
+  subFunctions: SubFunctionBindings;
 }) {
   const { setActiveLeaf, setActiveGroup, closeLeaf, splitGroup, moveLeaf, moveLeafToNewSplit, openView } =
     useWorkspaceStore();
@@ -104,7 +112,7 @@ function PrototypeGroupPane({
             );
           })}
           <div
-            className="flex-1 min-w-8"
+            className="flex-1 min-w-6"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
@@ -114,7 +122,15 @@ function PrototypeGroupPane({
           />
         </div>
 
+        {/* Inline Tab Bar Sub-Function Popovers + Split/New Tab */}
         <div className="flex items-center gap-0.5 px-1 shrink-0 border-l border-border bg-muted/30">
+          <QuickSharePopover
+            bindings={{
+              ...subFunctions,
+              activeNodeTitle: activeLeaf?.view.title || subFunctions.activeNodeTitle,
+            }}
+          />
+          <QuickLensViewPopover bindings={subFunctions} />
           <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" aria-label="New tab" onClick={() => { setActiveGroup(group.id); openView({ type: "empty", title: "New tab" }); }}>
             <Plus className="w-3.5 h-3.5" />
           </Button>
@@ -154,10 +170,22 @@ function PrototypeGroupPane({
       >
         {group.leaves.map((leaf) => {
           const isTabActive = leaf.id === activeLeaf?.id;
+          const isSettingsLeaf =
+            leaf.view.nodeId === "__settings_hub__" ||
+            leaf.view.nodeId === "__publish_studio__" ||
+            leaf.view.type === "settings";
+          const isHelicopterLeaf = leaf.view.nodeId === "__helicopter_explorer__";
+
           return (
             <div key={leaf.id} className={cn("w-full h-full min-h-0", !isTabActive && "hidden")} aria-hidden={!isTabActive}>
-              {leaf.view.nodeId === "__publish_studio__" ? (
-                <EditorPublishStudioTab {...publishProps} onCloseTab={() => closeLeaf(leaf.id)} />
+              {isSettingsLeaf ? (
+                <PrototypeSettingsHub
+                  mode="workspace_tab"
+                  {...settingsHubProps}
+                  onBackOrClose={() => closeLeaf(leaf.id)}
+                />
+              ) : isHelicopterLeaf ? (
+                <EditorHelicopterPanel {...helicopterProps} />
               ) : (
                 <LeafView leaf={leaf} isActive={isTabActive} />
               )}
@@ -172,16 +200,28 @@ function PrototypeGroupPane({
 
 export function PrototypeWorkspaceCanvas({
   node,
-  publishProps,
+  settingsHubProps,
+  helicopterProps,
+  subFunctions,
 }: {
   node: WorkspaceNode;
-  publishProps: PublishTabBindings;
+  settingsHubProps: WorkspaceCanvasSettingsProps;
+  helicopterProps: HelicopterExplorerBindings;
+  subFunctions: SubFunctionBindings;
 }) {
   const activeGroupId = useWorkspaceStore((s) => s.activeGroupId);
   const setSizes = useWorkspaceStore((s) => s.setSizes);
 
   if (node.kind === "group") {
-    return <PrototypeGroupPane group={node} isActive={node.id === activeGroupId} publishProps={publishProps} />;
+    return (
+      <PrototypeGroupPane
+        group={node}
+        isActive={node.id === activeGroupId}
+        settingsHubProps={settingsHubProps}
+        helicopterProps={helicopterProps}
+        subFunctions={subFunctions}
+      />
+    );
   }
   return (
     <ResizablePanelGroup direction={node.direction} onLayout={(sizes) => setSizes(node.id, sizes)}>
@@ -189,7 +229,12 @@ export function PrototypeWorkspaceCanvas({
         <Fragment key={child.id}>
           {idx > 0 && <ResizableHandle withHandle />}
           <ResizablePanel defaultSize={node.sizes[idx] ?? 100 / node.children.length} minSize={15}>
-            <PrototypeWorkspaceCanvas node={child} publishProps={publishProps} />
+            <PrototypeWorkspaceCanvas
+              node={child}
+              settingsHubProps={settingsHubProps}
+              helicopterProps={helicopterProps}
+              subFunctions={subFunctions}
+            />
           </ResizablePanel>
         </Fragment>
       ))}

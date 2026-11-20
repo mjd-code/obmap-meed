@@ -1,135 +1,138 @@
 import React from "react";
-import { FileText, Rocket } from "lucide-react";
+import { FileText, Layers, Settings2 } from "lucide-react";
 import { cn } from "@/global/utils";
 import { MarkdownView } from "@/domains/editor/components/EditorMarkdownView";
-import type { GraphSolverKind, SimulatedRole } from "../types";
+import type { PrototypeEditorFile, SimulatedRole } from "../types";
+import { EditorHelicopterPanel, type HelicopterExplorerBindings } from "./EditorHelicopterPanel";
 import { EditorLiveWorkbench } from "./EditorLiveWorkbench";
-import { EditorPublishStudioTab, type PublishTabBindings } from "./EditorPublishStudioTab";
-import { PrototypeSvgThumbnail } from "./PrototypeSvgThumbnails";
+import { QuickLensViewPopover, QuickSharePopover, type SubFunctionBindings } from "./EditorQuickSubFunctionPopovers";
+import { PrototypeSettingsHub } from "./PrototypeSettingsHub";
+import type { WorkspaceCanvasSettingsProps } from "./PrototypeWorkspaceCanvas";
 
 interface EditorPillarViewProps {
   role: SimulatedRole;
   editorMode: "live" | "sandbox";
   sandboxTitle: string;
   sandboxMarkdown: string;
+  onChangeSandboxTitle: (title: string) => void;
   onChangeSandboxMarkdown: (next: string) => void;
-  sandboxActiveTab: "editor" | "publish";
-  onChangeSandboxActiveTab: (tab: "editor" | "publish") => void;
-  graphSolver: GraphSolverKind;
-  onChangeGraphSolver: (solver: GraphSolverKind) => void;
-  publishProps: PublishTabBindings;
-  onOpenPublishTab: () => void;
+  sandboxActiveTab: "editor" | "helicopter" | "settings";
+  onChangeSandboxActiveTab: (tab: "editor" | "helicopter" | "settings") => void;
+  leftSidebarPinned: boolean;
+  rightSidebarPinned: boolean;
+  onToggleLeftPin: () => void;
+  onToggleRightPin: () => void;
+  settingsHubProps: WorkspaceCanvasSettingsProps;
+  helicopterProps: HelicopterExplorerBindings;
+  subFunctions: SubFunctionBindings;
 }
-
-const SOLVERS: { id: GraphSolverKind; label: string }[] = [
-  { id: "mindmap", label: "Mindmap" },
-  { id: "argument-map", label: "Argument" },
-  { id: "fishbone", label: "Fishbone" },
-];
 
 export const EditorPillarView: React.FC<EditorPillarViewProps> = ({
   role,
   editorMode,
   sandboxTitle,
   sandboxMarkdown,
+  onChangeSandboxTitle,
   onChangeSandboxMarkdown,
   sandboxActiveTab,
   onChangeSandboxActiveTab,
-  graphSolver,
-  onChangeGraphSolver,
-  publishProps,
-  onOpenPublishTab,
+  leftSidebarPinned,
+  rightSidebarPinned,
+  onToggleLeftPin,
+  onToggleRightPin,
+  settingsHubProps,
+  helicopterProps,
+  subFunctions,
 }) => {
   if (editorMode === "live" && role !== "visitor") {
     return (
       <EditorLiveWorkbench
-        publishProps={publishProps}
-        onOpenPublishTab={onOpenPublishTab}
+        leftSidebarPinned={leftSidebarPinned}
+        rightSidebarPinned={rightSidebarPinned}
+        onToggleLeftPin={onToggleLeftPin}
+        onToggleRightPin={onToggleRightPin}
+        settingsHubProps={settingsHubProps}
+        helicopterProps={helicopterProps}
+        subFunctions={subFunctions}
       />
     );
   }
 
-  const svgKind =
-    graphSolver === "argument-map"
-      ? "argument-map"
-      : graphSolver === "fishbone"
-        ? "fishbone"
-        : "mindmap";
+  const handleSelectFileToEdit = (file: PrototypeEditorFile) => {
+    onChangeSandboxTitle(`${file.folder}/${file.name}`);
+    onChangeSandboxMarkdown(file.content);
+    onChangeSandboxActiveTab("editor");
+  };
+
+  const sandboxSubFunctions: SubFunctionBindings = {
+    ...subFunctions,
+    activeNodeTitle: sandboxTitle,
+    onReturnToNoteEditor: () => onChangeSandboxActiveTab("editor"),
+  };
 
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-background">
-      <div className="h-10 shrink-0 border-b border-border bg-muted/30 px-2 flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => onChangeSandboxActiveTab("editor")}
-          className={cn(
-            "inline-flex items-center gap-1.5 px-3 h-full vk-text-xs border-r border-border transition-colors",
-            sandboxActiveTab === "editor"
-              ? "bg-background text-foreground font-medium"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <FileText className="h-3.5 w-3.5" />
-          <span className="truncate max-w-[160px]">{sandboxTitle}</span>
-        </button>
+      {/* Clean Workspace Tabs Strip (All Work rendered inside Tab Canvas) */}
+      <div className="h-10 shrink-0 border-b border-border bg-muted/30 px-2 flex items-center justify-between gap-2">
+        <div className="flex items-stretch h-full min-w-0 overflow-x-auto no-scrollbar">
+          <button
+            type="button"
+            onClick={() => onChangeSandboxActiveTab("editor")}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 h-full vk-text-xs border-r border-border transition-colors shrink-0",
+              sandboxActiveTab === "editor" ? "bg-background text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <FileText className="h-3.5 w-3.5" />
+            <span className="truncate max-w-[160px]">{sandboxTitle}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => onChangeSandboxActiveTab("publish")}
-          className={cn(
-            "inline-flex items-center gap-1.5 px-3 h-full vk-text-xs border-r border-border transition-colors",
-            sandboxActiveTab === "publish"
-              ? "bg-background text-foreground font-medium"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Rocket className="h-3.5 w-3.5 text-primary" />
-          <span>Publish Studio</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => onChangeSandboxActiveTab("helicopter")}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 h-full vk-text-xs border-r border-border transition-colors shrink-0",
+              sandboxActiveTab === "helicopter" ? "bg-background text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Layers className="h-3.5 w-3.5 text-info" />
+            <span>Helicopter & Lenses</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeSandboxActiveTab("settings")}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 h-full vk-text-xs border-r border-border transition-colors shrink-0",
+              sandboxActiveTab === "settings" ? "bg-background text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Settings2 className="h-3.5 w-3.5 text-primary" />
+            <span>Settings Hub</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-0.5 shrink-0">
+          <QuickSharePopover bindings={sandboxSubFunctions} />
+          <QuickLensViewPopover bindings={sandboxSubFunctions} />
+        </div>
       </div>
 
-      {sandboxActiveTab === "publish" ? (
-        <EditorPublishStudioTab
-          {...publishProps}
-          onCloseTab={() => onChangeSandboxActiveTab("editor")}
-        />
-      ) : (
-        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
-          <div className="md:col-span-7 border-b md:border-b-0 md:border-r border-border overflow-y-auto p-4 md:p-6">
-            <MarkdownView
-              value={sandboxMarkdown}
-              onChange={onChangeSandboxMarkdown}
-              mode="live"
-              showToolbar
-              showProperties
-            />
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {sandboxActiveTab === "settings" ? (
+          <PrototypeSettingsHub
+            mode="workspace_tab"
+            {...settingsHubProps}
+            onBackOrClose={() => onChangeSandboxActiveTab("editor")}
+          />
+        ) : sandboxActiveTab === "helicopter" ? (
+          <EditorHelicopterPanel {...helicopterProps} onSelectFileToEdit={handleSelectFileToEdit} />
+        ) : (
+          <div className="h-full overflow-y-auto p-4 md:p-6 max-w-4xl mx-auto">
+            <MarkdownView value={sandboxMarkdown} onChange={onChangeSandboxMarkdown} mode="live" showToolbar showProperties />
           </div>
-
-          <div className="md:col-span-5 bg-surface/40 p-4 md:p-6 flex flex-col gap-3 overflow-y-auto">
-            <div className="flex items-center justify-between gap-2">
-              <span className="vk-text-xs font-semibold">Deterministic Preview</span>
-              <div className="inline-flex rounded-full border border-border bg-elevated p-0.5">
-                {SOLVERS.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => onChangeGraphSolver(s.id)}
-                    className={cn(
-                      "px-2.5 py-0.5 rounded-full vk-text-2xs transition-colors",
-                      graphSolver === s.id
-                        ? "bg-primary text-primary-foreground font-medium"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <PrototypeSvgThumbnail kind={svgKind} className="flex-1 min-h-[260px] rounded-xl" />
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

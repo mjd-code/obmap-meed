@@ -1,9 +1,10 @@
-import React from "react";
-import { CheckCircle2, Eye, EyeOff, PenTool, Share2 } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowRight, Check, CheckCircle2, Eye, EyeOff, Pencil, PenTool, Settings2, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/global/ui/avatar";
 import { Badge } from "@/global/ui/badge";
 import { Button } from "@/global/ui/button";
+import { Input } from "@/global/ui/input";
 import { PROTOTYPE_SCHOLAR_PROFILE } from "../mockData";
 import type { SimulatedRole } from "../types";
 
@@ -11,18 +12,34 @@ interface ProfileIdentityHeaderProps {
   role: SimulatedRole;
   effectiveVisitorView: boolean;
   isPreviewAsVisitor: boolean;
+  scholarBio: string;
+  onSaveBio: (nextBio: string) => void;
+  pinnedCount: number;
   onTogglePreviewAsVisitor: () => void;
   onOpenEditor: () => void;
+  onOpenAccountSettings: () => void;
 }
 
 export const ProfileIdentityHeader: React.FC<ProfileIdentityHeaderProps> = ({
   role,
   effectiveVisitorView,
   isPreviewAsVisitor,
+  scholarBio,
+  onSaveBio,
+  pinnedCount,
   onTogglePreviewAsVisitor,
   onOpenEditor,
+  onOpenAccountSettings,
 }) => {
   const scholar = PROTOTYPE_SCHOLAR_PROFILE;
+  const [editingBio, setEditingBio] = useState(false);
+  const [draftBio, setDraftBio] = useState(scholarBio);
+
+  const handleSave = () => {
+    onSaveBio(draftBio.trim() || scholar.bio);
+    setEditingBio(false);
+    toast.success("Bio profil publik diperbarui.");
+  };
 
   return (
     <>
@@ -40,21 +57,50 @@ export const ProfileIdentityHeader: React.FC<ProfileIdentityHeaderProps> = ({
 
       <section className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 space-y-4 min-w-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
-          <div className="flex items-center gap-3.5 min-w-0">
+          <div className="flex items-center gap-3.5 min-w-0 flex-1">
             <Avatar className="h-14 w-14 border border-primary/40 shrink-0">
               <AvatarFallback className="bg-primary/15 text-primary font-bold vk-text-base">
                 {scholar.initials}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0 space-y-1">
+            <div className="min-w-0 space-y-1 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="vk-text-lg font-bold tracking-tight truncate">{scholar.name}</h1>
                 <Badge variant="info" className="vk-text-2xs gap-1">
                   <CheckCircle2 className="h-3 w-3" /> Verified
                 </Badge>
+                {!effectiveVisitorView && (
+                  <Badge variant="outline" className="vk-text-2xs">{pinnedCount} Pinned</Badge>
+                )}
               </div>
               <p className="vk-text-xs font-mono text-primary truncate">{scholar.handle} · ITB</p>
-              <p className="vk-text-xs text-muted-foreground line-clamp-1">{scholar.bio}</p>
+
+              {editingBio && !effectiveVisitorView ? (
+                <div className="flex items-center gap-1.5 pt-1">
+                  <Input
+                    value={draftBio}
+                    onChange={(e) => setDraftBio(e.target.value)}
+                    className="h-7 vk-text-xs bg-surface flex-1"
+                  />
+                  <Button size="icon-sm" className="h-7 w-7" onClick={handleSave} aria-label="Simpan bio">
+                    <Check className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <p className="vk-text-xs text-muted-foreground line-clamp-1">{scholarBio}</p>
+                  {!effectiveVisitorView && (
+                    <button
+                      type="button"
+                      onClick={() => { setDraftBio(scholarBio); setEditingBio(true); }}
+                      className="text-muted-foreground hover:text-primary shrink-0"
+                      aria-label="Edit bio singkat"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -75,17 +121,16 @@ export const ProfileIdentityHeader: React.FC<ProfileIdentityHeaderProps> = ({
                 + Follow
               </Button>
             ) : (
-              <Button size="sm" className="h-8 rounded-full gap-1.5 vk-text-xs" onClick={onOpenEditor}>
-                <PenTool className="h-3.5 w-3.5" /> Buka Editor
-              </Button>
+              <>
+                <Button size="sm" variant="outline" className="h-8 rounded-full gap-1.5 vk-text-xs" onClick={onOpenAccountSettings}>
+                  <Settings2 className="h-3.5 w-3.5" /> Full Account Settings <ArrowRight className="h-3 w-3" />
+                </Button>
+                <Button size="sm" className="h-8 rounded-full gap-1.5 vk-text-xs" onClick={onOpenEditor}>
+                  <PenTool className="h-3.5 w-3.5" /> Buka Editor
+                </Button>
+              </>
             )}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="rounded-full"
-              aria-label="Bagikan Profil"
-              onClick={() => toast.success(`URL /${scholar.handle} disalin`)}
-            >
+            <Button variant="ghost" size="icon-sm" className="rounded-full" aria-label="Bagikan Profil" onClick={() => toast.success(`URL /${scholar.handle} disalin`)}>
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
